@@ -1,0 +1,38 @@
+{
+  "name": "lsd-components",
+  "version": "1.0.0",
+  "description": "Generic semantic components system for dependency injection",
+  "main": "index.js",
+  "typings": "index",
+  "keywords": [
+    "lsd",
+    "linked software dependencies",
+    "components"
+  ],
+  "author": "Ruben Taelman <ruben.taelman@ugent.be>",
+  "license": "MIT",
+  "scripts": {
+    "build": "tsc",
+    "lint": "jshint .",
+    "validate": "npm ls"
+  },
+  "dependencies": {
+    "lodash": "^4.17.4",
+    "n3": "^0.9.1"
+  },
+  "devDependencies": {
+    "@types/lodash": "^4.14.56",
+    "@types/n3": "0.0.2",
+    "@types/node": "^7.0.8",
+    "chai": "^1.9.0",
+    "jshint": "^2.1.10",
+    "mocha": "^1.17.1",
+    "pre-commit": "^0.0.9",
+    "sinon": "1.10.3",
+    "sinon-chai": "^2.6.0",
+    "typescript": "^2.2.1"
+  },
+  "pre-commit": [
+    "build"
+  ]
+}
