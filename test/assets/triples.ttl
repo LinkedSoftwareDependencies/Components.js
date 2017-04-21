@@ -1,0 +1,15 @@
+@prefix ex: <http://example.org/>.
+
+<a> ex:p0 "a0a".
+<a> a ex:A.
+<a> ex:p0 "a0b".
+<a> ex:p0 "a0c".
+<a> ex:p1 "a1a".
+<a> ex:p2 <b>.
+
+<b> ex:p0 "b0a".
+<b> ex:p2 "b2a".
+<b> ex:p2 "b2b".
+<b> ex:p1 <a>.
+<b> a ex:A.
+<b> a ex:B.
