@@ -1,0 +1,14 @@
+{
+  "@context": {
+    "@vocab": "http://linkedsoftwaredependencies.org/vocabulary/components#",
+    "ex": "http://example.org/",
+    "hello": "http://example.org/hello#"
+  },
+  "@graph": [
+    {
+      "@id": "ex:config",
+      "@type": "ex:HelloSomethingModule#SayHelloComponent",
+      "hello:say": "World"
+    }
+  ]
+}

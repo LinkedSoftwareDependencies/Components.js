@@ -12,11 +12,13 @@
   "author": "Ruben Taelman <ruben.taelman@ugent.be>",
   "license": "MIT",
   "scripts": {
+    "test": "mocha",
     "build": "tsc",
     "lint": "jshint .",
     "validate": "npm ls"
   },
   "dependencies": {
+    "jsonld": "^0.4.11",
     "lodash": "^4.17.4",
     "n3": "^0.9.1"
   },
@@ -28,11 +30,13 @@
     "jshint": "^2.1.10",
     "mocha": "^1.17.1",
     "pre-commit": "^0.0.9",
+    "should": "^11.2.1",
     "sinon": "1.10.3",
     "sinon-chai": "^2.6.0",
     "typescript": "^2.2.1"
   },
   "pre-commit": [
-    "build"
+    "build",
+    "test"
   ]
 }
