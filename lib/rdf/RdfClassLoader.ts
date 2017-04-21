@@ -24,7 +24,7 @@ export class RdfClassLoader extends Writable {
      */
     typedResources: {[id: string]: Resource[]} = {};
 
-    constructor(options: any) {
+    constructor(options?: any) {
         super({ objectMode: true });
 
         this._options = options || { normalizeLists: true };
@@ -40,7 +40,7 @@ export class RdfClassLoader extends Writable {
                     let element: any = this.resources[keys[i]];
                     if (element.__listFirst && element.__listRest) {
                         listNodes.push(keys[i]);
-                        element.list = element.__listRest[0]['uri'] === Constants.PREFIXES['rdf'] + 'nil' ? [element.__listFirst[0]] : [element.__listFirst[0]].concat(element.__listRest[0]['list']);
+                        element.list = element.__listRest[0]['value'] === Constants.PREFIXES['rdf'] + 'nil' ? [element.__listFirst[0]] : [element.__listFirst[0]].concat(element.__listRest[0]['list']);
                         delete element.__listFirst;
                         delete element.__listRest;
                         delete this.resources[keys[i]];
@@ -64,9 +64,13 @@ export class RdfClassLoader extends Writable {
      * Bind the given property field name to the given URI.
      * @param fieldName The field name.
      * @param uri The predicate URI.
+     * @param unique If the property should be unique.
      */
-    bindProperty(fieldName: string, uri: string) {
+    bindProperty(fieldName: string, uri: string, unique?: boolean) {
         this._properties[uri] = fieldName;
+        if (unique) {
+            this.setUniqueProperty(fieldName);
+        }
     }
 
     /**
@@ -77,10 +81,10 @@ export class RdfClassLoader extends Writable {
         this._uniqueProperties[fieldName] = true;
     }
 
-    _getOrMakeResource(uri: string): Resource {
-        let instance: Resource = this.resources[uri];
+    _getOrMakeResource(value: string): Resource {
+        let instance: Resource = this.resources[value];
         if (!instance) {
-            instance = this.resources[uri] = new Resource(N3.Util.isLiteral(uri) ? N3.Util.getLiteralValue(uri) : uri);
+            instance = this.resources[value] = new Resource(value);
         }
         return instance;
     }
@@ -99,8 +103,8 @@ export class RdfClassLoader extends Writable {
             } else {
                 if (subjectInstance[fieldName]) {
                     this.emit('error', new Error('Predicate ' + triple.predicate + ' with field ' + fieldName
-                        + ' was indicated as unique, while the objects ' + subjectInstance[fieldName].uri
-                        + ' and ' + objectInstance.uri + ' were found.'));
+                        + ' was indicated as unique, while the objects ' + subjectInstance[fieldName].value
+                        + ' and ' + objectInstance.value + ' were found.'));
                 } else {
                     subjectInstance[fieldName] = objectInstance;
                 }
