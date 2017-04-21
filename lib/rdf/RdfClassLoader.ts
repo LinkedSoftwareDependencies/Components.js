@@ -13,6 +13,7 @@ export class RdfClassLoader extends Writable {
     _options: {[id: string]: any} = {};
     _classes: {[id: string]: any} = {};
     _properties: {[id: string]: string} = {};
+    _uniqueProperties: {[id: string]: boolean} = {};
 
     /**
      * Mapping from resource URI to resource instance.
@@ -68,6 +69,14 @@ export class RdfClassLoader extends Writable {
         this._properties[uri] = fieldName;
     }
 
+    /**
+     * Indicate that the given property is unique for a resource.
+     * @param fieldName The field name of the property.
+     */
+    setUniqueProperty(fieldName: string) {
+        this._uniqueProperties[fieldName] = true;
+    }
+
     _getOrMakeResource(uri: string): Resource {
         let instance: Resource = this.resources[uri];
         if (!instance) {
@@ -82,10 +91,20 @@ export class RdfClassLoader extends Writable {
         if (fieldName) {
             let subjectInstance: any = this._getOrMakeResource(triple.subject);
             let objectInstance: any = this._getOrMakeResource(triple.object);
-            if (!subjectInstance[fieldName]) {
-                subjectInstance[fieldName] = [];
+            if (!this._uniqueProperties[fieldName]) {
+                if (!subjectInstance[fieldName]) {
+                    subjectInstance[fieldName] = [];
+                }
+                subjectInstance[fieldName].push(objectInstance);
+            } else {
+                if (subjectInstance[fieldName]) {
+                    this.emit('error', new Error('Predicate ' + triple.predicate + ' with field ' + fieldName
+                        + ' was indicated as unique, while the objects ' + subjectInstance[fieldName].uri
+                        + ' and ' + objectInstance.uri + ' were found.'));
+                } else {
+                    subjectInstance[fieldName] = objectInstance;
+                }
             }
-            subjectInstance[fieldName].push(objectInstance);
         }
 
         // Store types for the configured classes

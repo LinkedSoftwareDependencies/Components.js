@@ -179,4 +179,80 @@ describe('RdfClassLoader', function () {
       });
     });
   });
+
+  describe('for triples-unique.ttl', function () {
+    var tripleStream;
+    beforeEach(function () {
+      tripleStream = new N3.StreamParser();
+      var fileStream = fs.createReadStream(__dirname + '/../assets/triples-unique.ttl');
+      fileStream.pipe(tripleStream);
+    });
+
+    describe('with bound unique properties', function () {
+      var loader;
+      beforeEach(function () {
+        loader = new RdfClassLoader();
+
+        loader.bindProperty('field0', 'http://example.org/p0');
+        loader.bindProperty('field1', 'http://example.org/p1');
+        loader.bindProperty('field2', 'http://example.org/p2');
+
+        loader.setUniqueProperty('field0');
+        loader.setUniqueProperty('field1');
+        loader.setUniqueProperty('field2');
+      });
+
+      it('should have set unique properties', function () {
+        loader._uniqueProperties.should.have.property('field0', true);
+        loader._uniqueProperties.should.have.property('field1', true);
+        loader._uniqueProperties.should.have.property('field2', true);
+      });
+
+      it('should allow triple stream transformation', function () {
+        tripleStream.pipe(loader);
+      });
+
+      describe('with triple stream piping', function () {
+        beforeEach(function (done) {
+          tripleStream.pipe(loader);
+          loader.on('finish', done);
+        });
+
+        it('resource "a" should have unique fields', function () {
+          loader.resources['a'].field0.should.equal(loader.resources['"a0a"']);
+          loader.resources['a'].field1.should.equal(loader.resources['"a1a"']);
+          loader.resources['a'].field2.should.equal(loader.resources['b']);
+        });
+      });
+    });
+  });
+
+  describe('for triples-nonunique.ttl', function () {
+    var tripleStream;
+    beforeEach(function () {
+      tripleStream = new N3.StreamParser();
+      var fileStream = fs.createReadStream(__dirname + '/../assets/triples-nonunique.ttl');
+      fileStream.pipe(tripleStream);
+    });
+
+    describe('with bound unique properties', function () {
+      var loader;
+      beforeEach(function () {
+        loader = new RdfClassLoader();
+
+        loader.bindProperty('field0', 'http://example.org/p0');
+        loader.bindProperty('field1', 'http://example.org/p1');
+        loader.bindProperty('field2', 'http://example.org/p2');
+
+        loader.setUniqueProperty('field0');
+        loader.setUniqueProperty('field1');
+        loader.setUniqueProperty('field2');
+      });
+
+      it('should not allow triple stream transformation', function (done) {
+        tripleStream.pipe(loader);
+        loader.on('error', (e) => done());
+      });
+    });
+  });
 });
