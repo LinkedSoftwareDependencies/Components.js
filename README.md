@@ -2,6 +2,7 @@
 ```javascript
 const Application = require('lsd-components').Application;
 
-new Application('http://example.org/configs/my-config.json')
-    .run('http://example.org/components#component1', 'param0', 'param1');
+new Application('http://example.org/configs/config-hello-world.jsonld', [
+        'http://example.org/configs/config-hello-something.jsonld'
+    ]).run();
 ```

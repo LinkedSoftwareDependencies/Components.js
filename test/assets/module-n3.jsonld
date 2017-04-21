@@ -1,0 +1,142 @@
+{
+  "@context": {
+    "@vocab": "http://linkedsoftwaredependencies.org/vocabulary/components#",
+    "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+    "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+    "xsd": "http://www.w3.org/2001/XMLSchema#",
+    "ex": "http://example.org/",
+    "n3": "http://example.org/n3#",
+    "value": { "@id": "rdf:value", "@type": "@id"}
+  },
+  "@graph": [
+    {
+      "@id": "ex:n3",
+      "@type": "Module",
+      "doap:name": "n3",
+      "hasComponent": [
+        {
+          "@id": "ex:n3#Parser",
+          "@type": "ComponentConstructable",
+          "doap:name": "Parser",
+          "rdfs:comment": "Parses N3 documents",
+          "hasParameter": [
+            {
+              "@id": "n3:format",
+              "rdfs:range": "xsd:string"
+            },
+            {
+              "@id": "n3:blankNodePrefix",
+              "rdfs:range": "xsd:string"
+            },
+            {
+              "@id": "n3:lexer",
+              "rdfs:range": "ex:n3#Lexer"
+            },
+            {
+              "@id": "n3:explicitQuantifiers",
+              "rdfs:range": "xsd:boolean"
+            }
+          ],
+          "constructorMapping": {
+            "@list": [
+              {
+                "@type": "Object",
+                "hasFields": [
+                  {
+                    "rdfs:label": "format",
+                    "value": "n3:format"
+                  },
+                  {
+                    "rdfs:label": "blankNodePrefix",
+                    "value": "n3:blankNodePrefix"
+                  },
+                  {
+                    "rdfs:label": "lexer",
+                    "value": "n3:lexer"
+                  },
+                  {
+                    "rdfs:label": "explicitQuantifiers",
+                    "value": "n3:explicitQuantifiers"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "@id": "ex:n3#Lexer",
+          "@type": "ComponentConstructable",
+          "doap:name": "Lexer",
+          "rdfs:comment": "Tokenizes N3 documents",
+          "hasParameter": [
+            {
+              "@id": "n3:lineMode",
+              "rdfs:range": "xsd:boolean"
+            },
+            {
+              "@id": "n3:n3",
+              "rdfs:range": "xsd:boolean"
+            },
+            {
+              "@id": "n3:comments",
+              "rdfs:range": "xsd:boolean"
+            }
+          ],
+          "constructorMapping": {
+            "@list": [
+              {
+                "@type": "Object",
+                "hasFields": [
+                  {
+                    "rdfs:label": "lineMode",
+                    "value": "n3:lineMode"
+                  },
+                  {
+                    "rdfs:label": "n3",
+                    "value": "n3:n3"
+                  },
+                  {
+                    "rdfs:label": "comments",
+                    "value": "n3:comments"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "@id": "ex:n3#Util",
+          "@type": "ComponentInstance",
+          "doap:name": "Util",
+          "rdfs:comment": "Provides N3 utility functions",
+        },
+        {
+          "@id": "ex:n3#Dummy",
+          "@type": "ComponentConstructable",
+          "doap:name": "Dummy",
+          "runnable": true,
+          "rdfs:comment": "A dummy constructable component that can be run from the command-line",
+          "hasParameter": [
+            {
+              "@id": "n3:dummyParam",
+              "rdfs:range": "xsd:boolean"
+            }
+          ],
+          "constructorMapping": {
+            "@list": [
+              {
+                "@type": "Object",
+                "hasFields": [
+                  {
+                    "rdfs:label": "dummyParam",
+                    "value": "n3:dummyParam"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,54 @@
+{
+  "@context": {
+    "@vocab": "http://linkedsoftwaredependencies.org/vocabulary/components#",
+    "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+    "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+    "ex": "http://example.org/",
+    "n3": "http://example.org/n3#",
+    "npm": "http://example.org/npm#"
+  },
+  "@graph": [
+    {
+      "@id": "ex:myParser",
+      "@type": [ "n3:Parser", "ComponentConstructable" ],
+      "npm:requireName": "n3",
+      "npm:requireElement": "Parser",
+      "arguments": {
+        "@list": [
+          {
+            "@type": "Object",
+            "hasFields": [
+              {
+                "rdfs:label": "format",
+                "rdf:value": "application/trig"
+              },
+              {
+                "rdfs:label": "lexer",
+                "rdf:value": { "@id": "n3:lexer"}
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "@id": "ex:myLexer",
+      "@type": [ "n3:Lexer", "ComponentConstructable" ],
+      "npm:requireName": "n3",
+      "npm:requireElement": "Lexer",
+      "arguments": {
+        "@list": [
+          {
+            "@type": "Object",
+            "hasFields": [
+              {
+                "rdfs:label": "comments",
+                "rdf:value": true
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}
