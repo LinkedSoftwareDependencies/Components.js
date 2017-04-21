@@ -8,3 +8,4 @@ cache:
 test_all:
   script:
    - npm run build
+   - npm run test
