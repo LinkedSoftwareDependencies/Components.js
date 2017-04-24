@@ -1,15 +1,15 @@
 import {UnnamedComponentFactory} from "./UnnamedComponentFactory";
-import {Resource} from "./rdf/Resource";
+import {Resource} from "../rdf/Resource";
 import _ = require('lodash');
 
 /**
  * Factory for component definitions with semantic arguments and without constructor mappings.
  */
-export class NamedComponentFactory extends UnnamedComponentFactory {
+export class UnmappedNamedComponentFactory extends UnnamedComponentFactory {
 
     constructor(moduleDefinition: Resource, componentDefinition: Resource, config: any, constructable: boolean) {
         // TODO: validate parameters
-        super(NamedComponentFactory.makeUnnamedDefinitionConstructor(moduleDefinition, componentDefinition)(config), constructable);
+        super(UnmappedNamedComponentFactory.makeUnnamedDefinitionConstructor(moduleDefinition, componentDefinition)(config), constructable);
     }
 
     /**

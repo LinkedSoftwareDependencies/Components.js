@@ -1,6 +1,6 @@
 require('should');
-const Resource = require("../lib/rdf/Resource").Resource;
-const UnnamedComponentFactory = require("../lib/UnnamedComponentFactory").UnnamedComponentFactory;
+const Resource = require("../../lib/rdf/Resource").Resource;
+const UnnamedComponentFactory = require("../../lib/factory/UnnamedComponentFactory").UnnamedComponentFactory;
 const fs = require("fs");
 const N3 = require('n3');
 

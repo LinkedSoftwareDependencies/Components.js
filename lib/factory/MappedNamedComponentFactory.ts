@@ -1,5 +1,5 @@
 import {UnnamedComponentFactory} from "./UnnamedComponentFactory";
-import {Resource} from "./rdf/Resource";
+import {Resource} from "../rdf/Resource";
 import _ = require('lodash');
 
 /**
