@@ -1,4 +1,5 @@
 import N3 = require('n3');
+import Constants = require("../Constants");
 
 /**
  * A resource class.
@@ -17,5 +18,17 @@ export class Resource {
                 (<any> this)[keys[i]] = fields[keys[i]];
             }
         }
+    }
+
+    static newString(value: string) {
+        return Resource.newTyped(value, 'string');
+    }
+
+    static newBoolean(value: boolean) {
+        return Resource.newTyped(value, 'boolean');
+    }
+
+    static newTyped(value: any, type: string) {
+        return new Resource('"' + value + '"^^' + Constants.PREFIXES['xsd'] + 'type');
     }
 }

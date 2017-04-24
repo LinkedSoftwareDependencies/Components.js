@@ -5,6 +5,7 @@
     "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
     "xsd": "http://www.w3.org/2001/XMLSchema#",
     "ex": "http://example.org/",
+    "npm": "http://example.org/npm#",
     "n3": "http://example.org/n3#",
     "value": { "@id": "rdf:value", "@type": "@id"}
   },
@@ -12,12 +13,12 @@
     {
       "@id": "ex:n3",
       "@type": "Module",
-      "doap:name": "n3",
+      "npm:requireName": "n3",
       "hasComponent": [
         {
-          "@id": "ex:n3#Parser",
+          "@id": "n3:Parser",
           "@type": "ComponentConstructable",
-          "doap:name": "Parser",
+          "npm:requireElement": "Parser",
           "rdfs:comment": "Parses N3 documents",
           "hasParameter": [
             {
@@ -41,7 +42,7 @@
             "@list": [
               {
                 "@type": "Object",
-                "hasFields": [
+                "hasField": [
                   {
                     "rdfs:label": "format",
                     "value": "n3:format"
@@ -64,9 +65,9 @@
           }
         },
         {
-          "@id": "ex:n3#Lexer",
+          "@id": "n3:Lexer",
           "@type": "ComponentConstructable",
-          "doap:name": "Lexer",
+          "npm:requireElement": "Lexer",
           "rdfs:comment": "Tokenizes N3 documents",
           "hasParameter": [
             {
@@ -86,7 +87,7 @@
             "@list": [
               {
                 "@type": "Object",
-                "hasFields": [
+                "hasField": [
                   {
                     "rdfs:label": "lineMode",
                     "value": "n3:lineMode"
@@ -105,15 +106,15 @@
           }
         },
         {
-          "@id": "ex:n3#Util",
+          "@id": "n3:Util",
           "@type": "ComponentInstance",
-          "doap:name": "Util",
-          "rdfs:comment": "Provides N3 utility functions",
+          "npm:requireElement": "Util",
+          "rdfs:comment": "Provides N3 utility functions"
         },
         {
-          "@id": "ex:n3#Dummy",
+          "@id": "n3:Dummy",
           "@type": "ComponentConstructable",
-          "doap:name": "Dummy",
+          "npm:requireElement": "Dummy",
           "runnable": true,
           "rdfs:comment": "A dummy constructable component that can be run from the command-line",
           "hasParameter": [
@@ -126,7 +127,7 @@
             "@list": [
               {
                 "@type": "Object",
-                "hasFields": [
+                "hasField": [
                   {
                     "rdfs:label": "dummyParam",
                     "value": "n3:dummyParam"

@@ -38,7 +38,9 @@ export class UnnamedComponentFactory {
                         throw new Error('Parameter object keys must be literals, but found type ' + entry.k.termType
                             + ' for ' + entry.k.value + ' while constructing: ' + resource);
                     }
-                    data[entry.k.value] = UnnamedComponentFactory.getArgumentValue(entry.v);
+                    if (entry.v) {
+                        data[entry.k.value] = UnnamedComponentFactory.getArgumentValue(entry.v);
+                    }
                     return data;
                 }, {});
             } else {
@@ -52,8 +54,14 @@ export class UnnamedComponentFactory {
      */
     create(): any {
         let object: any = require(this._componentDefinition.requireName.value);
+        if (!object) {
+            throw new Error('Failed to require() a module by name ' + this._componentDefinition.requireName.value);
+        }
         if (this._componentDefinition.requireElement) {
             object = object[this._componentDefinition.requireElement.value];
+        }
+        if (!object) {
+            throw new Error('Failed to get module element ' + this._componentDefinition.requireElement.value + ' from module ' + this._componentDefinition.requireName.value);
         }
         let instance: any;
         if (this._constructable) {
