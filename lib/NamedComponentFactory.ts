@@ -8,10 +8,21 @@ import _ = require('lodash');
 export class NamedComponentFactory extends UnnamedComponentFactory {
 
     constructor(moduleDefinition: Resource, componentDefinition: Resource, config: any, constructable: boolean) {
+        // TODO: validate parameters
         super(NamedComponentFactory.makeUnnamedDefinitionConstructor(moduleDefinition, componentDefinition)(config), constructable);
     }
 
+    /**
+     * Create an unnamed component definition resource constructor.
+     * The component definition's parameters will be delegated to the component constructor.
+     * @param moduleDefinition The module definition with parameter definitions.
+     * @param componentDefinition The component definition with parameter instances.
+     * @returns {(params:any)=>Resource} A function that takes a parameter object for mapping parameter names to values
+     *                                   like { 'http://example.org/param0': Resource.newString('abc') }
+     *                                   and returns an unnamed component definition resource.
+     */
     static makeUnnamedDefinitionConstructor(moduleDefinition: any, componentDefinition: any): ((params: any) => Resource) {
+        // TODO: validate param types
         return ((params: any) => {
             return new Resource(componentDefinition.value, {
                 requireName: moduleDefinition.requireName || componentDefinition.requireName,

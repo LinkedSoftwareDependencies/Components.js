@@ -30,7 +30,7 @@ export class UnnamedComponentFactory {
      * @private
      */
     _makeArguments(): any[] {
-        return this._componentDefinition.arguments.list.map((resource: any, i: number) => {
+        return this._componentDefinition.arguments ? this._componentDefinition.arguments.list.map((resource: any, i: number) => {
             if (resource.fields) {
                 // The parameter is an object
                 return resource.fields.reduce((data: any, entry: any) => {
@@ -46,7 +46,7 @@ export class UnnamedComponentFactory {
             } else {
                 return UnnamedComponentFactory.getArgumentValue(resource);
             }
-        });
+        }) : [];
     }
 
     /**
