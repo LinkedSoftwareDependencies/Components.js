@@ -14,6 +14,8 @@ export class RdfClassLoader extends Writable {
     _classes: {[id: string]: any} = {};
     _properties: {[id: string]: string} = {};
     _uniqueProperties: {[id: string]: boolean} = {};
+    _captureAllProperties: boolean;
+    _captureAllClasses: boolean;
 
     /**
      * Mapping from resource URI to resource instance.
@@ -28,8 +30,10 @@ export class RdfClassLoader extends Writable {
         super({ objectMode: true });
 
         this._options = options || { normalizeLists: true };
+        this._captureAllProperties = this._options.captureAllProperties || false;
+        this._captureAllClasses = this._options.captureAllClasses || false;
 
-        if (this._options.normalizeLists) {
+        if (this._options['normalizeLists']) {
             this.bindProperty('__listFirst', Constants.PREFIXES['rdf'] + 'first');
             this.bindProperty('__listRest', Constants.PREFIXES['rdf'] + 'rest');
             this.on('finish', () => {
@@ -92,6 +96,9 @@ export class RdfClassLoader extends Writable {
     _write(triple: Triple, encoding: any, done: any) {
         // Store fields for the configured predicates
         let fieldName: string = this._properties[triple.predicate];
+        if (!fieldName && this._captureAllProperties) {
+            fieldName = triple.predicate;
+        }
         if (fieldName) {
             let subjectInstance: any = this._getOrMakeResource(triple.subject);
             let objectInstance: any = this._getOrMakeResource(triple.object);
@@ -115,6 +122,9 @@ export class RdfClassLoader extends Writable {
         if (triple.predicate === Constants.PREFIXES['rdf'] + 'type') {
             let subjectInstance: Resource = this._getOrMakeResource(triple.subject);
             let typeName: string = this._classes[triple.object];
+            if (!typeName && this._captureAllClasses) {
+                typeName = triple.object;
+            }
             if (typeName) {
                 if (!this.typedResources[typeName]) {
                     this.typedResources[typeName] = [];

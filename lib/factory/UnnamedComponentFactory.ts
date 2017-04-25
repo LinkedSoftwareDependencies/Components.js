@@ -16,13 +16,15 @@ export class UnnamedComponentFactory implements IComponentFactory {
     }
 
     static getArgumentValue(value: any): any {
-        if (value.termType === 'NamedNode') {
+        if (value instanceof Array) {
+            return value.map((element) => UnnamedComponentFactory.getArgumentValue(element));
+        } else if (value.termType === 'NamedNode') {
             // TODO: Make factory to distinguish between named and non-named component definitions.
             return new UnnamedComponentFactory(value, true).create();
         } else if (value.termType === 'Literal') {
             return value.value;
         } else {
-            throw new Error(value + ' was not recognized as a valid argument value.');
+            throw new Error(JSON.stringify(value) + ' was not recognized as a valid argument value.');
         }
     }
 
@@ -67,7 +69,7 @@ export class UnnamedComponentFactory implements IComponentFactory {
         let instance: any;
         if (this._constructable) {
             let args: any[] = this._makeArguments();
-            instance = new (Function.prototype.bind.apply(object, args));
+            instance = new (Function.prototype.bind.apply(object, [{}].concat(args)));
         } else {
             instance = object;
         }

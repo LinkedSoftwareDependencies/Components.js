@@ -26,11 +26,11 @@ export class ComponentFactory implements IComponentFactory {
                 || this._componentDefinition.types.indexOf(Constants.PREFIXES['lsdc'] + 'ComponentInstance') < 0;
             if (!this._componentDefinition.constructorMapping) {
                 return new UnmappedNamedComponentFactory(
-                    this._moduleDefinition, this._componentDefinition, this._componentDefinition, constructable
+                    this._moduleDefinition, this._componentDefinition, this._config, constructable
                 );
             } else {
                 return new MappedNamedComponentFactory(
-                    this._moduleDefinition, this._componentDefinition, this._componentDefinition, constructable
+                    this._moduleDefinition, this._componentDefinition, this._config, constructable
                 );
             }
         } else {
