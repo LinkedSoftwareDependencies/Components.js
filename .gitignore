@@ -1,6 +1,6 @@
 node_modules
 .idea
-lib/*.js
-lib/*.js.map
+lib/**/*.js
+lib/**/*.js.map
 index.js
 index.js.map
