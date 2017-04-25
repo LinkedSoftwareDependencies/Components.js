@@ -182,6 +182,7 @@ or a component URI with a set of manual parameters.
 ### from a triple stream
 ```javascript
 const ComponentRunner = require('lsd-components').ComponentRunner;
+const JsonLdStreamParser = require('lsd-components').JsonLdStreamParser;
 
 let runner = new ComponentRunner();
 let moduleStream = fs.createReadStream('module-hello-world.jsonld').pipe(new JsonLdStreamParser());
@@ -194,6 +195,7 @@ runner.registerModuleResourcesStream(moduleStream)
 ### manually
 ```javascript
 const ComponentRunner = require('lsd-components').ComponentRunner;
+const JsonLdStreamParser = require('lsd-components').JsonLdStreamParser;
 
 let runner = new ComponentRunner();
 let moduleStream = fs.createReadStream('module-hello-world.jsonld').pipe(new JsonLdStreamParser());
