@@ -93,29 +93,33 @@ export class RdfClassLoader extends Writable {
         return instance;
     }
 
+    _pushPredicate(fieldName: string, triple: Triple) {
+        let subjectInstance: any = this._getOrMakeResource(triple.subject);
+        let objectInstance: any = this._getOrMakeResource(triple.object);
+        if (!this._uniqueProperties[fieldName]) {
+            if (!subjectInstance[fieldName]) {
+                subjectInstance[fieldName] = [];
+            }
+            subjectInstance[fieldName].push(objectInstance);
+        } else {
+            if (subjectInstance[fieldName]) {
+                this.emit('error', new Error('Predicate ' + triple.predicate + ' with field ' + fieldName
+                    + ' was indicated as unique, while the objects ' + subjectInstance[fieldName].value
+                    + ' and ' + objectInstance.value + ' were found.'));
+            } else {
+                subjectInstance[fieldName] = objectInstance;
+            }
+        }
+    }
+
     _write(triple: Triple, encoding: any, done: any) {
         // Store fields for the configured predicates
         let fieldName: string = this._properties[triple.predicate];
-        if (!fieldName && this._captureAllProperties) {
-            fieldName = triple.predicate;
+        if (this._captureAllProperties) {
+            this._pushPredicate(triple.predicate, triple);
         }
         if (fieldName) {
-            let subjectInstance: any = this._getOrMakeResource(triple.subject);
-            let objectInstance: any = this._getOrMakeResource(triple.object);
-            if (!this._uniqueProperties[fieldName]) {
-                if (!subjectInstance[fieldName]) {
-                    subjectInstance[fieldName] = [];
-                }
-                subjectInstance[fieldName].push(objectInstance);
-            } else {
-                if (subjectInstance[fieldName]) {
-                    this.emit('error', new Error('Predicate ' + triple.predicate + ' with field ' + fieldName
-                        + ' was indicated as unique, while the objects ' + subjectInstance[fieldName].value
-                        + ' and ' + objectInstance.value + ' were found.'));
-                } else {
-                    subjectInstance[fieldName] = objectInstance;
-                }
-            }
+            this._pushPredicate(fieldName, triple);
         }
 
         // Store types for the configured classes
