@@ -7,9 +7,10 @@ import _ = require('lodash');
  */
 export class UnmappedNamedComponentFactory extends UnnamedComponentFactory {
 
-    constructor(moduleDefinition: Resource, componentDefinition: Resource, config: any, constructable: boolean) {
+    constructor(moduleDefinition: Resource, componentDefinition: Resource, config: any, constructable: boolean,
+                overrideRequireNames?: {[id: string]: string}) {
         // TODO: validate parameters
-        super(UnmappedNamedComponentFactory.makeUnnamedDefinitionConstructor(moduleDefinition, componentDefinition)(config), constructable);
+        super(UnmappedNamedComponentFactory.makeUnnamedDefinitionConstructor(moduleDefinition, componentDefinition)(config), constructable, overrideRequireNames);
     }
 
     /**

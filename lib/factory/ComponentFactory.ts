@@ -13,11 +13,13 @@ export class ComponentFactory implements IComponentFactory {
     _moduleDefinition: any;
     _componentDefinition: any;
     _config: any;
+    _overrideRequireNames: {[id: string]: string};
 
-    constructor(moduleDefinition: Resource, componentDefinition: Resource, config: Resource) {
+    constructor(moduleDefinition: Resource, componentDefinition: Resource, config: Resource, overrideRequireNames?: {[id: string]: string}) {
         this._moduleDefinition = moduleDefinition;
         this._componentDefinition = componentDefinition;
         this._config = config;
+        this._overrideRequireNames = overrideRequireNames;
     }
 
     _getComponentFactory(): IComponentFactory {
@@ -26,16 +28,19 @@ export class ComponentFactory implements IComponentFactory {
                 || this._componentDefinition.types.indexOf(Constants.PREFIXES['lsdc'] + 'ComponentInstance') < 0;
             if (!this._componentDefinition.constructorMapping) {
                 return new UnmappedNamedComponentFactory(
-                    this._moduleDefinition, this._componentDefinition, this._config, constructable
+                    this._moduleDefinition, this._componentDefinition, this._config, constructable,
+                    this._overrideRequireNames
                 );
             } else {
                 return new MappedNamedComponentFactory(
-                    this._moduleDefinition, this._componentDefinition, this._config, constructable
+                    this._moduleDefinition, this._componentDefinition, this._config, constructable,
+                    this._overrideRequireNames
                 );
             }
         } else {
             return new UnnamedComponentFactory(this._config,
-                this._config.types.indexOf(Constants.PREFIXES['lsdc'] + 'ComponentInstance') < 0);
+                this._config.types.indexOf(Constants.PREFIXES['lsdc'] + 'ComponentInstance') < 0,
+                this._overrideRequireNames);
         }
     }
 

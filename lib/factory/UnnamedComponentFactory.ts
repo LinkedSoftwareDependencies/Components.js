@@ -8,10 +8,12 @@ export class UnnamedComponentFactory implements IComponentFactory {
 
     _componentDefinition: any;
     _constructable: boolean;
+    _overrideRequireNames: {[id: string]: string};
 
-    constructor(componentDefinition: Resource, constructable: boolean) {
+    constructor(componentDefinition: Resource, constructable: boolean, overrideRequireNames?: {[id: string]: string}) {
         this._componentDefinition = componentDefinition;
         this._constructable = constructable;
+        this._overrideRequireNames = overrideRequireNames || {};
         // TODO: validate params
     }
 
@@ -56,15 +58,17 @@ export class UnnamedComponentFactory implements IComponentFactory {
      * @returns A new instance of the component.
      */
     create(): any {
-        let object: any = require(this._componentDefinition.requireName.value);
+        let requireName: string = this._componentDefinition.requireName.value;
+        requireName = this._overrideRequireNames[requireName] || requireName;
+        let object: any = require(requireName);
         if (!object) {
-            throw new Error('Failed to require() a module by name ' + this._componentDefinition.requireName.value);
+            throw new Error('Failed to require() a module by name ' + requireName);
         }
         if (this._componentDefinition.requireElement) {
             object = object[this._componentDefinition.requireElement.value];
         }
         if (!object) {
-            throw new Error('Failed to get module element ' + this._componentDefinition.requireElement.value + ' from module ' + this._componentDefinition.requireName.value);
+            throw new Error('Failed to get module element ' + this._componentDefinition.requireElement.value + ' from module ' + requireName);
         }
         let instance: any;
         if (this._constructable) {

@@ -14,6 +14,11 @@ import Constants = require("./Constants");
 export class ComponentRunner {
 
     _componentResources: {[id: string]: Resource} = {};
+    /**
+     * Require overrides.
+     * Require name as path, require override as value.
+     */
+    overrideRequireNames: {[id: string]: string} = {};
 
     /**
      * @returns {RdfClassLoader} A new RDF class loader for loading modules and components
@@ -128,7 +133,8 @@ export class ComponentRunner {
             throw new Error('No module was found for the component ' + componentResource.value);
         }
 
-        let constructor: ComponentFactory = new ComponentFactory(moduleResource, componentResource, configResource);
+        let constructor: ComponentFactory = new ComponentFactory(moduleResource, componentResource, configResource,
+            this.overrideRequireNames);
         return constructor.create();
     }
 
@@ -181,7 +187,7 @@ export class ComponentRunner {
             transformedParams[key] = [ Resource.newString(params[key]) ];
         });
         let constructor: ComponentFactory = new ComponentFactory(moduleResource, componentResource,
-            new Resource(null, transformedParams));
+            new Resource(null, transformedParams), this.overrideRequireNames);
         return constructor.create();
     }
 
