@@ -8,6 +8,7 @@
     "sourceMap": true
   },
   "include": [
+    "index.ts",
     "lib/**/*"
   ],
   "exclude": [
