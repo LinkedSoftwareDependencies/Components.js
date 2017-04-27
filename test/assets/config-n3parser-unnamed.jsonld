@@ -17,7 +17,7 @@
         "@list": [
           {
             "@type": "Object",
-            "hasFields": [
+            "hasField": [
               {
                 "rdfs:label": "format",
                 "rdf:value": "application/trig"
@@ -40,7 +40,7 @@
         "@list": [
           {
             "@type": "Object",
-            "hasFields": [
+            "hasField": [
               {
                 "rdfs:label": "comments",
                 "rdf:value": true

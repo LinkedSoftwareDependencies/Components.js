@@ -26,14 +26,40 @@ export class MappedNamedComponentFactory extends UnnamedComponentFactory {
      */
     static map(resource: any, params: any): any {
         if (resource.k && resource.v) {
-            return { k: resource.k, v: params[resource.v.value] };
+            if (resource.k.termType === 'Literal' && !resource.k.dynamicEntriesFrom) {
+                return { k: resource.k, v: params[resource.v.value] };
+            } else {
+                if (!resource.dynamicEntriesFrom) {
+                    throw new Error('If an object key is a URI, it must provide dynamic entries using the lsdc:dynamicEntriesFrom predicate: ' + resource);
+                }
+                return resource.dynamicEntriesFrom.reduce((data: Resource[], entry: Resource) => {
+                    if (entry.termType !== 'NamedNode') {
+                        throw new Error('Dynamic entry identifiers must be URI\'s: ' + entry);
+                    }
+                    let values: any = params[entry.value];
+                    if (values) {
+                        values.forEach((value: any) => data.push(value));
+                    }
+                    return data;
+                }, [])
+                    .map((entryResource: any) => {
+                        if (entryResource[resource.k.value].length !== 1) {
+                            throw new Error('Expected exactly one label definition for a dynamic entry: ' + resource.k); // TODO: this check also for regular entries?
+                        }
+                        return { k: entryResource[resource.k.value][0], v: entryResource[resource.v.value] };
+                    });
+            }
         }
         else if (resource.fields) {
-            return new Resource(null, {
+            let data: any = {
                 fields: resource.fields.map(
                     (field: any) => MappedNamedComponentFactory.map(field, params)
                 )
-            });
+            };
+            if (resource.k) {
+                data.k = resource.k;
+            }
+            return new Resource(null, data);
         }
         else if (resource.list) {
             return new Resource(null, {
