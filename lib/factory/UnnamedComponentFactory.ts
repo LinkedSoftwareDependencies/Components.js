@@ -54,13 +54,16 @@ export class UnnamedComponentFactory implements IComponentFactory {
             return value.map((element) => UnnamedComponentFactory.getArgumentValue(element));
         } else if (value.termType === 'NamedNode') {
             // TODO: Make factory to distinguish between named and non-named component definitions.
-            return new UnnamedComponentFactory(value, true).create();
+            try {
+                return new UnnamedComponentFactory(value, true).create();
+            } catch (e) {
+                console.error(e);
+            }
         } else if (value.termType === 'Literal') {
             return value.value;
-        } else {
-            console.error(JSON.stringify(value) + ' was not recognized as a valid argument value.');
-            return JSON.stringify(value);
         }
+        console.error('An invalid argument value was found:' + JSON.stringify(value));
+        return JSON.stringify(value);
     }
 
     /**
