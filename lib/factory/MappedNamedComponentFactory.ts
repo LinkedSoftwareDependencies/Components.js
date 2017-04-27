@@ -27,7 +27,11 @@ export class MappedNamedComponentFactory extends UnnamedComponentFactory {
     static map(resource: any, params: any): any {
         if (resource.k && resource.v) {
             if (resource.k.termType === 'Literal' && !resource.k.dynamicEntriesFrom) {
-                return { k: resource.k, v: params[resource.v.value] };
+                let value: any = params[resource.v.value];
+                if (resource.v.unique && resource.v.unique.value === 'true' && value instanceof Array) {
+                    value = value[0];
+                }
+                return { k: resource.k, v: value };
             } else {
                 if (!resource.dynamicEntriesFrom) {
                     throw new Error('If an object key is a URI, it must provide dynamic entries using the lsdc:dynamicEntriesFrom predicate: ' + resource);

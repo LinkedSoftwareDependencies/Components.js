@@ -38,6 +38,7 @@ export class ComponentRunner {
         loader.bindProperty('constructorMapping', Constants.PREFIXES['lsdc'] + 'constructorMapping', true);
         loader.bindProperty('fields', Constants.PREFIXES['lsdc'] + 'hasField');
         loader.bindProperty('dynamicEntriesFrom', Constants.PREFIXES['lsdc'] + 'dynamicEntriesFrom');
+        loader.bindProperty('unique', Constants.PREFIXES['lsdc'] + 'parameterUnique', true);
         loader.bindProperty('k', Constants.PREFIXES['rdfs'] + 'label', true);
         loader.bindProperty('v', Constants.PREFIXES['rdf'] + 'value', true);
         loader.bindProperty('types', Constants.PREFIXES['rdf'] + 'type');
@@ -60,6 +61,7 @@ export class ComponentRunner {
         loader.bindProperty('arguments', Constants.PREFIXES['lsdc'] + 'arguments', true);
         loader.bindProperty('fields', Constants.PREFIXES['lsdc'] + 'hasField');
         loader.bindProperty('dynamicEntriesFrom', Constants.PREFIXES['lsdc'] + 'dynamicEntriesFrom');
+        loader.bindProperty('unique', Constants.PREFIXES['lsdc'] + 'parameterUnique', true);
         loader.bindProperty('k', Constants.PREFIXES['rdfs'] + 'label', true);
         loader.bindProperty('v', Constants.PREFIXES['rdf'] + 'value', true);
         loader.bindProperty('types', Constants.PREFIXES['rdf'] + 'type');
