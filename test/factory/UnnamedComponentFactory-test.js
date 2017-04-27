@@ -6,8 +6,8 @@ const N3 = require('n3');
 
 // Component definition for an N3 Lexer
 let n3LexerComponent = new Resource('http://example.org/n3#Lexer', {
-  requireName: new Resource('n3'),
-  requireElement: new Resource('Lexer'),
+  requireName: Resource.newString('n3'),
+  requireElement: Resource.newString('Lexer'),
   arguments: new Resource(null, {
     list: [
       new Resource("_:param_lexer_0", {
@@ -19,8 +19,8 @@ let n3LexerComponent = new Resource('http://example.org/n3#Lexer', {
 
 // Component definition for an N3 Parser
 let n3ParserComponent = new Resource('http://example.org/n3#Parser', {
-  requireName: new Resource('n3'),
-  requireElement: new Resource('Parser'),
+  requireName: Resource.newString('n3'),
+  requireElement: Resource.newString('Parser'),
   arguments: new Resource(null, {
     list: [
       new Resource("_:param_parser_0", {

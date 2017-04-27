@@ -12,8 +12,8 @@ const Constants = require("../../lib/Constants");
 // Unnamed component config for an N3 Lexer
 let n3LexerComponentConfigUnnamed = new Resource('http://example.org/MyLexer', {
   types: [ new Resource(Constants.PREFIXES['lsdc'] + 'ComponentConstructable') ],
-  requireName: new Resource('n3'),
-  requireElement: new Resource('Lexer'),
+  requireName: Resource.newString('n3'),
+  requireElement: Resource.newString('Lexer'),
   arguments: new Resource(null, {
     list: [
       new Resource("_:param_lexer_0", {

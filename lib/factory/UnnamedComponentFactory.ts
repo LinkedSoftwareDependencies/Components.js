@@ -14,7 +14,21 @@ export class UnnamedComponentFactory implements IComponentFactory {
         this._componentDefinition = componentDefinition;
         this._constructable = constructable;
         this._overrideRequireNames = overrideRequireNames || {};
-        // TODO: validate params
+
+        // Validate params
+        this._validateParam(this._componentDefinition, 'requireName', 'Literal');
+        this._validateParam(this._componentDefinition, 'requireElement', 'Literal', true);
+    }
+
+    _validateParam(resource: any, field: string, type: string, optional?: boolean) {
+        if (!resource[field]) {
+            if (!optional) {
+                throw new Error('Expected ' + field + ' to exist in ' + JSON.stringify(resource));
+            }
+        }
+        if (resource[field].termType !== type) {
+            throw new Error('Expected ' + field + ' in ' + JSON.stringify(resource) + ' to be of type ' + type);
+        }
     }
 
     static getArgumentValue(value: any): any {
