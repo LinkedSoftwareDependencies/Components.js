@@ -1,5 +1,6 @@
 require('should');
 var expect = require('chai').expect;
+const Constants = require("../../lib/Constants");
 const Resource = require("../../lib/rdf/Resource").Resource;
 const fs = require("fs");
 const N3 = require('n3');
@@ -8,6 +9,7 @@ const MappedNamedComponentFactory = require("../../lib/factory/MappedNamedCompon
 // Component definition for an N3 Parser
 let n3ParserComponent = new Resource('http://example.org/n3#Parser', {
   requireElement: Resource.newString('Parser'),
+  types: [ new Resource(Constants.PREFIXES['lsdc'] + 'ComponentConstructable') ],
   hasParameter: [
     new Resource('http://example.org/n3#format'),
     new Resource('http://example.org/n3#blankNodePrefix'),
@@ -31,6 +33,7 @@ let n3ParserComponent = new Resource('http://example.org/n3#Parser', {
 // Component definition for an N3 Lexer
 let n3LexerComponent = new Resource('http://example.org/n3#Lexer', {
   requireElement: Resource.newString('Lexer'),
+  types: [ new Resource(Constants.PREFIXES['lsdc'] + 'ComponentConstructable') ],
   hasParameter: [
     new Resource('http://example.org/n3#lineMode'),
     new Resource('http://example.org/n3#n3'),
@@ -51,12 +54,14 @@ let n3LexerComponent = new Resource('http://example.org/n3#Lexer', {
 
 // Component definition for an N3 Util
 let n3UtilComponent = new Resource('http://example.org/n3#Util', {
-  requireElement: Resource.newString('Util')
+  requireElement: Resource.newString('Util'),
+  types: [ new Resource(Constants.PREFIXES['lsdc'] + 'ComponentInstance') ],
 });
 
 // Component definition for an N3 Dummy
 let n3DummyComponent = new Resource('http://example.org/n3#Dummy', {
   requireElement: Resource.newString('Dummy'),
+  types: [ new Resource(Constants.PREFIXES['lsdc'] + 'ComponentConstructable') ],
   hasParameter: [
     new Resource('http://example.org/n3#dummyParam')
   ],

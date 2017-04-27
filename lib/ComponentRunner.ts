@@ -127,18 +127,23 @@ export class ComponentRunner {
             }
             return types;
         }, []);
-        if (componentTypes.length !== 1) {
+        if (componentTypes.length !== 1 && !(<any> configResource).requireName && !(<any> configResource).requireElement) {
             throw new Error('Could not run config ' + configResource.value + ' because exactly one component type ' +
-                'was expected, while "' + componentTypes + '" were found.');
+                'was expected, while "' + componentTypes + '" were found. ' +
+                'Alternatively, the requireName and requireElement must be provided.');
         }
-        let componentResource: any = componentTypes[0];
-        let moduleResource: any = componentResource.module;
-        if (!moduleResource) {
-            throw new Error('No module was found for the component ' + componentResource.value);
+        let componentResource: any;
+        let moduleResource: any;
+        if (componentTypes.length) {
+            componentResource = componentTypes[0];
+            moduleResource = componentResource.module;
+            if (!moduleResource) {
+                throw new Error('No module was found for the component ' + componentResource.value);
+            }
         }
 
         let constructor: ComponentFactory = new ComponentFactory(moduleResource, componentResource, configResource,
-            this.overrideRequireNames);
+            this.overrideRequireNames, this);
         return constructor.create();
     }
 

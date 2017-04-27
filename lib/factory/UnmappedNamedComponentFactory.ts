@@ -1,6 +1,7 @@
 import {UnnamedComponentFactory} from "./UnnamedComponentFactory";
 import {Resource} from "../rdf/Resource";
 import _ = require('lodash');
+import {ComponentRunner} from "../ComponentRunner";
 
 /**
  * Factory for component definitions with semantic arguments and without constructor mappings.
@@ -8,9 +9,9 @@ import _ = require('lodash');
 export class UnmappedNamedComponentFactory extends UnnamedComponentFactory {
 
     constructor(moduleDefinition: Resource, componentDefinition: Resource, config: any, constructable: boolean,
-                overrideRequireNames?: {[id: string]: string}) {
+                overrideRequireNames?: {[id: string]: string}, componentRunner?: ComponentRunner) {
         // TODO: validate parameters
-        super(UnmappedNamedComponentFactory.makeUnnamedDefinitionConstructor(moduleDefinition, componentDefinition)(config), constructable, overrideRequireNames);
+        super(UnmappedNamedComponentFactory.makeUnnamedDefinitionConstructor(moduleDefinition, componentDefinition)(config), constructable, overrideRequireNames, componentRunner);
     }
 
     /**

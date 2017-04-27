@@ -1,5 +1,6 @@
 import {Resource} from "../rdf/Resource";
 import {IComponentFactory} from "./IComponentFactory";
+import {ComponentRunner} from "../ComponentRunner";
 
 /**
  * Factory for component definitions with explicit arguments.
@@ -9,11 +10,13 @@ export class UnnamedComponentFactory implements IComponentFactory {
     _componentDefinition: any;
     _constructable: boolean;
     _overrideRequireNames: {[id: string]: string};
+    _componentRunner: ComponentRunner;
 
-    constructor(componentDefinition: Resource, constructable: boolean, overrideRequireNames?: {[id: string]: string}) {
+    constructor(componentDefinition: Resource, constructable: boolean, overrideRequireNames?: {[id: string]: string}, componentRunner?: ComponentRunner) {
         this._componentDefinition = componentDefinition;
         this._constructable = constructable;
         this._overrideRequireNames = overrideRequireNames || {};
+        this._componentRunner = componentRunner || new ComponentRunner();
 
         // Validate params
         this._validateParam(this._componentDefinition, 'requireName', 'Literal');
@@ -24,6 +27,8 @@ export class UnnamedComponentFactory implements IComponentFactory {
         if (!resource[field]) {
             if (!optional) {
                 throw new Error('Expected ' + field + ' to exist in ' + JSON.stringify(resource));
+            } else {
+                return;
             }
         }
         if (resource[field].termType !== type) {
@@ -31,7 +36,7 @@ export class UnnamedComponentFactory implements IComponentFactory {
         }
     }
 
-    static getArgumentValue(value: any): any {
+    static getArgumentValue(value: any, componentRunner: ComponentRunner): any {
         if (value.fields) {
             // The parameter is an object
             return value.fields.reduce((data: any, entry: any) => {
@@ -43,7 +48,7 @@ export class UnnamedComponentFactory implements IComponentFactory {
                         + ' for ' + entry.k.value + ' while constructing: ' + value);
                 }
                 if (entry.v) {
-                    data[entry.k.value] = UnnamedComponentFactory.getArgumentValue(entry.v);
+                    data[entry.k.value] = UnnamedComponentFactory.getArgumentValue(entry.v, componentRunner);
                 } else {
                     // TODO: only throw an error if the parameter is required
                     //throw new Error('Parameter object entries must have values, but found: ' + JSON.stringify(entry, null, '  '));
@@ -51,11 +56,11 @@ export class UnnamedComponentFactory implements IComponentFactory {
                 return data;
             }, {});
         } else if (value instanceof Array) {
-            return value.map((element) => UnnamedComponentFactory.getArgumentValue(element));
-        } else if (value.termType === 'NamedNode') {
-            // TODO: Make factory to distinguish between named and non-named component definitions.
+            return value.map((element) => UnnamedComponentFactory.getArgumentValue(element, componentRunner));
+        } else if (value.termType === 'NamedNode' || value.termType === 'BlankNode') {
             try {
-                return new UnnamedComponentFactory(value, true).create();
+                // TODO: don't create new instance when it has already been created for the given URI.
+                return componentRunner.runConfig(value);
             } catch (e) {
                 console.error(e);
             }
@@ -72,7 +77,7 @@ export class UnnamedComponentFactory implements IComponentFactory {
      */
     _makeArguments(): any[] {
         return this._componentDefinition.arguments ? this._componentDefinition.arguments.list
-            .map(UnnamedComponentFactory.getArgumentValue) : [];
+            .map((resource: Resource) => UnnamedComponentFactory.getArgumentValue(resource, this._componentRunner)) : [];
     }
 
     /**
@@ -93,6 +98,10 @@ export class UnnamedComponentFactory implements IComponentFactory {
         }
         let instance: any;
         if (this._constructable) {
+            if (!(object instanceof Function)) {
+                console.error(JSON.stringify(this._componentDefinition, null, '  '));
+                throw new Error('ConstructableComponent is not a function: ' + JSON.stringify(object));
+            }
             let args: any[] = this._makeArguments();
             instance = new (Function.prototype.bind.apply(object, [{}].concat(args)));
         } else {

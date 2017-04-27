@@ -1,6 +1,7 @@
 require('should');
 const Resource = require("../../lib/rdf/Resource").Resource;
 const UnnamedComponentFactory = require("../../lib/factory/UnnamedComponentFactory").UnnamedComponentFactory;
+const ComponentRunner = require("../../lib/ComponentRunner").ComponentRunner;
 const fs = require("fs");
 const N3 = require('n3');
 
@@ -41,7 +42,7 @@ describe('UnnamedComponentFactory', function () {
     });
 
     it('should create valid instances', function () {
-      let instance = UnnamedComponentFactory.getArgumentValue(n3LexerComponent);
+      let instance = UnnamedComponentFactory.getArgumentValue(n3LexerComponent, new ComponentRunner());
       instance.should.not.be.null();
       instance.should.be.instanceof(N3.Lexer);
     });
