@@ -2,6 +2,7 @@ require('should');
 const Resource = require("../../lib/rdf/Resource").Resource;
 const UnnamedComponentFactory = require("../../lib/factory/UnnamedComponentFactory").UnnamedComponentFactory;
 const ComponentRunner = require("../../lib/ComponentRunner").ComponentRunner;
+const Hello = require("../helloworld").HelloNested.Deeper.Hello;
 const fs = require("fs");
 const N3 = require('n3');
 
@@ -31,6 +32,15 @@ let n3ParserComponent = new Resource('http://example.org/n3#Parser', {
         ]
       })
     ]
+  })
+});
+
+// Component definition for an N3 Parser
+let nestedHelloWorldComponent = new Resource('http://example.org/n3#Parser', {
+  requireName: Resource.newString('../../test/helloworld'),
+  requireElement: Resource.newString('HelloNested.Deeper.Hello'),
+  arguments: new Resource(null, {
+    list: []
   })
 });
 
@@ -91,6 +101,28 @@ describe('UnnamedComponentFactory', function () {
       let instance = constructor.create();
       instance.should.not.be.null();
       instance.should.be.instanceof(N3.Parser);
+    });
+  });
+
+  describe('for a nested HelloWorld component', function () {
+    let constructor;
+    beforeEach(function () {
+      constructor = new UnnamedComponentFactory(nestedHelloWorldComponent, true);
+    });
+
+    it('should be valid', function () {
+      constructor.should.not.be.null();
+    });
+
+    it('should create valid arguments', function () {
+      let args = constructor._makeArguments();
+      args.length.should.equal(0);
+    });
+
+    it('should make a valid instance', function () {
+      let instance = constructor.create();
+      instance.should.not.be.null();
+      instance.should.be.instanceof(Hello);
     });
   });
 });

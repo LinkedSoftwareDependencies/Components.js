@@ -91,7 +91,8 @@ export class UnnamedComponentFactory implements IComponentFactory {
             throw new Error('Failed to require() a module by name ' + requireName);
         }
         if (this._componentDefinition.requireElement) {
-            object = object[this._componentDefinition.requireElement.value];
+            let requireElementPath = this._componentDefinition.requireElement.value.split('.');
+            object = requireElementPath.reduce((object: any, requireElement: string) => object[requireElement], object);
         }
         if (!object) {
             throw new Error('Failed to get module element ' + this._componentDefinition.requireElement.value + ' from module ' + requireName);

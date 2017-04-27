@@ -15,4 +15,4 @@ class Hello {
 
 }
 
-module.exports = { Hello: Hello };
+module.exports = { Hello: Hello, HelloNested: { Deeper: { Hello: Hello } } };

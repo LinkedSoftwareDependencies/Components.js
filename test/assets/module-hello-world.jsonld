@@ -13,21 +13,38 @@
       "@id": "ex:HelloWorldModule",
       "@type": "Module",
       "npm:requireName": "../../test/helloworld",
-      "hasComponent": {
-        "@id": "ex:HelloWorldModule#SayHelloComponent",
-        "@type": "ComponentConstructable",
-        "npm:requireElement": "Hello",
-        "hasParameter": [
-          {
-            "@id": "hello:say",
-            "@type": "Parameter"
-          },
-          {
-            "@id": "hello:hello",
-            "@type": "Parameter"
-          }
-        ]
-      }
+      "hasComponent": [
+        {
+          "@id": "ex:HelloWorldModule#SayHelloComponent",
+          "@type": "ComponentConstructable",
+          "npm:requireElement": "Hello",
+          "hasParameter": [
+            {
+              "@id": "hello:say",
+              "@type": "Parameter"
+            },
+            {
+              "@id": "hello:hello",
+              "@type": "Parameter"
+            }
+          ]
+        },
+        {
+          "@id": "ex:HelloWorldModule#SayHelloComponentNested",
+          "@type": "ComponentConstructable",
+          "npm:requireElement": "HelloNested.Deeper.Hello",
+          "hasParameter": [
+            {
+              "@id": "hello:say",
+              "@type": "Parameter"
+            },
+            {
+              "@id": "hello:hello",
+              "@type": "Parameter"
+            }
+          ]
+        }
+      ]
     }
   ]
 }
