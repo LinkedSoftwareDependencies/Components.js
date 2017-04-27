@@ -4,6 +4,7 @@ const Resource = require("../lib/rdf/Resource").Resource;
 const JsonLdStreamParser = require("../lib/rdf/JsonLdStreamParser").JsonLdStreamParser;
 const ComponentRunner = require("../lib/ComponentRunner").ComponentRunner;
 const Constants = require("../lib/Constants");
+const Hello = require("./helloworld").Hello;
 const fs = require("fs");
 const Readable = require("stream").Readable;
 
@@ -168,6 +169,30 @@ describe('ComponentRunner', function () {
           'http://example.org/hello/hello': ['WORLD'],
           'http://example.org/hello/say': ['BONJOUR']
         });
+      });
+
+      it('should allow a config stream with referenced component instances to be run', function (done) {
+        let configResourceStream = fs.createReadStream(__dirname + '/assets/config-hello-world-referenced.jsonld').pipe(new JsonLdStreamParser());
+        runner.runConfigStream('http://example.org/myHelloWorld1', configResourceStream).then((run) => {
+          run._params.should.deepEqual({
+            'http://example.org/hello/hello': [ new Hello() ],
+            'http://example.org/hello/say': [ new Hello() ]
+          });
+          run._params['http://example.org/hello/hello'][0].should.be.equal(run._params['http://example.org/hello/say'][0]);
+          done();
+        }).catch(done);
+      });
+
+      it('should allow a config stream with unreferenced component instances to be run', function (done) {
+        let configResourceStream = fs.createReadStream(__dirname + '/assets/config-hello-world-unreferenced.jsonld').pipe(new JsonLdStreamParser());
+        runner.runConfigStream('http://example.org/myHelloWorld1', configResourceStream).then((run) => {
+          run._params.should.deepEqual({
+            'http://example.org/hello/hello': [ new Hello() ],
+            'http://example.org/hello/say': [ new Hello() ]
+          });
+          run._params['http://example.org/hello/hello'][0].should.not.be.equal(run._params['http://example.org/hello/say'][0]);
+          done();
+        }).catch(done);
       });
     });
   });

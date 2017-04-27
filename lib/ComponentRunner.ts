@@ -10,6 +10,7 @@ import Constants = require("./Constants");
  * A runner class for component configs.
  * Modules must first be registered to this runner.
  * After that, configs can be run.
+ * Components with the same URI will only be instantiated once.
  */
 export class ComponentRunner {
 
@@ -19,6 +20,8 @@ export class ComponentRunner {
      * Require name as path, require override as value.
      */
     overrideRequireNames: {[id: string]: string} = {};
+
+    _instances: {[id: string]: string} = {};
 
     /**
      * @returns {RdfClassLoader} A new RDF class loader for loading modules and components
@@ -120,6 +123,9 @@ export class ComponentRunner {
      * @returns {any} The run instance.
      */
     runConfig(configResource: Resource): any {
+        if (this._instances[configResource.value]) {
+            return this._instances[configResource.value];
+        }
         let componentTypes: Resource[] = ((<any> configResource).types || []).reduce((types: Resource[], typeUri: Resource) => {
             let componentResource: Resource = this._componentResources[typeUri.value];
             if (componentResource) {
@@ -144,7 +150,9 @@ export class ComponentRunner {
 
         let constructor: ComponentFactory = new ComponentFactory(moduleResource, componentResource, configResource,
             this.overrideRequireNames, this);
-        return constructor.create();
+        let instance: any = constructor.create();
+        this._instances[configResource.value] = instance;
+        return instance;
     }
 
     /**

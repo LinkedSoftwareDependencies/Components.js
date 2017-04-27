@@ -5,6 +5,7 @@ const Resource = require("../../lib/rdf/Resource").Resource;
 const fs = require("fs");
 const N3 = require('n3');
 const MappedNamedComponentFactory = require("../../lib/factory/MappedNamedComponentFactory").MappedNamedComponentFactory;
+const Hello = require("../helloworld").Hello;
 
 // Component definition for an N3 Parser
 let n3ParserComponent = new Resource('http://example.org/n3#Parser', {
@@ -84,6 +85,53 @@ let n3Module = new Resource('http://example.org/n3', {
     n3LexerComponent,
     n3UtilComponent,
     n3DummyComponent
+  ]
+});
+
+// Component definition for Hello World
+let helloWorldComponent1 = new Resource('http://example.org/HelloWorldModule#SayHelloComponent1', {
+  requireElement: Resource.newString('Hello'),
+  types: [ new Resource(Constants.PREFIXES['lsdc'] + 'ComponentConstructable') ],
+  hasParameter: [
+    new Resource('http://example.org/HelloWorldModule#dummyParam')
+  ],
+  constructorMapping: new Resource(null, {
+    list: [
+      new Resource("_:param_parser_0", {
+        fields: [
+          { k: new Resource('"dummyParam"'), v: new Resource('http://example.org/HelloWorldModule#dummyParam') }
+        ]
+      })
+    ]
+  })
+});
+
+// Component definition for Hello World
+let helloWorldComponent2 = new Resource('http://example.org/HelloWorldModule#SayHelloComponent2', {
+  requireElement: Resource.newString('Hello'),
+  types: [ new Resource(Constants.PREFIXES['lsdc'] + 'ComponentConstructable') ],
+  hasParameter: [
+    new Resource('http://example.org/HelloWorldModule#dummyParam'),
+    new Resource('http://example.org/HelloWorldModule#instanceParam')
+  ],
+  constructorMapping: new Resource(null, {
+    list: [
+      new Resource("_:param_hello_0", {
+        fields: [
+          { k: new Resource('"dummyParam"'), v: new Resource('http://example.org/HelloWorldModule#dummyParam') },
+          { k: new Resource('"instanceParam"'), v: new Resource('http://example.org/HelloWorldModule#instanceParam') }
+        ]
+      })
+    ]
+  })
+});
+
+// Module definition for Hello World
+let helloWorldModule = new Resource('http://example.org/HelloWorldModule', {
+  requireName: Resource.newString('../../test/helloworld'),
+  hasComponent: [
+    helloWorldComponent1,
+    helloWorldComponent2
   ]
 });
 
@@ -233,6 +281,32 @@ describe('MappedNamedComponentFactory', function () {
     it('should create valid arguments', function () {
       constructor._makeArguments().should.deepEqual([{
         'dummyParam': 'true',
+      }]);
+    });
+
+    it('should fail to make a valid instance', function () {
+      expect(constructor.create).to.throw(Error);
+    });
+  });
+
+  describe('for a hello world component', function () {
+    let constructor;
+    beforeEach(function () {
+      constructor = new MappedNamedComponentFactory(helloWorldModule, helloWorldComponent2, {
+        'http://example.org/HelloWorldModule#dummyParam': Resource.newBoolean(true),
+        'http://example.org/HelloWorldModule#instanceParam': MappedNamedComponentFactory
+          .makeUnnamedDefinitionConstructor(helloWorldModule, helloWorldComponent1)({})
+      }, true);
+    });
+
+    it('should be valid', function () {
+      constructor.should.not.be.null();
+    });
+
+    it('should create valid arguments', function () {
+      constructor._makeArguments().should.deepEqual([{
+        'dummyParam': 'true',
+        'instanceParam': new Hello()
       }]);
     });
 

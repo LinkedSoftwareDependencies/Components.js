@@ -12,7 +12,8 @@ export class UnnamedComponentFactory implements IComponentFactory {
     _overrideRequireNames: {[id: string]: string};
     _componentRunner: ComponentRunner;
 
-    constructor(componentDefinition: Resource, constructable: boolean, overrideRequireNames?: {[id: string]: string}, componentRunner?: ComponentRunner) {
+    constructor(componentDefinition: Resource, constructable: boolean, overrideRequireNames?: {[id: string]: string},
+                componentRunner?: ComponentRunner) {
         this._componentDefinition = componentDefinition;
         this._constructable = constructable;
         this._overrideRequireNames = overrideRequireNames || {};
@@ -59,7 +60,6 @@ export class UnnamedComponentFactory implements IComponentFactory {
             return value.map((element) => UnnamedComponentFactory.getArgumentValue(element, componentRunner));
         } else if (value.termType === 'NamedNode' || value.termType === 'BlankNode') {
             try {
-                // TODO: don't create new instance when it has already been created for the given URI.
                 return componentRunner.runConfig(value);
             } catch (e) {
                 console.error(e);
