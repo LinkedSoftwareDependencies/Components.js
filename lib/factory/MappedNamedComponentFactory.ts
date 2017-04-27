@@ -26,10 +26,15 @@ export class MappedNamedComponentFactory extends UnnamedComponentFactory {
      */
     static map(resource: any, params: any): any {
         if (resource.k && resource.v) {
-            if (resource.k.termType === 'Literal' && !resource.k.dynamicEntriesFrom) {
-                let value: any = params[resource.v.value];
-                if (resource.v.unique && resource.v.unique.value === 'true' && value instanceof Array) {
-                    value = value[0];
+            if (resource.k.termType === 'Literal' && !resource.dynamicEntriesFrom) {
+                let value: any;
+                if (resource.v.termType === 'NamedNode') {
+                    value = params[resource.v.value];
+                    if (resource.v.unique && resource.v.unique.value === 'true' && value instanceof Array) {
+                        value = value[0];
+                    }
+                } else {
+                    value = MappedNamedComponentFactory.map(resource.v, params);
                 }
                 return { k: resource.k, v: value };
             } else {
@@ -50,20 +55,25 @@ export class MappedNamedComponentFactory extends UnnamedComponentFactory {
                         if (entryResource[resource.k.value].length !== 1) {
                             throw new Error('Expected exactly one label definition for a dynamic entry: ' + resource.k); // TODO: this check also for regular entries?
                         }
-                        return { k: entryResource[resource.k.value][0], v: entryResource[resource.v.value] };
+                        if (entryResource[resource.v.value].length !== 1) {
+                            throw new Error('Expected exactly one value for a dynamic entry: ' + resource.v);
+                        }
+                        return { k: entryResource[resource.k.value][0], v: entryResource[resource.v.value][0] };
                     });
             }
         }
         else if (resource.fields) {
-            let data: any = {
-                fields: resource.fields.map(
-                    (field: any) => MappedNamedComponentFactory.map(field, params)
-                )
-            };
-            if (resource.k) {
-                data.k = resource.k;
-            }
-            return new Resource(null, data);
+            return new Resource(null, {
+                fields: resource.fields.reduce((fields: any[], field: any) => {
+                    let mapped: any = MappedNamedComponentFactory.map(field, params);
+                    if (mapped instanceof Array) {
+                        fields = fields.concat(mapped);
+                    } else {
+                        fields.push(mapped);
+                    }
+                    return fields;
+                }, [])
+            });
         }
         else if (resource.list) {
             return new Resource(null, {
