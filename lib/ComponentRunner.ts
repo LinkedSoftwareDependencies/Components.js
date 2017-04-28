@@ -86,6 +86,34 @@ export class ComponentRunner {
      */
     _registerComponentResource(componentResource: Resource) {
         this._componentResources[componentResource.value] = componentResource;
+        this._inheritParameters(componentResource, (<any> componentResource).classes);
+    }
+
+    /**
+     * Let the given component inherit parameters from the given component(s) if applicable.
+     * @param componentResource The component resource
+     * @param classes The component classes to inherit from.
+     * @private
+     */
+    _inheritParameters(componentResource: any, classes?: Resource[]) {
+        if (classes) {
+            if (!componentResource.hasParameter) {
+                componentResource.hasParameter = [];
+            }
+            classes.forEach((component: any) => {
+                if (component.hasType(Constants.PREFIXES['lsdc'] + 'ComponentConstructableAbstract')
+                    || component.hasType(Constants.PREFIXES['lsdc'] + 'ComponentConstructable')) {
+                    if (component.hasParameter) {
+                        component.hasParameter.forEach((parameter: Resource) => {
+                            if (componentResource.hasParameter.indexOf(parameter) < 0) {
+                                componentResource.hasParameter.push(parameter);
+                            }
+                        });
+                        this._inheritParameters(componentResource, component.classes);
+                    }
+                }
+            });
+        }
     }
 
     /**
@@ -167,6 +195,12 @@ export class ComponentRunner {
         return instance;
     }
 
+    /**
+     * Let then given config inherit parameter values from referenced passed configs.
+     * @param configResource The config
+     * @param componentResource The component
+     * @private
+     */
     _inheritParameterValues(configResource: Resource, componentResource: any) {
         // Inherit parameter values from passed instances of the given types
         if (componentResource.hasParameter) {

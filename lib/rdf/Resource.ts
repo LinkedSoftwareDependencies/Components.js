@@ -31,4 +31,12 @@ export class Resource {
     static newTyped(value: any, type: string) {
         return new Resource('"' + value + '"^^' + Constants.PREFIXES['xsd'] + 'type');
     }
+
+    hasType(typeUri: string): boolean {
+        let resource: any = this;
+        if (resource.types) {
+            return resource.types.reduce((acc: boolean, type: Resource) => acc || type.value === typeUri, false);
+        }
+        return false;
+    }
 }

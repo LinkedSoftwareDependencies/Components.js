@@ -173,13 +173,13 @@ describe('ComponentRunner', function () {
     });
   });
 
-  describe('constructing an component with inheritable parameters', function () {
+  describe('constructing an component with referenced parameters values', function () {
     beforeEach(function (done) {
       let moduleStream = fs.createReadStream(__dirname + '/assets/module-hello-world.jsonld').pipe(new JsonLdStreamParser());
       runner.registerModuleResourcesStream(moduleStream).then(done);
     });
 
-    it('should produce the correct instances', function (done) {
+    it('should produce instances with equal parameter values', function (done) {
       let configResourceStream = fs.createReadStream(__dirname + '/assets/config-hello-world-referenced.jsonld').pipe(new JsonLdStreamParser());
       runner.runConfigStream('http://example.org/myHelloWorld1', configResourceStream).then((run) => {
         run._params.should.deepEqual({
@@ -191,7 +191,7 @@ describe('ComponentRunner', function () {
       }).catch(done);
     });
 
-    it('should allow a config stream with unreferenced component instances to be run', function (done) {
+    it('should produce instances with different parameter values', function (done) {
       let configResourceStream = fs.createReadStream(__dirname + '/assets/config-hello-world-unreferenced.jsonld').pipe(new JsonLdStreamParser());
       runner.runConfigStream('http://example.org/myHelloWorld1', configResourceStream).then((run) => {
         run._params.should.deepEqual({
@@ -204,13 +204,13 @@ describe('ComponentRunner', function () {
     });
   });
 
-  describe('constructing an component with referenced components', function () {
+  describe('constructing an component with inheritable parameter values', function () {
     beforeEach(function (done) {
       let moduleStream = fs.createReadStream(__dirname + '/assets/module-hello-world-inheritableparams.jsonld').pipe(new JsonLdStreamParser());
       runner.registerModuleResourcesStream(moduleStream).then(done);
     });
 
-    it('should allow a config stream with component instances with inherited parameters to be run', function (done) {
+    it('should produce instances with inherited parameter values', function (done) {
       let configResourceStream1 = fs.createReadStream(__dirname + '/assets/config-hello-world-inheritparam.jsonld').pipe(new JsonLdStreamParser());
       let configResourceStream2 = fs.createReadStream(__dirname + '/assets/config-hello-world-inheritparam.jsonld').pipe(new JsonLdStreamParser());
       runner.runConfigStream('http://example.org/myHelloWorld1', configResourceStream1).then((run) => {
@@ -223,6 +223,33 @@ describe('ComponentRunner', function () {
           });
           done();
         }).catch(done);
+      }).catch(done);
+    });
+  });
+
+  describe('constructing components from an abstract component', function () {
+    beforeEach(function (done) {
+      let moduleStream = fs.createReadStream(__dirname + '/assets/module-hello-world-subclass.jsonld').pipe(new JsonLdStreamParser());
+      runner.registerModuleResourcesStream(moduleStream).then(done);
+    });
+
+    it('should allow a config stream with component instances with inherited parameters from the parent to be run', function (done) {
+      let configResourceStream = fs.createReadStream(__dirname + '/assets/config-hello-world-subclass.jsonld').pipe(new JsonLdStreamParser());
+      runner.runConfigStream('http://example.org/myHelloWorld1', configResourceStream).then((run) => {
+        run._params.should.deepEqual({
+          'http://example.org/hello/something': [ "SOMETHING1" ]
+        });
+        done();
+      }).catch(done);
+    });
+
+    it('should allow a config stream with component instances with inherited parameters from the parent\'s parent to be run', function (done) {
+      let configResourceStream = fs.createReadStream(__dirname + '/assets/config-hello-world-subclass.jsonld').pipe(new JsonLdStreamParser());
+      runner.runConfigStream('http://example.org/myHelloWorld2', configResourceStream).then((run) => {
+        run._params.should.deepEqual({
+          'http://example.org/hello/something': [ "SOMETHING2" ]
+        });
+        done();
       }).catch(done);
     });
   });
