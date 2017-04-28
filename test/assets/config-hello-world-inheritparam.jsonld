@@ -7,12 +7,12 @@
   "@graph": [
     {
       "@id": "ex:myHelloWorld1",
-      "@type": "ex:HelloWorldModule#SayHelloComponent",
+      "@type": "ex:HelloWorldModule#SayHelloComponent1",
       "hello:something": "SOMETHING"
     },
     {
       "@id": "ex:myHelloWorld2",
-      "@type": "ex:HelloWorldModule#SayHelloComponentNested"
+      "@type": "ex:HelloWorldModule#SayHelloComponent2"
     }
   ]
 }

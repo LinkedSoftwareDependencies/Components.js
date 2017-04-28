@@ -16,32 +16,30 @@
       "npm:requireName": "../../test/helloworld",
       "hasComponent": [
         {
-          "@id": "ex:HelloWorldModule#SayHelloComponent",
+          "@id": "ex:HelloWorldModule#SayHelloComponent1",
           "@type": "ComponentConstructable",
           "npm:requireElement": "Hello",
           "hasParameter": [
             {
-              "@id": "hello:say",
-              "@type": "Parameter"
-            },
-            {
-              "@id": "hello:hello",
+              "@id": "hello:something",
               "@type": "Parameter"
             }
           ]
         },
         {
-          "@id": "ex:HelloWorldModule#SayHelloComponentNested",
+          "@id": "ex:HelloWorldModule#SayHelloComponent2",
           "@type": "ComponentConstructable",
-          "npm:requireElement": "HelloNested.Deeper.Hello",
+          "npm:requireElement": "Hello",
           "hasParameter": [
             {
-              "@id": "hello:say",
-              "@type": "Parameter"
-            },
-            {
-              "@id": "hello:hello",
-              "@type": "Parameter"
+              "@id": "hello:somethingInherited",
+              "rdfs:comment": "All values from ex:HelloWorldModule#SayHelloComponent are automatically inherited when using this owl:Restriction",
+              "@type": "Parameter",
+              "rdfs:subClassOf": {
+                "@type": "owl:Restriction",
+                "owl:onProperty": { "@id": "hello:something" },
+                "owl:allValuesFrom": { "@id": "ex:HelloWorldModule#SayHelloComponent1" }
+              }
             }
           ]
         }
