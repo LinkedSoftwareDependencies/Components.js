@@ -33,6 +33,7 @@ export class ComponentRunner {
 
         loader.bindClass('constructables', Constants.PREFIXES['lsdc'] + 'ComponentConstructable');
         loader.bindClass('instances', Constants.PREFIXES['lsdc'] + 'ComponentInstance');
+        loader.bindClass('abstractConstructables', Constants.PREFIXES['lsdc'] + 'ComponentConstructableAbstract');
         loader.bindClass('modules', Constants.PREFIXES['lsdc'] + 'Module');
 
         loader.bindProperty('requireName', Constants.PREFIXES['npm'] + 'requireName', true);
@@ -156,53 +157,7 @@ export class ComponentRunner {
                 throw new Error('No module was found for the component ' + componentResource.value);
             }
 
-            // Inherit parameter values from passed instances of the given types
-            if (componentResource.hasParameter) {
-                componentResource.hasParameter.forEach((parameter: any) => {
-                    // Collect all owl:Restriction's
-                    let restrictions: Resource[] = (parameter.classes || []).reduce((acc: Resource[], clazz: any) => {
-                        if (clazz.types.reduce((acc: boolean, type: Resource) => acc || type.value === Constants.PREFIXES['owl'] + 'Restriction', false)) {
-                            acc.push(clazz);
-                        }
-                        return acc;
-                    }, []);
-
-                    restrictions.forEach((restriction: any) => {
-                        if (restriction.allValuesFrom) {
-                            if (!restriction.onProperty) {
-                                throw new Error('Parameters that inherit values must refer to a property: ' + JSON.stringify(parameter));
-                            }
-
-                            restriction.allValuesFrom.forEach((componentType: Resource) => {
-                                if (componentType.termType !== 'NamedNode') {
-                                    throw new Error('Parameter inheritance values must refer to component type identifiers, not literals: ' + JSON.stringify(componentType));
-                                }
-
-                                let typeInstances: Resource[] = this._runTypeConfigs[componentType.value];
-                                if (typeInstances) {
-                                    typeInstances.forEach((instance: any) => {
-                                        restriction.onProperty.forEach((parentParameter: Resource) => {
-                                            // TODO: this might be a bug in the JSON-LD parser
-                                            /*if (parentParameter.termType !== 'NamedNode') {
-                                              throw new Error('Parameters that inherit values must refer to sub properties as URI\'s: ' + JSON.stringify(parentParameter));
-                                            }*/
-                                            if (instance[parentParameter.value]) {
-                                                // Copy the parameter
-                                                (<any> configResource)[parentParameter.value] = instance[parentParameter.value];
-
-                                                // Also add the parameter to the parameter type list
-                                                if (componentResource.hasParameter.indexOf(parentParameter) < 0) {
-                                                    componentResource.hasParameter.push(parentParameter);
-                                                }
-                                            }
-                                        });
-                                    });
-                                }
-                            });
-                        }
-                    });
-                });
-            }
+            this._inheritParameterValues(configResource, componentResource);
         }
 
         let constructor: ComponentFactory = new ComponentFactory(moduleResource, componentResource, configResource,
@@ -210,6 +165,56 @@ export class ComponentRunner {
         let instance: any = constructor.create();
         this._instances[configResource.value] = instance;
         return instance;
+    }
+
+    _inheritParameterValues(configResource: Resource, componentResource: any) {
+        // Inherit parameter values from passed instances of the given types
+        if (componentResource.hasParameter) {
+            componentResource.hasParameter.forEach((parameter: any) => {
+                // Collect all owl:Restriction's
+                let restrictions: Resource[] = (parameter.classes || []).reduce((acc: Resource[], clazz: any) => {
+                    if (clazz.types.reduce((acc: boolean, type: Resource) => acc || type.value === Constants.PREFIXES['owl'] + 'Restriction', false)) {
+                        acc.push(clazz);
+                    }
+                    return acc;
+                }, []);
+
+                restrictions.forEach((restriction: any) => {
+                    if (restriction.allValuesFrom) {
+                        if (!restriction.onProperty) {
+                            throw new Error('Parameters that inherit values must refer to a property: ' + JSON.stringify(parameter));
+                        }
+
+                        restriction.allValuesFrom.forEach((componentType: Resource) => {
+                            if (componentType.termType !== 'NamedNode') {
+                                throw new Error('Parameter inheritance values must refer to component type identifiers, not literals: ' + JSON.stringify(componentType));
+                            }
+
+                            let typeInstances: Resource[] = this._runTypeConfigs[componentType.value];
+                            if (typeInstances) {
+                                typeInstances.forEach((instance: any) => {
+                                    restriction.onProperty.forEach((parentParameter: Resource) => {
+                                        // TODO: this might be a bug in the JSON-LD parser
+                                        /*if (parentParameter.termType !== 'NamedNode') {
+                                         throw new Error('Parameters that inherit values must refer to sub properties as URI\'s: ' + JSON.stringify(parentParameter));
+                                         }*/
+                                        if (instance[parentParameter.value]) {
+                                            // Copy the parameter
+                                            (<any> configResource)[parentParameter.value] = instance[parentParameter.value];
+
+                                            // Also add the parameter to the parameter type list
+                                            if (componentResource.hasParameter.indexOf(parentParameter) < 0) {
+                                                componentResource.hasParameter.push(parentParameter);
+                                            }
+                                        }
+                                    });
+                                });
+                            }
+                        });
+                    }
+                });
+            });
+        }
     }
 
     /**
