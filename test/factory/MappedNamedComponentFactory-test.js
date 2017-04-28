@@ -126,12 +126,35 @@ let helloWorldComponent2 = new Resource('http://example.org/HelloWorldModule#Say
   })
 });
 
+// Component definition for Hello World
+let helloWorldComponent3 = new Resource('http://example.org/HelloWorldModule#SayHelloComponent3', {
+  requireElement: Resource.newString('Hello'),
+  types: [ new Resource(Constants.PREFIXES['lsdc'] + 'ComponentConstructable') ],
+  hasParameter: [
+    new Resource('http://example.org/HelloWorldModule#dummyParam'),
+    new Resource('http://example.org/HelloWorldModule#instanceParam'),
+    new Resource('http://example.org/HelloWorldModule#idParam')
+  ],
+  constructorMapping: new Resource(null, {
+    list: [
+      new Resource("_:param_hello_0", {
+        fields: [
+          { k: new Resource('"dummyParam"'), v: new Resource('http://example.org/HelloWorldModule#dummyParam') },
+          { k: new Resource('"instanceParam"'), v: new Resource('http://example.org/HelloWorldModule#instanceParam') },
+          { k: new Resource('"idParam"'), v: new Resource(Constants.PREFIXES['rdf'] + 'subject') }
+        ]
+      })
+    ]
+  })
+});
+
 // Module definition for Hello World
 let helloWorldModule = new Resource('http://example.org/HelloWorldModule', {
   requireName: Resource.newString('../../test/helloworld'),
   hasComponent: [
     helloWorldComponent1,
-    helloWorldComponent2
+    helloWorldComponent2,
+    helloWorldComponent3
   ]
 });
 
@@ -307,6 +330,29 @@ describe('MappedNamedComponentFactory', function () {
       constructor._makeArguments().should.deepEqual([{
         'dummyParam': 'true',
         'instanceParam': new Hello()
+      }]);
+    });
+
+    it('should fail to make a valid instance', function () {
+      expect(constructor.create).to.throw(Error);
+    });
+  });
+
+  describe('for a hello world component with id param', function () {
+    let constructor;
+    beforeEach(function () {
+      constructor = new MappedNamedComponentFactory(helloWorldModule, helloWorldComponent3, {
+        value: 'http://example.org/myHelloComponent'
+      }, true);
+    });
+
+    it('should be valid', function () {
+      constructor.should.not.be.null();
+    });
+
+    it('should create valid arguments', function () {
+      constructor._makeArguments().should.deepEqual([{
+        'idParam': 'http://example.org/myHelloComponent'
       }]);
     });
 

@@ -2,6 +2,7 @@ import {UnnamedComponentFactory} from "./UnnamedComponentFactory";
 import {Resource} from "../rdf/Resource";
 import _ = require('lodash');
 import {ComponentRunner} from "../ComponentRunner";
+import Constants = require("../Constants");
 
 /**
  * Factory for component definitions with semantic arguments and with constructor mappings.
@@ -29,7 +30,10 @@ export class MappedNamedComponentFactory extends UnnamedComponentFactory {
         if (resource.k && resource.v) {
             if (resource.k.termType === 'Literal' && !resource.dynamicEntriesFrom) {
                 let value: any;
-                if (resource.v.termType === 'NamedNode') {
+                if (resource.v.termType === 'NamedNode' && resource.v.value === Constants.PREFIXES['rdf'] + 'subject') {
+                    value = Resource.newString(params.value);
+                }
+                else if (resource.v.termType === 'NamedNode') {
                     value = params[resource.v.value];
                     if (resource.v.unique && resource.v.unique.value === 'true' && value instanceof Array) {
                         value = value[0];
@@ -53,13 +57,31 @@ export class MappedNamedComponentFactory extends UnnamedComponentFactory {
                     return data;
                 }, [])
                     .map((entryResource: any) => {
-                        if (entryResource[resource.k.value].length !== 1) {
-                            throw new Error('Expected exactly one label definition for a dynamic entry: ' + resource.k); // TODO: this check also for regular entries?
+                        let k: any;
+                        let v: any;
+                        if (resource.k.termType === 'NamedNode' && resource.k.value === Constants.PREFIXES['rdf'] + 'subject') {
+                            k = Resource.newString(entryResource.value);
                         }
-                        if (entryResource[resource.v.value].length !== 1) {
-                            throw new Error('Expected exactly one value for a dynamic entry: ' + resource.v);
+                        else if (!entryResource[resource.k.value] || entryResource[resource.k.value].length !== 1) {
+                            throw new Error('Expected exactly one label definition for a dynamic entry ' + resource.k.value + ' in: ' + JSON.stringify(entryResource));
                         }
-                        return { k: entryResource[resource.k.value][0], v: entryResource[resource.v.value][0] };
+                        else {
+                            k = entryResource[resource.k.value][0];
+                        }
+
+                        if (resource.v.termType === 'NamedNode' && resource.v.value === Constants.PREFIXES['rdf'] + 'subject') {
+                            v = Resource.newString(entryResource.value);
+                        }
+                        else if (resource.v.termType === 'NamedNode' && resource.v.value === Constants.PREFIXES['rdf'] + 'object') {
+                            v = entryResource;
+                        }
+                        else if (!entryResource[resource.v.value] || entryResource[resource.v.value].length !== 1) {
+                            throw new Error('Expected exactly one value definition for a dynamic entry ' + resource.v.value + ' in: ' + JSON.stringify(entryResource));
+                        }
+                        else {
+                            v = entryResource[resource.v.value][0];
+                        }
+                        return { k: k, v: v };
                     });
             }
         }
