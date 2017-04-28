@@ -6,7 +6,8 @@
     "fn": "https://w3id.org/function/ontology#",
     "ex": "http://example.org/",
     "hello": "http://example.org/hello/",
-    "npm": "http://example.org/npm#"
+    "npm": "http://example.org/npm#",
+    "owl": "http://www.w3.org/2002/07/owl#"
   },
   "@graph": [
     {
@@ -26,6 +27,10 @@
             {
               "@id": "hello:hello",
               "@type": "Parameter"
+            },
+            {
+              "@id": "hello:something",
+              "@type": "Parameter"
             }
           ]
         },
@@ -41,6 +46,16 @@
             {
               "@id": "hello:hello",
               "@type": "Parameter"
+            },
+            {
+              "@id": "hello:somethingInherited",
+              "rdfs:comment": "All values from ex:HelloWorldModule#SayHelloComponent are automatically inherited when using this owl:Restriction",
+              "@type": "Parameter",
+              "rdfs:subClassOf": {
+                "@type": "owl:Restriction",
+                "owl:onProperty": { "@id": "hello:something" },
+                "owl:allValuesFrom": { "@id": "ex:HelloWorldModule#SayHelloComponent" }
+              }
             }
           ]
         }

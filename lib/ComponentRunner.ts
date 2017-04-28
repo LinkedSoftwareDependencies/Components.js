@@ -1,9 +1,9 @@
 import {Stream} from "stream";
-import N3 = require("n3");
-import Triple = N3.Triple;
 import {RdfClassLoader} from "./rdf/RdfClassLoader";
 import {ComponentFactory} from "./factory/ComponentFactory";
 import {Resource} from "./rdf/Resource";
+import N3 = require("n3");
+import Triple = N3.Triple;
 import Constants = require("./Constants");
 
 /**
@@ -21,6 +21,7 @@ export class ComponentRunner {
      */
     overrideRequireNames: {[id: string]: string} = {};
 
+    _runTypeConfigs: {[id: string]: Resource[]} = {};
     _instances: {[id: string]: string} = {};
 
     /**
@@ -45,6 +46,10 @@ export class ComponentRunner {
         loader.bindProperty('k', Constants.PREFIXES['rdfs'] + 'label', true);
         loader.bindProperty('v', Constants.PREFIXES['rdf'] + 'value', true);
         loader.bindProperty('types', Constants.PREFIXES['rdf'] + 'type');
+
+        loader.bindProperty('classes', Constants.PREFIXES['rdfs'] + 'subClassOf', false);
+        loader.bindProperty('onProperty', Constants.PREFIXES['owl'] + 'onProperty', false);
+        loader.bindProperty('allValuesFrom', Constants.PREFIXES['owl'] + 'allValuesFrom', false);
 
         return loader;
     }
@@ -130,6 +135,10 @@ export class ComponentRunner {
             let componentResource: Resource = this._componentResources[typeUri.value];
             if (componentResource) {
                 types.push(componentResource);
+                if (!this._runTypeConfigs[componentResource.value]) {
+                    this._runTypeConfigs[componentResource.value] = [];
+                }
+                this._runTypeConfigs[componentResource.value].push(configResource);
             }
             return types;
         }, []);
@@ -145,6 +154,54 @@ export class ComponentRunner {
             moduleResource = componentResource.module;
             if (!moduleResource) {
                 throw new Error('No module was found for the component ' + componentResource.value);
+            }
+
+            // Inherit parameter values from passed instances of the given types
+            if (componentResource.hasParameter) {
+                componentResource.hasParameter.forEach((parameter: any) => {
+                    // Collect all owl:Restriction's
+                    let restrictions: Resource[] = (parameter.classes || []).reduce((acc: Resource[], clazz: any) => {
+                        if (clazz.types.reduce((acc: boolean, type: Resource) => acc || type.value === Constants.PREFIXES['owl'] + 'Restriction', false)) {
+                            acc.push(clazz);
+                        }
+                        return acc;
+                    }, []);
+
+                    restrictions.forEach((restriction: any) => {
+                        if (restriction.allValuesFrom) {
+                            if (!restriction.onProperty) {
+                                throw new Error('Parameters that inherit values must refer to a property: ' + JSON.stringify(parameter));
+                            }
+
+                            restriction.allValuesFrom.forEach((componentType: Resource) => {
+                                if (componentType.termType !== 'NamedNode') {
+                                    throw new Error('Parameter inheritance values must refer to component type identifiers, not literals: ' + JSON.stringify(componentType));
+                                }
+
+                                let typeInstances: Resource[] = this._runTypeConfigs[componentType.value];
+                                if (typeInstances) {
+                                    typeInstances.forEach((instance: any) => {
+                                        restriction.onProperty.forEach((parentParameter: Resource) => {
+                                            // TODO: this might be a bug in the JSON-LD parser
+                                            /*if (parentParameter.termType !== 'NamedNode') {
+                                              throw new Error('Parameters that inherit values must refer to sub properties as URI\'s: ' + JSON.stringify(parentParameter));
+                                            }*/
+                                            if (instance[parentParameter.value]) {
+                                                // Copy the parameter
+                                                (<any> configResource)[parentParameter.value] = instance[parentParameter.value];
+
+                                                // Also add the parameter to the parameter type list
+                                                if (componentResource.hasParameter.indexOf(parentParameter) < 0) {
+                                                    componentResource.hasParameter.push(parentParameter);
+                                                }
+                                            }
+                                        });
+                                    });
+                                }
+                            });
+                        }
+                    });
+                });
             }
         }
 

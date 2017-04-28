@@ -194,6 +194,22 @@ describe('ComponentRunner', function () {
           done();
         }).catch(done);
       });
+
+      it('should allow a config stream with component instances with inherited parameters to be run', function (done) {
+        let configResourceStream1 = fs.createReadStream(__dirname + '/assets/config-hello-world-inheritparam.jsonld').pipe(new JsonLdStreamParser());
+        let configResourceStream2 = fs.createReadStream(__dirname + '/assets/config-hello-world-inheritparam.jsonld').pipe(new JsonLdStreamParser());
+        runner.runConfigStream('http://example.org/myHelloWorld1', configResourceStream1).then((run) => {
+          run._params.should.deepEqual({
+            'http://example.org/hello/something': [ "SOMETHING" ]
+          });
+          runner.runConfigStream('http://example.org/myHelloWorld2', configResourceStream2).then((run) => {
+            run._params.should.deepEqual({
+              'http://example.org/hello/something': [ "SOMETHING" ]
+            });
+            done();
+          }).catch(done);
+        }).catch(done);
+      });
     });
   });
 });
