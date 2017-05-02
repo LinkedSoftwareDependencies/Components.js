@@ -73,7 +73,7 @@ export class MappedNamedComponentFactory extends UnnamedComponentFactory {
                             v = Resource.newString(entryResource.value);
                         }
                         else if (resource.v.termType === 'NamedNode' && resource.v.value === Constants.PREFIXES['rdf'] + 'object') {
-                            v = entryResource;
+                            v = MappedNamedComponentFactory.map(entryResource, params);
                         }
                         else if (!entryResource[resource.v.value] || entryResource[resource.v.value].length !== 1) {
                             throw new Error('Expected exactly one value definition for a dynamic entry ' + resource.v.value + ' in: ' + JSON.stringify(entryResource));
