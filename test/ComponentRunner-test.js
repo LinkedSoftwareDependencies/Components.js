@@ -211,8 +211,8 @@ describe('ComponentRunner', function () {
     });
 
     it('should produce instances with inherited parameter values', function (done) {
-      let configResourceStream1 = fs.createReadStream(__dirname + '/assets/config-hello-world-inheritparam.jsonld').pipe(new JsonLdStreamParser());
-      let configResourceStream2 = fs.createReadStream(__dirname + '/assets/config-hello-world-inheritparam.jsonld').pipe(new JsonLdStreamParser());
+      let configResourceStream1 = fs.createReadStream(__dirname + '/assets/config-hello-world-inheritableparams.jsonld').pipe(new JsonLdStreamParser());
+      let configResourceStream2 = fs.createReadStream(__dirname + '/assets/config-hello-world-inheritableparams.jsonld').pipe(new JsonLdStreamParser());
       runner.runConfigStream('http://example.org/myHelloWorld1', configResourceStream1).then((run) => {
         run._params.should.deepEqual({
           'http://example.org/hello/something': [ "SOMETHING" ]
@@ -280,6 +280,29 @@ describe('ComponentRunner', function () {
           'something2': [ "SOMETHING2" ]
         });
         done();
+      }).catch(done);
+    });
+  });
+
+  describe('constructing an component with inheritable parameter values with constructor mappings', function () {
+    beforeEach(function (done) {
+      let moduleStream = fs.createReadStream(__dirname + '/assets/module-hello-world-inheritableparams-subclassmapping.jsonld').pipe(new JsonLdStreamParser());
+      runner.registerModuleResourcesStream(moduleStream).then(done);
+    });
+
+    it('should produce instances with inherited parameter values', function (done) {
+      let configResourceStream1 = fs.createReadStream(__dirname + '/assets/config-hello-world-inheritableparams.jsonld').pipe(new JsonLdStreamParser());
+      let configResourceStream2 = fs.createReadStream(__dirname + '/assets/config-hello-world-inheritableparams.jsonld').pipe(new JsonLdStreamParser());
+      runner.runConfigStream('http://example.org/myHelloWorld1', configResourceStream1).then((run) => {
+        run._params.should.deepEqual({
+          'something': [ "SOMETHING" ]
+        });
+        runner.runConfigStream('http://example.org/myHelloWorld2', configResourceStream2).then((run) => {
+          run._params.should.deepEqual({
+            'something': [ "SOMETHING" ]
+          });
+          done();
+        }).catch(done);
       }).catch(done);
     });
   });
