@@ -306,4 +306,33 @@ describe('ComponentRunner', function () {
       }).catch(done);
     });
   });
+
+  describe('constructing components from an abstract component with dynamic entries in constructor mappings', function () {
+    beforeEach(function (done) {
+      let moduleStream = fs.createReadStream(__dirname + '/assets/module-hello-world-dynamicentries.jsonld').pipe(new JsonLdStreamParser());
+      runner.registerModuleResourcesStream(moduleStream).then(done);
+    });
+
+    it('should allow a config stream with component instances to be run', function (done) {
+      let configResourceStream = fs.createReadStream(__dirname + '/assets/config-hello-world-dynamicentries.jsonld').pipe(new JsonLdStreamParser());
+      runner.runConfigStream('http://example.org/myHelloWorld1', configResourceStream).then((run) => {
+        run._params.should.deepEqual({
+          'KEY1': "VALUE1",
+          'KEY2': "VALUE2"
+        });
+        done();
+      }).catch(done);
+    });
+
+    it('should allow a config stream with component instances to be run', function (done) {
+      let configResourceStream = fs.createReadStream(__dirname + '/assets/config-hello-world-dynamicentries.jsonld').pipe(new JsonLdStreamParser());
+      runner.runConfigStream('http://example.org/myHelloWorld2', configResourceStream).then((run) => {
+        run._params.should.deepEqual({
+          'KEY3': "VALUE3",
+          'KEY4': "VALUE4"
+        });
+        done();
+      }).catch(done);
+    });
+  });
 });
