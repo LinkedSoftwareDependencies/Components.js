@@ -370,4 +370,41 @@ describe('ComponentRunner', function () {
       }).catch(done);
     });
   });
+
+  describe('constructing an component with inheritable parameter values with constructor mappings, inherited parameters and dynamic entries', function () {
+    beforeEach(function (done) {
+      let moduleStream = fs.createReadStream(__dirname + '/assets/module-hello-world-inheritableparams-subclassmapping-dynamicentries.jsonld').pipe(new JsonLdStreamParser());
+      runner.registerModuleResourcesStream(moduleStream).then(done);
+    });
+
+    it('should produce instances with inherited parameter values', function (done) {
+      let configResourceStream1 = fs.createReadStream(__dirname + '/assets/config-hello-world-dynamicentries2.jsonld').pipe(new JsonLdStreamParser());
+      let configResourceStream2 = fs.createReadStream(__dirname + '/assets/config-hello-world-dynamicentries2.jsonld').pipe(new JsonLdStreamParser());
+      runner.runConfigStream('http://example.org/myHelloWorld1', configResourceStream1).then((run) => {
+        run._params.should.deepEqual({
+          'somethings1': {
+            'KEY1': 'VALUE1',
+            'KEY2': 'VALUE2'
+          }
+        });
+        runner.runConfigStream('http://example.org/myHelloWorld2', configResourceStream2).then((run) => {
+          run._params.should.deepEqual({
+            'somethings1': {
+              'KEY1': 'VALUE1',
+              'KEY2': 'VALUE2'
+            },
+            'somethings2': {
+              'KEY1': 'VALUE1',
+              'KEY2': 'VALUE2'
+            },
+            'somethings3': {
+              'KEY3': 'VALUE3',
+              'KEY4': 'VALUE4'
+            }
+          });
+          done();
+        }).catch(done);
+      }).catch(done);
+    });
+  });
 });
