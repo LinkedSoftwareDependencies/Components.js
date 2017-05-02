@@ -1,0 +1,77 @@
+{
+  "@context": {
+    "@vocab": "http://linkedsoftwaredependencies.org/vocabulary/components#",
+    "ex": "http://example.org/",
+    "hello": "http://example.org/hello/"
+  },
+  "@graph": [
+    {
+      "@id": "ex:myHelloWorld1",
+      "@type": "ex:HelloWorldModule#SayHelloComponent1",
+      "hello:something": [
+        {
+          "hello:somethingKey": "0KEY1",
+          "hello:somethingValue": "0VALUE1"
+        },
+        {
+          "hello:somethingKey": "0KEY2",
+          "hello:somethingValue": "0VALUE2"
+        }
+      ],
+      "hello:something1": [
+        {
+          "hello:somethingKey": "1KEY1",
+          "hello:somethingValue": "1VALUE1"
+        },
+        {
+          "hello:somethingKey": "1KEY2",
+          "hello:somethingValue": "1VALUE2"
+        }
+      ],
+      "hello:something2": [
+        {
+          "hello:somethingKey": "2KEY1",
+          "hello:somethingValue": "2VALUE1"
+        },
+        {
+          "hello:somethingKey": "2KEY2",
+          "hello:somethingValue": "2VALUE2"
+        }
+      ]
+    },
+    {
+      "@id": "ex:myHelloWorld2",
+      "@type": "ex:HelloWorldModule#SayHelloComponent2",
+      "hello:something": [
+        {
+          "hello:somethingKey": "0KEY1",
+          "hello:somethingValue": "0VALUE1"
+        },
+        {
+          "hello:somethingKey": "0KEY2",
+          "hello:somethingValue": "0VALUE2"
+        }
+      ],
+      "hello:something1": [
+        {
+          "hello:somethingKey": "1KEY1",
+          "hello:somethingValue": "1VALUE1"
+        },
+        {
+          "hello:somethingKey": "1KEY2",
+          "hello:somethingValue": "1VALUE2"
+        }
+      ],
+      "hello:something2": [
+        {
+          "hello:somethingKey": "2KEY1",
+          "hello:somethingValue": "2VALUE1"
+        },
+        {
+          "hello:somethingKey": "2KEY2",
+          "hello:somethingValue": "2VALUE2"
+        }
+      ]
+    }
+  ]
+}

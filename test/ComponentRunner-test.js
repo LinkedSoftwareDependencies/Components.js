@@ -317,8 +317,8 @@ describe('ComponentRunner', function () {
       let configResourceStream = fs.createReadStream(__dirname + '/assets/config-hello-world-dynamicentries.jsonld').pipe(new JsonLdStreamParser());
       runner.runConfigStream('http://example.org/myHelloWorld1', configResourceStream).then((run) => {
         run._params.should.deepEqual({
-          'KEY1': "VALUE1",
-          'KEY2': "VALUE2"
+          'KEY1': 'VALUE1',
+          'KEY2': 'VALUE2'
         });
         done();
       }).catch(done);
@@ -328,8 +328,43 @@ describe('ComponentRunner', function () {
       let configResourceStream = fs.createReadStream(__dirname + '/assets/config-hello-world-dynamicentries.jsonld').pipe(new JsonLdStreamParser());
       runner.runConfigStream('http://example.org/myHelloWorld2', configResourceStream).then((run) => {
         run._params.should.deepEqual({
-          'KEY3': "VALUE3",
-          'KEY4': "VALUE4"
+          'KEY3': 'VALUE3',
+          'KEY4': 'VALUE4'
+        });
+        done();
+      }).catch(done);
+    });
+  });
+
+  describe('constructing components from an abstract component with constructor mappings with inheritable parameters and dynamic entries', function () {
+    beforeEach(function (done) {
+      let moduleStream = fs.createReadStream(__dirname + '/assets/module-hello-world-subclassmapping-dynamicentries.jsonld').pipe(new JsonLdStreamParser());
+      runner.registerModuleResourcesStream(moduleStream).then(done);
+    });
+
+    it('should allow a config stream with component instances with inherited parameters from the parent to be run', function (done) {
+      let configResourceStream = fs.createReadStream(__dirname + '/assets/config-hello-world-subclassmapping-dynamicentries.jsonld').pipe(new JsonLdStreamParser());
+      runner.runConfigStream('http://example.org/myHelloWorld1', configResourceStream).then((run) => {
+        run._params.should.deepEqual({
+          '0KEY1': '0VALUE1',
+          '0KEY2': '0VALUE2',
+          '1KEY1': '1VALUE1',
+          '1KEY2': '1VALUE2'
+        });
+        done();
+      }).catch(done);
+    });
+
+    it('should allow a config stream with component instances with inherited parameters from the parent\'s parent to be run', function (done) {
+      let configResourceStream = fs.createReadStream(__dirname + '/assets/config-hello-world-subclassmapping-dynamicentries.jsonld').pipe(new JsonLdStreamParser());
+      runner.runConfigStream('http://example.org/myHelloWorld2', configResourceStream).then((run) => {
+        run._params.should.deepEqual({
+          '0KEY1': '0VALUE1',
+          '0KEY2': '0VALUE2',
+          '1KEY1': '1VALUE1',
+          '1KEY2': '1VALUE2',
+          '2KEY1': '2VALUE1',
+          '2KEY2': '2VALUE2'
         });
         done();
       }).catch(done);
