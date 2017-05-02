@@ -46,7 +46,7 @@ export class UnnamedComponentFactory implements IComponentFactory {
                 }
                 if (entry.k.termType !== 'Literal') {
                     throw new Error('Parameter object keys must be literals, but found type ' + entry.k.termType
-                        + ' for ' + entry.k.value + ' while constructing: ' + value);
+                        + ' for ' + entry.k.value + ' while constructing: ' + JSON.stringify(value, null, '  '));
                 }
                 if (entry.v) {
                     data[entry.k.value] = UnnamedComponentFactory.getArgumentValue(entry.v, componentRunner);

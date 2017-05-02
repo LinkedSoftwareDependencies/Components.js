@@ -1,0 +1,73 @@
+{
+  "@context": {
+    "@vocab": "http://linkedsoftwaredependencies.org/vocabulary/components#",
+    "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+    "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+    "fn": "https://w3id.org/function/ontology#",
+    "ex": "http://example.org/",
+    "hello": "http://example.org/hello/",
+    "npm": "http://example.org/npm#",
+    "owl": "http://www.w3.org/2002/07/owl#",
+    "value": { "@id": "rdf:value", "@type": "@id"}
+  },
+  "@graph": [
+    {
+      "@id": "ex:HelloWorldModule",
+      "@type": "Module",
+      "npm:requireName": "../../test/helloworld",
+      "hasComponent": [
+        {
+          "@id": "ex:HelloWorldModule#SayHelloComponent1",
+          "@type": "ComponentConstructable",
+          "npm:requireElement": "Hello",
+          "hasParameter": [
+            {
+              "@id": "hello:something",
+              "@type": "Parameter"
+            }
+          ],
+          "constructorMapping": {
+            "@list": [
+              {
+                "@id": "ex:myConstructorMapping",
+                "@type": "Object",
+                "hasField": [
+                  {
+                    "dynamicEntriesFrom": { "@id": "hello:something" },
+                    "rdfs:label": { "@id": "hello:somethingKey" },
+                    "value": "hello:somethingValue"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "@id": "ex:HelloWorldModule#SayHelloComponent2",
+          "@type": "ComponentConstructable",
+          "npm:requireElement": "Hello",
+          "hasParameter": [
+            {
+              "@id": "hello:somethingInherited",
+              "rdfs:comment": "All values from ex:HelloWorldModule#SayHelloComponent are automatically inherited when using this owl:Restriction",
+              "@type": "Parameter",
+              "rdfs:subClassOf": {
+                "@type": "owl:Restriction",
+                "owl:onProperty": { "@id": "hello:something" },
+                "owl:allValuesFrom": { "@id": "ex:HelloWorldModule#SayHelloComponent1" }
+              }
+            }
+          ],
+          "constructorMapping": {
+            "@list": [
+              {
+                "@type": "Object",
+                "rdfs:subClassOf": { "@id": "ex:myConstructorMapping" }
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

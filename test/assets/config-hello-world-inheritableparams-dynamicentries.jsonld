@@ -1,0 +1,27 @@
+{
+  "@context": {
+    "@vocab": "http://linkedsoftwaredependencies.org/vocabulary/components#",
+    "ex": "http://example.org/",
+    "hello": "http://example.org/hello/"
+  },
+  "@graph": [
+    {
+      "@id": "ex:myHelloWorld1",
+      "@type": "ex:HelloWorldModule#SayHelloComponent1",
+      "hello:something": [
+        {
+          "hello:somethingKey": "KEY1",
+          "hello:somethingValue": "VALUE1"
+        },
+        {
+          "hello:somethingKey": "KEY2",
+          "hello:somethingValue": "VALUE2"
+        }
+      ]
+    },
+    {
+      "@id": "ex:myHelloWorld2",
+      "@type": "ex:HelloWorldModule#SayHelloComponent2"
+    }
+  ]
+}
