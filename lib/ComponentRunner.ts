@@ -87,6 +87,7 @@ export class ComponentRunner {
     _registerComponentResource(componentResource: Resource) {
         this._componentResources[componentResource.value] = componentResource;
         this._inheritParameters(componentResource, (<any> componentResource).classes);
+        this._inheritConstructorParameters(componentResource);
     }
 
     /**
@@ -110,6 +111,47 @@ export class ComponentRunner {
                             }
                         });
                         this._inheritParameters(componentResource, component.classes);
+                    }
+                }
+            });
+        }
+    }
+
+    /**
+     * Let the given component inherit constructor mappings from the given component(s) if applicable.
+     * @param componentResource The component resource
+     * @private
+     */
+    _inheritConstructorParameters(componentResource: any) {
+        if (componentResource.constructorMapping) {
+            componentResource.constructorMapping.list.forEach((object: Resource) => {
+                if (object.hasType(Constants.PREFIXES['lsdc'] + 'Object')) {
+                    this._inheritObjectFields(object, (<any> object).classes);
+                }
+            });
+        }
+    }
+
+    /**
+     * Let the given object inherit the given fields from the given component(s) if applicable.
+     * @param object The object resource
+     * @param classes The objects to inherit from.
+     * @private
+     */
+    _inheritObjectFields(object: any, classes?: Resource[]) {
+        if (classes) {
+            if (!object.fields) {
+                object.fields = [];
+            }
+            classes.forEach((superObject: any) => {
+                if (superObject.hasType(Constants.PREFIXES['lsdc'] + 'Object')) {
+                    if (superObject.fields) {
+                        superObject.fields.forEach((field: Resource) => {
+                            if (object.fields.indexOf(field) < 0) {
+                                object.fields.push(field);
+                            }
+                        });
+                        this._inheritParameters(object, superObject.classes);
                     }
                 }
             });

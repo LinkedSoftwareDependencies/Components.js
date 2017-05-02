@@ -253,4 +253,34 @@ describe('ComponentRunner', function () {
       }).catch(done);
     });
   });
+
+  describe('constructing components from an abstract component with constructor mappings', function () {
+    beforeEach(function (done) {
+      let moduleStream = fs.createReadStream(__dirname + '/assets/module-hello-world-subclassmapping.jsonld').pipe(new JsonLdStreamParser());
+      runner.registerModuleResourcesStream(moduleStream).then(done);
+    });
+
+    it('should allow a config stream with component instances with inherited parameters from the parent to be run', function (done) {
+      let configResourceStream = fs.createReadStream(__dirname + '/assets/config-hello-world-subclassmapping.jsonld').pipe(new JsonLdStreamParser());
+      runner.runConfigStream('http://example.org/myHelloWorld1', configResourceStream).then((run) => {
+        run._params.should.deepEqual({
+          'something': [ "SOMETHING" ],
+          'something1': [ "SOMETHING1" ]
+        });
+        done();
+      }).catch(done);
+    });
+
+    it('should allow a config stream with component instances with inherited parameters from the parent\'s parent to be run', function (done) {
+      let configResourceStream = fs.createReadStream(__dirname + '/assets/config-hello-world-subclassmapping.jsonld').pipe(new JsonLdStreamParser());
+      runner.runConfigStream('http://example.org/myHelloWorld2', configResourceStream).then((run) => {
+        run._params.should.deepEqual({
+          'something': [ "SOMETHING" ],
+          'something1': [ "SOMETHING1" ],
+          'something2': [ "SOMETHING2" ]
+        });
+        done();
+      }).catch(done);
+    });
+  });
 });
