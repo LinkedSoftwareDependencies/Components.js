@@ -1,6 +1,7 @@
 import {Resource} from "../rdf/Resource";
 import {IComponentFactory} from "./IComponentFactory";
 import {ComponentRunner} from "../ComponentRunner";
+import * as Path from "path";
 
 /**
  * Factory for component definitions with explicit arguments.
@@ -81,15 +82,47 @@ export class UnnamedComponentFactory implements IComponentFactory {
     }
 
     /**
+     * Require a package if the module that was invoked has the given module name.
+     * This is done by looking for the nearest package.json.
+     * @param requireName The module name that should be required.
+     * @returns {any} The require() result
+     * @private
+     */
+    _requireCurrentRunningModuleIfCurrent(requireName: string) {
+        // TODO: improve performance if needed
+        let pckg: any = null;
+        let path: string;
+        for (let nodeModulesPath of (<any> global.process.mainModule).paths) {
+            path = nodeModulesPath.replace(/node_modules$/, 'package.json');
+            try {
+                pckg = require(path);
+                break;
+            } catch (e) {}
+        }
+        if (pckg) {
+            if (requireName === pckg.name) {
+                let mainPath: string = path.replace(/package\.json$/, pckg.main);
+                return require(mainPath);
+            }
+        }
+    }
+
+    /**
      * @returns A new instance of the component.
      */
     create(): any {
         let requireName: string = this._componentDefinition.requireName.value;
         requireName = this._overrideRequireNames[requireName] || requireName;
-        let object: any = require(requireName);
-        if (!object) {
-            throw new Error('Failed to require() a module by name ' + requireName);
+        let object: any = null;
+        try {
+            object = require(requireName);
+        } catch (e) {
+            object = this._requireCurrentRunningModuleIfCurrent(this._componentDefinition.requireName.value);
+            if (!object) {
+                throw e;
+            }
         }
+
         if (this._componentDefinition.requireElement) {
             let requireElementPath = this._componentDefinition.requireElement.value.split('.');
             object = requireElementPath.reduce((object: any, requireElement: string) => object[requireElement], object);
