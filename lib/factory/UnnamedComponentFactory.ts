@@ -84,8 +84,8 @@ export class UnnamedComponentFactory implements IComponentFactory {
         } else if (value.termType === 'Literal') {
             return value.value;
         }
-        console.error('An invalid argument value was found:' + JSON.stringify(value));
-        return JSON.stringify(value);
+        console.error('An invalid argument value was found:' + require('util').inspect(value));
+        return require('util').inspect(value);
     }
 
     /**

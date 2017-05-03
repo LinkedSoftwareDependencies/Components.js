@@ -22,7 +22,7 @@ export class ComponentRunner {
     overrideRequireNames: {[id: string]: string} = {};
 
     _runTypeConfigs: {[id: string]: Resource[]} = {};
-    _instances: {[id: string]: string} = {};
+    _instances: {[id: string]: any} = {};
 
     /**
      * @returns {RdfClassLoader} A new RDF class loader for loading modules and components
@@ -232,6 +232,7 @@ export class ComponentRunner {
             this._inheritParameterValues(configResource, componentResource);
         }
 
+        this._instances[configResource.value] = {}; // This is to avoid self-referenced invocations
         let constructor: ComponentFactory = new ComponentFactory(moduleResource, componentResource, configResource,
             this.overrideRequireNames, this);
         let instance: any = constructor.create();

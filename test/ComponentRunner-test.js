@@ -223,6 +223,16 @@ describe('ComponentRunner', function () {
         done();
       }).catch(done);
     });
+
+    it('should produce invalid instances with itself as parameter value when self-referenced', function (done) {
+      let configResourceStream = fs.createReadStream(__dirname + '/assets/config-hello-world-selfreferenced.jsonld').pipe(new JsonLdStreamParser());
+      runner.runConfigStream('http://example.org/myHelloWorld1', configResourceStream).then((run) => {
+        run._params.should.deepEqual({
+          'http://example.org/hello/hello': [ {} ]
+        });
+        done();
+      }).catch(done);
+    });
   });
 
   describe('constructing an component with inheritable parameter values', function () {
