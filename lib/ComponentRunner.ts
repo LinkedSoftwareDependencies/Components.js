@@ -42,6 +42,7 @@ export class ComponentRunner {
         loader.bindProperty('hasParameter', Constants.PREFIXES['lsdc'] + 'hasParameter');
         loader.bindProperty('constructorMapping', Constants.PREFIXES['lsdc'] + 'constructorMapping', true);
         loader.bindProperty('fields', Constants.PREFIXES['lsdc'] + 'hasField');
+        loader.bindProperty('elements', Constants.PREFIXES['lsdc'] + 'hasElement');
         loader.bindProperty('dynamicEntriesFrom', Constants.PREFIXES['lsdc'] + 'dynamicEntriesFrom');
         loader.bindProperty('unique', Constants.PREFIXES['lsdc'] + 'parameterUnique', true);
         loader.bindProperty('k', Constants.PREFIXES['rdfs'] + 'label', true);
@@ -69,6 +70,7 @@ export class ComponentRunner {
         loader.bindProperty('requireElement', Constants.PREFIXES['npm'] + 'requireElement', true);
         loader.bindProperty('arguments', Constants.PREFIXES['lsdc'] + 'arguments', true);
         loader.bindProperty('fields', Constants.PREFIXES['lsdc'] + 'hasField');
+        loader.bindProperty('elements', Constants.PREFIXES['lsdc'] + 'hasElement');
         loader.bindProperty('dynamicEntriesFrom', Constants.PREFIXES['lsdc'] + 'dynamicEntriesFrom');
         loader.bindProperty('unique', Constants.PREFIXES['lsdc'] + 'parameterUnique', true);
         loader.bindProperty('k', Constants.PREFIXES['rdfs'] + 'label', true);
@@ -214,9 +216,9 @@ export class ComponentRunner {
             return types;
         }, []);
         if (componentTypes.length !== 1 && !(<any> configResource).requireName && !(<any> configResource).requireElement) {
-            throw new Error('Could not run config ' + configResource.value + ' because exactly one component type ' +
+            throw new Error('Could not run config ' + configResource.value + ' because exactly one valid component type ' +
                 'was expected, while "' + componentTypes + '" were found. ' +
-                'Alternatively, the requireName and requireElement must be provided.' + JSON.stringify(configResource));
+                'Alternatively, the requireName and requireElement must be provided.' + JSON.stringify(configResource, null, '  '));
         }
         let componentResource: any;
         let moduleResource: any;

@@ -16,6 +16,22 @@ export class MappedNamedComponentFactory extends UnnamedComponentFactory {
         super(MappedNamedComponentFactory.makeUnnamedDefinitionConstructor(moduleDefinition, componentDefinition)(config), constructable, overrideRequireNames, componentRunner);
     }
 
+    static mapValue(v: any, params: any): any {
+        let value: any;
+        if (v.termType === 'NamedNode' && v.value === Constants.PREFIXES['rdf'] + 'subject') {
+            value = Resource.newString(params.value);
+        }
+        else if (v.termType === 'NamedNode') {
+            value = params[v.value];
+            if (v.unique && v.unique.value === 'true' && value instanceof Array) {
+                value = value[0];
+            }
+        } else {
+            value = MappedNamedComponentFactory.map(v, params);
+        }
+        return value;
+    }
+
     /**
      * Map a resource object.
      * Only the values of object-resources will be mapped to its parameter value.
@@ -29,19 +45,7 @@ export class MappedNamedComponentFactory extends UnnamedComponentFactory {
     static map(resource: any, params: any): any {
         if (resource.k && resource.v) {
             if (resource.k.termType === 'Literal' && !resource.dynamicEntriesFrom) {
-                let value: any;
-                if (resource.v.termType === 'NamedNode' && resource.v.value === Constants.PREFIXES['rdf'] + 'subject') {
-                    value = Resource.newString(params.value);
-                }
-                else if (resource.v.termType === 'NamedNode') {
-                    value = params[resource.v.value];
-                    if (resource.v.unique && resource.v.unique.value === 'true' && value instanceof Array) {
-                        value = value[0];
-                    }
-                } else {
-                    value = MappedNamedComponentFactory.map(resource.v, params);
-                }
-                return { k: resource.k, v: value };
+                return { k: resource.k, v: MappedNamedComponentFactory.mapValue(resource.v, params) };
             } else {
                 if (!resource.dynamicEntriesFrom) {
                     throw new Error('If an object key is a URI, it must provide dynamic entries using the lsdc:dynamicEntriesFrom predicate: ' + resource);
@@ -98,10 +102,22 @@ export class MappedNamedComponentFactory extends UnnamedComponentFactory {
                 }, [])
             });
         }
+        else if (resource.elements) {
+            return new Resource(null, {
+                elements: resource.elements.reduce((elements: any[], element: any) => {
+                    if (!element.v) {
+                        throw new Error('Parameter array elements must have values, but found: ' + JSON.stringify(element, null, '  '));
+                    }
+                    let mapped: any = { v: MappedNamedComponentFactory.mapValue(element.v, params) };
+                    elements.push(mapped);
+                    return elements;
+                }, [])
+            });
+        }
         else if (resource.list) {
             return new Resource(null, {
                 list: resource.list.map(
-                    (argument: any) => argument.fields ? MappedNamedComponentFactory.map(argument, params) : argument
+                    (argument: any) => (argument.fields || argument.elements) ? MappedNamedComponentFactory.map(argument, params) : argument
                 )
             });
         }

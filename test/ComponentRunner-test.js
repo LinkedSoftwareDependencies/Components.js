@@ -173,6 +173,27 @@ describe('ComponentRunner', function () {
     });
   });
 
+  describe('constructing an component with constructor mappings', function () {
+    beforeEach(function (done) {
+      let moduleStream = fs.createReadStream(__dirname + '/assets/module-hello-world-mapping.jsonld').pipe(new JsonLdStreamParser());
+      runner.registerModuleResourcesStream(moduleStream).then(done);
+    });
+
+    it('should produce instances with correct parameter values', function (done) {
+      let configResourceStream1 = fs.createReadStream(__dirname + '/assets/config-hello-world-mapping.jsonld').pipe(new JsonLdStreamParser());
+      let configResourceStream2 = fs.createReadStream(__dirname + '/assets/config-hello-world-mapping.jsonld').pipe(new JsonLdStreamParser());
+      runner.runConfigStream('http://example.org/myHelloWorld1', configResourceStream1).then((run) => {
+        run._params.should.deepEqual({
+          'something1': [ 'SOMETHING1', 'SOMETHING2' ],
+        });
+        runner.runConfigStream('http://example.org/myHelloWorld2', configResourceStream2).then((run) => {
+          run._params.should.deepEqual([ 'SOMETHING3', 'SOMETHING4' ]);
+          done();
+        }).catch(done);
+      }).catch(done);
+    });
+  });
+
   describe('constructing an component with referenced parameters values', function () {
     beforeEach(function (done) {
       let moduleStream = fs.createReadStream(__dirname + '/assets/module-hello-world.jsonld').pipe(new JsonLdStreamParser());

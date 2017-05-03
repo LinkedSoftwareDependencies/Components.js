@@ -148,13 +148,35 @@ let helloWorldComponent3 = new Resource('http://example.org/HelloWorldModule#Say
   })
 });
 
+// Component definition for Hello World with array parameters
+let helloWorldComponent4 = new Resource('http://example.org/HelloWorldModule#SayHelloComponent3', {
+  requireElement: Resource.newString('Hello'),
+  types: [ new Resource(Constants.PREFIXES['lsdc'] + 'ComponentConstructable') ],
+  hasParameter: [
+    new Resource('http://example.org/HelloWorldModule#dummyParam'),
+    new Resource('http://example.org/HelloWorldModule#instanceParam'),
+    new Resource('http://example.org/HelloWorldModule#idParam')
+  ],
+  constructorMapping: new Resource(null, {
+    list: [
+      new Resource("_:param_hello_0", {
+        elements: [
+          { v: new Resource('http://example.org/HelloWorldModule#dummyParam') },
+          { v: new Resource('http://example.org/HelloWorldModule#instanceParam') }
+        ]
+      })
+    ]
+  })
+});
+
 // Module definition for Hello World
 let helloWorldModule = new Resource('http://example.org/HelloWorldModule', {
   requireName: Resource.newString('../../test/helloworld'),
   hasComponent: [
     helloWorldComponent1,
     helloWorldComponent2,
-    helloWorldComponent3
+    helloWorldComponent3,
+    helloWorldComponent4
   ]
 });
 
@@ -354,6 +376,30 @@ describe('MappedNamedComponentFactory', function () {
       constructor._makeArguments().should.deepEqual([{
         'idParam': 'http://example.org/myHelloComponent'
       }]);
+    });
+
+    it('should fail to make a valid instance', function () {
+      expect(constructor.create).to.throw(Error);
+    });
+  });
+
+  describe('for a hello world component with array params', function () {
+    let constructor;
+    beforeEach(function () {
+      constructor = new MappedNamedComponentFactory(helloWorldModule, helloWorldComponent4, {
+        'http://example.org/HelloWorldModule#dummyParam': Resource.newBoolean(true),
+        'http://example.org/HelloWorldModule#instanceParam': Resource.newBoolean(false),
+      }, true);
+    });
+
+    it('should be valid', function () {
+      constructor.should.not.be.null();
+    });
+
+    it('should create valid arguments', function () {
+      constructor._makeArguments().should.deepEqual([[
+        'true', 'false'
+      ]]);
     });
 
     it('should fail to make a valid instance', function () {

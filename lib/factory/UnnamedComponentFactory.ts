@@ -57,6 +57,22 @@ export class UnnamedComponentFactory implements IComponentFactory {
                 }
                 return data;
             }, {});
+        } else if (value.elements) {
+            // The parameter is an object
+            return value.elements.reduce((data: any, entry: any) => {
+                if (!entry.v) {
+                    throw new Error('Parameter array elements must have values, but found: ' + JSON.stringify(entry, null, '  '));
+                }
+                if (entry.v) {
+                    let mapped: any = UnnamedComponentFactory.getArgumentValue(entry.v, componentRunner);
+                    if (mapped instanceof Array) {
+                        data = data.concat(mapped);
+                    } else {
+                        data.push(mapped);
+                    }
+                }
+                return data;
+            }, []);
         } else if (value instanceof Array) {
             return value.map((element) => UnnamedComponentFactory.getArgumentValue(element, componentRunner));
         } else if (value.termType === 'NamedNode' || value.termType === 'BlankNode') {

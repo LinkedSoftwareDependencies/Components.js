@@ -44,6 +44,19 @@ let nestedHelloWorldComponent = new Resource('http://example.org/n3#Parser', {
   })
 });
 
+// Component definition for an N3 Lexer with an array argument
+let n3LexerComponentArray = new Resource('http://example.org/n3#Lexer', {
+  requireName: Resource.newString('n3'),
+  requireElement: Resource.newString('Lexer'),
+  arguments: new Resource(null, {
+    list: [
+      new Resource("_:param_lexer_0", {
+        elements: [ { v: new Resource('"A"') }, { v: new Resource('"B"') }, { v: new Resource('"C"') } ]
+      })
+    ]
+  })
+});
+
 describe('UnnamedComponentFactory', function () {
 
   describe('#getArgumentValue', function () {
@@ -70,6 +83,27 @@ describe('UnnamedComponentFactory', function () {
 
     it('should create valid arguments', function () {
       constructor._makeArguments().should.deepEqual([ { comments: 'true' } ]);
+    });
+
+    it('should make a valid instance', function () {
+      let instance = constructor.create();
+      instance.should.not.be.null();
+      instance.should.be.instanceof(N3.Lexer);
+    });
+  });
+
+  describe('for an N3 Lexer with array arguments', function () {
+    let constructor;
+    beforeEach(function () {
+      constructor = new UnnamedComponentFactory(n3LexerComponentArray, true);
+    });
+
+    it('should be valid', function () {
+      constructor.should.not.be.null();
+    });
+
+    it('should create valid arguments', function () {
+      constructor._makeArguments().should.deepEqual([ [ 'A', 'B', 'C' ] ]);
     });
 
     it('should make a valid instance', function () {

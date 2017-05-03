@@ -1,0 +1,71 @@
+{
+  "@context": {
+    "@vocab": "http://linkedsoftwaredependencies.org/vocabulary/components#",
+    "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+    "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+    "fn": "https://w3id.org/function/ontology#",
+    "ex": "http://example.org/",
+    "hello": "http://example.org/hello/",
+    "npm": "http://example.org/npm#",
+    "owl": "http://www.w3.org/2002/07/owl#",
+    "value": { "@id": "rdf:value", "@type": "@id"}
+  },
+  "@graph": [
+    {
+      "@id": "ex:HelloWorldModule",
+      "@type": "Module",
+      "npm:requireName": "../../test/helloworld",
+      "hasComponent": [
+        {
+          "@id": "ex:HelloWorldModule#SayHelloComponent1",
+          "@type": "ComponentConstructable",
+          "npm:requireElement": "Hello",
+          "hasParameter": [
+            {
+              "@id": "hello:something1",
+              "@type": "Parameter"
+            }
+          ],
+          "constructorMapping": {
+            "@list": [
+              {
+                "@id": "ex:HelloWorldModule#SayHelloComponent1#ConstructorMappingObject",
+                "@type": "Object",
+                "hasField": [
+                  {
+                    "rdfs:label": "something1",
+                    "value": "hello:something1"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "@id": "ex:HelloWorldModule#SayHelloComponent2",
+          "@type": "ComponentConstructable",
+          "npm:requireElement": "Hello",
+          "hasParameter": [
+            {
+              "@id": "hello:something2",
+              "@type": "Parameter"
+            }
+          ],
+          "constructorMapping": {
+            "@list": [
+              {
+                "@id": "ex:HelloWorldModule#SayHelloComponent2#ConstructorMappingObject",
+                "@type": "Array",
+                "hasElement": [
+                  {
+                    "value": "hello:something2"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
