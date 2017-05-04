@@ -22,13 +22,7 @@ export class MappedNamedComponentFactory extends UnnamedComponentFactory {
             value = Resource.newString(params.value);
         }
         else if (v.termType === 'NamedNode') {
-            value = params[v.value];
-            if (!value) {
-                value = v.defaults;
-            }
-            if (v.unique && v.unique.value === 'true' && value instanceof Array) {
-                value = value[0];
-            }
+            value = Constants.applyParameterValues(v, params);
         } else {
             value = MappedNamedComponentFactory.map(v, params);
         }
@@ -57,10 +51,7 @@ export class MappedNamedComponentFactory extends UnnamedComponentFactory {
                     if (entry.termType !== 'NamedNode') {
                         throw new Error('Dynamic entry identifiers must be URI\'s: ' + entry);
                     }
-                    let values: any = params[entry.value];
-                    if (!values) {
-                        values = (<any> entry).defaults;
-                    }
+                    let values: any = Constants.applyParameterValues(entry, params);
                     if (values) {
                         values.forEach((value: any) => data.push(value));
                     }

@@ -57,6 +57,47 @@ class Constants {
         stream.on('error', (e: any) => ret.emit('error', e));
         return ret;
     }
+
+    /**
+     * Apply parameter values for the given parameter.
+     * @param param A parameter type.
+     * @param paramValueMapping A mapping from parameter to value.
+     * @return The parameter value(s) or undefined
+     */
+    static applyParameterValues(param: any, paramValueMapping: any) {
+        let value: any = paramValueMapping[param.value];
+        // Set default value if no value has been given
+        if (!value && param.defaults) {
+            value = param.defaults;
+        }
+
+        // Force-add fixed parameter values
+        if (param.fixed) {
+            // If the paramater value must be unique and a value has already been set, crash
+            if (param.unique) {
+                if (value) {
+                    throw new Error('A parameter is unique, has a fixed value and has another defined value' + JSON.stringify(param));
+                } else {
+                    value = param.fixed;
+                }
+            } else {
+                // Otherwise, add to the value
+                if (!value) {
+                    value = [];
+                }
+                if (!(value instanceof Array)) {
+                    throw new Error('Values must be an array ' + JSON.stringify(param));
+                }
+                param.fixed.forEach((f: any) => value.push(f));
+            }
+        }
+
+        // If the value is singular, and the value should be unique, transform the array to a single element
+        if (param.unique && param.unique.value === 'true' && value instanceof Array) {
+            value = value[0];
+        }
+        return value;
+    }
 }
 
 export = Constants;

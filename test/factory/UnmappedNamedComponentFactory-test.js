@@ -58,6 +58,23 @@ let n3DummyComponentDefaults = new Resource('http://example.org/n3#Dummy', {
   ]
 });
 
+// Component definition for an N3 Dummy with fixed param values
+let n3DummyComponentFixed = new Resource('http://example.org/n3#Dummy', {
+  requireElement: Resource.newString('Dummy'),
+  hasParameter: [
+    new Resource('http://example.org/n3#dummyParam1', {
+      fixed: [
+        Resource.newString('a'),
+        Resource.newString('b')
+      ]
+    }),
+    new Resource('http://example.org/n3#dummyParam2', {
+      unique: true,
+      fixed: Resource.newString('a')
+    })
+  ]
+});
+
 // Module definition for N3
 let n3Module = new Resource('http://example.org/n3', {
   requireName: Resource.newString('n3'),
@@ -66,7 +83,8 @@ let n3Module = new Resource('http://example.org/n3', {
     n3LexerComponent,
     n3UtilComponent,
     n3DummyComponent,
-    n3DummyComponentDefaults
+    n3DummyComponentDefaults,
+    n3DummyComponentFixed
   ]
 });
 
@@ -271,6 +289,64 @@ describe('UnmappedNamedComponentFactory', function () {
 
     it('should fail to make a valid instance', function () {
       expect(constructor.create).to.throw(Error);
+    });
+  });
+
+  describe('for an N3 Dummy with fixed values', function () {
+    let constructor;
+    beforeEach(function () {
+      constructor = new UnmappedNamedComponentFactory(n3Module, n3DummyComponentFixed, {}, true);
+    });
+
+    it('should be valid', function () {
+      constructor.should.not.be.null();
+    });
+
+    it('should create valid arguments', function () {
+      constructor._makeArguments().should.deepEqual([{
+        'http://example.org/n3#dummyParam1': [ 'a', 'b' ],
+        'http://example.org/n3#dummyParam2': 'a',
+      }]);
+    });
+
+    it('should fail to make a valid instance', function () {
+      expect(constructor.create).to.throw(Error);
+    });
+  });
+
+  describe('for an N3 Dummy with fixed and additional values', function () {
+    let constructor;
+    beforeEach(function () {
+      constructor = new UnmappedNamedComponentFactory(n3Module, n3DummyComponentFixed, {
+        'http://example.org/n3#dummyParam1': [ Resource.newBoolean(true) ]
+      }, true);
+    });
+
+    it('should be valid', function () {
+      constructor.should.not.be.null();
+    });
+
+    it('should create valid arguments', function () {
+      constructor._makeArguments().should.deepEqual([{
+        'http://example.org/n3#dummyParam1': [ 'true', 'a', 'b' ],
+        'http://example.org/n3#dummyParam2': 'a',
+      }]);
+    });
+
+    it('should fail to make a valid instance', function () {
+      expect(constructor.create).to.throw(Error);
+    });
+  });
+
+  describe('for an N3 Dummy with fixed and additional values, adding to a fixed, unique value', function () {
+
+    it('should throw an error', function () {
+      expect(() => {
+        new UnmappedNamedComponentFactory(n3Module, n3DummyComponentFixed, {
+          'http://example.org/n3#dummyParam1': [ Resource.newBoolean(true) ],
+          'http://example.org/n3#dummyParam2': [ Resource.newBoolean(true) ]
+        }, true)
+      }).to.throw(Error);
     });
   });
 

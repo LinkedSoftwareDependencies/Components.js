@@ -46,6 +46,7 @@ export class ComponentRunner {
         loader.bindProperty('dynamicEntriesFrom', Constants.PREFIXES['lsdc'] + 'dynamicEntriesFrom');
         loader.bindProperty('unique', Constants.PREFIXES['lsdc'] + 'parameterUnique', true);
         loader.bindProperty('defaults', Constants.PREFIXES['lsdc'] + 'hasDefaultValue');
+        loader.bindProperty('fixed', Constants.PREFIXES['lsdc'] + 'hasFixedValue');
         loader.bindProperty('k', Constants.PREFIXES['rdfs'] + 'label', true);
         loader.bindProperty('v', Constants.PREFIXES['rdf'] + 'value', true);
         loader.bindProperty('types', Constants.PREFIXES['rdf'] + 'type');
