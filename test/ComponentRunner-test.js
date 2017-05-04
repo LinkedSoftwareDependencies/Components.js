@@ -171,6 +171,48 @@ describe('ComponentRunner', function () {
         });
       });
     });
+
+    it('should get contents from a file', function () {
+      return runner._getContentsFromUrlOrPath('file://' + __dirname + '/assets/dummy.txt')
+        .then((data) => new Promise((resolve, reject) => {
+          let body = '';
+          data.on('data', (d) => body += d.toString());
+          data.on('end', () => resolve(body));
+        }))
+        .should.eventually.equal('ABC');
+    });
+
+    it('should get contents from an URL', function () {
+      return runner._getContentsFromUrlOrPath('http://google.com')
+        .should.be.fulfilled();
+    });
+
+    describe('with a valid JSON file path', function () {
+      beforeEach(function (done) {
+        runner.registerModuleResourcesUrl('file://' + __dirname + '/assets/module-hello-world.jsonld').then(done, done);
+      });
+
+      it('should allow module components to be registered', function () {
+        runner._componentResources.should.have.property('http://example.org/HelloWorldModule#SayHelloComponent');
+      });
+    });
+
+    describe('with a valid ttl file path', function () {
+      beforeEach(function (done) {
+        runner.registerModuleResourcesUrl('file://' + __dirname + '/assets/module-hello-world.ttl').then(done, done);
+      });
+
+      it('should allow module components to be registered', function () {
+        runner._componentResources.should.have.property('http://example.org/HelloWorldModuleSayHelloComponent');
+      });
+    });
+
+    describe('with an invalid file path', function () {
+      it('should reject the promise', function () {
+        return runner.registerModuleResourcesUrl('file://' + __dirname + '/assets/module-hello-world.jsonld.invalid')
+          .should.be.rejected;
+      });
+    });
   });
 
   describe('constructing an component with constructor mappings', function () {

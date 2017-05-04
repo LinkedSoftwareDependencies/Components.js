@@ -19,22 +19,27 @@ export class JsonLdStreamParser extends Transform {
     }
 
     _flush(done: any) {
-        jsonld.toRDF(JSON.parse(this._data), (error: any, triples: any) => {
-            if (error) {
-                this.emit('error', error);
-            } else {
-                for (var graphName in triples) {
-                    triples[graphName].forEach((triple: any) => {
-                        this.push({
-                            subject: triple.subject.value,
-                            predicate: triple.predicate.value,
-                            object: this._convertEntity(triple.object)
+        try {
+            let parsed: any = JSON.parse(this._data);
+            jsonld.toRDF(parsed, (error: any, triples: any) => {
+                if (error) {
+                    this.emit('error', error);
+                } else {
+                    for (var graphName in triples) {
+                        triples[graphName].forEach((triple: any) => {
+                            this.push({
+                                subject: triple.subject.value,
+                                predicate: triple.predicate.value,
+                                object: this._convertEntity(triple.object)
+                            });
                         });
-                    });
+                    }
+                    done();
                 }
-                done();
-            }
-        });
+            });
+        } catch (e) {
+            this.emit('error', e);
+        }
     }
 
     // Converts a jsonld.js entity to the N3.js in-memory representation

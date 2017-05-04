@@ -2,9 +2,14 @@ import {Stream} from "stream";
 import {RdfClassLoader} from "./rdf/RdfClassLoader";
 import {ComponentFactory} from "./factory/ComponentFactory";
 import {Resource} from "./rdf/Resource";
+import http = require("http");
+import fs = require("fs");
+import path = require("path");
+import url = require("url");
 import N3 = require("n3");
 import Triple = N3.Triple;
 import Constants = require("./Constants");
+import {RdfStreamParser} from "./rdf/RdfStreamParser";
 
 /**
  * A runner class for component configs.
@@ -193,6 +198,53 @@ export class ComponentRunner {
                 })
                 .on('error', reject);
         });
+    }
+
+    /**
+     * Get the file contents from a file path or URL
+     * @param path The file path (must be prefixed with 'file://') or url.
+     * @returns {Promise<T>} A promise resolving to the data stream.
+     * @private
+     */
+    _getContentsFromUrlOrPath(path: string): Promise<Stream> {
+        return new Promise((resolve, reject) => {
+            let parsedUrl: any = url.parse(path);
+            if (parsedUrl.protocol === 'file:') {
+                resolve(fs.createReadStream(parsedUrl.path).on('error', reject));
+            } else {
+                try {
+                    var request = http.request(parsedUrl, (data: Stream) => {
+                        data.on('error', reject);
+                        resolve(data);
+                    });
+                    request.on('error', reject);
+                    request.end();
+                } catch (e) {
+                    reject(e);
+                }
+            }
+        });
+    }
+
+    /**
+     * Parse the given data stream to a triple stream.
+     * @param rdfDataStream The data stream.
+     * @returns A triple stream.
+     * @private
+     */
+    _parseRdf(rdfDataStream: Stream): Stream {
+        return new RdfStreamParser().pipeFrom(rdfDataStream);
+    }
+
+    /**
+     * Register new modules and their components.
+     * This will ensure that component configs referring to components as types of these modules are recognized.
+     * @param moduleResourceUrl An RDF document URL
+     * @returns {Promise<T>} A promise that resolves once loading has finished.
+     */
+    registerModuleResourcesUrl(moduleResourceUrl: string): Promise<void> {
+        return this._getContentsFromUrlOrPath(moduleResourceUrl)
+            .then((data: Stream) => this.registerModuleResourcesStream(this._parseRdf(data)));
     }
 
     /**
