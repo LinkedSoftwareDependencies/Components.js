@@ -1,0 +1,23 @@
+{
+  "@context": {
+    "@vocab": "http://linkedsoftwaredependencies.org/vocabulary/components#",
+    "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+    "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+    "fn": "https://w3id.org/function/ontology#",
+    "ex": "http://example.org/",
+    "hello": "http://example.org/hello/",
+    "npm": "http://example.org/npm#",
+    "owl": "http://www.w3.org/2002/07/owl#"
+  },
+  "@graph": [
+    {
+      "@id": "ex:HelloWorldModule",
+      "@type": "Module",
+      "npm:requireName": "../../test/helloworld",
+      "owl:imports": [
+        "file:assets/module-hello-world-imported1.jsonld",
+        "file:assets/module-hello-world-imported2.jsonld"
+      ]
+    }
+  ]
+}

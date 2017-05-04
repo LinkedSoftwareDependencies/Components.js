@@ -173,7 +173,7 @@ describe('ComponentRunner', function () {
     });
 
     it('should get contents from a file', function () {
-      return runner._getContentsFromUrlOrPath('file://' + __dirname + '/assets/dummy.txt')
+      return Constants.getContentsFromUrlOrPath('file:assets/dummy.txt', __dirname)
         .then((data) => new Promise((resolve, reject) => {
           let body = '';
           data.on('data', (d) => body += d.toString());
@@ -183,13 +183,13 @@ describe('ComponentRunner', function () {
     });
 
     it('should get contents from an URL', function () {
-      return runner._getContentsFromUrlOrPath('http://google.com')
+      return Constants.getContentsFromUrlOrPath('http://google.com', __dirname)
         .should.be.fulfilled();
     });
 
     describe('with a valid JSON file path', function () {
       beforeEach(function (done) {
-        runner.registerModuleResourcesUrl('file://' + __dirname + '/assets/module-hello-world.jsonld').then(done, done);
+        runner.registerModuleResourcesUrl('file:./assets/module-hello-world.jsonld', __dirname).then(done, done);
       });
 
       it('should allow module components to be registered', function () {
@@ -199,7 +199,7 @@ describe('ComponentRunner', function () {
 
     describe('with a valid ttl file path', function () {
       beforeEach(function (done) {
-        runner.registerModuleResourcesUrl('file://' + __dirname + '/assets/module-hello-world.ttl').then(done, done);
+        runner.registerModuleResourcesUrl('file:/assets/module-hello-world.ttl', __dirname).then(done, done);
       });
 
       it('should allow module components to be registered', function () {
@@ -209,8 +209,19 @@ describe('ComponentRunner', function () {
 
     describe('with an invalid file path', function () {
       it('should reject the promise', function () {
-        return runner.registerModuleResourcesUrl('file://' + __dirname + '/assets/module-hello-world.jsonld.invalid')
-          .should.be.rejected;
+        return runner.registerModuleResourcesUrl('file:/assets/module-hello-world.jsonld.invalid', __dirname)
+          .should.be.rejected();
+      });
+    });
+
+    describe('with import statements', function () {
+      beforeEach(function (done) {
+        runner.registerModuleResourcesUrl('file:/assets/module-hello-world-imports.jsonld', __dirname).then(done, done);
+      });
+
+      it('should import components', function () {
+        runner._componentResources.should.have.property('http://example.org/HelloWorldModule#SayHelloComponent1');
+        runner._componentResources.should.have.property('http://example.org/HelloWorldModule#SayHelloComponent2');
       });
     });
   });

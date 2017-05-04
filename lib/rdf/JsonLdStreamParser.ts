@@ -6,11 +6,15 @@ let jsonld: any = require("jsonld");
  */
 export class JsonLdStreamParser extends Transform {
 
+    static BLANK_NODE_COUNTER: number = 0;
+
+    _blankNodeId: number;
     _data: string = "";
 
     constructor() {
         super({ decodeStrings: true });
         (<any> this)._readableState.objectMode = true;
+        this._blankNodeId = JsonLdStreamParser.BLANK_NODE_COUNTER++;
     }
 
     _transform(chunk: any, encoding: any, done: any) {
@@ -28,7 +32,7 @@ export class JsonLdStreamParser extends Transform {
                     for (var graphName in triples) {
                         triples[graphName].forEach((triple: any) => {
                             this.push({
-                                subject: triple.subject.value,
+                                subject: this._convertEntity(triple.subject),
                                 predicate: triple.predicate.value,
                                 object: this._convertEntity(triple.object)
                             });
@@ -44,8 +48,10 @@ export class JsonLdStreamParser extends Transform {
 
     // Converts a jsonld.js entity to the N3.js in-memory representation
     _convertEntity(entity: any) {
-        // Return IRIs and blank nodes as-is
-        if (entity.type !== 'literal')
+        // Rename blank nodes
+        if (entity.type === 'blank node')
+            return entity.value + 'bnode' + this._blankNodeId;
+        else if (entity.type !== 'literal')
             return entity.value;
         else {
             // Add a language tag to the literal if present

@@ -2,14 +2,9 @@ import {Stream} from "stream";
 import {RdfClassLoader} from "./rdf/RdfClassLoader";
 import {ComponentFactory} from "./factory/ComponentFactory";
 import {Resource} from "./rdf/Resource";
-import http = require("http");
-import fs = require("fs");
-import path = require("path");
-import url = require("url");
 import N3 = require("n3");
 import Triple = N3.Triple;
 import Constants = require("./Constants");
-import {RdfStreamParser} from "./rdf/RdfStreamParser";
 
 /**
  * A runner class for component configs.
@@ -57,6 +52,7 @@ export class ComponentRunner {
         loader.bindProperty('classes', Constants.PREFIXES['rdfs'] + 'subClassOf', false);
         loader.bindProperty('onProperty', Constants.PREFIXES['owl'] + 'onProperty', false);
         loader.bindProperty('allValuesFrom', Constants.PREFIXES['owl'] + 'allValuesFrom', false);
+        loader.bindProperty('imports', Constants.PREFIXES['owl'] + 'imports', false);
 
         return loader;
     }
@@ -81,6 +77,8 @@ export class ComponentRunner {
         loader.bindProperty('k', Constants.PREFIXES['rdfs'] + 'label', true);
         loader.bindProperty('v', Constants.PREFIXES['rdf'] + 'value', true);
         loader.bindProperty('types', Constants.PREFIXES['rdf'] + 'type');
+
+        loader.bindProperty('imports', Constants.PREFIXES['owl'] + 'imports', false);
 
         return loader;
     }
@@ -176,7 +174,7 @@ export class ComponentRunner {
                 component.module = moduleResource;
                 this._registerComponentResource(component);
             });
-        } else {
+        } else if (!(<any> moduleResource).imports) {
             throw new Error('Tried to register the module ' + moduleResource.value + ' that has no components.');
         }
     }
@@ -188,12 +186,13 @@ export class ComponentRunner {
      * @returns {Promise<T>} A promise that resolves once loading has finished.
      */
     registerModuleResourcesStream(moduleResourceStream: Stream): Promise<void> {
-        return new Promise<void>((resolve, reject) => {
+        return new Promise<void>((resolve: any, reject: any) => {
             let loader: RdfClassLoader = this._newModuleLoader();
             moduleResourceStream
+                .on('error', reject)
                 .pipe(loader)
                 .on('finish', () => {
-                    loader.typedResources.modules.forEach((module) => this.registerModuleResource(module));
+                    (loader.typedResources.modules || []).forEach((module) => this.registerModuleResource(module));
                     resolve();
                 })
                 .on('error', reject);
@@ -201,50 +200,15 @@ export class ComponentRunner {
     }
 
     /**
-     * Get the file contents from a file path or URL
-     * @param path The file path (must be prefixed with 'file://') or url.
-     * @returns {Promise<T>} A promise resolving to the data stream.
-     * @private
-     */
-    _getContentsFromUrlOrPath(path: string): Promise<Stream> {
-        return new Promise((resolve, reject) => {
-            let parsedUrl: any = url.parse(path);
-            if (parsedUrl.protocol === 'file:') {
-                resolve(fs.createReadStream(parsedUrl.path).on('error', reject));
-            } else {
-                try {
-                    var request = http.request(parsedUrl, (data: Stream) => {
-                        data.on('error', reject);
-                        resolve(data);
-                    });
-                    request.on('error', reject);
-                    request.end();
-                } catch (e) {
-                    reject(e);
-                }
-            }
-        });
-    }
-
-    /**
-     * Parse the given data stream to a triple stream.
-     * @param rdfDataStream The data stream.
-     * @returns A triple stream.
-     * @private
-     */
-    _parseRdf(rdfDataStream: Stream): Stream {
-        return new RdfStreamParser().pipeFrom(rdfDataStream);
-    }
-
-    /**
      * Register new modules and their components.
      * This will ensure that component configs referring to components as types of these modules are recognized.
      * @param moduleResourceUrl An RDF document URL
+     * @param fromPath The path to base relative paths on. This will typically be __dirname.
      * @returns {Promise<T>} A promise that resolves once loading has finished.
      */
-    registerModuleResourcesUrl(moduleResourceUrl: string): Promise<void> {
-        return this._getContentsFromUrlOrPath(moduleResourceUrl)
-            .then((data: Stream) => this.registerModuleResourcesStream(this._parseRdf(data)));
+    registerModuleResourcesUrl(moduleResourceUrl: string, fromPath: string): Promise<void> {
+        return Constants.getContentsFromUrlOrPath(moduleResourceUrl, fromPath)
+            .then((data: Stream) => this.registerModuleResourcesStream(Constants.parseRdf(data, fromPath)));
     }
 
     /**

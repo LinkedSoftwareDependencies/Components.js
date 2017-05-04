@@ -105,7 +105,7 @@ export class RdfClassLoader extends Writable {
             if (subjectInstance[fieldName]) {
                 this.emit('error', new Error('Predicate ' + triple.predicate + ' with field ' + fieldName
                     + ' was indicated as unique, while the objects ' + subjectInstance[fieldName].value
-                    + ' and ' + objectInstance.value + ' were found.'));
+                    + ' and ' + objectInstance.value + ' were found for subject ' + subjectInstance.value + '.'));
             } else {
                 subjectInstance[fieldName] = objectInstance;
             }
