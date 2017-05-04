@@ -39,6 +39,25 @@ let n3DummyComponent = new Resource('http://example.org/n3#Dummy', {
   ]
 });
 
+// Component definition for an N3 Dummy with default param values
+let n3DummyComponentDefaults = new Resource('http://example.org/n3#Dummy', {
+  requireElement: Resource.newString('Dummy'),
+  hasParameter: [
+    new Resource('http://example.org/n3#dummyParam1', {
+      defaults: [
+        Resource.newString('a'),
+        Resource.newString('b')
+      ]
+    }),
+    new Resource('http://example.org/n3#dummyParam2', {
+      unique: true,
+      defaults: [
+        Resource.newString('a')
+      ]
+    })
+  ]
+});
+
 // Module definition for N3
 let n3Module = new Resource('http://example.org/n3', {
   requireName: Resource.newString('n3'),
@@ -46,7 +65,8 @@ let n3Module = new Resource('http://example.org/n3', {
     n3ParserComponent,
     n3LexerComponent,
     n3UtilComponent,
-    n3DummyComponent
+    n3DummyComponent,
+    n3DummyComponentDefaults
   ]
 });
 
@@ -199,6 +219,53 @@ describe('UnmappedNamedComponentFactory', function () {
     it('should create valid arguments', function () {
       constructor._makeArguments().should.deepEqual([{
         'http://example.org/n3#dummyParam': 'true',
+      }]);
+    });
+
+    it('should fail to make a valid instance', function () {
+      expect(constructor.create).to.throw(Error);
+    });
+  });
+
+  describe('for an N3 Dummy with default values', function () {
+    let constructor;
+    beforeEach(function () {
+      constructor = new UnmappedNamedComponentFactory(n3Module, n3DummyComponentDefaults, {}, true);
+    });
+
+    it('should be valid', function () {
+      constructor.should.not.be.null();
+    });
+
+    it('should create valid arguments', function () {
+      constructor._makeArguments().should.deepEqual([{
+        'http://example.org/n3#dummyParam1': [ 'a', 'b' ],
+        'http://example.org/n3#dummyParam2': [ 'a' ],
+      }]);
+    });
+
+    it('should fail to make a valid instance', function () {
+      expect(constructor.create).to.throw(Error);
+    });
+  });
+
+  describe('for an N3 Dummy with overridden default values', function () {
+    let constructor;
+    beforeEach(function () {
+      constructor = new UnmappedNamedComponentFactory(n3Module, n3DummyComponentDefaults, {
+        'http://example.org/n3#dummyParam1': Resource.newBoolean(true),
+        'http://example.org/n3#dummyParam2': Resource.newBoolean(false)
+      }, true);
+    });
+
+    it('should be valid', function () {
+      constructor.should.not.be.null();
+    });
+
+    it('should create valid arguments', function () {
+      constructor._makeArguments().should.deepEqual([{
+        'http://example.org/n3#dummyParam1': 'true',
+        'http://example.org/n3#dummyParam2': 'false',
       }]);
     });
 

@@ -169,6 +169,35 @@ let helloWorldComponent4 = new Resource('http://example.org/HelloWorldModule#Say
   })
 });
 
+// Component definition for Hello World with default values
+let defaultedParam1 = new Resource('http://example.org/n3#dummyParam1', {
+  defaults: [
+    Resource.newString('a'),
+    Resource.newString('b')
+  ]
+});
+let defaultedParam2 = new Resource('http://example.org/n3#dummyParam2', {
+  unique: true,
+  defaults: [
+    Resource.newString('a')
+  ]
+});
+let helloWorldComponent5 = new Resource('http://example.org/HelloWorldModule#SayHelloComponent1', {
+  requireElement: Resource.newString('Hello'),
+  types: [ new Resource(Constants.PREFIXES['lsdc'] + 'ComponentConstructable') ],
+  hasParameter: [ defaultedParam1, defaultedParam2, ],
+  constructorMapping: new Resource(null, {
+    list: [
+      new Resource("_:param_parser_0", {
+        fields: [
+          { k: new Resource('"dummyParam1"'), v: defaultedParam1 },
+          { k: new Resource('"dummyParam2"'), v: defaultedParam2 }
+        ]
+      })
+    ]
+  })
+});
+
 // Module definition for Hello World
 let helloWorldModule = new Resource('http://example.org/HelloWorldModule', {
   requireName: Resource.newString('../../test/helloworld'),
@@ -176,7 +205,8 @@ let helloWorldModule = new Resource('http://example.org/HelloWorldModule', {
     helloWorldComponent1,
     helloWorldComponent2,
     helloWorldComponent3,
-    helloWorldComponent4
+    helloWorldComponent4,
+    helloWorldComponent5
   ]
 });
 
@@ -400,6 +430,53 @@ describe('MappedNamedComponentFactory', function () {
       constructor._makeArguments().should.deepEqual([[
         'true', 'false'
       ]]);
+    });
+
+    it('should fail to make a valid instance', function () {
+      expect(constructor.create).to.throw(Error);
+    });
+  });
+
+  describe('for a hello world component with default values', function () {
+    let constructor;
+    beforeEach(function () {
+      constructor = new MappedNamedComponentFactory(helloWorldModule, helloWorldComponent5, {}, true);
+    });
+
+    it('should be valid', function () {
+      constructor.should.not.be.null();
+    });
+
+    it('should create valid arguments', function () {
+      constructor._makeArguments().should.deepEqual([{
+        'dummyParam1': [ 'a', 'b' ],
+        'dummyParam2': [ 'a' ],
+      }]);
+    });
+
+    it('should fail to make a valid instance', function () {
+      expect(constructor.create).to.throw(Error);
+    });
+  });
+
+  describe('for a hello world component with overridden default values', function () {
+    let constructor;
+    beforeEach(function () {
+      constructor = new MappedNamedComponentFactory(helloWorldModule, helloWorldComponent5, {
+        'http://example.org/n3#dummyParam1': Resource.newBoolean(true),
+        'http://example.org/n3#dummyParam2': Resource.newBoolean(false)
+      }, true);
+    });
+
+    it('should be valid', function () {
+      constructor.should.not.be.null();
+    });
+
+    it('should create valid arguments', function () {
+      constructor._makeArguments().should.deepEqual([{
+        'dummyParam1': 'true',
+        'dummyParam2': 'false',
+      }]);
     });
 
     it('should fail to make a valid instance', function () {

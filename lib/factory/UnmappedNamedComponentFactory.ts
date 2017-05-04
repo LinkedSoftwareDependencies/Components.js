@@ -32,8 +32,12 @@ export class UnmappedNamedComponentFactory extends UnnamedComponentFactory {
                 arguments: new Resource(null, {
                     list: [
                         new Resource("_:param_0", {
-                            fields: (componentDefinition.hasParameter || []).map((parameterUri: Resource) => {
-                                return { k: _.assignIn(parameterUri, { termType: 'Literal' }), v: params[parameterUri.value] };
+                            fields: (componentDefinition.hasParameter || []).map((parameterUri: any) => {
+                                let value: any = params[parameterUri.value];
+                                if (!value && parameterUri.defaults) {
+                                    value = parameterUri.defaults;
+                                }
+                                return { k: _.assignIn(parameterUri, { termType: 'Literal' }), v: value };
                             })
                         })
                     ]

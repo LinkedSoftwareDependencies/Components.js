@@ -29,7 +29,7 @@ export class ComponentRunner {
      * @private
      */
     _newModuleLoader(): RdfClassLoader {
-        let loader: RdfClassLoader = new RdfClassLoader();
+        let loader: RdfClassLoader = new RdfClassLoader({ captureAllProperties: true, normalizeLists: true });
 
         loader.bindClass('constructables', Constants.PREFIXES['lsdc'] + 'ComponentConstructable');
         loader.bindClass('instances', Constants.PREFIXES['lsdc'] + 'ComponentInstance');
@@ -45,6 +45,7 @@ export class ComponentRunner {
         loader.bindProperty('elements', Constants.PREFIXES['lsdc'] + 'hasElement');
         loader.bindProperty('dynamicEntriesFrom', Constants.PREFIXES['lsdc'] + 'dynamicEntriesFrom');
         loader.bindProperty('unique', Constants.PREFIXES['lsdc'] + 'parameterUnique', true);
+        loader.bindProperty('defaults', Constants.PREFIXES['lsdc'] + 'hasDefaultValue');
         loader.bindProperty('k', Constants.PREFIXES['rdfs'] + 'label', true);
         loader.bindProperty('v', Constants.PREFIXES['rdf'] + 'value', true);
         loader.bindProperty('types', Constants.PREFIXES['rdf'] + 'type');

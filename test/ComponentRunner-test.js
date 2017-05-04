@@ -17,7 +17,7 @@ describe('ComponentRunner', function () {
   describe('constructing an N3 Parser, unnamed', function () {
     it('should construct a module loader', function () {
       runner._newModuleLoader().should.be.instanceof(RdfClassLoader);
-      runner._newModuleLoader()._captureAllProperties.should.be.false();
+      runner._newModuleLoader()._captureAllProperties.should.be.true();
       runner._newModuleLoader()._captureAllClasses.should.be.false();
     });
 
