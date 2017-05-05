@@ -173,7 +173,7 @@ describe('ComponentRunner', function () {
     });
 
     it('should get contents from a file', function () {
-      return Constants.getContentsFromUrlOrPath('file:assets/dummy.txt', __dirname)
+      return Constants.getContentsFromUrlOrPath('assets/dummy.txt', __dirname)
         .then((data) => new Promise((resolve, reject) => {
           let body = '';
           data.on('data', (d) => body += d.toString());
@@ -189,7 +189,7 @@ describe('ComponentRunner', function () {
 
     describe('with a valid JSON file path', function () {
       beforeEach(function (done) {
-        runner.registerModuleResourcesUrl('file:./assets/module-hello-world.jsonld', __dirname).then(done, done);
+        runner.registerModuleResourcesUrl('./assets/module-hello-world.jsonld', __dirname).then(done, done);
       });
 
       it('should allow module components to be registered', function () {
@@ -199,7 +199,7 @@ describe('ComponentRunner', function () {
 
     describe('with a valid ttl file path', function () {
       beforeEach(function (done) {
-        runner.registerModuleResourcesUrl('file:/assets/module-hello-world.ttl', __dirname).then(done, done);
+        runner.registerModuleResourcesUrl('/assets/module-hello-world.ttl', __dirname).then(done, done);
       });
 
       it('should allow module components to be registered', function () {
@@ -209,14 +209,14 @@ describe('ComponentRunner', function () {
 
     describe('with an invalid file path', function () {
       it('should reject the promise', function () {
-        return runner.registerModuleResourcesUrl('file:/assets/module-hello-world.jsonld.invalid', __dirname)
+        return runner.registerModuleResourcesUrl('/assets/module-hello-world.jsonld.invalid', __dirname)
           .should.be.rejected();
       });
     });
 
     describe('with import statements', function () {
       beforeEach(function (done) {
-        runner.registerModuleResourcesUrl('file:/assets/module-hello-world-imports.jsonld', __dirname).then(done, done);
+        runner.registerModuleResourcesUrl('/assets/module-hello-world-imports.jsonld', __dirname).then(done, done);
       });
 
       it('should import components', function () {

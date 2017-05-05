@@ -18,7 +18,7 @@ class Constants {
 
     /**
      * Get the file contents from a file path or URL
-     * @param path The file path (must be prefixed with 'file:') or url.
+     * @param path The file path or url.
      * @param fromPath The path to base relative paths on.
      * @returns {Promise<T>} A promise resolving to the data stream.
      * @private
@@ -26,7 +26,7 @@ class Constants {
     static getContentsFromUrlOrPath(path: string, fromPath: string): Promise<Stream> {
         return new Promise((resolve, reject) => {
             let parsedUrl: any = url.parse(path);
-            if (parsedUrl.protocol === 'file:') {
+            if (!parsedUrl.protocol) {
                 resolve(fs.createReadStream(Path.join(fromPath, parsedUrl.path)).on('error', reject));
             } else {
                 try {
