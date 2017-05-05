@@ -386,9 +386,10 @@ export class ComponentRunner {
      * @param configResourceUri The config resource URI.
      * @param configResourceUrl An RDF document URL
      * @param fromPath The path to base relative paths on. This will typically be __dirname.
+     *                 Default is the current running directory.
      * @returns {Promise<T>} A promise resolving to the run instance.
      */
-    getConfigConstructorUrl(configResourceUri: string, configResourceUrl: string, fromPath: string): Promise<IComponentFactory> {
+    getConfigConstructorUrl(configResourceUri: string, configResourceUrl: string, fromPath?: string): Promise<IComponentFactory> {
         return Constants.getContentsFromUrlOrPath(configResourceUrl, fromPath)
             .then((data: Stream) => this.getConfigConstructorStream(configResourceUri, Constants.parseRdf(data, fromPath)));
     }
@@ -398,9 +399,10 @@ export class ComponentRunner {
      * @param configResourceUri The config resource URI.
      * @param configResourceUrl An RDF document URL
      * @param fromPath The path to base relative paths on. This will typically be __dirname.
+     *                 Default is the current running directory.
      * @returns {Promise<T>} A promise resolving to the run instance.
      */
-    runConfigUrl(configResourceUri: string, configResourceUrl: string, fromPath: string): Promise<any> {
+    runConfigUrl(configResourceUri: string, configResourceUrl: string, fromPath?: string): Promise<any> {
         return Constants.getContentsFromUrlOrPath(configResourceUrl, fromPath)
             .then((data: Stream) => this.runConfigStream(configResourceUri, Constants.parseRdf(data, fromPath)));
     }
