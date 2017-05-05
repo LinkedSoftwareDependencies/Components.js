@@ -278,7 +278,7 @@ describe('MappedNamedComponentFactory', function () {
     });
 
     it('should create valid arguments', function () {
-      constructor._makeArguments().should.deepEqual([ { comments: 'true', lineMode: 'true', n3: 'true' } ]);
+      constructor.makeArguments().should.deepEqual([ { comments: 'true', lineMode: 'true', n3: 'true' } ]);
     });
 
     it('should make a valid instance', function () {
@@ -306,7 +306,7 @@ describe('MappedNamedComponentFactory', function () {
     });
 
     it('should create valid arguments', function () {
-      let args = constructor._makeArguments();
+      let args = constructor.makeArguments();
       args.length.should.equal(1);
       args[0].format.should.equal('application/trig');
       args[0].lexer.should.not.be.null();
@@ -331,7 +331,7 @@ describe('MappedNamedComponentFactory', function () {
     });
 
     it('should create valid arguments', function () {
-      constructor._makeArguments().should.deepEqual([]);
+      constructor.makeArguments().should.deepEqual([]);
     });
 
     it('should make a valid instance', function () {
@@ -354,7 +354,7 @@ describe('MappedNamedComponentFactory', function () {
     });
 
     it('should create valid arguments', function () {
-      constructor._makeArguments().should.deepEqual([{
+      constructor.makeArguments().should.deepEqual([{
         'dummyParam': 'true',
       }]);
     });
@@ -379,7 +379,7 @@ describe('MappedNamedComponentFactory', function () {
     });
 
     it('should create valid arguments', function () {
-      constructor._makeArguments().should.deepEqual([{
+      constructor.makeArguments().should.deepEqual([{
         'dummyParam': 'true',
         'instanceParam': new Hello()
       }]);
@@ -403,7 +403,7 @@ describe('MappedNamedComponentFactory', function () {
     });
 
     it('should create valid arguments', function () {
-      constructor._makeArguments().should.deepEqual([{
+      constructor.makeArguments().should.deepEqual([{
         'idParam': 'http://example.org/myHelloComponent'
       }]);
     });
@@ -427,7 +427,7 @@ describe('MappedNamedComponentFactory', function () {
     });
 
     it('should create valid arguments', function () {
-      constructor._makeArguments().should.deepEqual([[
+      constructor.makeArguments().should.deepEqual([[
         'true', 'false'
       ]]);
     });
@@ -448,7 +448,7 @@ describe('MappedNamedComponentFactory', function () {
     });
 
     it('should create valid arguments', function () {
-      constructor._makeArguments().should.deepEqual([{
+      constructor.makeArguments().should.deepEqual([{
         'dummyParam1': [ 'a', 'b' ],
         'dummyParam2': [ 'a' ],
       }]);
@@ -473,7 +473,7 @@ describe('MappedNamedComponentFactory', function () {
     });
 
     it('should create valid arguments', function () {
-      constructor._makeArguments().should.deepEqual([{
+      constructor.makeArguments().should.deepEqual([{
         'dummyParam1': 'true',
         'dummyParam2': 'false',
       }]);

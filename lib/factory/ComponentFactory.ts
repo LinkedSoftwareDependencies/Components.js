@@ -47,6 +47,10 @@ export class ComponentFactory implements IComponentFactory {
         }
     }
 
+    makeArguments(shallow?: boolean): any[] {
+        return this._getComponentFactory().makeArguments(shallow);
+    }
+
     create(): any {
         return this._getComponentFactory().create();
     }

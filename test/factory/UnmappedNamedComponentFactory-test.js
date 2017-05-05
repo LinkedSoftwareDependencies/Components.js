@@ -156,7 +156,7 @@ describe('UnmappedNamedComponentFactory', function () {
     });
 
     it('should create valid arguments', function () {
-      constructor._makeArguments().should.deepEqual([{
+      constructor.makeArguments().should.deepEqual([{
         'http://example.org/n3#lineMode': 'true',
         'http://example.org/n3#n3': 'true',
         'http://example.org/n3#comments': 'true'
@@ -188,7 +188,7 @@ describe('UnmappedNamedComponentFactory', function () {
     });
 
     it('should create valid arguments', function () {
-      let args = constructor._makeArguments();
+      let args = constructor.makeArguments();
       args.length.should.equal(1);
       args[0].should.have.property('http://example.org/n3#format', 'application/trig');
       args[0]['http://example.org/n3#lexer'].should.be.instanceof(N3.Lexer);
@@ -212,7 +212,7 @@ describe('UnmappedNamedComponentFactory', function () {
     });
 
     it('should create valid arguments', function () {
-      constructor._makeArguments().should.deepEqual([{}]);
+      constructor.makeArguments().should.deepEqual([{}]);
     });
 
     it('should make a valid instance', function () {
@@ -235,7 +235,7 @@ describe('UnmappedNamedComponentFactory', function () {
     });
 
     it('should create valid arguments', function () {
-      constructor._makeArguments().should.deepEqual([{
+      constructor.makeArguments().should.deepEqual([{
         'http://example.org/n3#dummyParam': 'true',
       }]);
     });
@@ -256,7 +256,7 @@ describe('UnmappedNamedComponentFactory', function () {
     });
 
     it('should create valid arguments', function () {
-      constructor._makeArguments().should.deepEqual([{
+      constructor.makeArguments().should.deepEqual([{
         'http://example.org/n3#dummyParam1': [ 'a', 'b' ],
         'http://example.org/n3#dummyParam2': [ 'a' ],
       }]);
@@ -281,7 +281,7 @@ describe('UnmappedNamedComponentFactory', function () {
     });
 
     it('should create valid arguments', function () {
-      constructor._makeArguments().should.deepEqual([{
+      constructor.makeArguments().should.deepEqual([{
         'http://example.org/n3#dummyParam1': 'true',
         'http://example.org/n3#dummyParam2': 'false',
       }]);
@@ -303,7 +303,7 @@ describe('UnmappedNamedComponentFactory', function () {
     });
 
     it('should create valid arguments', function () {
-      constructor._makeArguments().should.deepEqual([{
+      constructor.makeArguments().should.deepEqual([{
         'http://example.org/n3#dummyParam1': [ 'a', 'b' ],
         'http://example.org/n3#dummyParam2': 'a',
       }]);
@@ -327,7 +327,7 @@ describe('UnmappedNamedComponentFactory', function () {
     });
 
     it('should create valid arguments', function () {
-      constructor._makeArguments().should.deepEqual([{
+      constructor.makeArguments().should.deepEqual([{
         'http://example.org/n3#dummyParam1': [ 'true', 'a', 'b' ],
         'http://example.org/n3#dummyParam2': 'a',
       }]);

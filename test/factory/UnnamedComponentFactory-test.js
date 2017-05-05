@@ -82,7 +82,7 @@ describe('UnnamedComponentFactory', function () {
     });
 
     it('should create valid arguments', function () {
-      constructor._makeArguments().should.deepEqual([ { comments: 'true' } ]);
+      constructor.makeArguments().should.deepEqual([ { comments: 'true' } ]);
     });
 
     it('should make a valid instance', function () {
@@ -103,7 +103,7 @@ describe('UnnamedComponentFactory', function () {
     });
 
     it('should create valid arguments', function () {
-      constructor._makeArguments().should.deepEqual([ [ 'A', 'B', 'C' ] ]);
+      constructor.makeArguments().should.deepEqual([ [ 'A', 'B', 'C' ] ]);
     });
 
     it('should make a valid instance', function () {
@@ -124,7 +124,7 @@ describe('UnnamedComponentFactory', function () {
     });
 
     it('should create valid arguments', function () {
-      let args = constructor._makeArguments();
+      let args = constructor.makeArguments();
       args.length.should.equal(1);
       args[0].format.should.equal('application/trig');
       args[0].lexer.should.not.be.null();
@@ -149,7 +149,7 @@ describe('UnnamedComponentFactory', function () {
     });
 
     it('should create valid arguments', function () {
-      let args = constructor._makeArguments();
+      let args = constructor.makeArguments();
       args.length.should.equal(0);
     });
 

@@ -5,6 +5,7 @@ import {Resource} from "./rdf/Resource";
 import N3 = require("n3");
 import Triple = N3.Triple;
 import Constants = require("./Constants");
+import {IComponentFactory} from "./factory/IComponentFactory";
 
 /**
  * A runner class for component configs.
@@ -214,14 +215,11 @@ export class ComponentRunner {
     }
 
     /**
-     * Run a component config based on a Resource.
+     * Get a component config constructor based on a Resource.
      * @param configResource A config resource.
-     * @returns {any} The run instance.
+     * @returns The component factory.
      */
-    runConfig(configResource: Resource): any {
-        if (this._instances[configResource.value]) {
-            return this._instances[configResource.value];
-        }
+    getConfigConstructor(configResource: Resource): IComponentFactory {
         let componentTypes: Resource[] = ((<any> configResource).types || []).reduce((types: Resource[], typeUri: Resource) => {
             let componentResource: Resource = this._componentResources[typeUri.value];
             if (componentResource) {
@@ -250,9 +248,20 @@ export class ComponentRunner {
             this._inheritParameterValues(configResource, componentResource);
         }
 
+        return new ComponentFactory(moduleResource, componentResource, configResource, this.overrideRequireNames, this);
+    }
+
+    /**
+     * Run a component config based on a Resource.
+     * @param configResource A config resource.
+     * @returns {any} The run instance.
+     */
+    runConfig(configResource: Resource): any {
+        if (this._instances[configResource.value]) {
+            return this._instances[configResource.value];
+        }
         this._instances[configResource.value] = {}; // This is to avoid self-referenced invocations
-        let constructor: ComponentFactory = new ComponentFactory(moduleResource, componentResource, configResource,
-            this.overrideRequireNames, this);
+        let constructor: IComponentFactory = this.getConfigConstructor(configResource);
         let instance: any = constructor.create();
         this._instances[configResource.value] = instance;
         return instance;
@@ -315,6 +324,35 @@ export class ComponentRunner {
     }
 
     /**
+     * Get a component config constructor based on a config URI.
+     * @param configResourceUri The config resource URI.
+     * @param configResourceStream A triple stream containing at least the given config.
+     * @returns {Promise<T>} A promise resolving to the component constructor.
+     */
+    getConfigConstructorStream(configResourceUri: string, configResourceStream: Stream): Promise<IComponentFactory> {
+        return new Promise((resolve, reject) => {
+            let loader: RdfClassLoader = this._newConfigLoader();
+            configResourceStream
+                .pipe(loader)
+                .on('finish', () => {
+                    let configResource: Resource = loader.resources[configResourceUri];
+                    if (!configResource) {
+                        throw new Error('Could not find a component config with URI '
+                            + configResourceUri + ' in the triple stream.');
+                    }
+                    let constructor: IComponentFactory;
+                    try {
+                        constructor = this.getConfigConstructor(configResource);
+                    } catch (e) {
+                        reject(e);
+                    }
+                    resolve(constructor);
+                })
+                .on('error', reject);
+        });
+    }
+
+    /**
      * Run a component config based on a config URI.
      * @param configResourceUri The config resource URI.
      * @param configResourceStream A triple stream containing at least the given config.
@@ -341,6 +379,30 @@ export class ComponentRunner {
                 })
                 .on('error', reject);
         });
+    }
+
+    /**
+     * Run a component config based on a config URI.
+     * @param configResourceUri The config resource URI.
+     * @param configResourceUrl An RDF document URL
+     * @param fromPath The path to base relative paths on. This will typically be __dirname.
+     * @returns {Promise<T>} A promise resolving to the run instance.
+     */
+    getConfigConstructorUrl(configResourceUri: string, configResourceUrl: string, fromPath: string): Promise<IComponentFactory> {
+        return Constants.getContentsFromUrlOrPath(configResourceUrl, fromPath)
+            .then((data: Stream) => this.getConfigConstructorStream(configResourceUri, Constants.parseRdf(data, fromPath)));
+    }
+
+    /**
+     * Run a component config based on a config URI.
+     * @param configResourceUri The config resource URI.
+     * @param configResourceUrl An RDF document URL
+     * @param fromPath The path to base relative paths on. This will typically be __dirname.
+     * @returns {Promise<T>} A promise resolving to the run instance.
+     */
+    runConfigUrl(configResourceUri: string, configResourceUrl: string, fromPath: string): Promise<any> {
+        return Constants.getContentsFromUrlOrPath(configResourceUrl, fromPath)
+            .then((data: Stream) => this.runConfigStream(configResourceUri, Constants.parseRdf(data, fromPath)));
     }
 
     /**

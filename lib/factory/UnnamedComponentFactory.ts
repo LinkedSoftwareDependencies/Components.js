@@ -38,7 +38,7 @@ export class UnnamedComponentFactory implements IComponentFactory {
         }
     }
 
-    static getArgumentValue(value: any, componentRunner: ComponentRunner): any {
+    static getArgumentValue(value: any, componentRunner: ComponentRunner, shallow?: boolean): any {
         if (value.fields) {
             // The parameter is an object
             return value.fields.reduce((data: any, entry: any) => {
@@ -76,6 +76,9 @@ export class UnnamedComponentFactory implements IComponentFactory {
         } else if (value instanceof Array) {
             return value.map((element) => UnnamedComponentFactory.getArgumentValue(element, componentRunner));
         } else if (value.termType === 'NamedNode' || value.termType === 'BlankNode') {
+            if (shallow) {
+                return {};
+            }
             try {
                 return componentRunner.runConfig(value);
             } catch (e) {
@@ -90,11 +93,10 @@ export class UnnamedComponentFactory implements IComponentFactory {
 
     /**
      * @returns New instantiations of the provided arguments.
-     * @private
      */
-    _makeArguments(): any[] {
+    makeArguments(shallow?: boolean): any[] {
         return this._componentDefinition.arguments ? this._componentDefinition.arguments.list
-            .map((resource: Resource) => UnnamedComponentFactory.getArgumentValue(resource, this._componentRunner)) : [];
+            .map((resource: Resource) => UnnamedComponentFactory.getArgumentValue(resource, this._componentRunner, shallow)) : [];
     }
 
     /**
@@ -152,7 +154,7 @@ export class UnnamedComponentFactory implements IComponentFactory {
                 console.error(JSON.stringify(this._componentDefinition, null, '  '));
                 throw new Error('ConstructableComponent is not a function: ' + JSON.stringify(object));
             }
-            let args: any[] = this._makeArguments();
+            let args: any[] = this.makeArguments(false);
             instance = new (Function.prototype.bind.apply(object, [{}].concat(args)));
         } else {
             instance = object;
