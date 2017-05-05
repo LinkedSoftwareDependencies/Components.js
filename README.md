@@ -123,7 +123,7 @@ When a component definition exists, parameter predicates can be used to fill in 
 
 Example:
 ```
-ex:myConfig a HelloWorldModule#SayHelloComponent;
+ex:myHelloWorld a HelloWorldModule#SayHelloComponent;
     hello:say "Hello";
     hello:world "World".
 ```
@@ -135,7 +135,7 @@ The NPM module name and the component element path must be provided as well.
 
 Example:
 ```
-ex:myConfig a HelloWorldModule#SayHelloComponent;
+ex:myHelloWorld a HelloWorldModule#SayHelloComponent;
     npm:requireName "helloworld",
     npm:requireElement "Hello",
     lsdc:arguments (
@@ -150,7 +150,7 @@ ex:myConfig a HelloWorldModule#SayHelloComponent;
 
 Each argument can be an `lsdc:Object` as follows:
 ```
-ex:myConfig a HelloWorldModule#SayHelloComponent;
+ex:myHelloWorld a HelloWorldModule#SayHelloComponent;
     npm:requireName "helloworld",
     npm:requireElement "Hello",
     lsdc:arguments (
@@ -175,35 +175,35 @@ ex:myConfig a HelloWorldModule#SayHelloComponent;
 
 Components can be constructed based on a triple stream or by manually passing parameters.
 
-First, a stream containing modules and components must be registered to the ComponentRunner.
+First, a stream containing modules and components must be registered to the Loader.
 After that, either a component config URI with a config stream must be passed,
 or a component URI with a set of manual parameters.
 
 ### from a triple stream
 ```javascript
-const ComponentRunner = require('lsd-components').ComponentRunner;
+const Loader = require('lsd-components').Loader;
 const JsonLdStreamParser = require('lsd-components').JsonLdStreamParser;
 
-let runner = new ComponentRunner();
+let loader = new Loader();
 let moduleStream = fs.createReadStream('module-hello-world.jsonld').pipe(new JsonLdStreamParser());
 let configStream = fs.createReadStream('config-hello-world.jsonld').pipe(new JsonLdStreamParser());
-runner.registerModuleResourcesStream(moduleStream)
-    .then(() => runner.runConfigStream('http://example.org/myconfig', configStream))
+loader.registerModuleResourcesStream(moduleStream)
+    .then(() => loader.runConfigStream('http://example.org/myHelloWorld', configStream))
     .then((helloWorld) => helloWorld.run());
 ```
 
 ### manually
 ```javascript
-const ComponentRunner = require('lsd-components').ComponentRunner;
+const Loader = require('lsd-components').Loader;
 const JsonLdStreamParser = require('lsd-components').JsonLdStreamParser;
 
-let runner = new ComponentRunner();
+let loader = new Loader();
 let moduleStream = fs.createReadStream('module-hello-world.jsonld').pipe(new JsonLdStreamParser());
 let params = {};
 params['http://example.org/hello/hello'] = 'WORLD';
 params['http://example.org/hello/say'] = 'BONJOUR';
 params['http://example.org/hello/bla'] = 'BLA';
-runner.registerModuleResourcesStream(moduleStream)
-    .then(() => runner.runManually('http://example.org/HelloWorldModule#SayHelloComponent, params))
+loader.registerModuleResourcesStream(moduleStream)
+    .then(() => loader.runManually('http://example.org/HelloWorldModule#SayHelloComponent, params))
     .then((helloWorld) => helloWorld.run());
 ```

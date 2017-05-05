@@ -1,4 +1,4 @@
-export * from './lib/ComponentRunner';
+export * from './lib/Loader';
 export * from './lib/rdf/Resource';
 export * from './lib/rdf/RdfClassLoader';
 export * from './lib/rdf/JsonLdStreamParser';

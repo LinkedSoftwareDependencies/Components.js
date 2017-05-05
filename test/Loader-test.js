@@ -2,16 +2,16 @@ require('should');
 const RdfClassLoader = require("../lib/rdf/RdfClassLoader").RdfClassLoader;
 const Resource = require("../lib/rdf/Resource").Resource;
 const JsonLdStreamParser = require("../lib/rdf/JsonLdStreamParser").JsonLdStreamParser;
-const ComponentRunner = require("../lib/ComponentRunner").ComponentRunner;
+const Loader = require("../lib/Loader").Loader;
 const Constants = require("../lib/Util");
 const Hello = require("./helloworld").Hello;
 const fs = require("fs");
 const Readable = require("stream").Readable;
 
-describe('ComponentRunner', function () {
+describe('Loader', function () {
   var runner;
   beforeEach(function () {
-    runner = new ComponentRunner();
+    runner = new Loader();
   });
 
   describe('constructing an N3 Parser, unnamed', function () {
@@ -88,7 +88,7 @@ describe('ComponentRunner', function () {
         fields['http://example.org/myModule/params#param1'] = [ Resource.newString('ABC') ];
         fields['http://example.org/myModule/params#param2'] = [ Resource.newString('DEF') ];
         fields['http://example.org/myModule/params#param3'] = [ Resource.newString('GHI') ];
-        var run = runner.runConfig(new Resource(null, fields));
+        var run = runner.instantiate(new Resource(null, fields));
         run._params.should.deepEqual({
           'http://example.org/myModule/params#param1': ['ABC'],
           'http://example.org/myModule/params#param3': ['GHI']
@@ -104,7 +104,7 @@ describe('ComponentRunner', function () {
         configResourceStream.push({ subject: config1, predicate: 'http://example.org/myModule/params#param3', object: '"GHI"'});
         configResourceStream.push(null);
 
-        runner.runConfigStream(config1, configResourceStream).then((run) => {
+        runner.instantiateFromStream(config1, configResourceStream).then((run) => {
           run._params.should.deepEqual({
             'http://example.org/myModule/params#param1': ['ABC'],
             'http://example.org/myModule/params#param3': ['GHI']
@@ -118,7 +118,7 @@ describe('ComponentRunner', function () {
         params['http://example.org/myModule/params#param1'] = 'ABC';
         params['http://example.org/myModule/params#param2'] = 'DEF';
         params['http://example.org/myModule/params#param3'] = 'GHI';
-        let run = runner.runManually(component1, params);
+        let run = runner.instantiateManually(component1, params);
         run._params.should.deepEqual({
           'http://example.org/myModule/params#param1': ['ABC'],
           'http://example.org/myModule/params#param3': ['GHI']
@@ -141,7 +141,7 @@ describe('ComponentRunner', function () {
         fields['http://example.org/hello/hello'] = [ Resource.newString('WORLD') ];
         fields['http://example.org/hello/say'] = [ Resource.newString('HELLO') ];
         fields['http://example.org/hello/bla'] = [ Resource.newString('BLA') ];
-        var run = runner.runConfig(new Resource(null, fields));
+        var run = runner.instantiate(new Resource(null, fields));
         run._params.should.deepEqual({
           'http://example.org/hello/hello': ['WORLD'],
           'http://example.org/hello/say': ['HELLO']
@@ -150,7 +150,7 @@ describe('ComponentRunner', function () {
 
       it('should allow a config stream to be run', function (done) {
         let configResourceStream = fs.createReadStream(__dirname + '/assets/config-hello-world.jsonld').pipe(new JsonLdStreamParser());
-        runner.runConfigStream('http://example.org/myconfig', configResourceStream).then((run) => {
+        runner.instantiateFromStream('http://example.org/myconfig', configResourceStream).then((run) => {
           run._params.should.deepEqual({
             'http://example.org/hello/hello': ['WORLD'],
             'http://example.org/hello/say': ['HI']
@@ -164,7 +164,7 @@ describe('ComponentRunner', function () {
         params['http://example.org/hello/hello'] = 'WORLD';
         params['http://example.org/hello/say'] = 'BONJOUR';
         params['http://example.org/hello/bla'] = 'BLA';
-        let run = runner.runManually('http://example.org/HelloWorldModule#SayHelloComponent', params);
+        let run = runner.instantiateManually('http://example.org/HelloWorldModule#SayHelloComponent', params);
         run._params.should.deepEqual({
           'http://example.org/hello/hello': ['WORLD'],
           'http://example.org/hello/say': ['BONJOUR']
@@ -235,11 +235,11 @@ describe('ComponentRunner', function () {
     it('should produce instances with correct parameter values', function (done) {
       let configResourceStream1 = fs.createReadStream(__dirname + '/assets/config-hello-world-mapping.jsonld').pipe(new JsonLdStreamParser());
       let configResourceStream2 = fs.createReadStream(__dirname + '/assets/config-hello-world-mapping.jsonld').pipe(new JsonLdStreamParser());
-      runner.runConfigStream('http://example.org/myHelloWorld1', configResourceStream1).then((run) => {
+      runner.instantiateFromStream('http://example.org/myHelloWorld1', configResourceStream1).then((run) => {
         run._params.should.deepEqual({
           'something1': [ 'SOMETHING1', 'SOMETHING2' ],
         });
-        runner.runConfigStream('http://example.org/myHelloWorld2', configResourceStream2).then((run) => {
+        runner.instantiateFromStream('http://example.org/myHelloWorld2', configResourceStream2).then((run) => {
           run._params.should.deepEqual([ 'SOMETHING3', 'SOMETHING4' ]);
           done();
         }).catch(done);
@@ -255,7 +255,7 @@ describe('ComponentRunner', function () {
 
     it('should produce instances with equal parameter values', function (done) {
       let configResourceStream = fs.createReadStream(__dirname + '/assets/config-hello-world-referenced.jsonld').pipe(new JsonLdStreamParser());
-      runner.runConfigStream('http://example.org/myHelloWorld1', configResourceStream).then((run) => {
+      runner.instantiateFromStream('http://example.org/myHelloWorld1', configResourceStream).then((run) => {
         run._params.should.deepEqual({
           'http://example.org/hello/hello': [ new Hello() ],
           'http://example.org/hello/say': [ new Hello() ]
@@ -267,7 +267,7 @@ describe('ComponentRunner', function () {
 
     it('should produce instances with different parameter values', function (done) {
       let configResourceStream = fs.createReadStream(__dirname + '/assets/config-hello-world-unreferenced.jsonld').pipe(new JsonLdStreamParser());
-      runner.runConfigStream('http://example.org/myHelloWorld1', configResourceStream).then((run) => {
+      runner.instantiateFromStream('http://example.org/myHelloWorld1', configResourceStream).then((run) => {
         run._params.should.deepEqual({
           'http://example.org/hello/hello': [ new Hello() ],
           'http://example.org/hello/say': [ new Hello() ]
@@ -279,7 +279,7 @@ describe('ComponentRunner', function () {
 
     it('should produce invalid instances with itself as parameter value when self-referenced', function (done) {
       let configResourceStream = fs.createReadStream(__dirname + '/assets/config-hello-world-selfreferenced.jsonld').pipe(new JsonLdStreamParser());
-      runner.runConfigStream('http://example.org/myHelloWorld1', configResourceStream).then((run) => {
+      runner.instantiateFromStream('http://example.org/myHelloWorld1', configResourceStream).then((run) => {
         run._params.should.deepEqual({
           'http://example.org/hello/hello': [ {} ]
         });
@@ -297,11 +297,11 @@ describe('ComponentRunner', function () {
     it('should produce instances with inherited parameter values', function (done) {
       let configResourceStream1 = fs.createReadStream(__dirname + '/assets/config-hello-world-inheritableparams.jsonld').pipe(new JsonLdStreamParser());
       let configResourceStream2 = fs.createReadStream(__dirname + '/assets/config-hello-world-inheritableparams.jsonld').pipe(new JsonLdStreamParser());
-      runner.runConfigStream('http://example.org/myHelloWorld1', configResourceStream1).then((run) => {
+      runner.instantiateFromStream('http://example.org/myHelloWorld1', configResourceStream1).then((run) => {
         run._params.should.deepEqual({
           'http://example.org/hello/something': [ "SOMETHING" ]
         });
-        runner.runConfigStream('http://example.org/myHelloWorld2', configResourceStream2).then((run) => {
+        runner.instantiateFromStream('http://example.org/myHelloWorld2', configResourceStream2).then((run) => {
           run._params.should.deepEqual({
             'http://example.org/hello/something': [ "SOMETHING" ]
           });
@@ -319,7 +319,7 @@ describe('ComponentRunner', function () {
 
     it('should allow a config stream with component instances with inherited parameters from the parent to be run', function (done) {
       let configResourceStream = fs.createReadStream(__dirname + '/assets/config-hello-world-subclass.jsonld').pipe(new JsonLdStreamParser());
-      runner.runConfigStream('http://example.org/myHelloWorld1', configResourceStream).then((run) => {
+      runner.instantiateFromStream('http://example.org/myHelloWorld1', configResourceStream).then((run) => {
         run._params.should.deepEqual({
           'http://example.org/hello/something': [ "SOMETHING1" ]
         });
@@ -329,7 +329,7 @@ describe('ComponentRunner', function () {
 
     it('should allow a config stream with component instances with inherited parameters from the parent\'s parent to be run', function (done) {
       let configResourceStream = fs.createReadStream(__dirname + '/assets/config-hello-world-subclass.jsonld').pipe(new JsonLdStreamParser());
-      runner.runConfigStream('http://example.org/myHelloWorld2', configResourceStream).then((run) => {
+      runner.instantiateFromStream('http://example.org/myHelloWorld2', configResourceStream).then((run) => {
         run._params.should.deepEqual({
           'http://example.org/hello/something': [ "SOMETHING2" ]
         });
@@ -346,7 +346,7 @@ describe('ComponentRunner', function () {
 
     it('should allow a config stream with component instances with inherited parameters from the parent to be run', function (done) {
       let configResourceStream = fs.createReadStream(__dirname + '/assets/config-hello-world-subclassmapping.jsonld').pipe(new JsonLdStreamParser());
-      runner.runConfigStream('http://example.org/myHelloWorld1', configResourceStream).then((run) => {
+      runner.instantiateFromStream('http://example.org/myHelloWorld1', configResourceStream).then((run) => {
         run._params.should.deepEqual({
           'something': [ "SOMETHING" ],
           'something1': [ "SOMETHING1" ]
@@ -357,7 +357,7 @@ describe('ComponentRunner', function () {
 
     it('should allow a config stream with component instances with inherited parameters from the parent\'s parent to be run', function (done) {
       let configResourceStream = fs.createReadStream(__dirname + '/assets/config-hello-world-subclassmapping.jsonld').pipe(new JsonLdStreamParser());
-      runner.runConfigStream('http://example.org/myHelloWorld2', configResourceStream).then((run) => {
+      runner.instantiateFromStream('http://example.org/myHelloWorld2', configResourceStream).then((run) => {
         run._params.should.deepEqual({
           'something': [ "SOMETHING" ],
           'something1': [ "SOMETHING1" ],
@@ -377,11 +377,11 @@ describe('ComponentRunner', function () {
     it('should produce instances with inherited parameter values', function (done) {
       let configResourceStream1 = fs.createReadStream(__dirname + '/assets/config-hello-world-inheritableparams.jsonld').pipe(new JsonLdStreamParser());
       let configResourceStream2 = fs.createReadStream(__dirname + '/assets/config-hello-world-inheritableparams.jsonld').pipe(new JsonLdStreamParser());
-      runner.runConfigStream('http://example.org/myHelloWorld1', configResourceStream1).then((run) => {
+      runner.instantiateFromStream('http://example.org/myHelloWorld1', configResourceStream1).then((run) => {
         run._params.should.deepEqual({
           'something': [ "SOMETHING" ]
         });
-        runner.runConfigStream('http://example.org/myHelloWorld2', configResourceStream2).then((run) => {
+        runner.instantiateFromStream('http://example.org/myHelloWorld2', configResourceStream2).then((run) => {
           run._params.should.deepEqual({
             'something': [ "SOMETHING" ]
           });
@@ -399,7 +399,7 @@ describe('ComponentRunner', function () {
 
     it('should allow a config stream with component instances to be run', function (done) {
       let configResourceStream = fs.createReadStream(__dirname + '/assets/config-hello-world-dynamicentries.jsonld').pipe(new JsonLdStreamParser());
-      runner.runConfigStream('http://example.org/myHelloWorld1', configResourceStream).then((run) => {
+      runner.instantiateFromStream('http://example.org/myHelloWorld1', configResourceStream).then((run) => {
         run._params.should.deepEqual({
           'KEY1': 'VALUE1',
           'KEY2': 'VALUE2'
@@ -410,7 +410,7 @@ describe('ComponentRunner', function () {
 
     it('should allow a config stream with component instances to be run', function (done) {
       let configResourceStream = fs.createReadStream(__dirname + '/assets/config-hello-world-dynamicentries.jsonld').pipe(new JsonLdStreamParser());
-      runner.runConfigStream('http://example.org/myHelloWorld2', configResourceStream).then((run) => {
+      runner.instantiateFromStream('http://example.org/myHelloWorld2', configResourceStream).then((run) => {
         run._params.should.deepEqual({
           'KEY3': 'VALUE3',
           'KEY4': 'VALUE4'
@@ -428,7 +428,7 @@ describe('ComponentRunner', function () {
 
     it('should allow a config stream with component instances with inherited parameters from the parent to be run', function (done) {
       let configResourceStream = fs.createReadStream(__dirname + '/assets/config-hello-world-subclassmapping-dynamicentries.jsonld').pipe(new JsonLdStreamParser());
-      runner.runConfigStream('http://example.org/myHelloWorld1', configResourceStream).then((run) => {
+      runner.instantiateFromStream('http://example.org/myHelloWorld1', configResourceStream).then((run) => {
         run._params.should.deepEqual({
           '0KEY1': '0VALUE1',
           '0KEY2': '0VALUE2',
@@ -441,7 +441,7 @@ describe('ComponentRunner', function () {
 
     it('should allow a config stream with component instances with inherited parameters from the parent\'s parent to be run', function (done) {
       let configResourceStream = fs.createReadStream(__dirname + '/assets/config-hello-world-subclassmapping-dynamicentries.jsonld').pipe(new JsonLdStreamParser());
-      runner.runConfigStream('http://example.org/myHelloWorld2', configResourceStream).then((run) => {
+      runner.instantiateFromStream('http://example.org/myHelloWorld2', configResourceStream).then((run) => {
         run._params.should.deepEqual({
           '0KEY1': '0VALUE1',
           '0KEY2': '0VALUE2',
@@ -464,14 +464,14 @@ describe('ComponentRunner', function () {
     it('should produce instances with inherited parameter values', function (done) {
       let configResourceStream1 = fs.createReadStream(__dirname + '/assets/config-hello-world-dynamicentries2.jsonld').pipe(new JsonLdStreamParser());
       let configResourceStream2 = fs.createReadStream(__dirname + '/assets/config-hello-world-dynamicentries2.jsonld').pipe(new JsonLdStreamParser());
-      runner.runConfigStream('http://example.org/myHelloWorld1', configResourceStream1).then((run) => {
+      runner.instantiateFromStream('http://example.org/myHelloWorld1', configResourceStream1).then((run) => {
         run._params.should.deepEqual({
           'somethings1': {
             'KEY1': 'VALUE1',
             'KEY2': 'VALUE2'
           }
         });
-        runner.runConfigStream('http://example.org/myHelloWorld2', configResourceStream2).then((run) => {
+        runner.instantiateFromStream('http://example.org/myHelloWorld2', configResourceStream2).then((run) => {
           run._params.should.deepEqual({
             'somethings1': {
               'KEY1': 'VALUE1',
@@ -501,12 +501,12 @@ describe('ComponentRunner', function () {
     it('should produce instances with inherited parameter values', function (done) {
       let configResourceStream1 = fs.createReadStream(__dirname + '/assets/config-hello-world-inheritableparams-dynamicentries.jsonld').pipe(new JsonLdStreamParser());
       let configResourceStream2 = fs.createReadStream(__dirname + '/assets/config-hello-world-inheritableparams-dynamicentries.jsonld').pipe(new JsonLdStreamParser());
-      runner.runConfigStream('http://example.org/myHelloWorld1', configResourceStream1).then((run) => {
+      runner.instantiateFromStream('http://example.org/myHelloWorld1', configResourceStream1).then((run) => {
         run._params.should.deepEqual({
           'KEY1': 'VALUE1',
           'KEY2': 'VALUE2'
         });
-        runner.runConfigStream('http://example.org/myHelloWorld2', configResourceStream2).then((run) => {
+        runner.instantiateFromStream('http://example.org/myHelloWorld2', configResourceStream2).then((run) => {
           run._params.should.deepEqual({
             'KEY1': 'VALUE1',
             'KEY2': 'VALUE2'

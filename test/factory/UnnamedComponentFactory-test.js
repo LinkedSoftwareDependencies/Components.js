@@ -1,7 +1,7 @@
 require('should');
 const Resource = require("../../lib/rdf/Resource").Resource;
 const UnnamedComponentFactory = require("../../lib/factory/UnnamedComponentFactory").UnnamedComponentFactory;
-const ComponentRunner = require("../../lib/ComponentRunner").ComponentRunner;
+const ComponentRunner = require("../../lib/Loader").Loader;
 const Hello = require("../helloworld").HelloNested.Deeper.Hello;
 const fs = require("fs");
 const N3 = require('n3');

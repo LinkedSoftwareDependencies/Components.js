@@ -4,7 +4,7 @@ import {UnnamedComponentFactory} from "./UnnamedComponentFactory";
 import {UnmappedNamedComponentFactory} from "./UnmappedNamedComponentFactory";
 import {MappedNamedComponentFactory} from "./MappedNamedComponentFactory";
 import Util = require("../Util");
-import {ComponentRunner} from "../ComponentRunner";
+import {Loader} from "../Loader";
 
 /**
  * Factory for component definitions of any type.
@@ -15,9 +15,9 @@ export class ComponentFactory implements IComponentFactory {
     _componentDefinition: any;
     _config: any;
     _overrideRequireNames: {[id: string]: string};
-    _componentRunner: ComponentRunner;
+    _componentRunner: Loader;
 
-    constructor(moduleDefinition: Resource, componentDefinition: Resource, config: Resource, overrideRequireNames?: {[id: string]: string}, componentRunner?: ComponentRunner) {
+    constructor(moduleDefinition: Resource, componentDefinition: Resource, config: Resource, overrideRequireNames?: {[id: string]: string}, componentRunner?: Loader) {
         this._moduleDefinition = moduleDefinition;
         this._componentDefinition = componentDefinition;
         this._config = config;

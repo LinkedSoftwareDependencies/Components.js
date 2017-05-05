@@ -8,12 +8,12 @@ import Util = require("./Util");
 import {IComponentFactory} from "./factory/IComponentFactory";
 
 /**
- * A runner class for component configs.
- * Modules must first be registered to this runner.
- * After that, configs can be run.
+ * A loader class for component configs.
+ * Modules must first be registered to this loader.
+ * After that, components can be instantiated.
  * Components with the same URI will only be instantiated once.
  */
-export class ComponentRunner {
+export class Loader {
 
     _componentResources: {[id: string]: Resource} = {};
     /**
@@ -252,11 +252,11 @@ export class ComponentRunner {
     }
 
     /**
-     * Run a component config based on a Resource.
+     * Instantiate a component based on a Resource.
      * @param configResource A config resource.
      * @returns {any} The run instance.
      */
-    runConfig(configResource: Resource): any {
+    instantiate(configResource: Resource): any {
         if (this._instances[configResource.value]) {
             return this._instances[configResource.value];
         }
@@ -329,7 +329,7 @@ export class ComponentRunner {
      * @param configResourceStream A triple stream containing at least the given config.
      * @returns {Promise<T>} A promise resolving to the component constructor.
      */
-    getConfigConstructorStream(configResourceUri: string, configResourceStream: Stream): Promise<IComponentFactory> {
+    getConfigConstructorFromStream(configResourceUri: string, configResourceStream: Stream): Promise<IComponentFactory> {
         return new Promise((resolve, reject) => {
             let loader: RdfClassLoader = this._newConfigLoader();
             configResourceStream
@@ -353,12 +353,12 @@ export class ComponentRunner {
     }
 
     /**
-     * Run a component config based on a config URI.
+     * Instantiate a component based on a config URI and a stream.
      * @param configResourceUri The config resource URI.
      * @param configResourceStream A triple stream containing at least the given config.
      * @returns {Promise<T>} A promise resolving to the run instance.
      */
-    runConfigStream(configResourceUri: string, configResourceStream: Stream): Promise<any> {
+    instantiateFromStream(configResourceUri: string, configResourceStream: Stream): Promise<any> {
         return new Promise((resolve, reject) => {
             let loader: RdfClassLoader = this._newConfigLoader();
             configResourceStream
@@ -371,7 +371,7 @@ export class ComponentRunner {
                     }
                     let instance: any;
                     try {
-                        instance = this.runConfig(configResource);
+                        instance = this.instantiate(configResource);
                     } catch (e) {
                         reject(e);
                     }
@@ -389,31 +389,31 @@ export class ComponentRunner {
      *                 Default is the current running directory.
      * @returns {Promise<T>} A promise resolving to the run instance.
      */
-    getConfigConstructorUrl(configResourceUri: string, configResourceUrl: string, fromPath?: string): Promise<IComponentFactory> {
+    getConfigConstructorFromUrl(configResourceUri: string, configResourceUrl: string, fromPath?: string): Promise<IComponentFactory> {
         return Util.getContentsFromUrlOrPath(configResourceUrl, fromPath)
-            .then((data: Stream) => this.getConfigConstructorStream(configResourceUri, Util.parseRdf(data, fromPath)));
+            .then((data: Stream) => this.getConfigConstructorFromStream(configResourceUri, Util.parseRdf(data, fromPath)));
     }
 
     /**
-     * Run a component config based on a config URI.
+     * Instantiate a component based on a config URI.
      * @param configResourceUri The config resource URI.
      * @param configResourceUrl An RDF document URL
      * @param fromPath The path to base relative paths on. This will typically be __dirname.
      *                 Default is the current running directory.
      * @returns {Promise<T>} A promise resolving to the run instance.
      */
-    runConfigUrl(configResourceUri: string, configResourceUrl: string, fromPath?: string): Promise<any> {
+    instantiateFromUrl(configResourceUri: string, configResourceUrl: string, fromPath?: string): Promise<any> {
         return Util.getContentsFromUrlOrPath(configResourceUrl, fromPath)
-            .then((data: Stream) => this.runConfigStream(configResourceUri, Util.parseRdf(data, fromPath)));
+            .then((data: Stream) => this.instantiateFromStream(configResourceUri, Util.parseRdf(data, fromPath)));
     }
 
     /**
-     * Run a component config based on component URI and a set of parameters.
+     * Instantiate a component based on component URI and a set of parameters.
      * @param componentUri The URI of a component.
      * @param params A dictionary with named parameters.
      * @returns {any} The run instance.
      */
-    runManually(componentUri: string, params: {[id: string]: string}): any {
+    instantiateManually(componentUri: string, params: {[id: string]: string}): any {
         let componentResource: Resource = this._componentResources[componentUri];
         if (!componentResource) {
             throw new Error('Could not find a component for URI ' + componentUri);

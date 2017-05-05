@@ -1,6 +1,6 @@
 import {Resource} from "../rdf/Resource";
 import {IComponentFactory} from "./IComponentFactory";
-import {ComponentRunner} from "../ComponentRunner";
+import {Loader} from "../Loader";
 import * as Path from "path";
 
 /**
@@ -11,14 +11,14 @@ export class UnnamedComponentFactory implements IComponentFactory {
     _componentDefinition: any;
     _constructable: boolean;
     _overrideRequireNames: {[id: string]: string};
-    _componentRunner: ComponentRunner;
+    _componentRunner: Loader;
 
     constructor(componentDefinition: Resource, constructable: boolean, overrideRequireNames?: {[id: string]: string},
-                componentRunner?: ComponentRunner) {
+                componentRunner?: Loader) {
         this._componentDefinition = componentDefinition;
         this._constructable = constructable;
         this._overrideRequireNames = overrideRequireNames || {};
-        this._componentRunner = componentRunner || new ComponentRunner();
+        this._componentRunner = componentRunner || new Loader();
 
         // Validate params
         this._validateParam(this._componentDefinition, 'requireName', 'Literal');
@@ -38,7 +38,7 @@ export class UnnamedComponentFactory implements IComponentFactory {
         }
     }
 
-    static getArgumentValue(value: any, componentRunner: ComponentRunner, shallow?: boolean): any {
+    static getArgumentValue(value: any, componentRunner: Loader, shallow?: boolean): any {
         if (value.fields) {
             // The parameter is an object
             return value.fields.reduce((data: any, entry: any) => {
@@ -80,7 +80,7 @@ export class UnnamedComponentFactory implements IComponentFactory {
                 return {};
             }
             try {
-                return componentRunner.runConfig(value);
+                return componentRunner.instantiate(value);
             } catch (e) {
                 console.error(e);
             }

@@ -1,7 +1,7 @@
 import {UnnamedComponentFactory} from "./UnnamedComponentFactory";
 import {Resource} from "../rdf/Resource";
 import _ = require('lodash');
-import {ComponentRunner} from "../ComponentRunner";
+import {Loader} from "../Loader";
 import Util = require("../Util");
 
 /**
@@ -10,7 +10,7 @@ import Util = require("../Util");
 export class MappedNamedComponentFactory extends UnnamedComponentFactory {
 
     constructor(moduleDefinition: Resource, componentDefinition: Resource, config: any, constructable: boolean,
-                overrideRequireNames?: {[id: string]: string}, componentRunner?: ComponentRunner) {
+                overrideRequireNames?: {[id: string]: string}, componentRunner?: Loader) {
         // TODO: check if constructorMappings param references are defined in hasParameters
         // TODO: validate parameters
         super(MappedNamedComponentFactory.makeUnnamedDefinitionConstructor(moduleDefinition, componentDefinition)(config), constructable, overrideRequireNames, componentRunner);
