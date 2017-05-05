@@ -1,141 +1,164 @@
 {
   "@context": {
     "@vocab": "http://linkedsoftwaredependencies.org/vocabulary/components#",
+
+    "lsdc": "http://linkedsoftwaredependencies.org/vocabulary/components#",
     "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
     "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
-    "xsd": "http://www.w3.org/2001/XMLSchema#",
+    "fn": "https://w3id.org/function/ontology#",
     "ex": "http://example.org/",
+    "hello": "http://example.org/hello/",
     "npm": "http://example.org/npm#",
     "n3": "http://example.org/n3#",
-    "value": { "@id": "rdf:value", "@type": "@id"}
+    "owl": "http://www.w3.org/2002/07/owl#",
+
+    "components": { "@id": "lsdc:hasComponent" },
+    "parameters": { "@id": "lsdc:hasParameter", "@type": "lsdc:Parameter" },
+    "constructorMapping": { "@type": [ "@list", "lsdc:ObjectMap" ] },
+
+    "comment": { "@id": "rdfs:comment", "@type": "@id" },
+    "extends": { "@id": "rdfs:subClassOf", "@type": "@id" },
+
+    "import": { "@id": "ow:imports" },
+
+    "inheritValues": {
+      "@id": "rdfs:subClassOf", "@type": [ "@id", "owl:Restriction" ],
+      "onParameter": { "@id": "owl:onProperty", "@type": "@id" },
+      "from": { "@id": "owl:allValuesFrom", "@type": "@id" }
+    },
+
+    "requireName": { "@id": "npm:requireName" },
+    "requireElement": { "@id": "npm:requireElement" },
+
+    "ObjectMap": { "@id": "om:ObjectMap" },
+    "ArrayMap": { "@id": "om:ArrayMap" },
+    "fields": {
+      "@id": "om:field",
+      "@type": "om:ObjectMapEntry",
+      "keyRaw": { "@id": "om:fieldName" },
+      "key": { "@id": "om:fieldName", "@type": "@id" },
+      "value": { "@id": "om:fieldValue", "@type": "@id" }
+    },
+    "elements": {
+      "@id": "om:element",
+      "@type": "om:ArrayMapEntry",
+      "value": { "@id": "om:fieldValue", "@type": "@id" }
+    },
+    "dynamicEntries": { "@id": "om:fieldValue", "@type": "@id" }
   },
-  "@graph": [
+  "@id": "ex:n3",
+  "@type": "Module",
+  "requireName": "n3",
+  "components": [
     {
-      "@id": "ex:n3",
-      "@type": "Module",
-      "npm:requireName": "n3",
-      "hasComponent": [
+      "@id": "n3:Parser",
+      "@type": "ComponentConstructable",
+      "requireElement": "Parser",
+      "comment": "Parses N3 documents",
+      "parameters": [
         {
-          "@id": "n3:Parser",
-          "@type": "ComponentConstructable",
-          "npm:requireElement": "Parser",
-          "rdfs:comment": "Parses N3 documents",
-          "hasParameter": [
-            {
-              "@id": "n3:format",
-              "rdfs:range": "xsd:string"
-            },
-            {
-              "@id": "n3:blankNodePrefix",
-              "rdfs:range": "xsd:string"
-            },
-            {
-              "@id": "n3:lexer",
-              "rdfs:range": "ex:n3#Lexer"
-            },
-            {
-              "@id": "n3:explicitQuantifiers",
-              "rdfs:range": "xsd:boolean"
-            }
-          ],
-          "constructorMapping": {
-            "@list": [
-              {
-                "@type": "Object",
-                "hasField": [
-                  {
-                    "rdfs:label": "format",
-                    "value": "n3:format"
-                  },
-                  {
-                    "rdfs:label": "blankNodePrefix",
-                    "value": "n3:blankNodePrefix"
-                  },
-                  {
-                    "rdfs:label": "lexer",
-                    "value": "n3:lexer"
-                  },
-                  {
-                    "rdfs:label": "explicitQuantifiers",
-                    "value": "n3:explicitQuantifiers"
-                  }
-                ]
-              }
-            ]
-          }
+          "@id": "n3:format",
+          "rdfs:range": "xsd:string"
         },
         {
-          "@id": "n3:Lexer",
-          "@type": "ComponentConstructable",
-          "npm:requireElement": "Lexer",
-          "rdfs:comment": "Tokenizes N3 documents",
-          "hasParameter": [
-            {
-              "@id": "n3:lineMode",
-              "rdfs:range": "xsd:boolean"
-            },
-            {
-              "@id": "n3:n3",
-              "rdfs:range": "xsd:boolean"
-            },
-            {
-              "@id": "n3:comments",
-              "rdfs:range": "xsd:boolean"
-            }
-          ],
-          "constructorMapping": {
-            "@list": [
-              {
-                "@type": "Object",
-                "hasField": [
-                  {
-                    "rdfs:label": "lineMode",
-                    "value": "n3:lineMode"
-                  },
-                  {
-                    "rdfs:label": "n3",
-                    "value": "n3:n3"
-                  },
-                  {
-                    "rdfs:label": "comments",
-                    "value": "n3:comments"
-                  }
-                ]
-              }
-            ]
-          }
+          "@id": "n3:blankNodePrefix",
+          "rdfs:range": "xsd:string"
         },
         {
-          "@id": "n3:Util",
-          "@type": "ComponentInstance",
-          "npm:requireElement": "Util",
-          "rdfs:comment": "Provides N3 utility functions"
+          "@id": "n3:lexer",
+          "rdfs:range": "ex:n3#Lexer"
         },
         {
-          "@id": "n3:Dummy",
-          "@type": "ComponentConstructable",
-          "npm:requireElement": "Dummy",
-          "runnable": true,
-          "rdfs:comment": "A dummy constructable component that can be run from the command-line",
-          "hasParameter": [
+          "@id": "n3:explicitQuantifiers",
+          "rdfs:range": "xsd:boolean"
+        }
+      ],
+      "constructorMapping": [
+        {
+          "fields": [
             {
-              "@id": "n3:dummyParam",
-              "rdfs:range": "xsd:boolean"
+              "keyRaw": "format",
+              "value": "n3:format"
+            },
+            {
+              "keyRaw": "blankNodePrefix",
+              "value": "n3:blankNodePrefix"
+            },
+            {
+              "keyRaw": "lexer",
+              "value": "n3:lexer"
+            },
+            {
+              "keyRaw": "explicitQuantifiers",
+              "value": "n3:explicitQuantifiers"
             }
-          ],
-          "constructorMapping": {
-            "@list": [
-              {
-                "@type": "Object",
-                "hasField": [
-                  {
-                    "rdfs:label": "dummyParam",
-                    "value": "n3:dummyParam"
-                  }
-                ]
-              }
-            ]
-          }
+          ]
+        }
+      ]
+    },
+    {
+      "@id": "n3:Lexer",
+      "@type": "ComponentConstructable",
+      "requireElement": "Lexer",
+      "comment": "Tokenizes N3 documents",
+      "parameters": [
+        {
+          "@id": "n3:lineMode",
+          "rdfs:range": "xsd:boolean"
+        },
+        {
+          "@id": "n3:n3",
+          "rdfs:range": "xsd:boolean"
+        },
+        {
+          "@id": "n3:comments",
+          "rdfs:range": "xsd:boolean"
+        }
+      ],
+      "constructorMapping": [
+        {
+          "fields": [
+            {
+              "keyRaw": "lineMode",
+              "value": "n3:lineMode"
+            },
+            {
+              "keyRaw": "n3",
+              "value": "n3:n3"
+            },
+            {
+              "keyRaw": "comments",
+              "value": "n3:comments"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "@id": "n3:Util",
+      "@type": "ComponentInstance",
+      "requireElement": "Util",
+      "comment": "Provides N3 utility functions"
+    },
+    {
+      "@id": "n3:Dummy",
+      "@type": "ComponentConstructable",
+      "requireElement": "Dummy",
+      "comment": "A dummy constructable component that can be run from the command-line",
+      "parameters": [
+        {
+          "@id": "n3:dummyParam",
+          "rdfs:range": "xsd:boolean"
+        }
+      ],
+      "constructorMapping": [
+        {
+          "fields": [
+            {
+              "keyRaw": "dummyParam",
+              "value": "n3:dummyParam"
+            }
+          ]
         }
       ]
     }

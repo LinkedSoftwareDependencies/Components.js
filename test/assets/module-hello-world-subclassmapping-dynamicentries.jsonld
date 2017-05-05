@@ -1,101 +1,114 @@
 {
   "@context": {
-    "@vocab": "http://linkedsoftwaredependencies.org/vocabulary/components#",
+    "lsdc": "http://linkedsoftwaredependencies.org/vocabulary/components#",
+    "om": "http://linkedsoftwaredependencies.org/vocabulary/object-mapping#",
     "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
     "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
-    "fn": "https://w3id.org/function/ontology#",
-    "ex": "http://example.org/",
-    "hello": "http://example.org/hello/",
-    "npm": "http://example.org/npm#",
     "owl": "http://www.w3.org/2002/07/owl#",
-    "value": { "@id": "rdf:value", "@type": "@id"}
+
+    "npm": "http://example.org/npm#",
+
+    "hello": "http://example.org/hello/",
+    "ex": "http://example.org/",
+
+    "Module": { "@id": "lsdc:Module" },
+    "ComponentConstructable": { "@id": "lsdc:ComponentConstructable" },
+    "ComponentConstructableAbstract": { "@id": "lsdc:ComponentConstructableAbstract" },
+    "ComponentComponentInstance": { "@id": "lsdc:ComponentInstance" },
+    "components": { "@id": "lsdc:hasComponent" },
+    "parameters": { "@id": "lsdc:hasParameter" },
+    "constructorMapping": { "@id": "lsdc:constructorMapping", "@type": "lsdc:ObjectMap", "@container": "@list" },
+
+    "comment": { "@id": "rdfs:comment", "@type": "@id" },
+    "extends": { "@id": "rdfs:subClassOf", "@type": "@id" },
+
+    "import": { "@id": "owl:imports" },
+
+    "InheritanceValue": { "@id": "owl:Restriction" },
+    "inheritValues": { "@id": "rdfs:subClassOf", "@type": "@id" },
+    "onParameter": { "@id": "owl:onProperty", "@type": "@id" },
+    "from": { "@id": "owl:allValuesFrom", "@type": "@id" },
+
+    "requireName": { "@id": "npm:requireName" },
+    "requireElement": { "@id": "npm:requireElement" },
+
+    "ObjectMap": { "@id": "om:ObjectMap" },
+    "ArrayMap": { "@id": "om:ArrayMap" },
+    "fields": { "@id": "om:field",  "@type": "om:ObjectMapEntry" },
+    "elements": { "@id": "om:element", "@type": "om:ArrayMapEntry" },
+    "dynamicEntries": { "@id": "om:dynamicEntries", "@type": "@id" },
+    "keyRaw": { "@id": "om:fieldName" },
+    "key": { "@id": "om:fieldName", "@type": "@id" },
+    "value": { "@id": "om:fieldValue", "@type": "@id" }
   },
   "@graph": [
     {
       "@id": "ex:HelloWorldModule",
       "@type": "Module",
-      "npm:requireName": "../../test/helloworld",
-      "hasComponent": [
+      "requireName": "../../test/helloworld",
+      "components": [
         {
           "@id": "ex:HelloWorldModule#SayHelloComponentAbstract",
           "@type": "ComponentConstructableAbstract",
-          "hasParameter": [
-            {
-              "@id": "hello:something",
-              "@type": "Parameter"
-            }
+          "parameters": [
+            { "@id": "hello:something" }
           ],
-          "constructorMapping": {
-            "@list": [
-              {
-                "@id": "ex:HelloWorldModule#SayHelloComponentAbstract#ConstructorMappingObject",
-                "@type": "Object",
-                "hasField": [
-                  {
-                    "dynamicEntriesFrom": { "@id": "hello:something" },
-                    "rdfs:label": { "@id": "hello:somethingKey" },
-                    "value": "hello:somethingValue"
-                  }
-                ]
-              }
-            ]
-          }
+          "constructorMapping": [
+            {
+              "@id": "ex:HelloWorldModule#SayHelloComponentAbstract#ConstructorMappingObject",
+              "fields": [
+                {
+                  "dynamicEntries": "hello:something",
+                  "key": "hello:somethingKey",
+                  "value": "hello:somethingValue"
+                }
+              ]
+            }
+          ]
         },
         {
           "@id": "ex:HelloWorldModule#SayHelloComponent1",
           "@type": "ComponentConstructable",
-          "rdfs:subClassOf": { "@id": "ex:HelloWorldModule#SayHelloComponentAbstract" },
-          "npm:requireElement": "Hello",
-          "hasParameter": [
-            {
-              "@id": "hello:something1",
-              "@type": "Parameter"
-            }
+          "extends": "ex:HelloWorldModule#SayHelloComponentAbstract",
+          "requireElement": "Hello",
+          "parameters": [
+            { "@id": "hello:something1" }
           ],
-          "constructorMapping": {
-            "@list": [
-              {
-                "@id": "ex:HelloWorldModule#SayHelloComponent1#ConstructorMappingObject",
-                "@type": "Object",
-                "rdfs:subClassOf": { "@id": "ex:HelloWorldModule#SayHelloComponentAbstract#ConstructorMappingObject" },
-                "hasField": [
-                  {
-                    "dynamicEntriesFrom": { "@id": "hello:something1" },
-                    "rdfs:label": { "@id": "hello:somethingKey" },
-                    "value": "hello:somethingValue"
-                  }
-                ]
-              }
-            ]
-          }
+          "constructorMapping": [
+            {
+              "@id": "ex:HelloWorldModule#SayHelloComponent1#ConstructorMappingObject",
+              "extends": "ex:HelloWorldModule#SayHelloComponentAbstract#ConstructorMappingObject",
+              "fields": [
+                {
+                  "dynamicEntries": "hello:something1",
+                  "key": "hello:somethingKey",
+                  "value": "hello:somethingValue"
+                }
+              ]
+            }
+          ]
         },
         {
           "@id": "ex:HelloWorldModule#SayHelloComponent2",
           "@type": "ComponentConstructable",
-          "rdfs:subClassOf": { "@id": "ex:HelloWorldModule#SayHelloComponent1" },
-          "npm:requireElement": "Hello",
-          "hasParameter": [
-            {
-              "@id": "hello:something2",
-              "@type": "Parameter"
-            }
+          "extends": "ex:HelloWorldModule#SayHelloComponent1",
+          "requireElement": "Hello",
+          "parameters": [
+            { "@id": "hello:something2" }
           ],
-          "constructorMapping": {
-            "@list": [
-              {
-                "@id": "ex:HelloWorldModule#SayHelloComponent2#ConstructorMappingObject",
-                "@type": "Object",
-                "rdfs:subClassOf": { "@id": "ex:HelloWorldModule#SayHelloComponent1#ConstructorMappingObject" },
-                "hasField": [
-                  {
-                    "dynamicEntriesFrom": { "@id": "hello:something2" },
-                    "rdfs:label": { "@id": "hello:somethingKey" },
-                    "value": "hello:somethingValue"
-                  }
-                ]
-              }
-            ]
-          }
+          "constructorMapping": [
+            {
+              "@id": "ex:HelloWorldModule#SayHelloComponent2#ConstructorMappingObject",
+              "extends": "ex:HelloWorldModule#SayHelloComponent1#ConstructorMappingObject",
+              "fields": [
+                {
+                  "dynamicEntries": "hello:something2",
+                  "key": "hello:somethingKey",
+                  "value": "hello:somethingValue"
+                }
+              ]
+            }
+          ]
         }
       ]
     }

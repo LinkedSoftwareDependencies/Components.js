@@ -1,70 +1,91 @@
 {
   "@context": {
-    "@vocab": "http://linkedsoftwaredependencies.org/vocabulary/components#",
+    "lsdc": "http://linkedsoftwaredependencies.org/vocabulary/components#",
+    "om": "http://linkedsoftwaredependencies.org/vocabulary/object-mapping#",
     "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
     "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
-    "fn": "https://w3id.org/function/ontology#",
-    "ex": "http://example.org/",
-    "hello": "http://example.org/hello/",
-    "npm": "http://example.org/npm#",
     "owl": "http://www.w3.org/2002/07/owl#",
-    "value": { "@id": "rdf:value", "@type": "@id"}
+
+    "npm": "http://example.org/npm#",
+
+    "hello": "http://example.org/hello/",
+    "ex": "http://example.org/",
+
+    "Module": { "@id": "lsdc:Module" },
+    "ComponentConstructable": { "@id": "lsdc:ComponentConstructable" },
+    "ComponentConstructableAbstract": { "@id": "lsdc:ComponentConstructableAbstract" },
+    "ComponentComponentInstance": { "@id": "lsdc:ComponentInstance" },
+    "components": { "@id": "lsdc:hasComponent" },
+    "parameters": { "@id": "lsdc:hasParameter" },
+    "constructorMapping": { "@id": "lsdc:constructorMapping", "@type": "lsdc:ObjectMap", "@container": "@list" },
+
+    "comment": { "@id": "rdfs:comment", "@type": "@id" },
+    "extends": { "@id": "rdfs:subClassOf", "@type": "@id" },
+
+    "import": { "@id": "owl:imports" },
+
+    "InheritanceValue": { "@id": "owl:Restriction" },
+    "inheritValues": { "@id": "rdfs:subClassOf", "@type": "@id" },
+    "onParameter": { "@id": "owl:onProperty", "@type": "@id" },
+    "from": { "@id": "owl:allValuesFrom", "@type": "@id" },
+
+    "requireName": { "@id": "npm:requireName" },
+    "requireElement": { "@id": "npm:requireElement" },
+
+    "ObjectMap": { "@id": "om:ObjectMap" },
+    "ArrayMap": { "@id": "om:ArrayMap" },
+    "fields": { "@id": "om:field",  "@type": "om:ObjectMapEntry" },
+    "elements": { "@id": "om:element", "@type": "om:ArrayMapEntry" },
+    "dynamicEntries": { "@id": "om:fieldValue", "@type": "@id" },
+    "keyRaw": { "@id": "om:fieldName" },
+    "key": { "@id": "om:fieldName", "@type": "@id" },
+    "value": { "@id": "om:fieldValue", "@type": "@id" }
   },
   "@graph": [
     {
       "@id": "ex:HelloWorldModule",
       "@type": "Module",
-      "npm:requireName": "../../test/helloworld",
-      "hasComponent": [
+      "requireName": "../../test/helloworld",
+      "components": [
         {
           "@id": "ex:HelloWorldModule#SayHelloComponent1",
           "@type": "ComponentConstructable",
-          "npm:requireElement": "Hello",
-          "hasParameter": [
-            {
-              "@id": "hello:something",
-              "@type": "Parameter"
-            }
+          "requireElement": "Hello",
+          "parameters": [
+            { "@id": "hello:something" }
           ],
-          "constructorMapping": {
-            "@list": [
-              {
-                "@id": "ex:HelloWorldModule#SayHelloComponent1#ConstructorMappingObject",
-                "@type": "Object",
-                "hasField": [
-                  {
-                    "rdfs:label": "something",
-                    "value": "hello:something"
-                  }
-                ]
-              }
-            ]
-          }
+          "constructorMapping": [
+            {
+              "@id": "ex:HelloWorldModule#SayHelloComponent1#ConstructorMappingObject",
+              "fields": [
+                {
+                  "keyRaw": "something",
+                  "value": "hello:something"
+                }
+              ]
+            }
+          ]
         },
         {
           "@id": "ex:HelloWorldModule#SayHelloComponent2",
           "@type": "ComponentConstructable",
-          "npm:requireElement": "Hello",
-          "hasParameter": [
+          "requireElement": "Hello",
+          "parameters": [
             {
               "@id": "hello:somethingInherited",
-              "rdfs:comment": "All values from ex:HelloWorldModule#SayHelloComponent are automatically inherited when using this owl:Restriction",
-              "@type": "Parameter",
-              "rdfs:subClassOf": {
-                "@type": "owl:Restriction",
-                "owl:onProperty": { "@id": "hello:something" },
-                "owl:allValuesFrom": { "@id": "ex:HelloWorldModule#SayHelloComponent1" }
+              "comment": "All values from ex:HelloWorldModule#SayHelloComponent are automatically inherited when using this owl:Restriction",
+              "inheritValues": {
+                "@type": "InheritanceValue",
+                "onParameter": "hello:something",
+                "from": "ex:HelloWorldModule#SayHelloComponent1"
               }
             }
           ],
-          "constructorMapping": {
-            "@list": [
-              {
-                "@type": "Object",
-                "rdfs:subClassOf": { "@id": "ex:HelloWorldModule#SayHelloComponent1#ConstructorMappingObject" }
-              }
-            ]
-          }
+          "constructorMapping": [
+            {
+              "extends": "ex:HelloWorldModule#SayHelloComponent1#ConstructorMappingObject"
+            }
+          ]
         }
       ]
     }

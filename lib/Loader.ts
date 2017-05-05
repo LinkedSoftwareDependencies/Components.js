@@ -42,14 +42,14 @@ export class Loader {
         loader.bindProperty('hasComponent', Util.PREFIXES['lsdc'] + 'hasComponent');
         loader.bindProperty('hasParameter', Util.PREFIXES['lsdc'] + 'hasParameter');
         loader.bindProperty('constructorMapping', Util.PREFIXES['lsdc'] + 'constructorMapping', true);
-        loader.bindProperty('fields', Util.PREFIXES['lsdc'] + 'hasField');
-        loader.bindProperty('elements', Util.PREFIXES['lsdc'] + 'hasElement');
-        loader.bindProperty('dynamicEntriesFrom', Util.PREFIXES['lsdc'] + 'dynamicEntriesFrom');
+        loader.bindProperty('fields', Util.PREFIXES['om'] + 'field');
+        loader.bindProperty('elements', Util.PREFIXES['om'] + 'element');
+        loader.bindProperty('dynamicEntriesFrom', Util.PREFIXES['om'] + 'dynamicEntries');
         loader.bindProperty('unique', Util.PREFIXES['lsdc'] + 'parameterUnique', true);
         loader.bindProperty('defaults', Util.PREFIXES['lsdc'] + 'hasDefaultValue');
         loader.bindProperty('fixed', Util.PREFIXES['lsdc'] + 'hasFixedValue');
-        loader.bindProperty('k', Util.PREFIXES['rdfs'] + 'label', true);
-        loader.bindProperty('v', Util.PREFIXES['rdf'] + 'value', true);
+        loader.bindProperty('k', Util.PREFIXES['om'] + 'fieldName', true);
+        loader.bindProperty('v', Util.PREFIXES['om'] + 'fieldValue', true);
         loader.bindProperty('types', Util.PREFIXES['rdf'] + 'type');
 
         loader.bindProperty('classes', Util.PREFIXES['rdfs'] + 'subClassOf', false);
@@ -73,12 +73,12 @@ export class Loader {
         loader.bindProperty('requireName', Util.PREFIXES['npm'] + 'requireName', true);
         loader.bindProperty('requireElement', Util.PREFIXES['npm'] + 'requireElement', true);
         loader.bindProperty('arguments', Util.PREFIXES['lsdc'] + 'arguments', true);
-        loader.bindProperty('fields', Util.PREFIXES['lsdc'] + 'hasField');
-        loader.bindProperty('elements', Util.PREFIXES['lsdc'] + 'hasElement');
-        loader.bindProperty('dynamicEntriesFrom', Util.PREFIXES['lsdc'] + 'dynamicEntriesFrom');
+        loader.bindProperty('fields', Util.PREFIXES['om'] + 'field');
+        loader.bindProperty('elements', Util.PREFIXES['om'] + 'element');
+        loader.bindProperty('dynamicEntriesFrom', Util.PREFIXES['om'] + 'dynamicEntries');
         loader.bindProperty('unique', Util.PREFIXES['lsdc'] + 'parameterUnique', true);
-        loader.bindProperty('k', Util.PREFIXES['rdfs'] + 'label', true);
-        loader.bindProperty('v', Util.PREFIXES['rdf'] + 'value', true);
+        loader.bindProperty('k', Util.PREFIXES['om'] + 'fieldName', true);
+        loader.bindProperty('v', Util.PREFIXES['om'] + 'fieldValue', true);
         loader.bindProperty('types', Util.PREFIXES['rdf'] + 'type');
 
         loader.bindProperty('imports', Util.PREFIXES['owl'] + 'imports', false);
@@ -133,7 +133,7 @@ export class Loader {
     _inheritConstructorParameters(componentResource: any) {
         if (componentResource.constructorMapping) {
             componentResource.constructorMapping.list.forEach((object: Resource) => {
-                if (object.hasType(Util.PREFIXES['lsdc'] + 'Object')) {
+                if ((<any> object).classes) {
                     this._inheritObjectFields(object, (<any> object).classes);
                 }
             });
@@ -152,15 +152,13 @@ export class Loader {
                 object.fields = [];
             }
             classes.forEach((superObject: any) => {
-                if (superObject.hasType(Util.PREFIXES['lsdc'] + 'Object')) {
-                    if (superObject.fields) {
-                        superObject.fields.forEach((field: Resource) => {
-                            if (object.fields.indexOf(field) < 0) {
-                                object.fields.push(field);
-                            }
-                        });
-                        this._inheritParameters(object, superObject.classes);
-                    }
+                if (superObject.fields) {
+                    superObject.fields.forEach((field: Resource) => {
+                        if (object.fields.indexOf(field) < 0) {
+                            object.fields.push(field);
+                        }
+                    });
+                    this._inheritParameters(object, superObject.classes);
                 }
             });
         }

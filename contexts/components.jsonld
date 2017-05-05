@@ -1,0 +1,111 @@
+{
+  "@context": {
+    "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+
+    "lsdc": "http://linkedsoftwaredependencies.org/vocabulary/components#",
+    "Module": {
+      "@id": "lsdc:Module"
+    },
+    "ComponentConstructable": {
+      "@id": "lsdc:ComponentConstructable"
+    },
+    "ComponentConstructableAbstract": {
+      "@id": "lsdc:ComponentConstructableAbstract"
+    },
+    "ComponentComponentInstance": {
+      "@id": "lsdc:ComponentInstance"
+    },
+    "components": {
+      "@id": "lsdc:hasComponent"
+    },
+    "parameters": {
+      "@id": "lsdc:hasParameter"
+    },
+    "constructorMapping": {
+      "@id": "lsdc:constructorMapping",
+      "@container": "@list"
+    },
+    "parameterUnique": {
+      "@id": "lsdc:parameterUnique"
+    },
+    "hasDefaultValue": {
+      "@id": "lsdc:hasDefaultValue"
+    },
+    "hasFixedValue": {
+      "@id": "lsdc:hasFixedValue"
+    },
+
+    "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+    "comment": {
+      "@id": "rdfs:comment",
+      "@type": "@id"
+    },
+    "extends": {
+      "@id": "rdfs:subClassOf",
+      "@type": "@id"
+    },
+    "range": {
+      "@id": "rdfs:range",
+      "@type": "@id"
+    },
+
+    "owl": "http://www.w3.org/2002/07/owl#",
+    "import": {
+      "@id": "owl:imports"
+    },
+    "InheritanceValue": {
+      "@id": "owl:Restriction"
+    },
+    "inheritValues": {
+      "@id": "rdfs:subClassOf",
+      "@type": "@id"
+    },
+    "onParameter": {
+      "@id": "owl:onProperty",
+      "@type": "@id"
+    },
+    "from": {
+      "@id": "owl:allValuesFrom",
+      "@type": "@id"
+    },
+
+    "npm": "http://example.org/npm#",
+    "requireName": {
+      "@id": "npm:requireName"
+    },
+    "requireElement": {
+      "@id": "npm:requireElement"
+    },
+
+    "om": "http://linkedsoftwaredependencies.org/vocabulary/object-mapping#",
+    "ObjectMap": {
+      "@id": "om:ObjectMap"
+    },
+    "ArrayMap": {
+      "@id": "om:ArrayMap"
+    },
+    "fields": {
+      "@id": "om:field",
+      "@type": "om:ObjectMapEntry"
+    },
+    "elements": {
+      "@id": "om:element",
+      "@type": "om:ArrayMapEntry"
+    },
+    "dynamicEntries": {
+      "@id": "om:dynamicEntries",
+      "@type": "@id"
+    },
+    "keyRaw": {
+      "@id": "om:fieldName"
+    },
+    "key": {
+      "@id": "om:fieldName",
+      "@type": "@id"
+    },
+    "value": {
+      "@id": "om:fieldValue",
+      "@type": "@id"
+    }
+  }
+}
