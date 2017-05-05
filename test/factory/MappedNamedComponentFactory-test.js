@@ -1,6 +1,6 @@
 require('should');
 var expect = require('chai').expect;
-const Constants = require("../../lib/Constants");
+const Constants = require("../../lib/Util");
 const Resource = require("../../lib/rdf/Resource").Resource;
 const fs = require("fs");
 const N3 = require('n3');

@@ -2,7 +2,7 @@ import {UnnamedComponentFactory} from "./UnnamedComponentFactory";
 import {Resource} from "../rdf/Resource";
 import _ = require('lodash');
 import {ComponentRunner} from "../ComponentRunner";
-import Constants = require("../Constants");
+import Util = require("../Util");
 
 /**
  * Factory for component definitions with semantic arguments and with constructor mappings.
@@ -18,11 +18,11 @@ export class MappedNamedComponentFactory extends UnnamedComponentFactory {
 
     static mapValue(v: any, params: any): any {
         let value: any;
-        if (v.termType === 'NamedNode' && v.value === Constants.PREFIXES['rdf'] + 'subject') {
+        if (v.termType === 'NamedNode' && v.value === Util.PREFIXES['rdf'] + 'subject') {
             value = Resource.newString(params.value);
         }
         else if (v.termType === 'NamedNode') {
-            value = Constants.applyParameterValues(v, params);
+            value = Util.applyParameterValues(v, params);
         } else {
             value = MappedNamedComponentFactory.map(v, params);
         }
@@ -51,7 +51,7 @@ export class MappedNamedComponentFactory extends UnnamedComponentFactory {
                     if (entry.termType !== 'NamedNode') {
                         throw new Error('Dynamic entry identifiers must be URI\'s: ' + entry);
                     }
-                    let values: any = Constants.applyParameterValues(entry, params);
+                    let values: any = Util.applyParameterValues(entry, params);
                     if (values) {
                         values.forEach((value: any) => data.push(value));
                     }
@@ -60,7 +60,7 @@ export class MappedNamedComponentFactory extends UnnamedComponentFactory {
                     .map((entryResource: any) => {
                         let k: any;
                         let v: any;
-                        if (resource.k.termType === 'NamedNode' && resource.k.value === Constants.PREFIXES['rdf'] + 'subject') {
+                        if (resource.k.termType === 'NamedNode' && resource.k.value === Util.PREFIXES['rdf'] + 'subject') {
                             k = Resource.newString(entryResource.value);
                         }
                         else if (!entryResource[resource.k.value] || entryResource[resource.k.value].length !== 1) {
@@ -70,10 +70,10 @@ export class MappedNamedComponentFactory extends UnnamedComponentFactory {
                             k = entryResource[resource.k.value][0];
                         }
 
-                        if (resource.v.termType === 'NamedNode' && resource.v.value === Constants.PREFIXES['rdf'] + 'subject') {
+                        if (resource.v.termType === 'NamedNode' && resource.v.value === Util.PREFIXES['rdf'] + 'subject') {
                             v = Resource.newString(entryResource.value);
                         }
-                        else if (resource.v.termType === 'NamedNode' && resource.v.value === Constants.PREFIXES['rdf'] + 'object') {
+                        else if (resource.v.termType === 'NamedNode' && resource.v.value === Util.PREFIXES['rdf'] + 'object') {
                             v = MappedNamedComponentFactory.map(entryResource, params);
                         }
                         else if (!entryResource[resource.v.value] || entryResource[resource.v.value].length !== 1) {

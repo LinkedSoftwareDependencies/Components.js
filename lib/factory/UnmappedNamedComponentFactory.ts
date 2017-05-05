@@ -2,7 +2,7 @@ import {UnnamedComponentFactory} from "./UnnamedComponentFactory";
 import {Resource} from "../rdf/Resource";
 import _ = require('lodash');
 import {ComponentRunner} from "../ComponentRunner";
-import Constants = require("../Constants");
+import Util = require("../Util");
 
 /**
  * Factory for component definitions with semantic arguments and without constructor mappings.
@@ -36,7 +36,7 @@ export class UnmappedNamedComponentFactory extends UnnamedComponentFactory {
                             fields: (componentDefinition.hasParameter || []).map((parameterUri: any) => {
                                 return {
                                     k: _.assignIn(parameterUri, { termType: 'Literal' }),
-                                    v: Constants.applyParameterValues(parameterUri, params)
+                                    v: Util.applyParameterValues(parameterUri, params)
                                 };
                             })
                         })

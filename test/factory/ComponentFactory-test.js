@@ -7,7 +7,7 @@ const MappedNamedComponentFactory = require("../../lib/factory/MappedNamedCompon
 const fs = require("fs");
 const N3 = require('n3');
 const _ = require('lodash');
-const Constants = require("../../lib/Constants");
+const Constants = require("../../lib/Util");
 
 // Unnamed component config for an N3 Lexer
 let n3LexerComponentConfigUnnamed = new Resource('http://example.org/MyLexer', {

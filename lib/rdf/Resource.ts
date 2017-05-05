@@ -1,5 +1,5 @@
 import N3 = require('n3');
-import Constants = require("../Constants");
+import Util = require("../Util");
 
 /**
  * A resource class.
@@ -29,7 +29,7 @@ export class Resource {
     }
 
     static newTyped(value: any, type: string) {
-        return new Resource('"' + value + '"^^' + Constants.PREFIXES['xsd'] + 'type');
+        return new Resource('"' + value + '"^^' + Util.PREFIXES['xsd'] + 'type');
     }
 
     hasType(typeUri: string): boolean {

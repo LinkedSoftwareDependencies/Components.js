@@ -2,7 +2,7 @@ import {Writable} from "stream";
 import N3 = require('n3');
 import {Resource} from "./Resource";
 import Triple = N3.Triple;
-import Constants = require("../Constants");
+import Util = require("../Util");
 
 /**
  * An RdfClassLoader is a writable stream that accepts triple streams and loads resources in-memory.
@@ -34,8 +34,8 @@ export class RdfClassLoader extends Writable {
         this._captureAllClasses = this._options.captureAllClasses || false;
 
         if (this._options['normalizeLists']) {
-            this.bindProperty('__listFirst', Constants.PREFIXES['rdf'] + 'first');
-            this.bindProperty('__listRest', Constants.PREFIXES['rdf'] + 'rest');
+            this.bindProperty('__listFirst', Util.PREFIXES['rdf'] + 'first');
+            this.bindProperty('__listRest', Util.PREFIXES['rdf'] + 'rest');
             this.on('finish', () => {
                 // Normalize lists
                 let keys: string[] = Object.keys(this.resources);
@@ -44,13 +44,13 @@ export class RdfClassLoader extends Writable {
                     let element: any = this.resources[keys[i]];
                     if (element.__listFirst && element.__listRest) {
                         listNodes.push(keys[i]);
-                        element.list = element.__listRest[0]['value'] === Constants.PREFIXES['rdf'] + 'nil' ? [element.__listFirst[0]] : [element.__listFirst[0]].concat(element.__listRest[0]['list']);
+                        element.list = element.__listRest[0]['value'] === Util.PREFIXES['rdf'] + 'nil' ? [element.__listFirst[0]] : [element.__listFirst[0]].concat(element.__listRest[0]['list']);
                         delete element.__listFirst;
                         delete element.__listRest;
                         delete this.resources[keys[i]];
                     }
                 }
-                delete this.resources[Constants.PREFIXES['rdf'] + 'nil'];
+                delete this.resources[Util.PREFIXES['rdf'] + 'nil'];
             });
         }
     }
@@ -123,7 +123,7 @@ export class RdfClassLoader extends Writable {
         }
 
         // Store types for the configured classes
-        if (triple.predicate === Constants.PREFIXES['rdf'] + 'type') {
+        if (triple.predicate === Util.PREFIXES['rdf'] + 'type') {
             let subjectInstance: Resource = this._getOrMakeResource(triple.subject);
             let typeName: string = this._classes[triple.object];
             if (!typeName && this._captureAllClasses) {

@@ -4,7 +4,7 @@ import {ComponentFactory} from "./factory/ComponentFactory";
 import {Resource} from "./rdf/Resource";
 import N3 = require("n3");
 import Triple = N3.Triple;
-import Constants = require("./Constants");
+import Util = require("./Util");
 import {IComponentFactory} from "./factory/IComponentFactory";
 
 /**
@@ -32,30 +32,30 @@ export class ComponentRunner {
     _newModuleLoader(): RdfClassLoader {
         let loader: RdfClassLoader = new RdfClassLoader({ captureAllProperties: true, normalizeLists: true });
 
-        loader.bindClass('constructables', Constants.PREFIXES['lsdc'] + 'ComponentConstructable');
-        loader.bindClass('instances', Constants.PREFIXES['lsdc'] + 'ComponentInstance');
-        loader.bindClass('abstractConstructables', Constants.PREFIXES['lsdc'] + 'ComponentConstructableAbstract');
-        loader.bindClass('modules', Constants.PREFIXES['lsdc'] + 'Module');
+        loader.bindClass('constructables', Util.PREFIXES['lsdc'] + 'ComponentConstructable');
+        loader.bindClass('instances', Util.PREFIXES['lsdc'] + 'ComponentInstance');
+        loader.bindClass('abstractConstructables', Util.PREFIXES['lsdc'] + 'ComponentConstructableAbstract');
+        loader.bindClass('modules', Util.PREFIXES['lsdc'] + 'Module');
 
-        loader.bindProperty('requireName', Constants.PREFIXES['npm'] + 'requireName', true);
-        loader.bindProperty('requireElement', Constants.PREFIXES['npm'] + 'requireElement', true);
-        loader.bindProperty('hasComponent', Constants.PREFIXES['lsdc'] + 'hasComponent');
-        loader.bindProperty('hasParameter', Constants.PREFIXES['lsdc'] + 'hasParameter');
-        loader.bindProperty('constructorMapping', Constants.PREFIXES['lsdc'] + 'constructorMapping', true);
-        loader.bindProperty('fields', Constants.PREFIXES['lsdc'] + 'hasField');
-        loader.bindProperty('elements', Constants.PREFIXES['lsdc'] + 'hasElement');
-        loader.bindProperty('dynamicEntriesFrom', Constants.PREFIXES['lsdc'] + 'dynamicEntriesFrom');
-        loader.bindProperty('unique', Constants.PREFIXES['lsdc'] + 'parameterUnique', true);
-        loader.bindProperty('defaults', Constants.PREFIXES['lsdc'] + 'hasDefaultValue');
-        loader.bindProperty('fixed', Constants.PREFIXES['lsdc'] + 'hasFixedValue');
-        loader.bindProperty('k', Constants.PREFIXES['rdfs'] + 'label', true);
-        loader.bindProperty('v', Constants.PREFIXES['rdf'] + 'value', true);
-        loader.bindProperty('types', Constants.PREFIXES['rdf'] + 'type');
+        loader.bindProperty('requireName', Util.PREFIXES['npm'] + 'requireName', true);
+        loader.bindProperty('requireElement', Util.PREFIXES['npm'] + 'requireElement', true);
+        loader.bindProperty('hasComponent', Util.PREFIXES['lsdc'] + 'hasComponent');
+        loader.bindProperty('hasParameter', Util.PREFIXES['lsdc'] + 'hasParameter');
+        loader.bindProperty('constructorMapping', Util.PREFIXES['lsdc'] + 'constructorMapping', true);
+        loader.bindProperty('fields', Util.PREFIXES['lsdc'] + 'hasField');
+        loader.bindProperty('elements', Util.PREFIXES['lsdc'] + 'hasElement');
+        loader.bindProperty('dynamicEntriesFrom', Util.PREFIXES['lsdc'] + 'dynamicEntriesFrom');
+        loader.bindProperty('unique', Util.PREFIXES['lsdc'] + 'parameterUnique', true);
+        loader.bindProperty('defaults', Util.PREFIXES['lsdc'] + 'hasDefaultValue');
+        loader.bindProperty('fixed', Util.PREFIXES['lsdc'] + 'hasFixedValue');
+        loader.bindProperty('k', Util.PREFIXES['rdfs'] + 'label', true);
+        loader.bindProperty('v', Util.PREFIXES['rdf'] + 'value', true);
+        loader.bindProperty('types', Util.PREFIXES['rdf'] + 'type');
 
-        loader.bindProperty('classes', Constants.PREFIXES['rdfs'] + 'subClassOf', false);
-        loader.bindProperty('onProperty', Constants.PREFIXES['owl'] + 'onProperty', false);
-        loader.bindProperty('allValuesFrom', Constants.PREFIXES['owl'] + 'allValuesFrom', false);
-        loader.bindProperty('imports', Constants.PREFIXES['owl'] + 'imports', false);
+        loader.bindProperty('classes', Util.PREFIXES['rdfs'] + 'subClassOf', false);
+        loader.bindProperty('onProperty', Util.PREFIXES['owl'] + 'onProperty', false);
+        loader.bindProperty('allValuesFrom', Util.PREFIXES['owl'] + 'allValuesFrom', false);
+        loader.bindProperty('imports', Util.PREFIXES['owl'] + 'imports', false);
 
         return loader;
     }
@@ -67,21 +67,21 @@ export class ComponentRunner {
     _newConfigLoader(): RdfClassLoader {
         let loader: RdfClassLoader = new RdfClassLoader({ captureAllProperties: true, captureAllClasses: true });
 
-        loader.bindClass('constructables', Constants.PREFIXES['lsdc'] + 'ComponentConstructable');
-        loader.bindClass('instances', Constants.PREFIXES['lsdc'] + 'ComponentInstance');
+        loader.bindClass('constructables', Util.PREFIXES['lsdc'] + 'ComponentConstructable');
+        loader.bindClass('instances', Util.PREFIXES['lsdc'] + 'ComponentInstance');
 
-        loader.bindProperty('requireName', Constants.PREFIXES['npm'] + 'requireName', true);
-        loader.bindProperty('requireElement', Constants.PREFIXES['npm'] + 'requireElement', true);
-        loader.bindProperty('arguments', Constants.PREFIXES['lsdc'] + 'arguments', true);
-        loader.bindProperty('fields', Constants.PREFIXES['lsdc'] + 'hasField');
-        loader.bindProperty('elements', Constants.PREFIXES['lsdc'] + 'hasElement');
-        loader.bindProperty('dynamicEntriesFrom', Constants.PREFIXES['lsdc'] + 'dynamicEntriesFrom');
-        loader.bindProperty('unique', Constants.PREFIXES['lsdc'] + 'parameterUnique', true);
-        loader.bindProperty('k', Constants.PREFIXES['rdfs'] + 'label', true);
-        loader.bindProperty('v', Constants.PREFIXES['rdf'] + 'value', true);
-        loader.bindProperty('types', Constants.PREFIXES['rdf'] + 'type');
+        loader.bindProperty('requireName', Util.PREFIXES['npm'] + 'requireName', true);
+        loader.bindProperty('requireElement', Util.PREFIXES['npm'] + 'requireElement', true);
+        loader.bindProperty('arguments', Util.PREFIXES['lsdc'] + 'arguments', true);
+        loader.bindProperty('fields', Util.PREFIXES['lsdc'] + 'hasField');
+        loader.bindProperty('elements', Util.PREFIXES['lsdc'] + 'hasElement');
+        loader.bindProperty('dynamicEntriesFrom', Util.PREFIXES['lsdc'] + 'dynamicEntriesFrom');
+        loader.bindProperty('unique', Util.PREFIXES['lsdc'] + 'parameterUnique', true);
+        loader.bindProperty('k', Util.PREFIXES['rdfs'] + 'label', true);
+        loader.bindProperty('v', Util.PREFIXES['rdf'] + 'value', true);
+        loader.bindProperty('types', Util.PREFIXES['rdf'] + 'type');
 
-        loader.bindProperty('imports', Constants.PREFIXES['owl'] + 'imports', false);
+        loader.bindProperty('imports', Util.PREFIXES['owl'] + 'imports', false);
 
         return loader;
     }
@@ -110,8 +110,8 @@ export class ComponentRunner {
                 componentResource.hasParameter = [];
             }
             classes.forEach((component: any) => {
-                if (component.hasType(Constants.PREFIXES['lsdc'] + 'ComponentConstructableAbstract')
-                    || component.hasType(Constants.PREFIXES['lsdc'] + 'ComponentConstructable')) {
+                if (component.hasType(Util.PREFIXES['lsdc'] + 'ComponentConstructableAbstract')
+                    || component.hasType(Util.PREFIXES['lsdc'] + 'ComponentConstructable')) {
                     if (component.hasParameter) {
                         component.hasParameter.forEach((parameter: Resource) => {
                             if (componentResource.hasParameter.indexOf(parameter) < 0) {
@@ -133,7 +133,7 @@ export class ComponentRunner {
     _inheritConstructorParameters(componentResource: any) {
         if (componentResource.constructorMapping) {
             componentResource.constructorMapping.list.forEach((object: Resource) => {
-                if (object.hasType(Constants.PREFIXES['lsdc'] + 'Object')) {
+                if (object.hasType(Util.PREFIXES['lsdc'] + 'Object')) {
                     this._inheritObjectFields(object, (<any> object).classes);
                 }
             });
@@ -152,7 +152,7 @@ export class ComponentRunner {
                 object.fields = [];
             }
             classes.forEach((superObject: any) => {
-                if (superObject.hasType(Constants.PREFIXES['lsdc'] + 'Object')) {
+                if (superObject.hasType(Util.PREFIXES['lsdc'] + 'Object')) {
                     if (superObject.fields) {
                         superObject.fields.forEach((field: Resource) => {
                             if (object.fields.indexOf(field) < 0) {
@@ -210,8 +210,8 @@ export class ComponentRunner {
      * @returns {Promise<T>} A promise that resolves once loading has finished.
      */
     registerModuleResourcesUrl(moduleResourceUrl: string, fromPath: string): Promise<void> {
-        return Constants.getContentsFromUrlOrPath(moduleResourceUrl, fromPath)
-            .then((data: Stream) => this.registerModuleResourcesStream(Constants.parseRdf(data, fromPath)));
+        return Util.getContentsFromUrlOrPath(moduleResourceUrl, fromPath)
+            .then((data: Stream) => this.registerModuleResourcesStream(Util.parseRdf(data, fromPath)));
     }
 
     /**
@@ -279,7 +279,7 @@ export class ComponentRunner {
             componentResource.hasParameter.forEach((parameter: any) => {
                 // Collect all owl:Restriction's
                 let restrictions: Resource[] = (parameter.classes || []).reduce((acc: Resource[], clazz: any) => {
-                    if (clazz.types.reduce((acc: boolean, type: Resource) => acc || type.value === Constants.PREFIXES['owl'] + 'Restriction', false)) {
+                    if (clazz.types.reduce((acc: boolean, type: Resource) => acc || type.value === Util.PREFIXES['owl'] + 'Restriction', false)) {
                         acc.push(clazz);
                     }
                     return acc;
@@ -390,8 +390,8 @@ export class ComponentRunner {
      * @returns {Promise<T>} A promise resolving to the run instance.
      */
     getConfigConstructorUrl(configResourceUri: string, configResourceUrl: string, fromPath?: string): Promise<IComponentFactory> {
-        return Constants.getContentsFromUrlOrPath(configResourceUrl, fromPath)
-            .then((data: Stream) => this.getConfigConstructorStream(configResourceUri, Constants.parseRdf(data, fromPath)));
+        return Util.getContentsFromUrlOrPath(configResourceUrl, fromPath)
+            .then((data: Stream) => this.getConfigConstructorStream(configResourceUri, Util.parseRdf(data, fromPath)));
     }
 
     /**
@@ -403,8 +403,8 @@ export class ComponentRunner {
      * @returns {Promise<T>} A promise resolving to the run instance.
      */
     runConfigUrl(configResourceUri: string, configResourceUrl: string, fromPath?: string): Promise<any> {
-        return Constants.getContentsFromUrlOrPath(configResourceUrl, fromPath)
-            .then((data: Stream) => this.runConfigStream(configResourceUri, Constants.parseRdf(data, fromPath)));
+        return Util.getContentsFromUrlOrPath(configResourceUrl, fromPath)
+            .then((data: Stream) => this.runConfigStream(configResourceUri, Util.parseRdf(data, fromPath)));
     }
 
     /**

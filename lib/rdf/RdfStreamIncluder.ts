@@ -1,6 +1,6 @@
 import {PassThrough} from "stream";
 import N3 = require("n3");
-import Constants = require("../Constants");
+import Util = require("../Util");
 import {Stream} from "stream";
 
 /**

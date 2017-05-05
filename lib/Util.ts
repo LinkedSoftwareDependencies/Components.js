@@ -6,7 +6,7 @@ import Path = require("path");
 import url = require("url");
 import {RdfStreamIncluder} from "./rdf/RdfStreamIncluder";
 
-class Constants {
+class Util {
     static readonly PREFIXES: {[id: string]: string} = {
         'lsdc': 'http://linkedsoftwaredependencies.org/vocabulary/components#',
         'rdf': 'http://www.w3.org/1999/02/22-rdf-syntax-ns#',
@@ -55,7 +55,7 @@ class Constants {
      */
     static parseRdf(rdfDataStream: Stream, fromPath?: string, ignoreImports?: boolean): Stream {
         let stream: Stream = new RdfStreamParser().pipeFrom(rdfDataStream);
-        let ret: Stream = stream.pipe(new RdfStreamIncluder(Constants, fromPath, !ignoreImports));
+        let ret: Stream = stream.pipe(new RdfStreamIncluder(Util, fromPath, !ignoreImports));
         stream.on('error', (e: any) => ret.emit('error', e));
         return ret;
     }
@@ -102,4 +102,4 @@ class Constants {
     }
 }
 
-export = Constants;
+export = Util;
