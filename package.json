@@ -1,7 +1,7 @@
 {
   "name": "lsd-components",
   "version": "1.0.0",
-  "description": "Generic semantic components system for dependency injection",
+  "description": "A semantic dependency injection framework",
   "main": "index.js",
   "typings": "index",
   "keywords": [
