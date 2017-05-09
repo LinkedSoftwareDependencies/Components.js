@@ -207,3 +207,9 @@ loader.registerModuleResourcesStream(moduleStream)
     .then(() => loader.runManually('http://example.org/HelloWorldModule#SayHelloComponent, params))
     .then((helloWorld) => helloWorld.run());
 ```
+
+## License
+Components.js is written by [Ruben Taelman](http://www.rubensworks.net/).
+
+This code is copyrighted by [Ghent University – imec](http://idlab.ugent.be/)
+and released under the [MIT license](http://opensource.org/licenses/MIT).
