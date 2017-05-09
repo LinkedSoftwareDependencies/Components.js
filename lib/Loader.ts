@@ -207,7 +207,7 @@ export class Loader {
      * @param fromPath The path to base relative paths on. This will typically be __dirname.
      * @returns {Promise<T>} A promise that resolves once loading has finished.
      */
-    registerModuleResourcesUrl(moduleResourceUrl: string, fromPath: string): Promise<void> {
+    registerModuleResourcesUrl(moduleResourceUrl: string, fromPath?: string): Promise<void> {
         return Util.getContentsFromUrlOrPath(moduleResourceUrl, fromPath)
             .then((data: Stream) => this.registerModuleResourcesStream(Util.parseRdf(data, fromPath)));
     }
