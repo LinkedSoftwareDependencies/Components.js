@@ -2,6 +2,15 @@
 
 _A semantic dependency injection framework_
 
+[![Build Status](https://travis-ci.org/LinkedSoftwareDependencies/Components.js.svg?branch=master)](https://travis-ci.org/LinkedSoftwareDependencies/Components.js)
+[![npm version](https://badge.fury.io/js/lsd-components.svg)](https://www.npmjs.com/package/lsd-components)
+
+## Installation
+
+```bash
+$ [sudo] npm install lsd-components
+```
+
 ## Terminology
 A **module** is equivalent to a **Node module** and can contain several **components**.
 
