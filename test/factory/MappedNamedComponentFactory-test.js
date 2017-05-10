@@ -17,7 +17,7 @@ let n3ParserComponent = new Resource('http://example.org/n3#Parser', {
     new Resource('http://example.org/n3#lexer'),
     new Resource('http://example.org/n3#explicitQuantifiers')
   ],
-  constructorMapping: new Resource(null, {
+  constructorArguments: new Resource(null, {
     list: [
       new Resource("_:param_parser_0", {
         fields: [
@@ -40,7 +40,7 @@ let n3LexerComponent = new Resource('http://example.org/n3#Lexer', {
     new Resource('http://example.org/n3#n3'),
     new Resource('http://example.org/n3#comments')
   ],
-  constructorMapping: new Resource(null, {
+  constructorArguments: new Resource(null, {
     list: [
       new Resource("_:param_parser_0", {
         fields: [
@@ -66,7 +66,7 @@ let n3DummyComponent = new Resource('http://example.org/n3#Dummy', {
   hasParameter: [
     new Resource('http://example.org/n3#dummyParam')
   ],
-  constructorMapping: new Resource(null, {
+  constructorArguments: new Resource(null, {
     list: [
       new Resource("_:param_parser_0", {
         fields: [
@@ -95,7 +95,7 @@ let helloWorldComponent1 = new Resource('http://example.org/HelloWorldModule#Say
   hasParameter: [
     new Resource('http://example.org/HelloWorldModule#dummyParam')
   ],
-  constructorMapping: new Resource(null, {
+  constructorArguments: new Resource(null, {
     list: [
       new Resource("_:param_parser_0", {
         fields: [
@@ -114,7 +114,7 @@ let helloWorldComponent2 = new Resource('http://example.org/HelloWorldModule#Say
     new Resource('http://example.org/HelloWorldModule#dummyParam'),
     new Resource('http://example.org/HelloWorldModule#instanceParam')
   ],
-  constructorMapping: new Resource(null, {
+  constructorArguments: new Resource(null, {
     list: [
       new Resource("_:param_hello_0", {
         fields: [
@@ -135,7 +135,7 @@ let helloWorldComponent3 = new Resource('http://example.org/HelloWorldModule#Say
     new Resource('http://example.org/HelloWorldModule#instanceParam'),
     new Resource('http://example.org/HelloWorldModule#idParam')
   ],
-  constructorMapping: new Resource(null, {
+  constructorArguments: new Resource(null, {
     list: [
       new Resource("_:param_hello_0", {
         fields: [
@@ -157,7 +157,7 @@ let helloWorldComponent4 = new Resource('http://example.org/HelloWorldModule#Say
     new Resource('http://example.org/HelloWorldModule#instanceParam'),
     new Resource('http://example.org/HelloWorldModule#idParam')
   ],
-  constructorMapping: new Resource(null, {
+  constructorArguments: new Resource(null, {
     list: [
       new Resource("_:param_hello_0", {
         elements: {
@@ -188,7 +188,7 @@ let helloWorldComponent5 = new Resource('http://example.org/HelloWorldModule#Say
   requireElement: Resource.newString('Hello'),
   types: [ new Resource(Constants.PREFIXES['lsdc'] + 'ComponentConstructable') ],
   hasParameter: [ defaultedParam1, defaultedParam2, ],
-  constructorMapping: new Resource(null, {
+  constructorArguments: new Resource(null, {
     list: [
       new Resource("_:param_parser_0", {
         fields: [

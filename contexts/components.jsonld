@@ -21,8 +21,8 @@
     "parameters": {
       "@id": "lsdc:hasParameter"
     },
-    "constructorMapping": {
-      "@id": "lsdc:constructorMapping",
+    "constructorArguments": {
+      "@id": "lsdc:constructorArguments",
       "@container": "@list"
     },
     "parameterUnique": {

@@ -41,7 +41,7 @@ export class Loader {
         loader.bindProperty('requireElement', Util.PREFIXES['npm'] + 'requireElement', true);
         loader.bindProperty('hasComponent', Util.PREFIXES['lsdc'] + 'hasComponent');
         loader.bindProperty('hasParameter', Util.PREFIXES['lsdc'] + 'hasParameter');
-        loader.bindProperty('constructorMapping', Util.PREFIXES['lsdc'] + 'constructorMapping', true);
+        loader.bindProperty('constructorArguments', Util.PREFIXES['lsdc'] + 'constructorArguments', true);
         loader.bindProperty('fields', Util.PREFIXES['om'] + 'field');
         loader.bindProperty('elements', Util.PREFIXES['om'] + 'elements', true);
         loader.bindProperty('collectEntriesFrom', Util.PREFIXES['om'] + 'collectEntriesFrom');
@@ -131,8 +131,8 @@ export class Loader {
      * @private
      */
     _inheritConstructorParameters(componentResource: any) {
-        if (componentResource.constructorMapping) {
-            componentResource.constructorMapping.list.forEach((object: Resource) => {
+        if (componentResource.constructorArguments) {
+            componentResource.constructorArguments.list.forEach((object: Resource) => {
                 if ((<any> object).classes) {
                     this._inheritObjectFields(object, (<any> object).classes);
                 }

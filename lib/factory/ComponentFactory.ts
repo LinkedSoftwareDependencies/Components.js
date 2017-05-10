@@ -29,7 +29,7 @@ export class ComponentFactory implements IComponentFactory {
         if (!this._config.requireName && !this._config.requireElement) {
             let constructable: boolean = !this._componentDefinition.types
                 || this._componentDefinition.types.indexOf(Util.PREFIXES['lsdc'] + 'ComponentInstance') < 0;
-            if (!this._componentDefinition.constructorMapping) {
+            if (!this._componentDefinition.constructorArguments) {
                 return new UnmappedNamedComponentFactory(
                     this._moduleDefinition, this._componentDefinition, this._config, constructable,
                     this._overrideRequireNames, this._componentRunner

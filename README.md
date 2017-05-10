@@ -70,7 +70,7 @@ ex:HelloWorldModule#SayHelloComponent a lsdc:ComponentConstructable;
     npm:requireElement "Hello";
     hasParameter hello:say;
     hasParameter hello:world;
-    constructorMapping (
+    constructorArguments (
         [
             rdf:value hello:say.
         ],
@@ -93,7 +93,7 @@ ex:HelloWorldModule#SayHelloComponent a lsdc:ComponentConstructable;
     npm:requireElement "Hello";
     hasParameter hello:say;
     hasParameter hello:world;
-    constructorMapping (
+    constructorArguments (
         [
             a lsdc:Object;
             lsdc:hasField [

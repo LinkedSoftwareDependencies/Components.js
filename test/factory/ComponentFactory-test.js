@@ -48,7 +48,7 @@ let n3LexerComponentDefinitionMapped = new Resource('http://example.org/n3#Lexer
     new Resource('http://example.org/n3#n3'),
     new Resource('http://example.org/n3#comments')
   ],
-  constructorMapping: new Resource(null, {
+  constructorArguments: new Resource(null, {
     list: [
       new Resource("_:param_parser_0", {
         fields: [

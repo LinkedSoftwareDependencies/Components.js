@@ -17,7 +17,7 @@
     "ComponentComponentInstance": { "@id": "lsdc:ComponentInstance" },
     "components": { "@id": "lsdc:hasComponent" },
     "parameters": { "@id": "lsdc:hasParameter" },
-    "constructorMapping": { "@id": "lsdc:constructorMapping", "@container": "@list" },
+    "constructorArguments": { "@id": "lsdc:constructorArguments", "@container": "@list" },
 
     "comment": { "@id": "rdfs:comment", "@type": "@id" },
     "extends": { "@id": "rdfs:subClassOf", "@type": "@id" },
@@ -52,9 +52,9 @@
           "parameters": [
             { "@id": "hello:something" }
           ],
-          "constructorMapping": [
+          "constructorArguments": [
             {
-              "@id": "ex:HelloWorldModule#SayHelloComponentAbstract#ConstructorMappingObject",
+              "@id": "ex:HelloWorldModule#SayHelloComponentAbstract#constructorArgumentsObject",
               "fields": [
                 {
                   "keyRaw": "something",
@@ -72,10 +72,10 @@
           "parameters": [
             { "@id": "hello:something1" }
           ],
-          "constructorMapping": [
+          "constructorArguments": [
             {
-              "@id": "ex:HelloWorldModule#SayHelloComponent1#ConstructorMappingObject",
-              "extends": "ex:HelloWorldModule#SayHelloComponentAbstract#ConstructorMappingObject",
+              "@id": "ex:HelloWorldModule#SayHelloComponent1#constructorArgumentsObject",
+              "extends": "ex:HelloWorldModule#SayHelloComponentAbstract#constructorArgumentsObject",
               "fields": [
                 {
                   "keyRaw": "something1",
@@ -93,10 +93,10 @@
           "parameters": [
             { "@id": "hello:something2" }
           ],
-          "constructorMapping": [
+          "constructorArguments": [
             {
-              "@id": "ex:HelloWorldModule#SayHelloComponent2#ConstructorMappingObject",
-              "extends": "ex:HelloWorldModule#SayHelloComponent1#ConstructorMappingObject",
+              "@id": "ex:HelloWorldModule#SayHelloComponent2#constructorArgumentsObject",
+              "extends": "ex:HelloWorldModule#SayHelloComponent1#constructorArgumentsObject",
               "fields": [
                 {
                   "keyRaw": "something2",

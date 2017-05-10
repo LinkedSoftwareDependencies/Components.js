@@ -11,7 +11,7 @@ export class MappedNamedComponentFactory extends UnnamedComponentFactory {
 
     constructor(moduleDefinition: Resource, componentDefinition: Resource, config: any, constructable: boolean,
                 overrideRequireNames?: {[id: string]: string}, componentRunner?: Loader) {
-        // TODO: check if constructorMappings param references are defined in hasParameters
+        // TODO: check if constructorArgumentss param references are defined in hasParameters
         // TODO: validate parameters
         super(MappedNamedComponentFactory.makeUnnamedDefinitionConstructor(moduleDefinition, componentDefinition)(config), constructable, overrideRequireNames, componentRunner);
     }
@@ -139,7 +139,7 @@ export class MappedNamedComponentFactory extends UnnamedComponentFactory {
             return new Resource(componentDefinition.value, {
                 requireName: moduleDefinition.requireName || componentDefinition.requireName,
                 requireElement: componentDefinition.requireElement,
-                arguments: componentDefinition.constructorMapping ? MappedNamedComponentFactory.map(_.cloneDeep(componentDefinition.constructorMapping), params) : null
+                arguments: componentDefinition.constructorArguments ? MappedNamedComponentFactory.map(_.cloneDeep(componentDefinition.constructorArguments), params) : null
             })
         });
     }

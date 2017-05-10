@@ -17,7 +17,7 @@
     "ComponentComponentInstance": { "@id": "lsdc:ComponentInstance" },
     "components": { "@id": "lsdc:hasComponent" },
     "parameters": { "@id": "lsdc:hasParameter" },
-    "constructorMapping": { "@id": "lsdc:constructorMapping", "@type": "lsdc:ObjectMapping", "@container": "@list" },
+    "constructorArguments": { "@id": "lsdc:constructorArguments", "@type": "lsdc:ObjectMapping", "@container": "@list" },
 
     "comment": { "@id": "rdfs:comment", "@type": "@id" },
     "extends": { "@id": "rdfs:subClassOf", "@type": "@id" },
@@ -54,9 +54,9 @@
           "parameters": [
             { "@id": "hello:something" }
           ],
-          "constructorMapping": [
+          "constructorArguments": [
             {
-              "@id": "ex:myConstructorMapping",
+              "@id": "ex:myconstructorArguments",
               "fields": [
                 {
                   "collectEntries": "hello:something",
@@ -82,9 +82,9 @@
               }
             }
           ],
-          "constructorMapping": [
+          "constructorArguments": [
             {
-              "extends": "ex:myConstructorMapping"
+              "extends": "ex:myconstructorArguments"
             }
           ]
         }
