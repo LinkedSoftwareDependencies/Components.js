@@ -160,10 +160,12 @@ let helloWorldComponent4 = new Resource('http://example.org/HelloWorldModule#Say
   constructorMapping: new Resource(null, {
     list: [
       new Resource("_:param_hello_0", {
-        elements: [
-          { v: new Resource('http://example.org/HelloWorldModule#dummyParam') },
-          { v: new Resource('http://example.org/HelloWorldModule#instanceParam') }
-        ]
+        elements: {
+          list: [
+            new Resource('http://example.org/HelloWorldModule#dummyParam'),
+            new Resource('http://example.org/HelloWorldModule#instanceParam')
+          ]
+        }
       })
     ]
   })

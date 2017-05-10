@@ -100,12 +100,15 @@ export class MappedNamedComponentFactory extends UnnamedComponentFactory {
             });
         }
         else if (resource.elements) {
+            if (!resource.elements.list) {
+                throw new Error('Parameter array elements musts be lists, but found: ' + JSON.stringify(resource.elements, null, '  '));
+            }
             return new Resource(null, {
-                elements: resource.elements.reduce((elements: any[], element: any) => {
-                    if (!element.v) {
-                        throw new Error('Parameter array elements must have values, but found: ' + JSON.stringify(element, null, '  '));
+                elements: resource.elements.list.reduce((elements: any[], element: any) => {
+                    if (element.termType !== 'NamedNode') {
+                        throw new Error('Parameter array elements must be URI\'s, but found: ' + JSON.stringify(element, null, '  '));
                     }
-                    let mapped: any = { v: MappedNamedComponentFactory.mapValue(element.v, params) };
+                    let mapped: any = { v: MappedNamedComponentFactory.mapValue(element, params) };
                     elements.push(mapped);
                     return elements;
                 }, [])

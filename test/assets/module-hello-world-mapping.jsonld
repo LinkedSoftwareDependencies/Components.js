@@ -34,7 +34,7 @@
     "ObjectMapping": { "@id": "om:ObjectMapping" },
     "ArrayMapping": { "@id": "om:ArrayMapping" },
     "fields": { "@id": "om:field",  "@type": "om:ObjectMappingEntry" },
-    "elements": { "@id": "om:element", "@type": "om:ArrayMappingEntry" },
+    "elements": { "@id": "om:elements", "@type": "@id", "@container": "@list" },
     "collectEntries": { "@id": "om:fieldValue", "@type": "@id" },
     "keyRaw": { "@id": "om:fieldName" },
     "key": { "@id": "om:fieldName", "@type": "@id" },
@@ -75,11 +75,8 @@
           "constructorMapping": [
             {
               "@id": "ex:HelloWorldModule#SayHelloComponent2#ConstructorMappingObject",
-              "@type": "Array",
               "elements": [
-                {
-                  "value": "hello:something2"
-                }
+                "hello:something2"
               ]
             }
           ]

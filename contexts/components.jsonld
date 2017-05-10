@@ -89,8 +89,9 @@
       "@type": "om:ObjectMapEntry"
     },
     "elements": {
-      "@id": "om:element",
-      "@type": "om:ArrayMapEntry"
+      "@id": "om:elements",
+      "@type": "@id",
+      "@container": "@list"
     },
     "collectEntries": {
       "@id": "om:collectEntriesFrom",

@@ -43,7 +43,7 @@ export class Loader {
         loader.bindProperty('hasParameter', Util.PREFIXES['lsdc'] + 'hasParameter');
         loader.bindProperty('constructorMapping', Util.PREFIXES['lsdc'] + 'constructorMapping', true);
         loader.bindProperty('fields', Util.PREFIXES['om'] + 'field');
-        loader.bindProperty('elements', Util.PREFIXES['om'] + 'element');
+        loader.bindProperty('elements', Util.PREFIXES['om'] + 'elements', true);
         loader.bindProperty('collectEntriesFrom', Util.PREFIXES['om'] + 'collectEntriesFrom');
         loader.bindProperty('unique', Util.PREFIXES['lsdc'] + 'parameterUnique', true);
         loader.bindProperty('defaults', Util.PREFIXES['lsdc'] + 'hasDefaultValue');
@@ -74,7 +74,7 @@ export class Loader {
         loader.bindProperty('requireElement', Util.PREFIXES['npm'] + 'requireElement', true);
         loader.bindProperty('arguments', Util.PREFIXES['lsdc'] + 'arguments', true);
         loader.bindProperty('fields', Util.PREFIXES['om'] + 'field');
-        loader.bindProperty('elements', Util.PREFIXES['om'] + 'element');
+        loader.bindProperty('elements', Util.PREFIXES['om'] + 'elements', true);
         loader.bindProperty('collectEntriesFrom', Util.PREFIXES['om'] + 'collectEntriesFrom');
         loader.bindProperty('unique', Util.PREFIXES['lsdc'] + 'parameterUnique', true);
         loader.bindProperty('k', Util.PREFIXES['om'] + 'fieldName', true);
