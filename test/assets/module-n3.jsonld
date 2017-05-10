@@ -1,8 +1,8 @@
 {
   "@context": {
-    "@vocab": "http://linkedsoftwaredependencies.org/vocabulary/components#",
+    "@vocab": "http://linkedsoftwaredependencies.org/vocabularies/components#",
 
-    "lsdc": "http://linkedsoftwaredependencies.org/vocabulary/components#",
+    "lsdc": "http://linkedsoftwaredependencies.org/vocabularies/components#",
     "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
     "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
     "fn": "https://w3id.org/function/ontology#",

@@ -1,5 +1,5 @@
 @prefix ex: <http://example.org/>.
-@prefix lsdc: <http://linkedsoftwaredependencies.org/vocabulary/components#>.
+@prefix lsdc: <http://linkedsoftwaredependencies.org/vocabularies/components#>.
 
 ex:HelloWorldModule a lsdc:Module;
     lsdc:hasComponent ex:HelloWorldModuleSayHelloComponent .

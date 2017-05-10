@@ -8,8 +8,8 @@ import {RdfStreamIncluder} from "./rdf/RdfStreamIncluder";
 
 class Util {
     static readonly PREFIXES: {[id: string]: string} = {
-        'lsdc': 'http://linkedsoftwaredependencies.org/vocabulary/components#',
-        'om': 'http://linkedsoftwaredependencies.org/vocabulary/object-mapping#',
+        'lsdc': 'http://linkedsoftwaredependencies.org/vocabularies/components#',
+        'om': 'http://linkedsoftwaredependencies.org/vocabularies/object-mapping#',
         'rdf': 'http://www.w3.org/1999/02/22-rdf-syntax-ns#',
         'rdfs': 'http://www.w3.org/2000/01/rdf-schema#',
         'xsd': 'http://www.w3.org/2001/XMLSchema#',

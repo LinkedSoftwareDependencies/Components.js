@@ -2,7 +2,7 @@
   "@context": {
     "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
 
-    "lsdc": "http://linkedsoftwaredependencies.org/vocabulary/components#",
+    "lsdc": "http://linkedsoftwaredependencies.org/vocabularies/components#",
     "Module": {
       "@id": "lsdc:Module"
     },
@@ -74,7 +74,7 @@
       "@id": "npm:requireElement"
     },
 
-    "om": "http://linkedsoftwaredependencies.org/vocabulary/object-mapping#",
+    "om": "http://linkedsoftwaredependencies.org/vocabularies/object-mapping#",
     "ObjectMapping": {
       "@id": "om:ObjectMapping"
     },
