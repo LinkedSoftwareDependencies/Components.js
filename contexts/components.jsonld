@@ -78,11 +78,11 @@
     },
 
     "om": "http://linkedsoftwaredependencies.org/vocabulary/object-mapping#",
-    "ObjectMap": {
-      "@id": "om:ObjectMap"
+    "ObjectMapping": {
+      "@id": "om:ObjectMapping"
     },
-    "ArrayMap": {
-      "@id": "om:ArrayMap"
+    "ArrayMapping": {
+      "@id": "om:ArrayMapping"
     },
     "fields": {
       "@id": "om:field",

@@ -31,8 +31,8 @@
     "requireName": { "@id": "npm:requireName" },
     "requireElement": { "@id": "npm:requireElement" },
 
-    "ObjectMap": { "@id": "om:ObjectMap" },
-    "ArrayMap": { "@id": "om:ArrayMap" },
+    "ObjectMapping": { "@id": "om:ObjectMapping" },
+    "ArrayMapping": { "@id": "om:ArrayMapping" },
     "fields": { "@id": "om:field" },
     "elements": { "@id": "om:element" },
     "dynamicEntries": { "@id": "om:fieldValue", "@type": "@id" },

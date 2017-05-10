@@ -17,7 +17,7 @@
     "ComponentComponentInstance": { "@id": "lsdc:ComponentInstance" },
     "components": { "@id": "lsdc:hasComponent" },
     "parameters": { "@id": "lsdc:hasParameter" },
-    "constructorMapping": { "@id": "lsdc:constructorMapping", "@type": "lsdc:ObjectMap", "@container": "@list" },
+    "constructorMapping": { "@id": "lsdc:constructorMapping", "@type": "lsdc:ObjectMapping", "@container": "@list" },
 
     "comment": { "@id": "rdfs:comment", "@type": "@id" },
     "extends": { "@id": "rdfs:subClassOf", "@type": "@id" },
@@ -32,10 +32,10 @@
     "requireName": { "@id": "npm:requireName" },
     "requireElement": { "@id": "npm:requireElement" },
 
-    "ObjectMap": { "@id": "om:ObjectMap" },
-    "ArrayMap": { "@id": "om:ArrayMap" },
-    "fields": { "@id": "om:field",  "@type": "om:ObjectMapEntry" },
-    "elements": { "@id": "om:element", "@type": "om:ArrayMapEntry" },
+    "ObjectMapping": { "@id": "om:ObjectMapping" },
+    "ArrayMapping": { "@id": "om:ArrayMapping" },
+    "fields": { "@id": "om:field",  "@type": "om:ObjectMappingEntry" },
+    "elements": { "@id": "om:element", "@type": "om:ArrayMappingEntry" },
     "dynamicEntries": { "@id": "om:dynamicEntries", "@type": "@id" },
     "keyRaw": { "@id": "om:fieldName" },
     "key": { "@id": "om:fieldName", "@type": "@id" },
