@@ -26,11 +26,17 @@ export class Loader {
     _instances: {[id: string]: any} = {};
 
     /**
+     * Shared mapping from resource URI to resource instance for al RDF class loaders.
+     */
+    resources: {[id: string]: Resource} = {};
+
+    /**
      * @returns {RdfClassLoader} A new RDF class loader for loading modules and components
      * @private
      */
     _newModuleLoader(): RdfClassLoader {
         let loader: RdfClassLoader = new RdfClassLoader({ captureAllProperties: true, normalizeLists: true });
+        loader.resources = this.resources;
 
         loader.bindClass('constructables', Util.PREFIXES['lsdc'] + 'ComponentConstructable');
         loader.bindClass('instances', Util.PREFIXES['lsdc'] + 'ComponentInstance');
@@ -65,6 +71,7 @@ export class Loader {
      */
     _newConfigLoader(): RdfClassLoader {
         let loader: RdfClassLoader = new RdfClassLoader({ captureAllProperties: true, captureAllClasses: true });
+        loader.resources = this.resources;
 
         loader.bindClass('constructables', Util.PREFIXES['lsdc'] + 'ComponentConstructable');
         loader.bindClass('instances', Util.PREFIXES['lsdc'] + 'ComponentInstance');
@@ -229,8 +236,8 @@ export class Loader {
         }, []);
         if (componentTypes.length !== 1 && !(<any> configResource).requireName && !(<any> configResource).requireElement) {
             throw new Error('Could not run config ' + configResource.value + ' because exactly one valid component type ' +
-                'was expected, while "' + componentTypes + '" were found. ' +
-                'Alternatively, the requireName and requireElement must be provided.' + JSON.stringify(configResource, null, '  '));
+                'was expected, while ' + componentTypes.length + ' were found. ' +
+                'Alternatively, the requireName and requireElement must be provided.' + require('util').inspect(configResource));
         }
         let componentResource: any;
         let moduleResource: any;

@@ -100,7 +100,9 @@ export class RdfClassLoader extends Writable {
             if (!subjectInstance[fieldName]) {
                 subjectInstance[fieldName] = [];
             }
-            subjectInstance[fieldName].push(objectInstance);
+            if (subjectInstance[fieldName].indexOf(objectInstance) < 0) {
+                subjectInstance[fieldName].push(objectInstance);
+            }
         } else {
             if (subjectInstance[fieldName]) {
                 this.emit('error', new Error('Predicate ' + triple.predicate + ' with field ' + fieldName
