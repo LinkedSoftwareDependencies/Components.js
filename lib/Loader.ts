@@ -45,7 +45,6 @@ export class Loader {
         loader.bindProperty('fields', Util.PREFIXES['om'] + 'field');
         loader.bindProperty('elements', Util.PREFIXES['om'] + 'elements', true);
         loader.bindProperty('collectEntriesFrom', Util.PREFIXES['om'] + 'collectEntriesFrom');
-        loader.bindProperty('unique', Util.PREFIXES['lsdc'] + 'parameterUnique', true);
         loader.bindProperty('defaults', Util.PREFIXES['lsdc'] + 'hasDefaultValue');
         loader.bindProperty('fixed', Util.PREFIXES['lsdc'] + 'hasFixedValue');
         loader.bindProperty('k', Util.PREFIXES['om'] + 'fieldName', true);
@@ -76,7 +75,6 @@ export class Loader {
         loader.bindProperty('fields', Util.PREFIXES['om'] + 'field');
         loader.bindProperty('elements', Util.PREFIXES['om'] + 'elements', true);
         loader.bindProperty('collectEntriesFrom', Util.PREFIXES['om'] + 'collectEntriesFrom');
-        loader.bindProperty('unique', Util.PREFIXES['lsdc'] + 'parameterUnique', true);
         loader.bindProperty('k', Util.PREFIXES['om'] + 'fieldName', true);
         loader.bindProperty('v', Util.PREFIXES['om'] + 'fieldValue', true);
         loader.bindProperty('types', Util.PREFIXES['rdf'] + 'type');
