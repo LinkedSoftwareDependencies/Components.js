@@ -41,13 +41,13 @@ export class MappedNamedComponentFactory extends UnnamedComponentFactory {
      */
     static map(resource: any, params: any): any {
         if (resource.k && resource.v) {
-            if (resource.k.termType === 'Literal' && !resource.dynamicEntriesFrom) {
+            if (resource.k.termType === 'Literal' && !resource.collectEntriesFrom) {
                 return { k: resource.k, v: MappedNamedComponentFactory.mapValue(resource.v, params) };
             } else {
-                if (!resource.dynamicEntriesFrom) {
-                    throw new Error('If an object key is a URI, it must provide dynamic entries using the lsdc:dynamicEntriesFrom predicate: ' + resource);
+                if (!resource.collectEntriesFrom) {
+                    throw new Error('If an object key is a URI, it must provide dynamic entries using the lsdc:collectEntriesFrom predicate: ' + resource);
                 }
-                return resource.dynamicEntriesFrom.reduce((data: Resource[], entry: Resource) => {
+                return resource.collectEntriesFrom.reduce((data: Resource[], entry: Resource) => {
                     if (entry.termType !== 'NamedNode') {
                         throw new Error('Dynamic entry identifiers must be URI\'s: ' + entry);
                     }

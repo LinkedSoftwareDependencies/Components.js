@@ -36,7 +36,7 @@
     "ArrayMapping": { "@id": "om:ArrayMapping" },
     "fields": { "@id": "om:field",  "@type": "om:ObjectMappingEntry" },
     "elements": { "@id": "om:element", "@type": "om:ArrayMappingEntry" },
-    "dynamicEntries": { "@id": "om:dynamicEntries", "@type": "@id" },
+    "collectEntries": { "@id": "om:collectEntriesFrom", "@type": "@id" },
     "keyRaw": { "@id": "om:fieldName" },
     "key": { "@id": "om:fieldName", "@type": "@id" },
     "value": { "@id": "om:fieldValue", "@type": "@id" }
@@ -58,7 +58,7 @@
               "@id": "ex:HelloWorldModule#SayHelloComponentAbstract#ConstructorMappingObject",
               "fields": [
                 {
-                  "dynamicEntries": "hello:something",
+                  "collectEntries": "hello:something",
                   "key": "hello:somethingKey",
                   "value": "hello:somethingValue"
                 }
@@ -80,7 +80,7 @@
               "extends": "ex:HelloWorldModule#SayHelloComponentAbstract#ConstructorMappingObject",
               "fields": [
                 {
-                  "dynamicEntries": "hello:something1",
+                  "collectEntries": "hello:something1",
                   "key": "hello:somethingKey",
                   "value": "hello:somethingValue"
                 }
@@ -102,7 +102,7 @@
               "extends": "ex:HelloWorldModule#SayHelloComponent1#ConstructorMappingObject",
               "fields": [
                 {
-                  "dynamicEntries": "hello:something2",
+                  "collectEntries": "hello:something2",
                   "key": "hello:somethingKey",
                   "value": "hello:somethingValue"
                 }

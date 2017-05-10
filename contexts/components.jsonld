@@ -92,8 +92,8 @@
       "@id": "om:element",
       "@type": "om:ArrayMapEntry"
     },
-    "dynamicEntries": {
-      "@id": "om:dynamicEntries",
+    "collectEntries": {
+      "@id": "om:collectEntriesFrom",
       "@type": "@id"
     },
     "keyRaw": {

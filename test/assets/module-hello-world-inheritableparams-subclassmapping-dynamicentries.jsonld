@@ -36,7 +36,7 @@
     "ArrayMapping": { "@id": "om:ArrayMapping" },
     "fields": { "@id": "om:field",  "@type": "om:ObjectMappingEntry" },
     "elements": { "@id": "om:element", "@type": "om:ArrayMappingEntry" },
-    "dynamicEntries": { "@id": "om:dynamicEntries", "@type": "@id" },
+    "collectEntries": { "@id": "om:collectEntriesFrom", "@type": "@id" },
     "keyRaw": { "@id": "om:fieldName" },
     "key": { "@id": "om:fieldName", "@type": "@id" },
     "value": { "@id": "om:fieldValue", "@type": "@id" }
@@ -65,7 +65,7 @@
                     "fields": [
                       {
                         "@id": "ex:somethingFields1",
-                        "dynamicEntries": { "@id": "hello:something" },
+                        "collectEntries": { "@id": "hello:something" },
                         "key": "hello:somethingKey",
                         "value": "hello:somethingValue"
                       }
@@ -117,7 +117,7 @@
                     "@type": "om:ObjectMapping",
                     "fields": [
                       {
-                        "dynamicEntries": "hello:somethingElse",
+                        "collectEntries": "hello:somethingElse",
                         "key": "hello:somethingKey",
                         "value": "hello:somethingValue"
                       }

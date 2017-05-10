@@ -35,7 +35,7 @@
     "ArrayMapping": { "@id": "om:ArrayMapping" },
     "fields": { "@id": "om:field" },
     "elements": { "@id": "om:element" },
-    "dynamicEntries": { "@id": "om:fieldValue", "@type": "@id" },
+    "collectEntries": { "@id": "om:fieldValue", "@type": "@id" },
     "keyRaw": { "@id": "om:fieldName" },
     "key": { "@id": "om:fieldName", "@type": "@id" },
     "value": { "@id": "om:fieldValue", "@type": "@id" }
