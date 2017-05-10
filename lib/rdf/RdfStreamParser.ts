@@ -12,12 +12,12 @@ export class RdfStreamParser extends PassThrough {
     _n3Parser: N3.N3Parser;
     _jsonParser: JsonLdStreamParser;
 
-    constructor() {
+    constructor(contexts?: {[id: string]: string}) {
         super({ decodeStrings: true });
         (<any> this)._readableState.objectMode = true;
 
         this._n3Parser = new N3.StreamParser(<any> { blankNodePrefix: 'n3b' });
-        this._jsonParser = new JsonLdStreamParser();
+        this._jsonParser = new JsonLdStreamParser(contexts);
     }
 
     pipeFrom(target: Stream): Stream {

@@ -1,5 +1,6 @@
 import {Transform} from "stream";
-let jsonld: any = require("jsonld");
+import fs = require("fs");
+import _ = require('lodash');
 
 /**
  * A JsonLdStreamParser takes a text stream as input and parses it to a triple stream.
@@ -7,14 +8,35 @@ let jsonld: any = require("jsonld");
 export class JsonLdStreamParser extends Transform {
 
     static BLANK_NODE_COUNTER: number = 0;
+    static DEFAULT_CONTEXTS: {[id: string]: string} = {
+        'http://linkedsoftwaredependencies.org/contexts/components.jsonld':
+            fs.readFileSync(__dirname + '/../../contexts/components.jsonld', 'utf8')
+    };
 
     _blankNodeId: number;
     _data: string = "";
+    _jsonld: any;
+    _contexts: {[id: string]: string};
 
-    constructor() {
+    constructor(contexts?: {[id: string]: string}) {
         super({ decodeStrings: true });
         (<any> this)._readableState.objectMode = true;
         this._blankNodeId = JsonLdStreamParser.BLANK_NODE_COUNTER++;
+        this._jsonld = require("jsonld");
+        this._contexts = _.defaults(contexts || {}, JsonLdStreamParser.DEFAULT_CONTEXTS);
+
+        let originalDocumentLoader: any = this._jsonld.documentLoader;
+        this._jsonld.documentLoader = (url: string, callback: any) => {
+            if (url in this._contexts) {
+                return callback(null, {
+                    contextUrl: null,
+                    document: this._contexts[url],
+                    documentUrl: url
+                });
+            } else {
+                return originalDocumentLoader(url, callback);
+            }
+        };
     }
 
     _transform(chunk: any, encoding: any, done: any) {
@@ -25,7 +47,7 @@ export class JsonLdStreamParser extends Transform {
     _flush(done: any) {
         try {
             let parsed: any = JSON.parse(this._data);
-            jsonld.toRDF(parsed, (error: any, triples: any) => {
+            this._jsonld.toRDF(parsed, (error: any, triples: any) => {
                 if (error) {
                     this.emit('error', error);
                 } else {

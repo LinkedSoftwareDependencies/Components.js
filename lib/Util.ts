@@ -51,11 +51,13 @@ class Util {
      * @param fromPath The path to base relative paths on.
      *                 Default is the current running directory.
      * @param ignoreImports If imports should be ignored. Default: false
+     * @param contexts The cached JSON-LD contexts
      * @returns A triple stream.
      * @private
      */
-    static parseRdf(rdfDataStream: Stream, fromPath?: string, ignoreImports?: boolean): Stream {
-        let stream: Stream = new RdfStreamParser().pipeFrom(rdfDataStream);
+    static parseRdf(rdfDataStream: Stream, fromPath?: string, ignoreImports?: boolean,
+                    contexts?: {[id: string]: string}): Stream {
+        let stream: Stream = new RdfStreamParser(contexts).pipeFrom(rdfDataStream);
         let ret: Stream = stream.pipe(new RdfStreamIncluder(Util, fromPath, !ignoreImports));
         stream.on('error', (e: any) => ret.emit('error', e));
         return ret;

@@ -1,45 +1,11 @@
 {
-  "@context": {
-    "lsdc": "http://linkedsoftwaredependencies.org/vocabulary/components#",
-    "om": "http://linkedsoftwaredependencies.org/vocabulary/object-mapping#",
-    "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
-    "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
-    "owl": "http://www.w3.org/2002/07/owl#",
-
-    "npm": "http://example.org/npm#",
-
-    "hello": "http://example.org/hello/",
-    "ex": "http://example.org/",
-
-    "Module": { "@id": "lsdc:Module" },
-    "ComponentConstructable": { "@id": "lsdc:ComponentConstructable" },
-    "ComponentConstructableAbstract": { "@id": "lsdc:ComponentConstructableAbstract" },
-    "ComponentComponentInstance": { "@id": "lsdc:ComponentInstance" },
-    "components": { "@id": "lsdc:hasComponent" },
-    "parameters": { "@id": "lsdc:hasParameter" },
-    "constructorArguments": { "@id": "lsdc:constructorArguments", "@type": "lsdc:ObjectMapping", "@container": "@list" },
-
-    "comment": { "@id": "rdfs:comment", "@type": "@id" },
-    "extends": { "@id": "rdfs:subClassOf", "@type": "@id" },
-
-    "import": { "@id": "owl:imports" },
-
-    "inheritValues": { "@id": "rdfs:subClassOf", "@type": "@id" },
-    "onParameter": { "@id": "owl:onProperty", "@type": "@id" },
-    "from": { "@id": "owl:allValuesFrom", "@type": "@id" },
-
-    "requireName": { "@id": "npm:requireName" },
-    "requireElement": { "@id": "npm:requireElement" },
-
-    "ObjectMapping": { "@id": "om:ObjectMapping" },
-    "ArrayMapping": { "@id": "om:ArrayMapping" },
-    "fields": { "@id": "om:field",  "@type": "om:ObjectMappingEntry" },
-    "elements": { "@id": "om:elements", "@type": "@id", "@container": "@list" },
-    "collectEntries": { "@id": "om:fieldValue", "@type": "@id" },
-    "keyRaw": { "@id": "om:fieldName" },
-    "key": { "@id": "om:fieldName", "@type": "@id" },
-    "value": { "@id": "om:fieldValue", "@type": "@id" }
-  },
+  "@context": [
+    "http://linkedsoftwaredependencies.org/contexts/components.jsonld",
+    {
+      "hello": "http://example.org/hello/",
+      "ex": "http://example.org/"
+    }
+  ],
   "@graph": [
     {
       "@id": "ex:HelloWorldModule",

@@ -15,6 +15,8 @@ import {IComponentFactory} from "./factory/IComponentFactory";
  */
 export class Loader {
 
+    _properties: LoaderProperties;
+
     _componentResources: {[id: string]: Resource} = {};
     /**
      * Require overrides.
@@ -29,6 +31,10 @@ export class Loader {
      * Shared mapping from resource URI to resource instance for al RDF class loaders.
      */
     resources: {[id: string]: Resource} = {};
+
+    constructor(properties?: LoaderProperties) {
+        this._properties = properties || {};
+    }
 
     /**
      * @returns {RdfClassLoader} A new RDF class loader for loading modules and components
@@ -214,7 +220,7 @@ export class Loader {
      */
     registerModuleResourcesUrl(moduleResourceUrl: string, fromPath?: string): Promise<void> {
         return Util.getContentsFromUrlOrPath(moduleResourceUrl, fromPath)
-            .then((data: Stream) => this.registerModuleResourcesStream(Util.parseRdf(data, fromPath)));
+            .then((data: Stream) => this.registerModuleResourcesStream(Util.parseRdf(data, fromPath, false, this._properties.contexts)));
     }
 
     /**
@@ -394,7 +400,7 @@ export class Loader {
      */
     getConfigConstructorFromUrl(configResourceUri: string, configResourceUrl: string, fromPath?: string): Promise<IComponentFactory> {
         return Util.getContentsFromUrlOrPath(configResourceUrl, fromPath)
-            .then((data: Stream) => this.getConfigConstructorFromStream(configResourceUri, Util.parseRdf(data, fromPath)));
+            .then((data: Stream) => this.getConfigConstructorFromStream(configResourceUri, Util.parseRdf(data, fromPath, false, this._properties.contexts)));
     }
 
     /**
@@ -407,7 +413,7 @@ export class Loader {
      */
     instantiateFromUrl(configResourceUri: string, configResourceUrl: string, fromPath?: string): Promise<any> {
         return Util.getContentsFromUrlOrPath(configResourceUrl, fromPath)
-            .then((data: Stream) => this.instantiateFromStream(configResourceUri, Util.parseRdf(data, fromPath)));
+            .then((data: Stream) => this.instantiateFromStream(configResourceUri, Util.parseRdf(data, fromPath, false, this._properties.contexts)));
     }
 
     /**
@@ -434,4 +440,8 @@ export class Loader {
         return constructor.create();
     }
 
+}
+
+export interface LoaderProperties {
+    contexts?: {[id: string]: string};
 }
