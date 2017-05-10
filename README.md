@@ -14,42 +14,55 @@ $ [sudo] npm install lsd-components
 ## Terminology
 A **module** is equivalent to a **Node module** and can contain several **components**.
 
-A **module definition** is a declarative semantic definition of a **module**.
-It defines the module name and lists its components.
+A **component** is either a **class** or an **instance** that can be respectively instantiated or retrieved.
+A **class** can be instantiated by creating a new **instance** of that type with zero or more **parameter** values.
+**Parameters** are defined by the class and its superclasses.
 
-A **component** is either an **object factory** or an **object instance** that can be respectively invoked or called declaratively.
+A **component configuration** is a declarative instantiation of
+**components** into **instances** based on **parameters**.
 
-A **component definition** is a declarative semantic definition of a **component**.
-It defines the location in the module and the possible parameters.
+## Workflow
 
-A **component configuration** is a declarative invocation of a **component**.
-It is a subtype of a component and can assign values for the parameters that are defined by the component.
+This framework provides the following workflow for injecting components.
 
-## Module Definition
+- Defining a Module
+- Defining a Component
+- Configuring a Component
+- Invoking a Component configuration
+
+## Prefixes
+
+We use the following prefixes in the following examples:
+```
+@prefix oo: <http://linkedsoftwaredependencies.org/vocabularies/object-oriented#>.
+@prefix om: <http://linkedsoftwaredependencies.org/vocabularies/object-mapping#>.
+```
+
+## Defining a Module
 
 Example:
 ```
-ex:HelloWorldModule a lsdc:Module;
+:SomeModule a oo:Module;
     npm:requireName "helloworld";
-    hasComponent ex:HelloWorldModule#SayHelloComponent.
+    oo:hasComponent :SomeModule#Component1.
 ```
 
-## Component Definition
+## Defining a Component
 
-A `lsdc:Component` has two possible subtypes: `lsdc:ComponentConstructable` or `lsdc:ComponentInstance`.
-`lsdc:ComponentConstructable` accepts arguments and constructs instances.
-`lsdc:ComponentInstance` already is an instance.
+A component is either a **class** or an **instance**.
+A **class** can be instantiated into an **instance** based on a set of parameters.
+An **instance** can be used directly without instantiation.
 
-### Component Definition: Unmapped
+### Defining a Component: Unmapped
 
 Parameter values will directly be sent to the constructor.
 
 Example:
 ```
-ex:HelloWorldModule#SayHelloComponent a lsdc:ComponentConstructable;
+:SomeModule#Component1 a oo:Class;
     npm:requireElement "Hello";
-    hasParameter hello:say;
-    hasParameter hello:world.
+    oo:hasParameter hello:say;
+    oo:hasParameter hello:world.
 ```
 
 In this case the `Hello` component will always receive a single object as argument like:
@@ -60,17 +73,17 @@ In this case the `Hello` component will always receive a single object as argume
 }
 ```
 
-### Component Definition: Mapped
+### Defining a Component: Mapped
 
 Parameter values will first be mapped to a configured parameter structure before being sent to the constructor.
 
 Example:
 ```
-ex:HelloWorldModule#SayHelloComponent a lsdc:ComponentConstructable;
+:SomeModule#Component1 a oo:Class;
     npm:requireElement "Hello";
-    hasParameter hello:say;
-    hasParameter hello:world;
-    constructorArguments (
+    oo:hasParameter hello:say;
+    oo:hasParameter hello:world;
+    oo:constructorArguments (
         [
             rdf:value hello:say.
         ],
@@ -89,24 +102,23 @@ In this case the `Hello` component will receive two objects as arguments like:
 
 Each argument can be an `lsdc:Object` as follows:
 ```
-ex:HelloWorldModule#SayHelloComponent a lsdc:ComponentConstructable;
+:SomeModule#Component1 a oo:Class;
     npm:requireElement "Hello";
-    hasParameter hello:say;
-    hasParameter hello:world;
-    constructorArguments (
+    oo:hasParameter hello:say;
+    oo:hasParameter hello:world;
+    oo:constructorArguments (
         [
-            a lsdc:Object;
-            lsdc:hasField [
-                rdfs:label "say",
-                rdf:value hello:say.                
+            om:field [
+                om:fieldName "say",
+                om:fieldValue hello:say.                
             ];
-            lsdc:hasField [
-                rdfs:label "world",
-                rdf:value hello:world.                
+            om:field [
+                om:fieldName "world",
+                om:fieldValue hello:world.                
             ];
         ],
         [
-            rdf:value hello:world.
+            om:fieldValue hello:world.
         ]
     ).
 ```
@@ -121,72 +133,81 @@ In this case the `Hello` component will receive two object as arguments like:
 ]
 ```
 
-## Component Configuration
+## Configuring a Component
 
-If a component definition exists, parameter predicates are defined and should be used.
-If no such definition exists, all required information must be provided in the configuration.
+If a component definition exists (the component is _named_), parameter predicates are defined and can be used.
+If no such definition exists (the component is _unnamed_), the constructor arguments must be provided in the configuration.
 
-### Component Configuration: Named
+### Configuring a Component: Named
 
 When a component definition exists, parameter predicates can be used to fill in the parameters.
 
 Example:
 ```
-ex:myHelloWorld a HelloWorldModule#SayHelloComponent;
+:myComponent a :SomeModule#Component1;
     hello:say "Hello";
     hello:world "World".
 ```
 
-### Component Configuration: Unnamed
+### Configuring a Component: Unnamed
 
-When a component definition does not exists, parameters can be filled in manually using the `lsdc:arguments` predicate.
+When a component definition does not exists, constructor arguments can be filled in manually using the `oo:arguments` predicate.
 The NPM module name and the component element path must be provided as well.
 
 Example:
 ```
-ex:myHelloWorld a HelloWorldModule#SayHelloComponent;
+:myComponent a :SomeModule#Component1;
     npm:requireName "helloworld",
     npm:requireElement "Hello",
-    lsdc:arguments (
+    oo:arguments (
         [
-            rdf:value "SAY".
+            om:fieldValue "SAY".
         ],
         [
-            rdf:value "WORLD".
+            om:fieldValue "WORLD".
         ]
     ).
 ```
 
-Each argument can be an `lsdc:Object` as follows:
+Each argument can be an `om:ObjectMapping` as follows:
 ```
-ex:myHelloWorld a HelloWorldModule#SayHelloComponent;
+:myComponent a :SomeModule#Component1;
     npm:requireName "helloworld",
     npm:requireElement "Hello",
-    lsdc:arguments (
+    oo:arguments (
         [
-            a lsdc:Object;
-            lsdc:hasField [
-                rdfs:label "say",
-                rdf:value "SAY".                
+            om:field [
+                om:fieldName "say",
+                om:fieldValue "SAY".                
             ];
-            lsdc:hasField [
-                rdfs:label "world",
-                rdf:value "WORLD".                
+            om:field [
+                om:fieldName "world",
+                om:fieldValue "WORLD".                
             ];
         ],
         [
-            rdf:value "WORLD".
+            om:fieldValue "WORLD".
         ]
     ).
 ```
 
-## Constructing
+## Invoking a Component configuration
 
-Components can be constructed based on a triple stream or by manually passing parameters.
+Components can be constructed in code based on an RDF document, triple stream or by manually passing parameters.
 
 First, a stream containing modules and components must be registered to the Loader.
 After that, either a component config URI with a config stream must be passed,
 or a component URI with a set of manual parameters.
+
+### from an RDF document
+```javascript
+const Loader = require('lsd-components').Loader;
+
+let loader = new Loader();
+loader.registerModuleResourcesUrl('module-hello-world.jsonld')
+    .then(() => loader.instantiateFromUrl('http://example.org/myHelloWorld', 'config-hello-world.jsonld'))
+    .then((helloWorld) => helloWorld.run());
+```
 
 ### from a triple stream
 ```javascript
@@ -196,7 +217,7 @@ const JsonLdStreamParser = require('lsd-components').JsonLdStreamParser;
 let loader = new Loader();
 let moduleStream = fs.createReadStream('module-hello-world.jsonld').pipe(new JsonLdStreamParser());
 let configStream = fs.createReadStream('config-hello-world.jsonld').pipe(new JsonLdStreamParser());
-loader.registerModuleResourcesStream(moduleStream)
+loader.registerModuleResourcesUrl('module-hello-world.jsonld')
     .then(() => loader.runConfigStream('http://example.org/myHelloWorld', configStream))
     .then((helloWorld) => helloWorld.run());
 ```
@@ -213,7 +234,7 @@ params['http://example.org/hello/hello'] = 'WORLD';
 params['http://example.org/hello/say'] = 'BONJOUR';
 params['http://example.org/hello/bla'] = 'BLA';
 loader.registerModuleResourcesStream(moduleStream)
-    .then(() => loader.runManually('http://example.org/HelloWorldModule#SayHelloComponent, params))
+    .then(() => loader.runManually('http://example.org/HelloWorldModule#SayHelloComponent', params))
     .then((helloWorld) => helloWorld.run());
 ```
 
