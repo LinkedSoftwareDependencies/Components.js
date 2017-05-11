@@ -66,12 +66,12 @@
       "@type": "@id"
     },
 
-    "npm": "http://example.org/npm#",
+    "npm": "http://linkedsoftwaredependencies.org/ontologies/npm#",
     "requireName": {
       "@id": "npm:requireName"
     },
     "requireElement": {
-      "@id": "npm:requireElement"
+      "@id": "lsdc:componentPath"
     },
 
     "om": "http://linkedsoftwaredependencies.org/vocabularies/object-mapping#",

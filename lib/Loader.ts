@@ -50,7 +50,7 @@ export class Loader {
         loader.bindClass('modules', Util.PREFIXES['lsdc'] + 'Module');
 
         loader.bindProperty('requireName', Util.PREFIXES['npm'] + 'requireName', true);
-        loader.bindProperty('requireElement', Util.PREFIXES['npm'] + 'requireElement', true);
+        loader.bindProperty('requireElement', Util.PREFIXES['lsdc'] + 'componentPath', true);
         loader.bindProperty('hasComponent', Util.PREFIXES['lsdc'] + 'hasComponent');
         loader.bindProperty('hasParameter', Util.PREFIXES['lsdc'] + 'hasParameter');
         loader.bindProperty('constructorArguments', Util.PREFIXES['lsdc'] + 'constructorArguments', true);

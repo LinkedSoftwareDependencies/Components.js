@@ -6,7 +6,7 @@
     "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
     "owl": "http://www.w3.org/2002/07/owl#",
 
-    "npm": "http://example.org/npm#",
+    "npm": "http://linkedsoftwaredependencies.org/ontologies/npm#",
 
     "hello": "http://example.org/hello/",
     "ex": "http://example.org/",
@@ -30,7 +30,7 @@
     "from": { "@id": "owl:allValuesFrom", "@type": "@id" },
 
     "requireName": { "@id": "npm:requireName" },
-    "requireElement": { "@id": "npm:requireElement" },
+    "requireElement": { "@id": "lsdc:componentPath" },
 
     "ObjectMapping": { "@id": "om:ObjectMapping" },
     "ArrayMapping": { "@id": "om:ArrayMapping" },

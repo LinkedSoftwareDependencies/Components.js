@@ -8,7 +8,7 @@
     "fn": "https://w3id.org/function/ontology#",
     "ex": "http://example.org/",
     "hello": "http://example.org/hello/",
-    "npm": "http://example.org/npm#",
+    "npm": "http://linkedsoftwaredependencies.org/ontologies/npm#",
     "n3": "http://example.org/n3#",
     "owl": "http://www.w3.org/2002/07/owl#",
 
@@ -28,7 +28,7 @@
     },
 
     "requireName": { "@id": "npm:requireName" },
-    "requireElement": { "@id": "npm:requireElement" },
+    "requireElement": { "@id": "lsdc:componentPath" },
 
     "ObjectMapping": { "@id": "om:ObjectMapping" },
     "ArrayMapping": { "@id": "om:ArrayMapping" },

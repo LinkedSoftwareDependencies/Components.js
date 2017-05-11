@@ -5,14 +5,14 @@
     "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
     "ex": "http://example.org/",
     "n3": "http://example.org/n3#",
-    "npm": "http://example.org/npm#"
+    "npm": "http://linkedsoftwaredependencies.org/ontologies/npm#"
   },
   "@graph": [
     {
       "@id": "ex:myParser",
       "@type": [ "n3:Parser", "ComponentConstructable" ],
       "npm:requireName": "n3",
-      "npm:requireElement": "Parser",
+      "lsdc:componentPath": "Parser",
       "arguments": [
         {
           "format": "application/trig",
@@ -24,7 +24,7 @@
       "@id": "ex:myLexer",
       "@type": [ "n3:Lexer", "ComponentConstructable" ],
       "npm:requireName": "n3",
-      "npm:requireElement": "Lexer",
+      "lsdc:componentPath": "Lexer",
       "arguments": {
         "@list": [
           {
