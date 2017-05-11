@@ -66,9 +66,9 @@
       "@type": "@id"
     },
 
-    "npm": "http://linkedsoftwaredependencies.org/ontologies/npm#",
+    "doap": "http://usefulinc.com/ns/doap#",
     "requireName": {
-      "@id": "npm:requireName"
+      "@id": "doap:name"
     },
     "requireElement": {
       "@id": "lsdc:componentPath"

@@ -5,13 +5,13 @@
     "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
     "ex": "http://example.org/",
     "n3": "http://example.org/n3#",
-    "npm": "http://linkedsoftwaredependencies.org/ontologies/npm#"
+    "doap": "http://usefulinc.com/ns/doap#"
   },
   "@graph": [
     {
       "@id": "ex:myParser",
       "@type": [ "n3:Parser", "ComponentConstructable" ],
-      "npm:requireName": "n3",
+      "doap:name": "n3",
       "lsdc:componentPath": "Parser",
       "arguments": {
         "@list": [
@@ -34,7 +34,7 @@
     {
       "@id": "ex:myLexer",
       "@type": [ "n3:Lexer", "ComponentConstructable" ],
-      "npm:requireName": "n3",
+      "doap:name": "n3",
       "lsdc:componentPath": "Lexer",
       "arguments": {
         "@list": [

@@ -60,7 +60,7 @@ describe('Loader', function () {
         let moduleStream = new Readable({ objectMode: true });
         moduleStream.push({ subject: module, predicate: Constants.PREFIXES['rdf'] + 'type', object: Constants.PREFIXES['lsdc'] + 'Module'});
         moduleStream.push({ subject: module, predicate: Constants.PREFIXES['lsdc'] + 'hasComponent', object: component1});
-        moduleStream.push({ subject: module, predicate: Constants.PREFIXES['npm'] + 'requireName', object: '"../../test/helloworld"'});
+        moduleStream.push({ subject: module, predicate: Constants.PREFIXES['doap'] + 'name', object: '"../../test/helloworld"'});
         moduleStream.push({ subject: component1, predicate: Constants.PREFIXES['rdf'] + 'type', object: Constants.PREFIXES['lsdc'] + 'ComponentConstructable'});
         moduleStream.push({ subject: component1, predicate: Constants.PREFIXES['lsdc'] + 'componentPath', object: '"Hello"'});
         moduleStream.push({ subject: component1, predicate: Constants.PREFIXES['lsdc'] + 'hasParameter', object: 'http://example.org/myModule/params#param1'});

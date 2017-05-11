@@ -49,7 +49,7 @@ export class Loader {
         loader.bindClass('abstractConstructables', Util.PREFIXES['lsdc'] + 'ComponentConstructableAbstract');
         loader.bindClass('modules', Util.PREFIXES['lsdc'] + 'Module');
 
-        loader.bindProperty('requireName', Util.PREFIXES['npm'] + 'requireName', true);
+        loader.bindProperty('requireName', Util.PREFIXES['doap'] + 'name', true);
         loader.bindProperty('requireElement', Util.PREFIXES['lsdc'] + 'componentPath', true);
         loader.bindProperty('hasComponent', Util.PREFIXES['lsdc'] + 'hasComponent');
         loader.bindProperty('hasParameter', Util.PREFIXES['lsdc'] + 'hasParameter');
@@ -82,8 +82,8 @@ export class Loader {
         loader.bindClass('constructables', Util.PREFIXES['lsdc'] + 'ComponentConstructable');
         loader.bindClass('instances', Util.PREFIXES['lsdc'] + 'ComponentInstance');
 
-        loader.bindProperty('requireName', Util.PREFIXES['npm'] + 'requireName', true);
-        loader.bindProperty('requireElement', Util.PREFIXES['npm'] + 'requireElement', true);
+        loader.bindProperty('requireName', Util.PREFIXES['doap'] + 'name', true);
+        loader.bindProperty('requireElement', Util.PREFIXES['lsdc'] + 'componentPath', true);
         loader.bindProperty('arguments', Util.PREFIXES['lsdc'] + 'arguments', true);
         loader.bindProperty('fields', Util.PREFIXES['om'] + 'field');
         loader.bindProperty('elements', Util.PREFIXES['om'] + 'elements', true);

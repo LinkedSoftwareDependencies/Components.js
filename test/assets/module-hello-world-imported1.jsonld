@@ -6,7 +6,7 @@
     "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
     "owl": "http://www.w3.org/2002/07/owl#",
 
-    "npm": "http://linkedsoftwaredependencies.org/ontologies/npm#",
+    "doap": "http://usefulinc.com/ns/doap#",
 
     "hello": "http://example.org/hello/",
     "ex": "http://example.org/",
@@ -28,7 +28,7 @@
     "onParameter": { "@id": "owl:onProperty", "@type": "@id" },
     "from": { "@id": "owl:allValuesFrom", "@type": "@id" },
 
-    "requireName": { "@id": "npm:requireName" },
+    "requireName": { "@id": "doap:name" },
     "requireElement": { "@id": "lsdc:componentPath" },
 
     "ObjectMapping": { "@id": "om:ObjectMapping" },
