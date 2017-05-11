@@ -100,7 +100,7 @@ In this case the `Hello` component will receive two objects as arguments like:
 ]
 ```
 
-Each argument can be an `lsdc:Object` as follows:
+Each argument can be an `om:ObjectMapping` as follows:
 ```
 :SomeModule#Component1 a oo:Class;
     npm:requireElement "Hello";

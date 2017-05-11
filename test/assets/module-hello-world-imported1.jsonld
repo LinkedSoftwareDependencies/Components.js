@@ -1,6 +1,6 @@
 {
   "@context": {
-    "lsdc": "http://linkedsoftwaredependencies.org/vocabularies/components#",
+    "oo": "http://linkedsoftwaredependencies.org/vocabularies/object-oriented#",
     "om": "http://linkedsoftwaredependencies.org/vocabularies/object-mapping#",
     "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
     "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
@@ -11,13 +11,13 @@
     "hello": "http://example.org/hello/",
     "ex": "http://example.org/",
 
-    "Module": { "@id": "lsdc:Module" },
-    "ComponentConstructable": { "@id": "lsdc:ComponentConstructable" },
-    "ComponentConstructableAbstract": { "@id": "lsdc:ComponentConstructableAbstract" },
-    "ComponentComponentInstance": { "@id": "lsdc:ComponentInstance" },
-    "components": { "@id": "lsdc:hasComponent" },
-    "parameters": { "@id": "lsdc:hasParameter" },
-    "constructorArguments": { "@id": "lsdc:constructorArguments", "@type": "lsdc:ObjectMapping", "@container": "@list" },
+    "Module": { "@id": "oo:Module" },
+    "Class": { "@id": "oo:Class" },
+    "AbstractClass": { "@id": "oo:AbstractClass" },
+    "Instance": { "@id": "oo:ComponentInstance" },
+    "components": { "@id": "oo:component" },
+    "parameters": { "@id": "oo:parameter" },
+    "constructorArguments": { "@id": "oo:constructorArguments", "@type": "oo:ObjectMapping", "@container": "@list" },
 
     "comment": { "@id": "rdfs:comment", "@type": "@id" },
     "extends": { "@id": "rdfs:subClassOf", "@type": "@id" },
@@ -29,7 +29,7 @@
     "from": { "@id": "owl:allValuesFrom", "@type": "@id" },
 
     "requireName": { "@id": "doap:name" },
-    "requireElement": { "@id": "lsdc:componentPath" },
+    "requireElement": { "@id": "oo:componentPath" },
 
     "ObjectMapping": { "@id": "om:ObjectMapping" },
     "ArrayMapping": { "@id": "om:ArrayMapping" },
@@ -46,7 +46,7 @@
       "components": [
         {
           "@id": "ex:HelloWorldModule#SayHelloComponent1",
-          "@type": "ComponentConstructable",
+          "@type": "Class",
           "requireElement": "Hello",
           "parameters": [
             { "@id": "hello:say"   },

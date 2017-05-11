@@ -2,34 +2,34 @@
   "@context": {
     "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
 
-    "lsdc": "http://linkedsoftwaredependencies.org/vocabularies/components#",
+    "oo": "http://linkedsoftwaredependencies.org/vocabularies/object-oriented#",
     "Module": {
-      "@id": "lsdc:Module"
+      "@id": "oo:Module"
     },
-    "ComponentConstructable": {
-      "@id": "lsdc:ComponentConstructable"
+    "Class": {
+      "@id": "oo:Class"
     },
-    "ComponentConstructableAbstract": {
-      "@id": "lsdc:ComponentConstructableAbstract"
+    "AbstractClass": {
+      "@id": "oo:AbstractClass"
     },
-    "ComponentComponentInstance": {
-      "@id": "lsdc:ComponentInstance"
+    "Instance": {
+      "@id": "oo:ComponentInstance"
     },
     "components": {
-      "@id": "lsdc:hasComponent"
+      "@id": "oo:component"
     },
     "parameters": {
-      "@id": "lsdc:hasParameter"
+      "@id": "oo:parameter"
     },
     "constructorArguments": {
-      "@id": "lsdc:constructorArguments",
+      "@id": "oo:constructorArguments",
       "@container": "@list"
     },
-    "parameterUnique": {
-      "@id": "lsdc:parameterUnique"
+    "unique": {
+      "@id": "oo:uniqueValue"
     },
-    "hasDefaultValue": {
-      "@id": "lsdc:hasDefaultValue"
+    "default": {
+      "@id": "oo:defaultValue"
     },
 
     "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
@@ -71,7 +71,7 @@
       "@id": "doap:name"
     },
     "requireElement": {
-      "@id": "lsdc:componentPath"
+      "@id": "oo:componentPath"
     },
 
     "om": "http://linkedsoftwaredependencies.org/vocabularies/object-mapping#",
@@ -91,7 +91,7 @@
       "@container": "@list"
     },
     "collectEntries": {
-      "@id": "om:collectEntriesFrom",
+      "@id": "om:collectsEntriesFrom",
       "@type": "@id"
     },
     "keyRaw": {

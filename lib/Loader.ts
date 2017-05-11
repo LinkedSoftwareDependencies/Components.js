@@ -44,22 +44,22 @@ export class Loader {
         let loader: RdfClassLoader = new RdfClassLoader({ captureAllProperties: true, normalizeLists: true });
         loader.resources = this.resources;
 
-        loader.bindClass('constructables', Util.PREFIXES['lsdc'] + 'ComponentConstructable');
-        loader.bindClass('instances', Util.PREFIXES['lsdc'] + 'ComponentInstance');
-        loader.bindClass('abstractConstructables', Util.PREFIXES['lsdc'] + 'ComponentConstructableAbstract');
-        loader.bindClass('modules', Util.PREFIXES['lsdc'] + 'Module');
+        loader.bindClass('constructables', Util.PREFIXES['oo'] + 'Class');
+        loader.bindClass('instances', Util.PREFIXES['oo'] + 'Instance');
+        loader.bindClass('abstractConstructables', Util.PREFIXES['oo'] + 'AbstractClass');
+        loader.bindClass('modules', Util.PREFIXES['oo'] + 'Module');
 
         loader.bindProperty('requireName', Util.PREFIXES['doap'] + 'name', true);
-        loader.bindProperty('requireElement', Util.PREFIXES['lsdc'] + 'componentPath', true);
-        loader.bindProperty('hasComponent', Util.PREFIXES['lsdc'] + 'hasComponent');
-        loader.bindProperty('hasParameter', Util.PREFIXES['lsdc'] + 'hasParameter');
-        loader.bindProperty('constructorArguments', Util.PREFIXES['lsdc'] + 'constructorArguments', true);
+        loader.bindProperty('requireElement', Util.PREFIXES['oo'] + 'componentPath', true);
+        loader.bindProperty('hasComponent', Util.PREFIXES['oo'] + 'component');
+        loader.bindProperty('hasParameter', Util.PREFIXES['oo'] + 'parameter');
+        loader.bindProperty('constructorArguments', Util.PREFIXES['oo'] + 'constructorArguments', true);
         loader.bindProperty('fields', Util.PREFIXES['om'] + 'field');
         loader.bindProperty('elements', Util.PREFIXES['om'] + 'elements', true);
-        loader.bindProperty('collectEntriesFrom', Util.PREFIXES['om'] + 'collectEntriesFrom');
-        loader.bindProperty('unique', Util.PREFIXES['lsdc'] + 'parameterUnique', true);
-        loader.bindProperty('defaults', Util.PREFIXES['lsdc'] + 'hasDefaultValue');
-        loader.bindProperty('fixed', Util.PREFIXES['lsdc'] + 'hasFixedValue');
+        loader.bindProperty('collectEntriesFrom', Util.PREFIXES['om'] + 'collectsEntriesFrom');
+        loader.bindProperty('unique', Util.PREFIXES['oo'] + 'uniqueValue', true);
+        loader.bindProperty('defaults', Util.PREFIXES['oo'] + 'defaultValue');
+        loader.bindProperty('fixed', Util.PREFIXES['oo'] + 'hasFixedValue');
         loader.bindProperty('k', Util.PREFIXES['om'] + 'fieldName', true);
         loader.bindProperty('v', Util.PREFIXES['om'] + 'fieldValue', true);
         loader.bindProperty('types', Util.PREFIXES['rdf'] + 'type');
@@ -80,16 +80,16 @@ export class Loader {
         let loader: RdfClassLoader = new RdfClassLoader({ captureAllProperties: true, captureAllClasses: true });
         loader.resources = this.resources;
 
-        loader.bindClass('constructables', Util.PREFIXES['lsdc'] + 'ComponentConstructable');
-        loader.bindClass('instances', Util.PREFIXES['lsdc'] + 'ComponentInstance');
+        loader.bindClass('constructables', Util.PREFIXES['oo'] + 'Class');
+        loader.bindClass('instances', Util.PREFIXES['oo'] + 'ComponentInstance');
 
         loader.bindProperty('requireName', Util.PREFIXES['doap'] + 'name', true);
-        loader.bindProperty('requireElement', Util.PREFIXES['lsdc'] + 'componentPath', true);
-        loader.bindProperty('arguments', Util.PREFIXES['lsdc'] + 'arguments', true);
+        loader.bindProperty('requireElement', Util.PREFIXES['oo'] + 'componentPath', true);
+        loader.bindProperty('arguments', Util.PREFIXES['oo'] + 'arguments', true);
         loader.bindProperty('fields', Util.PREFIXES['om'] + 'field');
         loader.bindProperty('elements', Util.PREFIXES['om'] + 'elements', true);
-        loader.bindProperty('collectEntriesFrom', Util.PREFIXES['om'] + 'collectEntriesFrom');
-        loader.bindProperty('unique', Util.PREFIXES['lsdc'] + 'parameterUnique', true);
+        loader.bindProperty('collectEntriesFrom', Util.PREFIXES['om'] + 'collectsEntriesFrom');
+        loader.bindProperty('unique', Util.PREFIXES['oo'] + 'uniqueValue', true);
         loader.bindProperty('k', Util.PREFIXES['om'] + 'fieldName', true);
         loader.bindProperty('v', Util.PREFIXES['om'] + 'fieldValue', true);
         loader.bindProperty('types', Util.PREFIXES['rdf'] + 'type');
@@ -123,8 +123,8 @@ export class Loader {
                 componentResource.hasParameter = [];
             }
             classes.forEach((component: any) => {
-                if (component.hasType(Util.PREFIXES['lsdc'] + 'ComponentConstructableAbstract')
-                    || component.hasType(Util.PREFIXES['lsdc'] + 'ComponentConstructable')) {
+                if (component.hasType(Util.PREFIXES['oo'] + 'AbstractClass')
+                    || component.hasType(Util.PREFIXES['oo'] + 'Class')) {
                     if (component.hasParameter) {
                         component.hasParameter.forEach((parameter: Resource) => {
                             if (componentResource.hasParameter.indexOf(parameter) < 0) {

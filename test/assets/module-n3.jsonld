@@ -1,8 +1,8 @@
 {
   "@context": {
-    "@vocab": "http://linkedsoftwaredependencies.org/vocabularies/components#",
+    "@vocab": "http://linkedsoftwaredependencies.org/vocabularies/object-oriented#",
 
-    "lsdc": "http://linkedsoftwaredependencies.org/vocabularies/components#",
+    "oo": "http://linkedsoftwaredependencies.org/vocabularies/object-oriented#",
     "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
     "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
     "fn": "https://w3id.org/function/ontology#",
@@ -12,9 +12,9 @@
     "n3": "http://example.org/n3#",
     "owl": "http://www.w3.org/2002/07/owl#",
 
-    "components": { "@id": "lsdc:hasComponent" },
-    "parameters": { "@id": "lsdc:hasParameter", "@type": "lsdc:Parameter" },
-    "constructorArguments": { "@type": [ "@list", "lsdc:ObjectMapping" ] },
+    "components": { "@id": "oo:component" },
+    "parameters": { "@id": "oo:parameter", "@type": "oo:Parameter" },
+    "constructorArguments": { "@type": [ "@list", "oo:ObjectMapping" ] },
 
     "comment": { "@id": "rdfs:comment", "@type": "@id" },
     "extends": { "@id": "rdfs:subClassOf", "@type": "@id" },
@@ -28,7 +28,7 @@
     },
 
     "requireName": { "@id": "doap:name" },
-    "requireElement": { "@id": "lsdc:componentPath" },
+    "requireElement": { "@id": "oo:componentPath" },
 
     "ObjectMapping": { "@id": "om:ObjectMapping" },
     "ArrayMapping": { "@id": "om:ArrayMapping" },
@@ -52,7 +52,7 @@
   "components": [
     {
       "@id": "n3:Parser",
-      "@type": "ComponentConstructable",
+      "@type": "Class",
       "requireElement": "Parser",
       "comment": "Parses N3 documents",
       "parameters": [
@@ -98,7 +98,7 @@
     },
     {
       "@id": "n3:Lexer",
-      "@type": "ComponentConstructable",
+      "@type": "Class",
       "requireElement": "Lexer",
       "comment": "Tokenizes N3 documents",
       "parameters": [
@@ -142,7 +142,7 @@
     },
     {
       "@id": "n3:Dummy",
-      "@type": "ComponentConstructable",
+      "@type": "Class",
       "requireElement": "Dummy",
       "comment": "A dummy constructable component that can be run from the command-line",
       "parameters": [

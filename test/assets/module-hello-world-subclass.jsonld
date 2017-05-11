@@ -14,20 +14,20 @@
       "components": [
         {
           "@id": "ex:HelloWorldModule#SayHelloComponentAbstract",
-          "@type": "ComponentConstructableAbstract",
+          "@type": "AbstractClass",
           "parameters": [
             { "@id": "hello:something" }
           ]
         },
         {
           "@id": "ex:HelloWorldModule#SayHelloComponent1",
-          "@type": "ComponentConstructable",
+          "@type": "Class",
           "extends": "ex:HelloWorldModule#SayHelloComponentAbstract",
           "requireElement": "Hello"
         },
         {
           "@id": "ex:HelloWorldModule#SayHelloComponent2",
-          "@type": "ComponentConstructable",
+          "@type": "Class",
           "extends": "ex:HelloWorldModule#SayHelloComponent1",
           "requireElement": "Hello"
         }

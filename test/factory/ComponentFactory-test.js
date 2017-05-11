@@ -11,7 +11,7 @@ const Constants = require("../../lib/Util");
 
 // Unnamed component config for an N3 Lexer
 let n3LexerComponentConfigUnnamed = new Resource('http://example.org/MyLexer', {
-  types: [ new Resource(Constants.PREFIXES['lsdc'] + 'ComponentConstructable') ],
+  types: [ new Resource(Constants.PREFIXES['oo'] + 'Class') ],
   requireName: Resource.newString('n3'),
   requireElement: Resource.newString('Lexer'),
   arguments: new Resource(null, {
@@ -30,7 +30,7 @@ let n3LexerComponentConfigNamed = _.assign(new Resource('http://example.org/MyLe
 
 // Named component definition for an N3 Lexer
 let n3LexerComponentDefinitionUnmapped = new Resource('http://example.org/n3#Lexer', {
-  types: [ new Resource(Constants.PREFIXES['lsdc'] + 'ComponentConstructable') ],
+  types: [ new Resource(Constants.PREFIXES['oo'] + 'Class') ],
   requireElement: Resource.newString('Lexer'),
   hasParameter: [
     new Resource('http://example.org/n3#lineMode'),
@@ -41,7 +41,7 @@ let n3LexerComponentDefinitionUnmapped = new Resource('http://example.org/n3#Lex
 
 // Mapped component definition for an N3 Lexer
 let n3LexerComponentDefinitionMapped = new Resource('http://example.org/n3#Lexer', {
-  types: [ new Resource(Constants.PREFIXES['lsdc'] + 'ComponentConstructable') ],
+  types: [ new Resource(Constants.PREFIXES['oo'] + 'Class') ],
   requireElement: Resource.newString('Lexer'),
   hasParameter: [
     new Resource('http://example.org/n3#lineMode'),

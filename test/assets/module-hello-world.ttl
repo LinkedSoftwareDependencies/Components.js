@@ -1,6 +1,6 @@
 @prefix ex: <http://example.org/>.
-@prefix lsdc: <http://linkedsoftwaredependencies.org/vocabularies/components#>.
+@prefix oo: <http://linkedsoftwaredependencies.org/vocabularies/object-oriented#>.
 
-ex:HelloWorldModule a lsdc:Module;
-    lsdc:hasComponent ex:HelloWorldModuleSayHelloComponent .
-ex:HelloWorldModuleSayHelloComponent a lsdc:ComponentConstructable .
+ex:HelloWorldModule a oo:Module;
+    oo:component ex:HelloWorldModuleSayHelloComponent .
+ex:HelloWorldModuleSayHelloComponent a oo:Class .

@@ -45,7 +45,7 @@ export class MappedNamedComponentFactory extends UnnamedComponentFactory {
                 return { k: resource.k, v: MappedNamedComponentFactory.mapValue(resource.v, params) };
             } else {
                 if (!resource.collectEntriesFrom) {
-                    throw new Error('If an object key is a URI, it must provide dynamic entries using the lsdc:collectEntriesFrom predicate: ' + resource);
+                    throw new Error('If an object key is a URI, it must provide dynamic entries using the oo:collectEntriesFrom predicate: ' + resource);
                 }
                 return resource.collectEntriesFrom.reduce((data: Resource[], entry: Resource) => {
                     if (entry.termType !== 'NamedNode') {

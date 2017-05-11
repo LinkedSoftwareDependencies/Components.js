@@ -10,7 +10,7 @@ const Hello = require("../helloworld").Hello;
 // Component definition for an N3 Parser
 let n3ParserComponent = new Resource('http://example.org/n3#Parser', {
   requireElement: Resource.newString('Parser'),
-  types: [ new Resource(Constants.PREFIXES['lsdc'] + 'ComponentConstructable') ],
+  types: [ new Resource(Constants.PREFIXES['oo'] + 'Class') ],
   hasParameter: [
     new Resource('http://example.org/n3#format'),
     new Resource('http://example.org/n3#blankNodePrefix'),
@@ -34,7 +34,7 @@ let n3ParserComponent = new Resource('http://example.org/n3#Parser', {
 // Component definition for an N3 Lexer
 let n3LexerComponent = new Resource('http://example.org/n3#Lexer', {
   requireElement: Resource.newString('Lexer'),
-  types: [ new Resource(Constants.PREFIXES['lsdc'] + 'ComponentConstructable') ],
+  types: [ new Resource(Constants.PREFIXES['oo'] + 'Class') ],
   hasParameter: [
     new Resource('http://example.org/n3#lineMode'),
     new Resource('http://example.org/n3#n3'),
@@ -56,13 +56,13 @@ let n3LexerComponent = new Resource('http://example.org/n3#Lexer', {
 // Component definition for an N3 Util
 let n3UtilComponent = new Resource('http://example.org/n3#Util', {
   requireElement: Resource.newString('Util'),
-  types: [ new Resource(Constants.PREFIXES['lsdc'] + 'ComponentInstance') ],
+  types: [ new Resource(Constants.PREFIXES['oo'] + 'ComponentInstance') ],
 });
 
 // Component definition for an N3 Dummy
 let n3DummyComponent = new Resource('http://example.org/n3#Dummy', {
   requireElement: Resource.newString('Dummy'),
-  types: [ new Resource(Constants.PREFIXES['lsdc'] + 'ComponentConstructable') ],
+  types: [ new Resource(Constants.PREFIXES['oo'] + 'Class') ],
   hasParameter: [
     new Resource('http://example.org/n3#dummyParam')
   ],
@@ -91,7 +91,7 @@ let n3Module = new Resource('http://example.org/n3', {
 // Component definition for Hello World
 let helloWorldComponent1 = new Resource('http://example.org/HelloWorldModule#SayHelloComponent1', {
   requireElement: Resource.newString('Hello'),
-  types: [ new Resource(Constants.PREFIXES['lsdc'] + 'ComponentConstructable') ],
+  types: [ new Resource(Constants.PREFIXES['oo'] + 'Class') ],
   hasParameter: [
     new Resource('http://example.org/HelloWorldModule#dummyParam')
   ],
@@ -109,7 +109,7 @@ let helloWorldComponent1 = new Resource('http://example.org/HelloWorldModule#Say
 // Component definition for Hello World
 let helloWorldComponent2 = new Resource('http://example.org/HelloWorldModule#SayHelloComponent2', {
   requireElement: Resource.newString('Hello'),
-  types: [ new Resource(Constants.PREFIXES['lsdc'] + 'ComponentConstructable') ],
+  types: [ new Resource(Constants.PREFIXES['oo'] + 'Class') ],
   hasParameter: [
     new Resource('http://example.org/HelloWorldModule#dummyParam'),
     new Resource('http://example.org/HelloWorldModule#instanceParam')
@@ -129,7 +129,7 @@ let helloWorldComponent2 = new Resource('http://example.org/HelloWorldModule#Say
 // Component definition for Hello World
 let helloWorldComponent3 = new Resource('http://example.org/HelloWorldModule#SayHelloComponent3', {
   requireElement: Resource.newString('Hello'),
-  types: [ new Resource(Constants.PREFIXES['lsdc'] + 'ComponentConstructable') ],
+  types: [ new Resource(Constants.PREFIXES['oo'] + 'Class') ],
   hasParameter: [
     new Resource('http://example.org/HelloWorldModule#dummyParam'),
     new Resource('http://example.org/HelloWorldModule#instanceParam'),
@@ -151,7 +151,7 @@ let helloWorldComponent3 = new Resource('http://example.org/HelloWorldModule#Say
 // Component definition for Hello World with array parameters
 let helloWorldComponent4 = new Resource('http://example.org/HelloWorldModule#SayHelloComponent3', {
   requireElement: Resource.newString('Hello'),
-  types: [ new Resource(Constants.PREFIXES['lsdc'] + 'ComponentConstructable') ],
+  types: [ new Resource(Constants.PREFIXES['oo'] + 'Class') ],
   hasParameter: [
     new Resource('http://example.org/HelloWorldModule#dummyParam'),
     new Resource('http://example.org/HelloWorldModule#instanceParam'),
@@ -186,7 +186,7 @@ let defaultedParam2 = new Resource('http://example.org/n3#dummyParam2', {
 });
 let helloWorldComponent5 = new Resource('http://example.org/HelloWorldModule#SayHelloComponent1', {
   requireElement: Resource.newString('Hello'),
-  types: [ new Resource(Constants.PREFIXES['lsdc'] + 'ComponentConstructable') ],
+  types: [ new Resource(Constants.PREFIXES['oo'] + 'Class') ],
   hasParameter: [ defaultedParam1, defaultedParam2, ],
   constructorArguments: new Resource(null, {
     list: [

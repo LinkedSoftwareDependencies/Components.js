@@ -58,21 +58,21 @@ describe('Loader', function () {
 
       beforeEach(function (done) {
         let moduleStream = new Readable({ objectMode: true });
-        moduleStream.push({ subject: module, predicate: Constants.PREFIXES['rdf'] + 'type', object: Constants.PREFIXES['lsdc'] + 'Module'});
-        moduleStream.push({ subject: module, predicate: Constants.PREFIXES['lsdc'] + 'hasComponent', object: component1});
+        moduleStream.push({ subject: module, predicate: Constants.PREFIXES['rdf'] + 'type', object: Constants.PREFIXES['oo'] + 'Module'});
+        moduleStream.push({ subject: module, predicate: Constants.PREFIXES['oo'] + 'component', object: component1});
         moduleStream.push({ subject: module, predicate: Constants.PREFIXES['doap'] + 'name', object: '"../../test/helloworld"'});
-        moduleStream.push({ subject: component1, predicate: Constants.PREFIXES['rdf'] + 'type', object: Constants.PREFIXES['lsdc'] + 'ComponentConstructable'});
-        moduleStream.push({ subject: component1, predicate: Constants.PREFIXES['lsdc'] + 'componentPath', object: '"Hello"'});
-        moduleStream.push({ subject: component1, predicate: Constants.PREFIXES['lsdc'] + 'hasParameter', object: 'http://example.org/myModule/params#param1'});
-        moduleStream.push({ subject: component1, predicate: Constants.PREFIXES['lsdc'] + 'hasParameter', object: 'http://example.org/myModule/params#param3'});
-        moduleStream.push({ subject: module, predicate: Constants.PREFIXES['lsdc'] + 'hasComponent', object: component2});
-        moduleStream.push({ subject: component2, predicate: Constants.PREFIXES['rdf'] + 'type', object: Constants.PREFIXES['lsdc'] + 'ComponentConstructable'});
-        moduleStream.push({ subject: component2, predicate: Constants.PREFIXES['lsdc'] + 'componentPath', object: '"Hello"'});
-        moduleStream.push({ subject: component2, predicate: Constants.PREFIXES['lsdc'] + 'hasParameter', object: 'http://example.org/myModule/params#param1'});
-        moduleStream.push({ subject: module, predicate: Constants.PREFIXES['lsdc'] + 'hasComponent', object: component3});
-        moduleStream.push({ subject: component3, predicate: Constants.PREFIXES['rdf'] + 'type', object: Constants.PREFIXES['lsdc'] + 'ComponentConstructable'});
-        moduleStream.push({ subject: component3, predicate: Constants.PREFIXES['lsdc'] + 'componentPath', object: '"Hello"'});
-        moduleStream.push({ subject: component3, predicate: Constants.PREFIXES['lsdc'] + 'hasParameter', object: 'http://example.org/myModule/params#param2'});
+        moduleStream.push({ subject: component1, predicate: Constants.PREFIXES['rdf'] + 'type', object: Constants.PREFIXES['oo'] + 'Class'});
+        moduleStream.push({ subject: component1, predicate: Constants.PREFIXES['oo'] + 'componentPath', object: '"Hello"'});
+        moduleStream.push({ subject: component1, predicate: Constants.PREFIXES['oo'] + 'parameter', object: 'http://example.org/myModule/params#param1'});
+        moduleStream.push({ subject: component1, predicate: Constants.PREFIXES['oo'] + 'parameter', object: 'http://example.org/myModule/params#param3'});
+        moduleStream.push({ subject: module, predicate: Constants.PREFIXES['oo'] + 'component', object: component2});
+        moduleStream.push({ subject: component2, predicate: Constants.PREFIXES['rdf'] + 'type', object: Constants.PREFIXES['oo'] + 'Class'});
+        moduleStream.push({ subject: component2, predicate: Constants.PREFIXES['oo'] + 'componentPath', object: '"Hello"'});
+        moduleStream.push({ subject: component2, predicate: Constants.PREFIXES['oo'] + 'parameter', object: 'http://example.org/myModule/params#param1'});
+        moduleStream.push({ subject: module, predicate: Constants.PREFIXES['oo'] + 'component', object: component3});
+        moduleStream.push({ subject: component3, predicate: Constants.PREFIXES['rdf'] + 'type', object: Constants.PREFIXES['oo'] + 'Class'});
+        moduleStream.push({ subject: component3, predicate: Constants.PREFIXES['oo'] + 'componentPath', object: '"Hello"'});
+        moduleStream.push({ subject: component3, predicate: Constants.PREFIXES['oo'] + 'parameter', object: 'http://example.org/myModule/params#param2'});
         moduleStream.push(null);
         runner.registerModuleResourcesStream(moduleStream).then(done);
       });

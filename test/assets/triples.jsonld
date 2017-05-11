@@ -1,6 +1,6 @@
 {
   "@context": {
-    "@vocab": "http://linkedsoftwaredependencies.org/vocabularies/components#",
+    "@vocab": "http://linkedsoftwaredependencies.org/vocabularies/object-oriented#",
     "ex": "http://example.org/",
     "hello": "http://example.org/hello#"
   },

@@ -1,6 +1,6 @@
 {
   "@context": {
-    "@vocab": "http://linkedsoftwaredependencies.org/vocabularies/components#",
+    "@vocab": "http://linkedsoftwaredependencies.org/vocabularies/object-oriented#",
     "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
     "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
     "ex": "http://example.org/",
@@ -10,9 +10,9 @@
   "@graph": [
     {
       "@id": "ex:myParser",
-      "@type": [ "n3:Parser", "ComponentConstructable" ],
+      "@type": [ "n3:Parser", "Class" ],
       "doap:name": "n3",
-      "lsdc:componentPath": "Parser",
+      "oo:componentPath": "Parser",
       "arguments": {
         "@list": [
           {
@@ -33,9 +33,9 @@
     },
     {
       "@id": "ex:myLexer",
-      "@type": [ "n3:Lexer", "ComponentConstructable" ],
+      "@type": [ "n3:Lexer", "Class" ],
       "doap:name": "n3",
-      "lsdc:componentPath": "Lexer",
+      "oo:componentPath": "Lexer",
       "arguments": {
         "@list": [
           {

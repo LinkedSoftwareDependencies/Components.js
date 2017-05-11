@@ -12,7 +12,7 @@
       "components": [
         {
           "@id": "ex:HelloWorldModule#SayHelloComponent2",
-          "@type": "ComponentConstructable",
+          "@type": "Class",
           "requireElement": "Hello",
           "parameters": [
             {"@id": "hello:say" },

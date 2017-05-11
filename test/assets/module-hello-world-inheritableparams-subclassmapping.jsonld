@@ -14,7 +14,7 @@
       "components": [
         {
           "@id": "ex:HelloWorldModule#SayHelloComponent1",
-          "@type": "ComponentConstructable",
+          "@type": "Class",
           "requireElement": "Hello",
           "parameters": [
             { "@id": "hello:something" }
@@ -33,7 +33,7 @@
         },
         {
           "@id": "ex:HelloWorldModule#SayHelloComponent2",
-          "@type": "ComponentConstructable",
+          "@type": "Class",
           "requireElement": "Hello",
           "parameters": [
             {
