@@ -2,7 +2,6 @@ require('should');
 var expect = require('chai').expect;
 const Constants = require("../../lib/Util");
 const Resource = require("../../lib/rdf/Resource").Resource;
-const Util = require("../../lib/Util");
 const fs = require("fs");
 const N3 = require('n3');
 const MappedNamedComponentFactory = require("../../lib/factory/MappedNamedComponentFactory").MappedNamedComponentFactory;
@@ -180,7 +179,7 @@ let defaultedParam1 = new Resource('http://example.org/n3#dummyParam1', {
   ]
 });
 let defaultedParam2 = new Resource('http://example.org/n3#dummyParam2', {
-  types: [ new Resource(Util.PREFIXES['lsdc'] + 'ParameterUnique') ],
+  unique: true,
   defaults: [
     Resource.newString('a')
   ]
@@ -453,7 +452,7 @@ describe('MappedNamedComponentFactory', function () {
     it('should create valid arguments', function () {
       constructor.makeArguments().should.deepEqual([{
         'dummyParam1': [ 'a', 'b' ],
-        'dummyParam2': 'a',
+        'dummyParam2': [ 'a' ],
       }]);
     });
 

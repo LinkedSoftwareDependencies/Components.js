@@ -79,7 +79,7 @@ class Util {
         // Force-add fixed parameter values
         if (param.fixed) {
             // If the paramater value must be unique and a value has already been set, crash
-            if (param.hasType(Util.PREFIXES['lsdc'] + 'ParameterUnique')) {
+            if (param.unique) {
                 if (value) {
                     throw new Error('A parameter is unique, has a fixed value and has another defined value' + JSON.stringify(param));
                 } else {
@@ -98,7 +98,7 @@ class Util {
         }
 
         // If the value is singular, and the value should be unique, transform the array to a single element
-        if (param.hasType(Util.PREFIXES['lsdc'] + 'ParameterUnique') && value instanceof Array) {
+        if (param.unique && param.unique.value === 'true' && value instanceof Array) {
             value = value[0];
         }
         return value;

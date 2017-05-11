@@ -1,7 +1,6 @@
 require('should');
 var expect = require('chai').expect;
 const Resource = require("../../lib/rdf/Resource").Resource;
-const Util = require("../../lib/Util");
 const fs = require("fs");
 const N3 = require('n3');
 const UnmappedNamedComponentFactory = require("../../lib/factory/UnmappedNamedComponentFactory").UnmappedNamedComponentFactory;
@@ -51,7 +50,7 @@ let n3DummyComponentDefaults = new Resource('http://example.org/n3#Dummy', {
       ]
     }),
     new Resource('http://example.org/n3#dummyParam2', {
-      types: [ new Resource(Util.PREFIXES['lsdc'] + 'ParameterUnique') ],
+      unique: true,
       defaults: [
         Resource.newString('a')
       ]
@@ -70,7 +69,7 @@ let n3DummyComponentFixed = new Resource('http://example.org/n3#Dummy', {
       ]
     }),
     new Resource('http://example.org/n3#dummyParam2', {
-      types: [ new Resource(Util.PREFIXES['lsdc'] + 'ParameterUnique') ],
+      unique: true,
       fixed: Resource.newString('a')
     })
   ]
@@ -259,7 +258,7 @@ describe('UnmappedNamedComponentFactory', function () {
     it('should create valid arguments', function () {
       constructor.makeArguments().should.deepEqual([{
         'http://example.org/n3#dummyParam1': [ 'a', 'b' ],
-        'http://example.org/n3#dummyParam2': 'a',
+        'http://example.org/n3#dummyParam2': [ 'a' ],
       }]);
     });
 

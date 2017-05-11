@@ -15,9 +15,6 @@
     "ComponentComponentInstance": {
       "@id": "lsdc:ComponentInstance"
     },
-    "ParameterUnique": {
-      "@id": "lsdc:ParameterUnique"
-    },
     "components": {
       "@id": "lsdc:hasComponent"
     },
@@ -27,6 +24,9 @@
     "constructorArguments": {
       "@id": "lsdc:constructorArguments",
       "@container": "@list"
+    },
+    "parameterUnique": {
+      "@id": "lsdc:parameterUnique"
     },
     "hasDefaultValue": {
       "@id": "lsdc:hasDefaultValue"
