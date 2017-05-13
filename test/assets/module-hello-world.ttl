@@ -1,5 +1,5 @@
 @prefix ex: <http://example.org/>.
-@prefix oo: <http://linkedsoftwaredependencies.org/vocabularies/object-oriented#>.
+@prefix oo: <https://linkedsoftwaredependencies.org/vocabularies/object-oriented#>.
 
 ex:HelloWorldModule a oo:Module;
     oo:component ex:HelloWorldModuleSayHelloComponent .

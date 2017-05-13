@@ -1,6 +1,6 @@
 {
   "@context": {
-    "@vocab": "http://linkedsoftwaredependencies.org/vocabularies/object-oriented#",
+    "@vocab": "https://linkedsoftwaredependencies.org/vocabularies/object-oriented#",
     "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
     "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
     "ex": "http://example.org/",

@@ -34,8 +34,8 @@ This framework provides the following workflow for injecting components.
 
 We use the following prefixes in the following examples:
 ```
-@prefix oo: <http://linkedsoftwaredependencies.org/vocabularies/object-oriented#>.
-@prefix om: <http://linkedsoftwaredependencies.org/vocabularies/object-mapping#>.
+@prefix oo: <https://linkedsoftwaredependencies.org/vocabularies/object-oriented#>.
+@prefix om: <https://linkedsoftwaredependencies.org/vocabularies/object-mapping#>.
 ```
 
 ## Defining a Module

@@ -1,6 +1,6 @@
 {
   "@context": [
-    "http://linkedsoftwaredependencies.org/contexts/components.jsonld",
+    "https://linkedsoftwaredependencies.org/contexts/components.jsonld",
     {
       "hello": "http://example.org/hello/",
       "ex": "http://example.org/"
