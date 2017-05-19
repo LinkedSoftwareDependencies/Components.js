@@ -36,6 +36,7 @@ We use the following prefixes in the following examples:
 ```
 @prefix oo: <https://linkedsoftwaredependencies.org/vocabularies/object-oriented#>.
 @prefix om: <https://linkedsoftwaredependencies.org/vocabularies/object-mapping#>.
+@prefix doap: <http://usefulinc.com/ns/doap#>.
 ```
 
 ## Defining a Module
@@ -43,8 +44,8 @@ We use the following prefixes in the following examples:
 Example:
 ```
 :SomeModule a oo:Module;
-    npm:requireName "helloworld";
-    oo:hasComponent :SomeModule#Component1.
+    doap:name "helloworld";
+    oo:component :SomeModule#Component1.
 ```
 
 ## Defining a Component
@@ -60,9 +61,9 @@ Parameter values will directly be sent to the constructor.
 Example:
 ```
 :SomeModule#Component1 a oo:Class;
-    npm:requireElement "Hello";
-    oo:hasParameter hello:say;
-    oo:hasParameter hello:world.
+    oo:componentPath "Hello";
+    oo:parameter hello:say;
+    oo:parameter hello:world.
 ```
 
 In this case the `Hello` component will always receive a single object as argument like:
@@ -80,9 +81,9 @@ Parameter values will first be mapped to a configured parameter structure before
 Example:
 ```
 :SomeModule#Component1 a oo:Class;
-    npm:requireElement "Hello";
-    oo:hasParameter hello:say;
-    oo:hasParameter hello:world;
+    oo:componentPath "Hello";
+    oo:parameter hello:say;
+    oo:parameter hello:world;
     oo:constructorArguments (
         [
             rdf:value hello:say.
@@ -103,9 +104,9 @@ In this case the `Hello` component will receive two objects as arguments like:
 Each argument can be an `om:ObjectMapping` as follows:
 ```
 :SomeModule#Component1 a oo:Class;
-    npm:requireElement "Hello";
-    oo:hasParameter hello:say;
-    oo:hasParameter hello:world;
+    oo:componentPath "Hello";
+    oo:parameter hello:say;
+    oo:parameter hello:world;
     oo:constructorArguments (
         [
             om:field [
@@ -157,8 +158,8 @@ The NPM module name and the component element path must be provided as well.
 Example:
 ```
 :myComponent a :SomeModule#Component1;
-    npm:requireName "helloworld",
-    npm:requireElement "Hello",
+    doap:name "helloworld",
+    oo:componentPath "Hello",
     oo:arguments (
         [
             om:fieldValue "SAY".
@@ -172,8 +173,8 @@ Example:
 Each argument can be an `om:ObjectMapping` as follows:
 ```
 :myComponent a :SomeModule#Component1;
-    npm:requireName "helloworld",
-    npm:requireElement "Hello",
+    doap:name "helloworld",
+    oo:componentPath "Hello",
     oo:arguments (
         [
             om:field [
