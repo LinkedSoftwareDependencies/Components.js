@@ -39,6 +39,9 @@ We use the following prefixes in the following examples:
 @prefix doap: <http://usefulinc.com/ns/doap#>.
 ```
 
+For the JSON-LD format, we provide a context for simplified config files:
+[https://linkedsoftwaredependencies.org/contexts/components.jsonld](https://linkedsoftwaredependencies.org/contexts/components.jsonld)
+
 ## Defining a Module
 
 Example:
