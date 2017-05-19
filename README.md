@@ -30,6 +30,9 @@ This framework provides the following workflow for injecting components.
 - Configuring a Component
 - Invoking a Component configuration
 
+This injection framework is based on RDF config files.
+The RDF serializations that are currently supported are JSON-LD, Turtle, TriG, N-Triples and N-Quads.
+
 ## Prefixes
 
 We use the following prefixes in the following examples:
