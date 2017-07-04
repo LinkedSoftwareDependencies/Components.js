@@ -141,13 +141,16 @@ export class UnnamedComponentFactory implements IComponentFactory {
             }
         }
 
+        var subObject;
         if (this._componentDefinition.requireElement) {
             let requireElementPath = this._componentDefinition.requireElement.value.split('.');
-            object = requireElementPath.reduce((object: any, requireElement: string) => object[requireElement], object);
+            subObject = requireElementPath.reduce((object: any, requireElement: string) => object[requireElement], object);
         }
-        if (!object) {
+        if (!subObject) {
+            console.error(object);
             throw new Error('Failed to get module element ' + this._componentDefinition.requireElement.value + ' from module ' + requireName);
         }
+        object = subObject;
         let instance: any;
         if (this._constructable) {
             if (!(object instanceof Function)) {
