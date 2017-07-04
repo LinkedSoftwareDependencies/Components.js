@@ -198,9 +198,10 @@ export class Loader {
                             object.fields.push(field);
                         }
                     });
-                } else {
+                } else if (!superObject.hasType(Util.PREFIXES['oo'] + 'Object')) {
                     throw new Error('The referenced constructor mappings object ' + superObject.value
-                        + ' from ' + object.value + ' is not valid, i.e., it doesn\'t contain mapping fields. '
+                        + ' from ' + object.value + ' is not valid, i.e., it doesn\'t contain mapping fields '
+                        + 'or has the oo:Object type. '
                         + 'It possibly is incorrectly referenced or not defined at all.');
                 }
                 if (superObject.classes) {
