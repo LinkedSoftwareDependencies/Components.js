@@ -65,7 +65,8 @@ export class MappedNamedComponentFactory extends UnnamedComponentFactory {
                             k = Resource.newString(entryResource.value);
                         }
                         else if (!entryResource[resource.k.value] || entryResource[resource.k.value].length !== 1) {
-                            throw new Error('Expected exactly one label definition for a dynamic entry ' + resource.k.value + ' in: ' + entryResource.toString());
+                            throw new Error('Expected exactly one label definition for a dynamic entry '
+                                + resource.k.value + ' in ' + entryResource.value + '\nFound:' + entryResource.toString());
                         }
                         else {
                             k = entryResource[resource.k.value][0];
@@ -78,7 +79,8 @@ export class MappedNamedComponentFactory extends UnnamedComponentFactory {
                             v = MappedNamedComponentFactory.map(entryResource, params);
                         }
                         else if (!entryResource[resource.v.value] || entryResource[resource.v.value].length !== 1) {
-                            throw new Error('Expected exactly one value definition for a dynamic entry ' + resource.v.value + ' in: ' + entryResource.toString());
+                            throw new Error('Expected exactly one value definition for a dynamic entry '
+                                + resource.v.value + ' in ' + entryResource.value + '\nFound: ' + entryResource.toString());
                         }
                         else {
                             v = entryResource[resource.v.value][0];

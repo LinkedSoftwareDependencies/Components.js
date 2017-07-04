@@ -280,7 +280,7 @@ export class Loader {
         if (componentTypes.length !== 1 && !(<any> configResource).requireName && !(<any> configResource).requireElement) {
             throw new Error('Could not run config ' + configResource.value + ' because exactly one valid component type ' +
                 'was expected, while ' + componentTypes.length + ' were found. ' +
-                'Alternatively, the requireName and requireElement must be provided.' + NodeUtil.inspect(configResource));
+                'Alternatively, the requireName and requireElement must be provided.\nFound: ' + configResource.toString());
         }
         let componentResource: any;
         let moduleResource: any;
