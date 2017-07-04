@@ -173,6 +173,9 @@ export class Loader {
                     });
                     this._inheritParameters(object, superObject.classes);
                 }
+                if (superObject.classes) {
+                    this._inheritObjectFields(object, superObject.classes);
+                }
             });
         }
     }

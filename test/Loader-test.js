@@ -366,6 +366,18 @@ describe('Loader', function () {
         done();
       }).catch(done);
     });
+
+    it('should allow a config stream with component instances with inherited parameters from the parent\'s parent\'s parent to be run', function (done) {
+      let configResourceStream = fs.createReadStream(__dirname + '/assets/config-hello-world-subclassmapping.jsonld').pipe(new JsonLdStreamParser());
+      runner.instantiateFromStream('http://example.org/myHelloWorld3', configResourceStream).then((run) => {
+        run._params.should.deepEqual({
+          'something': [ "SOMETHING" ],
+          'something1': [ "SOMETHING1" ],
+          'something2': [ "SOMETHING2" ]
+        });
+        done();
+      }).catch(done);
+    });
   });
 
   describe('constructing an component with inheritable parameter values with constructor mappings', function () {

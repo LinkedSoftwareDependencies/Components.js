@@ -18,6 +18,13 @@
       "hello:something": "SOMETHING",
       "hello:something1": "SOMETHING1",
       "hello:something2": "SOMETHING2"
+    },
+    {
+      "@id": "ex:myHelloWorld3",
+      "@type": "ex:HelloWorldModule#SayHelloComponent3",
+      "hello:something": "SOMETHING",
+      "hello:something1": "SOMETHING1",
+      "hello:something2": "SOMETHING2"
     }
   ]
 }

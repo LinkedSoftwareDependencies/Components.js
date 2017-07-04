@@ -71,6 +71,18 @@
               ]
             }
           ]
+        },
+        {
+          "@id": "ex:HelloWorldModule#SayHelloComponent3",
+          "@type": "Class",
+          "extends": "ex:HelloWorldModule#SayHelloComponent2",
+          "requireElement": "Hello",
+          "constructorArguments": [
+            {
+              "@id": "ex:HelloWorldModule#SayHelloComponent3#constructorArgumentsObject",
+              "extends": "ex:HelloWorldModule#SayHelloComponent2#constructorArgumentsObject"
+            }
+          ]
         }
       ]
     }
