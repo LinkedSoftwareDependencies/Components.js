@@ -198,6 +198,10 @@ export class Loader {
                             object.fields.push(field);
                         }
                     });
+                } else {
+                    throw new Error('The referenced constructor mappings object ' + superObject.value
+                        + ' from ' + object.value + ' is not valid, i.e., it doesn\'t contain mapping fields. '
+                        + 'It possibly is incorrectly referenced or not defined at all.');
                 }
                 if (superObject.classes) {
                     this._inheritObjectFields(object, superObject.classes);
