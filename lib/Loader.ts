@@ -69,6 +69,7 @@ export class Loader {
         loader.bindProperty('onProperty', Util.PREFIXES['owl'] + 'onProperty', false);
         loader.bindProperty('allValuesFrom', Util.PREFIXES['owl'] + 'allValuesFrom', false);
         loader.bindProperty('imports', Util.PREFIXES['owl'] + 'imports', false);
+        loader.bindProperty('range', Util.PREFIXES['rdfs'] + 'range', true);
 
         return loader;
     }

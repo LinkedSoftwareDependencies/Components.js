@@ -13,7 +13,6 @@ export class MappedNamedComponentFactory extends UnnamedComponentFactory {
     constructor(moduleDefinition: Resource, componentDefinition: Resource, config: any, constructable: boolean,
                 overrideRequireNames?: {[id: string]: string}, componentRunner?: Loader) {
         // TODO: check if constructorArgumentss param references are defined in hasParameters
-        // TODO: validate parameters
         super(MappedNamedComponentFactory.makeUnnamedDefinitionConstructor(moduleDefinition, componentDefinition)(config), constructable, overrideRequireNames, componentRunner);
     }
 

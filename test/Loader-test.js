@@ -556,4 +556,25 @@ describe('Loader', function () {
       runner._isValidComponent(resource).should.be.true();
     });
   });
+
+  describe('constructing an component witn typed parameters', function () {
+    beforeEach(function (done) {
+      let moduleStream = fs.createReadStream(__dirname + '/assets/module-hello-world-paramranges.jsonld').pipe(new JsonLdStreamParser());
+      runner.registerModuleResourcesStream(moduleStream).then(done);
+    });
+
+    it('should produce instances with correct parameter values', function (done) {
+      let configResourceStream1 = fs.createReadStream(__dirname + '/assets/config-hello-world.jsonld').pipe(new JsonLdStreamParser());
+      let configResourceStream2 = fs.createReadStream(__dirname + '/assets/config-hello-world-paramranges.jsonld').pipe(new JsonLdStreamParser());
+      runner.instantiateFromStream('http://example.org/myconfig', configResourceStream1).then(done).catch(() => {
+        runner.instantiateFromStream('http://example.org/myconfig2', configResourceStream2).then((run) => {
+          run._params.should.deepEqual({
+            'http://example.org/hello/hello': ['WORLD'],
+            'http://example.org/hello/say': [true]
+          });
+          done();
+        }).catch(done);
+      });
+    });
+  });
 });

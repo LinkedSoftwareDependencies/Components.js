@@ -11,7 +11,6 @@ export class UnmappedNamedComponentFactory extends UnnamedComponentFactory {
 
     constructor(moduleDefinition: Resource, componentDefinition: Resource, config: any, constructable: boolean,
                 overrideRequireNames?: {[id: string]: string}, componentRunner?: Loader) {
-        // TODO: validate parameters
         super(UnmappedNamedComponentFactory.makeUnnamedDefinitionConstructor(moduleDefinition, componentDefinition)(config), constructable, overrideRequireNames, componentRunner);
     }
 
@@ -25,7 +24,6 @@ export class UnmappedNamedComponentFactory extends UnnamedComponentFactory {
      *                                   and returns an unnamed component definition resource.
      */
     static makeUnnamedDefinitionConstructor(moduleDefinition: any, componentDefinition: any): ((params: any) => Resource) {
-        // TODO: validate param types
         return ((params: any) => {
             return new Resource(componentDefinition.value, {
                 requireName: moduleDefinition.requireName || componentDefinition.requireName,

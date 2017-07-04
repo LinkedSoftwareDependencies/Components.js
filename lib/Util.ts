@@ -102,7 +102,77 @@ class Util {
         if (param.unique && param.unique.value === 'true' && value instanceof Array) {
             value = value[0];
         }
+
+        // If a param range is defined, apply the type and validate the range.
+        if (param.range) {
+            if (value instanceof Array) {
+                value = value.map((e) => Util.captureType(e, param.range.value));
+            } else {
+                value = Util.captureType(value, param.range.value);
+            }
+        }
+
         return value;
+    }
+
+    /**
+     * Apply the given datatype to the given literal.
+     * Checks if the datatype is correct and casts to the correct js type.
+     * Will throw an error if the type has an invalid value.
+     * Will be ignored if the value is not a literal or the type is not recognized.
+     * @param value The value.
+     * @param type The datatype.
+     * @returns {any} The tranformed value.
+     */
+    static captureType(value: any, type: string): any {
+        if (!value) return value;
+        let raw = value.value;
+        if (value.termType === 'Literal') {
+            let parsed;
+            switch(type) {
+                case Util.PREFIXES['xsd'] + 'boolean':
+                    if (raw === 'true') {
+                        raw = true;
+                    } else if (raw === 'false') {
+                        raw = false;
+                    } else {
+                        incorrectType();
+                    }
+                    break;
+                case Util.PREFIXES['xsd'] + 'integer':
+                case Util.PREFIXES['xsd'] + 'number':
+                case Util.PREFIXES['xsd'] + 'int':
+                case Util.PREFIXES['xsd'] + 'byte':
+                case Util.PREFIXES['xsd'] + 'long':
+                    parsed = parseInt(raw);
+                    if (isNaN(parsed)) {
+                        incorrectType();
+                    } else {
+                        // parseInt also parses floats to ints!
+                        if (String(parsed) !== raw) {
+                            incorrectType();
+                        }
+                        raw = parsed;
+                    }
+                    break;
+                case Util.PREFIXES['xsd'] + 'float':
+                case Util.PREFIXES['xsd'] + 'decimal':
+                case Util.PREFIXES['xsd'] + 'double':
+                    parsed = parseFloat(raw);
+                    if (isNaN(parsed)) {
+                        incorrectType();
+                    } else {
+                        raw = parsed;
+                    }
+                    break;
+            }
+            return { value: raw, termType: 'Literal' };
+        }
+        return value;
+
+        function incorrectType() {
+            throw new Error(value.value + ' is not of type ' + type);;
+        }
     }
 }
 
