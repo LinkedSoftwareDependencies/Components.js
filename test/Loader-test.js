@@ -28,9 +28,9 @@ describe('Loader', function () {
     });
 
     it('should allow components to be registered', function () {
-      let component1 = new Resource('mycomponent1');
-      let component2 = new Resource('mycomponent2');
-      let component3 = new Resource('mycomponent3');
+      let component1 = new Resource('mycomponent1', { types: [ new Resource(Constants.PREFIXES['oo'] + 'Class') ] });
+      let component2 = new Resource('mycomponent2', { types: [ new Resource(Constants.PREFIXES['oo'] + 'Class') ] });
+      let component3 = new Resource('mycomponent3', { types: [ new Resource(Constants.PREFIXES['oo'] + 'Class') ] });
       runner._registerComponentResource(component1);
       runner._registerComponentResource(component2);
       runner._registerComponentResource(component3);
@@ -40,9 +40,9 @@ describe('Loader', function () {
     });
 
     it('should allow module components to be registered', function () {
-      let component1 = new Resource('mycomponent1');
-      let component2 = new Resource('mycomponent2');
-      let component3 = new Resource('mycomponent3');
+      let component1 = new Resource('mycomponent1', { types: [ new Resource(Constants.PREFIXES['oo'] + 'Class') ] });
+      let component2 = new Resource('mycomponent2', { types: [ new Resource(Constants.PREFIXES['oo'] + 'Class') ] });
+      let component3 = new Resource('mycomponent3', { types: [ new Resource(Constants.PREFIXES['oo'] + 'Class') ] });
       let module = new Resource('mymodule', { hasComponent: [ component1, component2, component3 ] });
       runner.registerModuleResource(module);
       runner._componentResources.should.have.property('mycomponent1', component1);
@@ -526,6 +526,34 @@ describe('Loader', function () {
           done();
         }).catch(done);
       }).catch(done);
+    });
+  });
+
+  describe('an empty resource', function () {
+    var resource = new Resource();
+    it('must be an invalid component', function () {
+      runner._isValidComponent(resource).should.be.false();
+    });
+  });
+
+  describe('a basic resource', function () {
+    var resource = new Resource('http://example.org', { a: 'b', types: [ new Resource('aaa') ] });
+    it('must be an invalid component', function () {
+      runner._isValidComponent(resource).should.be.false();
+    });
+  });
+
+  describe('a resource with the abstract class type', function () {
+    var resource = new Resource('http://example.org', { a: 'b', types: [ new Resource(Constants.PREFIXES['oo'] + 'AbstractClass') ] });
+    it('must be a valid component', function () {
+      runner._isValidComponent(resource).should.be.true();
+    });
+  });
+
+  describe('a resource with the class type', function () {
+    var resource = new Resource('http://example.org', { a: 'b', types: [ new Resource(Constants.PREFIXES['oo'] + 'Class') ] });
+    it('must be a valid component', function () {
+      runner._isValidComponent(resource).should.be.true();
     });
   });
 });

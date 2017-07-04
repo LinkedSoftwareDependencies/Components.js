@@ -106,9 +106,36 @@ export class Loader {
      * @private
      */
     _registerComponentResource(componentResource: Resource) {
+        this._requireValidComponent(componentResource);
         this._componentResources[componentResource.value] = componentResource;
         this._inheritParameters(componentResource, (<any> componentResource).classes);
         this._inheritConstructorParameters(componentResource);
+    }
+
+    /**
+     * Check if the given resource is a valid component.
+     * @param componentResource A resource.
+     * @returns {boolean} If the resource is a valid component.
+     * @private
+     */
+    _isValidComponent(componentResource: Resource) {
+        return componentResource.hasType(Util.PREFIXES['oo'] + 'AbstractClass')
+            || componentResource.hasType(Util.PREFIXES['oo'] + 'Class');
+    }
+
+    /**
+     * Require that the given resource is a valid component,
+     * otherwise and error is thrown.
+     * @param componentResource A resource.
+     * @param referencingComponent The optional component referencing the given component.
+     * @private
+     */
+    _requireValidComponent(componentResource: Resource, referencingComponent?: Resource) {
+        if (!this._isValidComponent(componentResource)) {
+            throw new Error('The referenced resource ' + componentResource.value + ' is not a valid ' +
+                'component resource, either it is not defined or incorrectly referenced'
+            + (referencingComponent ? ' by ' + referencingComponent.value + '.' : '.'));
+        }
     }
 
     /**
@@ -123,8 +150,8 @@ export class Loader {
                 componentResource.hasParameter = [];
             }
             classes.forEach((component: any) => {
-                if (component.hasType(Util.PREFIXES['oo'] + 'AbstractClass')
-                    || component.hasType(Util.PREFIXES['oo'] + 'Class')) {
+                this._requireValidComponent(component, componentResource);
+                if (this._isValidComponent(component)) {
                     if (component.hasParameter) {
                         component.hasParameter.forEach((parameter: Resource) => {
                             if (componentResource.hasParameter.indexOf(parameter) < 0) {
@@ -171,7 +198,6 @@ export class Loader {
                             object.fields.push(field);
                         }
                     });
-                    this._inheritParameters(object, superObject.classes);
                 }
                 if (superObject.classes) {
                     this._inheritObjectFields(object, superObject.classes);
