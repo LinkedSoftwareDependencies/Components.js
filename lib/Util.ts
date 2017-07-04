@@ -5,6 +5,7 @@ import fs = require("fs");
 import Path = require("path");
 import url = require("url");
 import {RdfStreamIncluder} from "./rdf/RdfStreamIncluder";
+import NodeUtil = require('util');
 
 class Util {
     static readonly PREFIXES: {[id: string]: string} = {
@@ -81,7 +82,7 @@ class Util {
             // If the paramater value must be unique and a value has already been set, crash
             if (param.unique) {
                 if (value) {
-                    throw new Error('A parameter is unique, has a fixed value and has another defined value' + JSON.stringify(param));
+                    throw new Error('A parameter is unique, has a fixed value and has another defined value' + NodeUtil.inspect(param));
                 } else {
                     value = param.fixed;
                 }
@@ -91,7 +92,7 @@ class Util {
                     value = [];
                 }
                 if (!(value instanceof Array)) {
-                    throw new Error('Values must be an array ' + JSON.stringify(param));
+                    throw new Error('Values must be an array ' + NodeUtil.inspect(param));
                 }
                 param.fixed.forEach((f: any) => value.push(f));
             }

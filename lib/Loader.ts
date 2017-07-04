@@ -6,6 +6,7 @@ import N3 = require("n3");
 import Triple = N3.Triple;
 import Util = require("./Util");
 import {IComponentFactory} from "./factory/IComponentFactory";
+import NodeUtil = require('util');
 
 /**
  * A loader class for component configs.
@@ -279,7 +280,7 @@ export class Loader {
         if (componentTypes.length !== 1 && !(<any> configResource).requireName && !(<any> configResource).requireElement) {
             throw new Error('Could not run config ' + configResource.value + ' because exactly one valid component type ' +
                 'was expected, while ' + componentTypes.length + ' were found. ' +
-                'Alternatively, the requireName and requireElement must be provided.' + require('util').inspect(configResource));
+                'Alternatively, the requireName and requireElement must be provided.' + NodeUtil.inspect(configResource));
         }
         let componentResource: any;
         let moduleResource: any;
@@ -333,12 +334,12 @@ export class Loader {
                 restrictions.forEach((restriction: any) => {
                     if (restriction.allValuesFrom) {
                         if (!restriction.onProperty) {
-                            throw new Error('Parameters that inherit values must refer to a property: ' + JSON.stringify(parameter));
+                            throw new Error('Parameters that inherit values must refer to a property: ' + NodeUtil.inspect(parameter));
                         }
 
                         restriction.allValuesFrom.forEach((componentType: Resource) => {
                             if (componentType.termType !== 'NamedNode') {
-                                throw new Error('Parameter inheritance values must refer to component type identifiers, not literals: ' + JSON.stringify(componentType));
+                                throw new Error('Parameter inheritance values must refer to component type identifiers, not literals: ' + NodeUtil.inspect(componentType));
                             }
 
                             let typeInstances: Resource[] = this._runTypeConfigs[componentType.value];

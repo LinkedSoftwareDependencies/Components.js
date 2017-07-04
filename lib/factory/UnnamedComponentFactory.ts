@@ -1,6 +1,7 @@
 import {Resource} from "../rdf/Resource";
 import {IComponentFactory} from "./IComponentFactory";
 import {Loader} from "../Loader";
+import NodeUtil = require('util');
 import * as Path from "path";
 
 /**
@@ -28,13 +29,13 @@ export class UnnamedComponentFactory implements IComponentFactory {
     _validateParam(resource: any, field: string, type: string, optional?: boolean) {
         if (!resource[field]) {
             if (!optional) {
-                throw new Error('Expected ' + field + ' to exist in ' + JSON.stringify(resource));
+                throw new Error('Expected ' + field + ' to exist in ' + NodeUtil.inspect(resource));
             } else {
                 return;
             }
         }
         if (resource[field].termType !== type) {
-            throw new Error('Expected ' + field + ' in ' + JSON.stringify(resource) + ' to be of type ' + type);
+            throw new Error('Expected ' + field + ' in ' + NodeUtil.inspect(resource) + ' to be of type ' + type);
         }
     }
 
@@ -43,11 +44,11 @@ export class UnnamedComponentFactory implements IComponentFactory {
             // The parameter is an object
             return value.fields.reduce((data: any, entry: any) => {
                 if (!entry.k) {
-                    throw new Error('Parameter object entries must have keys, but found: ' + JSON.stringify(entry, null, '  '));
+                    throw new Error('Parameter object entries must have keys, but found: ' + NodeUtil.inspect(entry));
                 }
                 if (entry.k.termType !== 'Literal') {
                     throw new Error('Parameter object keys must be literals, but found type ' + entry.k.termType
-                        + ' for ' + entry.k.value + ' while constructing: ' + JSON.stringify(value, null, '  '));
+                        + ' for ' + entry.k.value + ' while constructing: ' + NodeUtil.inspect(value));
                 }
                 if (entry.v) {
                     data[entry.k.value] = UnnamedComponentFactory.getArgumentValue(entry.v, componentRunner);
@@ -61,7 +62,7 @@ export class UnnamedComponentFactory implements IComponentFactory {
             // The parameter is an object
             return value.elements.reduce((data: any, entry: any) => {
                 if (!entry.v) {
-                    throw new Error('Parameter array elements must have values, but found: ' + JSON.stringify(entry, null, '  '));
+                    throw new Error('Parameter array elements must have values, but found: ' + NodeUtil.inspect(entry));
                 }
                 if (entry.v) {
                     let mapped: any = UnnamedComponentFactory.getArgumentValue(entry.v, componentRunner);
@@ -87,8 +88,8 @@ export class UnnamedComponentFactory implements IComponentFactory {
         } else if (value.termType === 'Literal') {
             return value.value;
         }
-        console.error('An invalid argument value was found:' + require('util').inspect(value));
-        return require('util').inspect(value);
+        console.error('An invalid argument value was found:' + NodeUtil.inspect(value));
+        return NodeUtil.inspect(value);
     }
 
     /**
@@ -154,8 +155,8 @@ export class UnnamedComponentFactory implements IComponentFactory {
         let instance: any;
         if (this._constructable) {
             if (!(object instanceof Function)) {
-                console.error(JSON.stringify(this._componentDefinition, null, '  '));
-                throw new Error('ConstructableComponent is not a function: ' + JSON.stringify(object));
+                console.error(NodeUtil.inspect(this._componentDefinition));
+                throw new Error('ConstructableComponent is not a function: ' + NodeUtil.inspect(object));
             }
             let args: any[] = this.makeArguments(false);
             instance = new (Function.prototype.bind.apply(object, [{}].concat(args)));

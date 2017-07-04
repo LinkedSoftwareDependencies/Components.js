@@ -1,5 +1,6 @@
 import N3 = require('n3');
 import Util = require("../Util");
+import NodeUtil = require('util');
 
 /**
  * A resource class.
@@ -38,5 +39,9 @@ export class Resource {
             return resource.types.reduce((acc: boolean, type: Resource) => acc || type.value === typeUri, false);
         }
         return false;
+    }
+
+    toString(): string {
+        return NodeUtil.inspect(this);
     }
 }

@@ -3,6 +3,7 @@ import N3 = require("n3");
 import {Stream} from "stream";
 import {JsonLdStreamer} from "./JsonLdStreamer";
 import {JsonLdStreamParser} from "./JsonLdStreamParser";
+import NodeUtil = require('util');
 
 /**
  * A RdfStreamParser takes a text stream (N3 or JSON-LD) as input and parses it to a triple stream.
@@ -40,7 +41,7 @@ export class RdfStreamParser extends PassThrough {
         function errorHandler(e: any) {
             errors.push(e.toString());
             if (errors.length === 2) {
-                self.emit('error', new Error('No valid parser was found, both N3 and JSON-LD failed:\n' + JSON.stringify(errors)));
+                self.emit('error', new Error('No valid parser was found, both N3 and JSON-LD failed:\n' + NodeUtil.inspect(errors)));
             }
         }
 

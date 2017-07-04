@@ -3,6 +3,7 @@ import {Resource} from "../rdf/Resource";
 import _ = require('lodash');
 import {Loader} from "../Loader";
 import Util = require("../Util");
+import NodeUtil = require('util');
 
 /**
  * Factory for component definitions with semantic arguments and with constructor mappings.
@@ -64,7 +65,7 @@ export class MappedNamedComponentFactory extends UnnamedComponentFactory {
                             k = Resource.newString(entryResource.value);
                         }
                         else if (!entryResource[resource.k.value] || entryResource[resource.k.value].length !== 1) {
-                            throw new Error('Expected exactly one label definition for a dynamic entry ' + resource.k.value + ' in: ' + JSON.stringify(entryResource));
+                            throw new Error('Expected exactly one label definition for a dynamic entry ' + resource.k.value + ' in: ' + entryResource.toString());
                         }
                         else {
                             k = entryResource[resource.k.value][0];
@@ -77,7 +78,7 @@ export class MappedNamedComponentFactory extends UnnamedComponentFactory {
                             v = MappedNamedComponentFactory.map(entryResource, params);
                         }
                         else if (!entryResource[resource.v.value] || entryResource[resource.v.value].length !== 1) {
-                            throw new Error('Expected exactly one value definition for a dynamic entry ' + resource.v.value + ' in: ' + JSON.stringify(entryResource));
+                            throw new Error('Expected exactly one value definition for a dynamic entry ' + resource.v.value + ' in: ' + entryResource.toString());
                         }
                         else {
                             v = entryResource[resource.v.value][0];
@@ -101,12 +102,12 @@ export class MappedNamedComponentFactory extends UnnamedComponentFactory {
         }
         else if (resource.elements) {
             if (!resource.elements.list) {
-                throw new Error('Parameter array elements musts be lists, but found: ' + JSON.stringify(resource.elements, null, '  '));
+                throw new Error('Parameter array elements musts be lists, but found: ' + NodeUtil.inspect(resource.elements));
             }
             return new Resource(null, {
                 elements: resource.elements.list.reduce((elements: any[], element: any) => {
                     if (element.termType !== 'NamedNode') {
-                        throw new Error('Parameter array elements must be URI\'s, but found: ' + JSON.stringify(element, null, '  '));
+                        throw new Error('Parameter array elements must be URI\'s, but found: ' + NodeUtil.inspect(element));
                     }
                     let mapped: any = { v: MappedNamedComponentFactory.mapValue(element, params) };
                     elements.push(mapped);
