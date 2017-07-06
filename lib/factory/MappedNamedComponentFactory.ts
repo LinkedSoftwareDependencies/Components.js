@@ -40,8 +40,8 @@ export class MappedNamedComponentFactory extends UnnamedComponentFactory {
      * @returns {any} The mapped resource.
      */
     static map(resource: any, params: any): any {
-        if (resource.k && resource.v) {
-            if (resource.k.termType === 'Literal' && !resource.collectEntriesFrom) {
+        if (resource.v) {
+            if (resource.k && resource.k.termType === 'Literal' && !resource.collectEntriesFrom) {
                 return { k: resource.k, v: MappedNamedComponentFactory.mapValue(resource.v, params) };
             } else {
                 if (!resource.collectEntriesFrom) {
@@ -60,15 +60,17 @@ export class MappedNamedComponentFactory extends UnnamedComponentFactory {
                     .map((entryResource: any) => {
                         let k: any;
                         let v: any;
-                        if (resource.k.termType === 'NamedNode' && resource.k.value === Util.PREFIXES['rdf'] + 'subject') {
-                            k = Resource.newString(entryResource.value);
-                        }
-                        else if (!entryResource[resource.k.value] || entryResource[resource.k.value].length !== 1) {
-                            throw new Error('Expected exactly one label definition for a dynamic entry '
-                                + resource.k.value + ' in ' + entryResource.value + '\nFound:' + entryResource.toString());
-                        }
-                        else {
-                            k = entryResource[resource.k.value][0];
+                        if (resource.k) {
+                            if (resource.k.termType === 'NamedNode' && resource.k.value === Util.PREFIXES['rdf'] + 'subject') {
+                                k = Resource.newString(entryResource.value);
+                            }
+                            else if (!entryResource[resource.k.value] || entryResource[resource.k.value].length !== 1) {
+                                throw new Error('Expected exactly one label definition for a dynamic entry '
+                                    + resource.k.value + ' in ' + entryResource.value + '\nFound:' + entryResource.toString());
+                            }
+                            else {
+                                k = entryResource[resource.k.value][0];
+                            }
                         }
 
                         if (resource.v.termType === 'NamedNode' && resource.v.value === Util.PREFIXES['rdf'] + 'subject') {
@@ -90,7 +92,7 @@ export class MappedNamedComponentFactory extends UnnamedComponentFactory {
                                 v = entryResource[resource.v.value][0];
                             }
                         }
-                        return { k: k, v: v };
+                        return resource.k ? { k: k, v: v } : v;
                     });
             }
         }
@@ -113,7 +115,7 @@ export class MappedNamedComponentFactory extends UnnamedComponentFactory {
             }
             return new Resource(null, {
                 elements: resource.elements.list.reduce((elements: any[], element: any) => {
-                    if (element.termType !== 'NamedNode') {
+                    if (element.termType !== 'NamedNode' && !element.v) {
                         throw new Error('Parameter array elements must be URI\'s, but found: ' + NodeUtil.inspect(element));
                     }
                     let mapped: any = { v: MappedNamedComponentFactory.mapValue(element, params) };

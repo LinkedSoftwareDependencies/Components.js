@@ -624,5 +624,21 @@ describe('Loader', function () {
         done();
       }).catch(done);
     });
+
+    it('should allow a config stream with component instances to be run with double nested array mappings', function (done) {
+      let configResourceStream = fs.createReadStream(__dirname + '/assets/config-hello-world-dynamicentries-nested.jsonld').pipe(new JsonLdStreamParser());
+      runner.instantiateFromStream('http://example.org/myHelloWorld3', configResourceStream).then((run) => {
+        run._params.should.deepEqual({
+          'KEY1': [
+            [ '1', '2' ],
+            [ 'a', 'b' ]
+          ],
+          'KEY2': [
+            [ '1', '2' ],
+          ]
+        });
+        done();
+      }).catch(done);
+    });
   });
 });

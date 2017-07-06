@@ -96,20 +96,13 @@
                   "collectEntries": "hello:something",
                   "key": "hello:somethingKey",
                   "value": {
-                    "fields": [
+                    "elements": [
                       {
                         "collectEntries": "hello:somethingValue",
-                        "key": "hello:somethingValue_key",
                         "value": {
-                          "fields": [
-                            {
-                              "keyRaw": "initial",
-                              "value": "hello:somethingValue_initial"
-                            },
-                            {
-                              "keyRaw": "final",
-                              "value": "hello:somethingValue_final"
-                            }
+                          "elements": [
+                            "hello:somethingValue_initial",
+                            "hello:somethingValue_final"
                           ]
                         }
                       }

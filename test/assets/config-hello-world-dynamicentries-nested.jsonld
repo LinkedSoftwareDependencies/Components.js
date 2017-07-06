@@ -62,6 +62,32 @@
           }
         }
       ]
+    },
+    {
+      "@id": "ex:myHelloWorld3",
+      "@type": "ex:HelloWorldModule#SayHelloComponent3",
+      "hello:something": [
+        {
+          "hello:somethingKey": "KEY1",
+          "hello:somethingValue": [
+            {
+              "hello:somethingValue_initial": "1",
+              "hello:somethingValue_final": "2"
+            },
+            {
+              "hello:somethingValue_initial": "a",
+              "hello:somethingValue_final": "b"
+            }
+          ]
+        },
+        {
+          "hello:somethingKey": "KEY2",
+          "hello:somethingValue": {
+            "hello:somethingValue_initial": "1",
+            "hello:somethingValue_final": "2"
+          }
+        }
+      ]
     }
   ]
 }
