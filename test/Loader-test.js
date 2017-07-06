@@ -577,4 +577,52 @@ describe('Loader', function () {
       });
     });
   });
+
+  describe('constructing components from a component with nested dynamic entries in constructor mappings', function () {
+    beforeEach(function (done) {
+      let moduleStream = fs.createReadStream(__dirname + '/assets/module-hello-world-dynamicentries-nested.jsonld').pipe(new JsonLdStreamParser());
+      runner.registerModuleResourcesStream(moduleStream).then(done);
+    });
+
+    it('should allow a config stream with component instances to be run with nested array mappings', function (done) {
+      let configResourceStream = fs.createReadStream(__dirname + '/assets/config-hello-world-dynamicentries-nested.jsonld').pipe(new JsonLdStreamParser());
+      runner.instantiateFromStream('http://example.org/myHelloWorld1', configResourceStream).then((run) => {
+        run._params.should.deepEqual({
+          'KEY1': {
+            'sub-KEY1': [ '1', '2' ],
+            'sub-KEY2': [ 'a', 'b' ]
+          },
+          'KEY2': {
+            'sub-KEY1': [ '1', '2' ],
+          }
+        });
+        done();
+      }).catch(done);
+    });
+
+    it('should allow a config stream with component instances to be run with nested object mappings', function (done) {
+      let configResourceStream = fs.createReadStream(__dirname + '/assets/config-hello-world-dynamicentries-nested.jsonld').pipe(new JsonLdStreamParser());
+      runner.instantiateFromStream('http://example.org/myHelloWorld2', configResourceStream).then((run) => {
+        run._params.should.deepEqual({
+          'KEY1': {
+            'sub-KEY1': {
+              'initial': [ '1' ],
+              'final': [ '2' ]
+            },
+            'sub-KEY2': {
+              'initial': [ 'a' ],
+              'final': [ 'b' ]
+            }
+          },
+          'KEY2': {
+            'sub-KEY1': {
+              'initial': [ '1' ],
+              'final': [ '2' ]
+            }
+          }
+        });
+        done();
+      }).catch(done);
+    });
+  });
 });

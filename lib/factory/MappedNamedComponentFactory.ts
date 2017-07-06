@@ -77,12 +77,18 @@ export class MappedNamedComponentFactory extends UnnamedComponentFactory {
                         else if (resource.v.termType === 'NamedNode' && resource.v.value === Util.PREFIXES['rdf'] + 'object') {
                             v = MappedNamedComponentFactory.map(entryResource, params);
                         }
-                        else if (!entryResource[resource.v.value] || entryResource[resource.v.value].length !== 1) {
-                            throw new Error('Expected exactly one value definition for a dynamic entry '
-                                + resource.v.value + ' in ' + entryResource.value + '\nFound: ' + entryResource.toString());
-                        }
                         else {
-                            v = entryResource[resource.v.value][0];
+                            if (resource.v && (resource.v.fields || resource.v.elements)) {
+                                // Nested mapping should reduce the parameter scope
+                                v = MappedNamedComponentFactory.mapValue(resource.v, entryResource);
+                            }
+                            else if (!entryResource[resource.v.value] || entryResource[resource.v.value].length !== 1) {
+                                throw new Error('Expected exactly one value definition for a dynamic entry '
+                                    + resource.k.value + ' in ' + entryResource.value + '\nFound: ' + entryResource.toString());
+                            }
+                            else {
+                                v = entryResource[resource.v.value][0];
+                            }
                         }
                         return { k: k, v: v };
                     });
