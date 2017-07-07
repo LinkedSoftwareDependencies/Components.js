@@ -267,8 +267,10 @@ export class Loader {
      * @returns The component factory.
      */
     getConfigConstructor(configResource: Resource): IComponentFactory {
+        let allTypes : string[] = [];
         let componentTypes: Resource[] = ((<any> configResource).types || []).reduce((types: Resource[], typeUri: Resource) => {
             let componentResource: Resource = this._componentResources[typeUri.value];
+            allTypes.push(typeUri.value);
             if (componentResource) {
                 types.push(componentResource);
                 if (!this._runTypeConfigs[componentResource.value]) {
@@ -280,7 +282,7 @@ export class Loader {
         }, []);
         if (componentTypes.length !== 1 && !(<any> configResource).requireName && !(<any> configResource).requireElement) {
             throw new Error('Could not run config ' + configResource.value + ' because exactly one valid component type ' +
-                'was expected, while ' + componentTypes.length + ' were found. ' +
+                'was expected, while ' + componentTypes.length + ' were found in the defined types [' + allTypes + ']. ' +
                 'Alternatively, the requireName and requireElement must be provided.\nFound: ' + configResource.toString());
         }
         let componentResource: any;
