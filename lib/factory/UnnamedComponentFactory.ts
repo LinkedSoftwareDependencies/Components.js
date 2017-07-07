@@ -51,7 +51,7 @@ export class UnnamedComponentFactory implements IComponentFactory {
                         + ' for ' + entry.k.value + ' while constructing: ' + NodeUtil.inspect(value));
                 }
                 if (entry.v) {
-                    data[entry.k.value] = UnnamedComponentFactory.getArgumentValue(entry.v, componentRunner);
+                    data[entry.k.value] = UnnamedComponentFactory.getArgumentValue(entry.v, componentRunner, shallow);
                 } else {
                     // TODO: only throw an error if the parameter is required
                     //throw new Error('Parameter object entries must have values, but found: ' + JSON.stringify(entry, null, '  '));
@@ -65,7 +65,7 @@ export class UnnamedComponentFactory implements IComponentFactory {
                     throw new Error('Parameter array elements must have values, but found: ' + NodeUtil.inspect(entry));
                 }
                 if (entry.v) {
-                    let mapped: any = UnnamedComponentFactory.getArgumentValue(entry.v, componentRunner);
+                    let mapped: any = UnnamedComponentFactory.getArgumentValue(entry.v, componentRunner, shallow);
                     if (mapped instanceof Array) {
                         data = data.concat(mapped);
                     } else {
@@ -75,7 +75,7 @@ export class UnnamedComponentFactory implements IComponentFactory {
                 return data;
             }, []);
         } else if (value instanceof Array) {
-            return value.map((element) => UnnamedComponentFactory.getArgumentValue(element, componentRunner));
+            return value.map((element) => UnnamedComponentFactory.getArgumentValue(element, componentRunner, shallow));
         } else if (value.termType === 'NamedNode' || value.termType === 'BlankNode') {
             if (shallow) {
                 return {};
