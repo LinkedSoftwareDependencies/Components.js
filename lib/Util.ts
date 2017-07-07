@@ -82,7 +82,7 @@ class Util {
             // If the paramater value must be unique and a value has already been set, crash
             if (param.unique) {
                 if (value) {
-                    throw new Error('A parameter is unique, has a fixed value and has another defined value' + NodeUtil.inspect(param));
+                    throw new Error('A parameter is unique, has a fixed value, but also has another defined value.\n' + NodeUtil.inspect(param));
                 } else {
                     value = param.fixed;
                 }
@@ -92,7 +92,7 @@ class Util {
                     value = [];
                 }
                 if (!(value instanceof Array)) {
-                    throw new Error('Values must be an array ' + NodeUtil.inspect(param));
+                    throw new Error('Values must be an array\n' + NodeUtil.inspect(param));
                 }
                 param.fixed.forEach((f: any) => value.push(f));
             }
@@ -106,9 +106,9 @@ class Util {
         // If a param range is defined, apply the type and validate the range.
         if (param.range) {
             if (value instanceof Array) {
-                value = value.map((e) => Util.captureType(e, param.range.value));
+                value = value.map((e) => Util.captureType(e, param));
             } else {
-                value = Util.captureType(value, param.range.value);
+                value = Util.captureType(value, param);
             }
         }
 
@@ -121,15 +121,15 @@ class Util {
      * Will throw an error if the type has an invalid value.
      * Will be ignored if the value is not a literal or the type is not recognized.
      * @param value The value.
-     * @param type The datatype.
+     * @param param The parameter.
      * @returns {any} The tranformed value.
      */
-    static captureType(value: any, type: string): any {
+    static captureType(value: any, param: any): any {
         if (!value) return value;
         let raw = value.value;
         if (value.termType === 'Literal') {
             let parsed;
-            switch(type) {
+            switch(param.range.value) {
                 case Util.PREFIXES['xsd'] + 'boolean':
                     if (raw === 'true') {
                         raw = true;
@@ -171,7 +171,8 @@ class Util {
         return value;
 
         function incorrectType() {
-            throw new Error(value.value + ' is not of type ' + type);;
+            throw new Error(value.value + ' is not of type ' + param.range.value + ' for parameter ' + param.value
+                + '.\n' + NodeUtil.inspect(param));
         }
     }
 }

@@ -6,78 +6,78 @@ describe('Util', function () {
   describe('#captureType', function () {
 
     it('should capture strings', function () {
-      Util.captureType({ value: 'aaa', termType: 'Literal' }, Util.PREFIXES['xsd'] + 'string')
+      Util.captureType({ value: 'aaa', termType: 'Literal' }, { range: { value: Util.PREFIXES['xsd'] + 'string' }})
         .should.deepEqual({ value: 'aaa', termType: 'Literal' });
-      Util.captureType({ value: 'qqseqfqefefù$^', termType: 'Literal' }, Util.PREFIXES['xsd'] + 'string')
+      Util.captureType({ value: 'qqseqfqefefù$^', termType: 'Literal' }, { range: { value: Util.PREFIXES['xsd'] + 'string' }})
         .should.deepEqual({ value: 'qqseqfqefefù$^', termType: 'Literal' });
     });
 
     it('should capture booleans', function () {
-      Util.captureType({ value: 'true', termType: 'Literal' }, Util.PREFIXES['xsd'] + 'boolean')
+      Util.captureType({ value: 'true', termType: 'Literal' }, { range: { value: Util.PREFIXES['xsd'] + 'boolean' }})
         .should.deepEqual({ value: true, termType: 'Literal' });
-      Util.captureType({ value: 'false', termType: 'Literal' }, Util.PREFIXES['xsd'] + 'boolean')
+      Util.captureType({ value: 'false', termType: 'Literal' }, { range: { value: Util.PREFIXES['xsd'] + 'boolean' }})
         .should.deepEqual({ value: false, termType: 'Literal' });
     });
     it('should error on invalid booleans', function () {
-      (() => Util.captureType({ value: '1', termType: 'Literal' }, Util.PREFIXES['xsd'] + 'boolean')).should.throw();
+      (() => Util.captureType({ value: '1', termType: 'Literal' }, { range: { value: Util.PREFIXES['xsd'] + 'boolean' }})).should.throw();
     });
 
     it('should capture integers', function () {
-      Util.captureType({ value: '1', termType: 'Literal' }, Util.PREFIXES['xsd'] + 'integer')
+      Util.captureType({ value: '1', termType: 'Literal' }, { range: { value: Util.PREFIXES['xsd'] + 'integer' }})
         .should.deepEqual({ value: 1, termType: 'Literal' });
-      Util.captureType({ value: '456789876', termType: 'Literal' }, Util.PREFIXES['xsd'] + 'integer')
+      Util.captureType({ value: '456789876', termType: 'Literal' }, { range: { value: Util.PREFIXES['xsd'] + 'integer' }})
         .should.deepEqual({ value: 456789876, termType: 'Literal' });
     });
     it('should error on invalid integers', function () {
-      (() => Util.captureType({ value: 'a', termType: 'Literal' }, Util.PREFIXES['xsd'] + 'integer')).should.throw();
+      (() => Util.captureType({ value: 'a', termType: 'Literal' }, { range: { value: Util.PREFIXES['xsd'] + 'integer' }})).should.throw();
     });
     it('should error on invalid integers that are numbers', function () {
-      (() => Util.captureType({ value: '1.12', termType: 'Literal' }, Util.PREFIXES['xsd'] + 'integer')).should.throw();
+      (() => Util.captureType({ value: '1.12', termType: 'Literal' }, { range: { value: Util.PREFIXES['xsd'] + 'integer' }})).should.throw();
     });
     it('should capture numbers', function () {
-      Util.captureType({ value: '1', termType: 'Literal' }, Util.PREFIXES['xsd'] + 'number')
+      Util.captureType({ value: '1', termType: 'Literal' }, { range: { value: Util.PREFIXES['xsd'] + 'number' }})
         .should.deepEqual({ value: 1, termType: 'Literal' });
-      Util.captureType({ value: '456789876', termType: 'Literal' }, Util.PREFIXES['xsd'] + 'number')
+      Util.captureType({ value: '456789876', termType: 'Literal' }, { range: { value: Util.PREFIXES['xsd'] + 'number' }})
         .should.deepEqual({ value: 456789876, termType: 'Literal' });
     });
     it('should capture ints', function () {
-      Util.captureType({ value: '1', termType: 'Literal' }, Util.PREFIXES['xsd'] + 'int')
+      Util.captureType({ value: '1', termType: 'Literal' }, { range: { value: Util.PREFIXES['xsd'] + 'int' }})
         .should.deepEqual({ value: 1, termType: 'Literal' });
-      Util.captureType({ value: '456789876', termType: 'Literal' }, Util.PREFIXES['xsd'] + 'int')
+      Util.captureType({ value: '456789876', termType: 'Literal' }, { range: { value: Util.PREFIXES['xsd'] + 'int' }})
         .should.deepEqual({ value: 456789876, termType: 'Literal' });
     });
     it('should capture bytes', function () {
-      Util.captureType({ value: '1', termType: 'Literal' }, Util.PREFIXES['xsd'] + 'byte')
+      Util.captureType({ value: '1', termType: 'Literal' }, { range: { value: Util.PREFIXES['xsd'] + 'byte' }})
         .should.deepEqual({ value: 1, termType: 'Literal' });
-      Util.captureType({ value: '456789876', termType: 'Literal' }, Util.PREFIXES['xsd'] + 'byte')
+      Util.captureType({ value: '456789876', termType: 'Literal' }, { range: { value: Util.PREFIXES['xsd'] + 'byte' }})
         .should.deepEqual({ value: 456789876, termType: 'Literal' });
     });
     it('should capture longs', function () {
-      Util.captureType({ value: '1', termType: 'Literal' }, Util.PREFIXES['xsd'] + 'long')
+      Util.captureType({ value: '1', termType: 'Literal' }, { range: { value: Util.PREFIXES['xsd'] + 'long' }})
         .should.deepEqual({ value: 1, termType: 'Literal' });
-      Util.captureType({ value: '456789876', termType: 'Literal' }, Util.PREFIXES['xsd'] + 'long')
+      Util.captureType({ value: '456789876', termType: 'Literal' }, { range: { value: Util.PREFIXES['xsd'] + 'long' }})
         .should.deepEqual({ value: 456789876, termType: 'Literal' });
     });
 
     it('should capture floats', function () {
-      Util.captureType({ value: '1', termType: 'Literal' }, Util.PREFIXES['xsd'] + 'float')
+      Util.captureType({ value: '1', termType: 'Literal' }, { range: { value: Util.PREFIXES['xsd'] + 'float' }})
         .should.deepEqual({ value: 1, termType: 'Literal' });
-      Util.captureType({ value: '256.36', termType: 'Literal' }, Util.PREFIXES['xsd'] + 'float')
+      Util.captureType({ value: '256.36', termType: 'Literal' }, { range: { value: Util.PREFIXES['xsd'] + 'float' }})
         .should.deepEqual({ value: 256.36, termType: 'Literal' });
     });
     it('should error on invalid floats', function () {
-      (() => Util.captureType({ value: 'a', termType: 'Literal' }, Util.PREFIXES['xsd'] + 'float')).should.throw();
+      (() => Util.captureType({ value: 'a', termType: 'Literal' }, { range: { value: Util.PREFIXES['xsd'] + 'float' }})).should.throw();
     });
     it('should capture decimals', function () {
-      Util.captureType({ value: '1', termType: 'Literal' }, Util.PREFIXES['xsd'] + 'decimal')
+      Util.captureType({ value: '1', termType: 'Literal' }, { range: { value: Util.PREFIXES['xsd'] + 'decimal' }})
         .should.deepEqual({ value: 1, termType: 'Literal' });
-      Util.captureType({ value: '256.36', termType: 'Literal' }, Util.PREFIXES['xsd'] + 'decimal')
+      Util.captureType({ value: '256.36', termType: 'Literal' }, { range: { value: Util.PREFIXES['xsd'] + 'decimal' }})
         .should.deepEqual({ value: 256.36, termType: 'Literal' });
     });
     it('should capture doubles', function () {
-      Util.captureType({ value: '1', termType: 'Literal' }, Util.PREFIXES['xsd'] + 'double')
+      Util.captureType({ value: '1', termType: 'Literal' }, { range: { value: Util.PREFIXES['xsd'] + 'double' }})
         .should.deepEqual({ value: 1, termType: 'Literal' });
-      Util.captureType({ value: '256.36', termType: 'Literal' }, Util.PREFIXES['xsd'] + 'double')
+      Util.captureType({ value: '256.36', termType: 'Literal' }, { range: { value: Util.PREFIXES['xsd'] + 'double' }})
         .should.deepEqual({ value: 256.36, termType: 'Literal' });
     });
 
