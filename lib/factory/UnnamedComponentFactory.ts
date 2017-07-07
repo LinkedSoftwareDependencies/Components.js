@@ -80,16 +80,11 @@ export class UnnamedComponentFactory implements IComponentFactory {
             if (shallow) {
                 return {};
             }
-            try {
-                return componentRunner.instantiate(value);
-            } catch (e) {
-                console.error(e);
-            }
+            return componentRunner.instantiate(value);
         } else if (value.termType === 'Literal') {
             return value.value;
         }
-        console.error('An invalid argument value was found:' + NodeUtil.inspect(value));
-        return NodeUtil.inspect(value);
+        throw new Error('An invalid argument value was found:' + NodeUtil.inspect(value));
     }
 
     /**

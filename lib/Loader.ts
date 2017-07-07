@@ -393,6 +393,7 @@ export class Loader {
                         constructor = this.getConfigConstructor(configResource);
                     } catch (e) {
                         reject(e);
+                        return;
                     }
                     resolve(constructor);
                 });
@@ -422,6 +423,7 @@ export class Loader {
                         instance = this.instantiate(configResource);
                     } catch (e) {
                         reject(e);
+                        return;
                     }
                     resolve(instance);
                 });
