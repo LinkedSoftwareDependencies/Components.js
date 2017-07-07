@@ -380,6 +380,7 @@ export class Loader {
         return new Promise((resolve, reject) => {
             let loader: RdfClassLoader = this._newConfigLoader();
             configResourceStream
+                .on('error', reject)
                 .pipe(loader)
                 .on('finish', () => {
                     let configResource: Resource = loader.resources[configResourceUri];
@@ -394,8 +395,7 @@ export class Loader {
                         reject(e);
                     }
                     resolve(constructor);
-                })
-                .on('error', reject);
+                });
         });
     }
 
@@ -409,6 +409,7 @@ export class Loader {
         return new Promise((resolve, reject) => {
             let loader: RdfClassLoader = this._newConfigLoader();
             configResourceStream
+                .on('error', reject)
                 .pipe(loader)
                 .on('finish', () => {
                     let configResource: Resource = loader.resources[configResourceUri];
@@ -423,8 +424,7 @@ export class Loader {
                         reject(e);
                     }
                     resolve(instance);
-                })
-                .on('error', reject);
+                });
         });
     }
 
