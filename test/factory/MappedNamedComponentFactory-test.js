@@ -202,7 +202,7 @@ let helloWorldComponent5 = new Resource('http://example.org/HelloWorldModule#Say
 
 // Module definition for Hello World
 let helloWorldModule = new Resource('http://example.org/HelloWorldModule', {
-  requireName: Resource.newString('../../test/helloworld'),
+  requireName: Resource.newString('test/helloworld'),
   hasComponent: [
     helloWorldComponent1,
     helloWorldComponent2,

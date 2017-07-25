@@ -37,7 +37,7 @@ let n3ParserComponent = new Resource('http://example.org/n3#Parser', {
 
 // Component definition for an N3 Parser
 let nestedHelloWorldComponent = new Resource('http://example.org/n3#Parser', {
-  requireName: Resource.newString('../../test/helloworld'),
+  requireName: Resource.newString('test/helloworld'),
   requireElement: Resource.newString('HelloNested.Deeper.Hello'),
   arguments: new Resource(null, {
     list: []

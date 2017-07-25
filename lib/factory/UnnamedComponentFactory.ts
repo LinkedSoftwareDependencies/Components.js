@@ -129,7 +129,8 @@ export class UnnamedComponentFactory implements IComponentFactory {
         requireName = this._overrideRequireNames[requireName] || requireName;
         let object: any = null;
         try {
-            object = require(requireName);
+            // Always require relative from main module, because Components.js will in most cases just be dependency.
+            object = require.main.require(requireName);
         } catch (e) {
             object = this._requireCurrentRunningModuleIfCurrent(this._componentDefinition.requireName.value);
             if (!object) {

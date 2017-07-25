@@ -8,7 +8,7 @@
   ],
   "@id": "ex:HelloWorldModule",
   "@type": "Module",
-  "requireName": "../../test/helloworld",
+  "requireName": "test/helloworld",
   "import": [
     "assets/module-hello-world-imported1.jsonld",
     "assets/module-hello-world-imported2.jsonld"

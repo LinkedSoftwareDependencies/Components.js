@@ -10,7 +10,7 @@
     {
       "@id": "ex:HelloWorldModule",
       "@type": "Module",
-      "requireName": "../../test/helloworld",
+      "requireName": "test/helloworld",
       "components": [
         {
           "@id": "ex:HelloWorldModule#SayHelloComponentAbstract",
