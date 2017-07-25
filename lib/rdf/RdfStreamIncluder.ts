@@ -26,7 +26,7 @@ export class RdfStreamIncluder extends PassThrough {
             this._runningImporters++;
             this._constants.getContentsFromUrlOrPath(N3.Util.getLiteralValue(data.object), this._fromPath)
                 .then((rawStream: Stream) => {
-                    let data: Stream = this._constants.parseRdf(rawStream, this._fromPath, true);
+                    let data: Stream = this._constants.parseRdf(rawStream, null, this._fromPath, true);
                     data.on('data', (subData: any) => this.push(subData))
                         .on('error', (e: any) => this.emit('error', e))
                         .on('end', () => this.push(null));

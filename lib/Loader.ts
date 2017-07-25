@@ -3,6 +3,7 @@ import {RdfClassLoader} from "./rdf/RdfClassLoader";
 import {ComponentFactory} from "./factory/ComponentFactory";
 import {Resource} from "./rdf/Resource";
 import N3 = require("n3");
+import _ = require("lodash");
 import Triple = N3.Triple;
 import Util = require("./Util");
 import {IComponentFactory} from "./factory/IComponentFactory";
@@ -35,6 +36,16 @@ export class Loader {
 
     constructor(properties?: LoaderProperties) {
         this._properties = properties || {};
+        if (!this._properties.contexts) {
+            this._properties.contexts = <{[id: string]: string}> <any> Util.getAvailableContexts();
+        }
+    }
+
+    _getContexts(): Promise<{[id: string]: string}> {
+        return Promise.resolve(this._properties.contexts).then((contexts) => {
+            this._properties.contexts = contexts;
+            return contexts;
+        })
     }
 
     /**
@@ -257,8 +268,25 @@ export class Loader {
      * @returns {Promise<T>} A promise that resolves once loading has finished.
      */
     registerModuleResourcesUrl(moduleResourceUrl: string, fromPath?: string): Promise<void> {
-        return Util.getContentsFromUrlOrPath(moduleResourceUrl, fromPath)
-            .then((data: Stream) => this.registerModuleResourcesStream(Util.parseRdf(data, fromPath, false, this._properties.contexts)));
+        return this._getContexts().then((contexts) => {
+            return Util.getContentsFromUrlOrPath(moduleResourceUrl, fromPath)
+                .then((data: Stream) => this.registerModuleResourcesStream(Util.parseRdf(data, moduleResourceUrl, fromPath, false, contexts)));
+        });
+    }
+
+    /**
+     * Register all reachable modules and their components.
+     * This will interpret the package.json from the main module and all its dependencies for discovering modules.
+     * This will ensure that component configs referring to components as types of these modules are recognized.
+     * @returns {Promise<T>} A promise that resolves once loading has finished.
+     */
+    registerAvailableModuleResources(): Promise<void> {
+        return Util.getAvailableModuleComponentPaths()
+            .catch((e) => e)
+            .then((data: {[id: string]: string}) => {
+                return Promise.all(_.values(data).map((moduleResourceUrl: string) => this.registerModuleResourcesUrl(moduleResourceUrl)))
+                    .then(() => null);
+            });
     }
 
     /**
@@ -441,8 +469,10 @@ export class Loader {
      * @returns {Promise<T>} A promise resolving to the run instance.
      */
     getConfigConstructorFromUrl(configResourceUri: string, configResourceUrl: string, fromPath?: string): Promise<IComponentFactory> {
-        return Util.getContentsFromUrlOrPath(configResourceUrl, fromPath)
-            .then((data: Stream) => this.getConfigConstructorFromStream(configResourceUri, Util.parseRdf(data, fromPath, false, this._properties.contexts)));
+        return this._getContexts().then((contexts) => {
+            return Util.getContentsFromUrlOrPath(configResourceUrl, fromPath)
+                .then((data: Stream) => this.getConfigConstructorFromStream(configResourceUri, Util.parseRdf(data, configResourceUrl, fromPath, false, contexts)));
+        });
     }
 
     /**
@@ -454,8 +484,10 @@ export class Loader {
      * @returns {Promise<T>} A promise resolving to the run instance.
      */
     instantiateFromUrl(configResourceUri: string, configResourceUrl: string, fromPath?: string): Promise<any> {
-        return Util.getContentsFromUrlOrPath(configResourceUrl, fromPath)
-            .then((data: Stream) => this.instantiateFromStream(configResourceUri, Util.parseRdf(data, fromPath, false, this._properties.contexts)));
+        return this._getContexts().then((contexts) => {
+            return Util.getContentsFromUrlOrPath(configResourceUrl, fromPath)
+                .then((data: Stream) => this.instantiateFromStream(configResourceUri, Util.parseRdf(data, configResourceUrl, fromPath, false, contexts)));
+        });
     }
 
     /**
