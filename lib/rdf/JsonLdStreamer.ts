@@ -17,7 +17,7 @@ export class JsonLdStreamer extends Readable {
     _pushAll() {
         jsonld.toRDF(this._data, (error: any, triples: any) => {
             if (error) {
-                this.emit('error', error);
+                this.emit('error', error.details.cause.message);
             } else {
                 for (var graphName in triples) {
                     triples[graphName].forEach((triple: any) => {

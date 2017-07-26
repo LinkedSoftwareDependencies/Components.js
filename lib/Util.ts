@@ -8,6 +8,7 @@ import _ = require("lodash");
 import {RdfStreamIncluder} from "./rdf/RdfStreamIncluder";
 import NodeUtil = require('util');
 import {Stats} from "fs";
+let jsonld: any = require("jsonld");
 
 class Util {
     static readonly PREFIXES: {[id: string]: string} = {
@@ -338,9 +339,24 @@ class Util {
                         if (contexts) {
                             _.forOwn(contexts, (value: string, key: string) => {
                                 let oldValue: string = data[key];
-                                data[key] = fs.readFileSync(Path.join(modulePath, value), 'utf8');
+                                let filePath: string = Path.join(modulePath, value);
+                                data[key] = fs.readFileSync(filePath, 'utf8');
+
+                                // Crash when duplicate different contexts are found for the same URI
                                 if (oldValue && data[key] !== oldValue) {
-                                    reject('Attempted to load conflicting contexts for \'' + key + '\' at ' + path);
+                                    reject(new Error('Attempted to load conflicting contexts for \'' + key + '\' in ' + filePath));
+                                }
+
+                                // Crash when context is invalid JSON
+                                try {
+                                    let context: any = JSON.parse(data[key]);
+                                    jsonld.compact({}, context, (e: any) => {
+                                        if (e) {
+                                            reject(new Error('Error while parsing context \'' + key + '\' in ' + filePath + ': ' + e.details.cause.message));
+                                        }
+                                    });
+                                } catch(e) {
+                                    reject(new Error('Error while parsing context \'' + key + '\' in ' + filePath + ': ' + e));
                                 }
                             });
                         }
