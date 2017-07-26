@@ -261,6 +261,41 @@ loader.registerAvailableModuleResources()
 If global modules should also be scanned, the `scanGlobal` flag
 in the `Loader` constructor can be set to `true`, as follows: `new Loader({ scanGlobal: true })`
 
+## Exposing Modules and Components
+
+Once a module and its components have been defined,
+they can be exposed through Node's package.json.
+The `lsd:module` entry is used to refer to the module URI.
+The `lsd:components` entry is used to refer to the components file path relative to the module root.
+
+An example package.json could look as follows:
+```json
+{
+  "name": "my-module",
+  "description": "My Module",
+  "version": "1.0.0",
+  "lsd:module": "https://linkedsoftwaredependencies.org/bundles/npm/my-module",
+  "lsd:components": "components/my-components.jsonld"
+}
+```
+
+Additionally, JSON-LD context files can be defined in the package.json.
+When this is done, users that refer to JSON-LD contexts,
+will use the predefined contexts instead of fetching them over HTTP.
+For example:
+```json
+{
+  "name": "my-module",
+  "description": "My Module",
+  "version": "1.0.0",
+  "lsd:module": "https://linkedsoftwaredependencies.org/bundles/npm/my-module",
+  "lsd:components": "components/my-components.jsonld",
+  "lsd:contexts": {
+    "https://example.org/context.jsonld": "contexts/my-context.jsonld"
+  }
+}
+```
+
 ## License
 Components.js is written by [Ruben Taelman](http://www.rubensworks.net/).
 
