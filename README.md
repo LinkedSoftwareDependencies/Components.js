@@ -245,6 +245,22 @@ loader.registerModuleResourcesStream(moduleStream)
     .then((helloWorld) => helloWorld.run());
 ```
 
+### Module scanning
+Instead of loading module resources manually,
+the current node module and its dependencies can be scanned automatically for modules. 
+
+```javascript
+const Loader = require('lsd-components').Loader;
+
+let loader = new Loader();
+loader.registerAvailableModuleResources()
+    .then(() => loader.instantiateFromUrl('http://example.org/myHelloWorld', 'config-hello-world.jsonld'))
+    .then((helloWorld) => helloWorld.run());
+```
+
+If global modules should also be scanned, the `scanGlobal` flag
+in the `Loader` constructor can be set to `true`, as follows: `new Loader({ scanGlobal: true })`
+
 ## License
 Components.js is written by [Ruben Taelman](http://www.rubensworks.net/).
 
