@@ -37,7 +37,7 @@ export class Loader {
     constructor(properties?: LoaderProperties) {
         this._properties = properties || {};
         if (!this._properties.contexts) {
-            this._properties.contexts = <{[id: string]: string}> <any> Util.getAvailableContexts();
+            this._properties.contexts = <{[id: string]: string}> <any> Util.getAvailableContexts(this._properties.scanGlobal);
         }
     }
 
@@ -281,7 +281,7 @@ export class Loader {
      * @returns {Promise<T>} A promise that resolves once loading has finished.
      */
     registerAvailableModuleResources(): Promise<void> {
-        return Util.getAvailableModuleComponentPaths()
+        return Util.getAvailableModuleComponentPaths(this._properties.scanGlobal)
             .catch((e) => e)
             .then((data: {[id: string]: string}) => {
                 return Promise.all(_.values(data).map((moduleResourceUrl: string) => this.registerModuleResourcesUrl(moduleResourceUrl)))
@@ -517,5 +517,6 @@ export class Loader {
 }
 
 export interface LoaderProperties {
+    scanGlobal?: boolean;
     contexts?: {[id: string]: string};
 }

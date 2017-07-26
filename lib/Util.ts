@@ -202,7 +202,7 @@ class Util {
      */
     static getAvailableNodeModules(path: string, cb: (path: string) => any, ignorePaths?: {[key: string]: boolean}) {
         if (!ignorePaths) ignorePaths = {};
-        return recurse(Path.join(path, 'node_modules'));
+        return recurse(Path.basename(path) !== 'node_modules' ? Path.join(path, 'node_modules') : path);
         function recurse(startPath: string) {
             fs.stat(startPath, (err: NodeJS.ErrnoException, stat: Stats) => {
                 if (!err) {
@@ -218,19 +218,27 @@ class Util {
                         fs.readdir(startPath, (err: NodeJS.ErrnoException, files: string[]) => {
                             let remaining = files.length;
                             files.forEach((file) => {
-                                var fullFilePath: string = Path.join(startPath, file);
-                                if (fs.statSync(fullFilePath).isDirectory()) {
-                                    Util.getAvailableNodeModules(fullFilePath, (subPath: string) => {
-                                        if (subPath) {
-                                            cb(subPath);
-                                        } else {
-                                            if (--remaining === 0) {
-                                                cb(null);
+                                let fullFilePath: string = Path.join(startPath, file);
+                                let directory: boolean = false;
+                                try {
+                                    directory = fs.statSync(fullFilePath).isDirectory();
+                                } catch (e) {}
+                                if (directory) {
+                                    if (Path.basename(fullFilePath).charAt(0) === '@') {
+                                        recurse(fullFilePath);
+                                    } else {
+                                        Util.getAvailableNodeModules(fullFilePath, (subPath: string) => {
+                                            if (subPath) {
+                                                cb(subPath);
+                                            } else {
+                                                if (--remaining === 0)
+                                                    cb(null);
                                             }
-                                        }
-                                    }, ignorePaths);
+                                        }, ignorePaths);
+                                    }
                                 } else {
-                                    remaining--;
+                                    if (--remaining === 0)
+                                        cb(null);
                                 }
                             });
                         });
@@ -258,12 +266,20 @@ class Util {
                 if (!modulePath) {
                     return resolve(data);
                 }
-                let pckg: any = require(Path.join(modulePath, 'package.json'));
-                if (pckg) {
-                    let currentModuleUri: string = pckg['lsd:module'];
-                    let relativePath: string = pckg['lsd:components'];
-                    if (currentModuleUri && relativePath) {
-                        data[currentModuleUri] = Path.join(modulePath, relativePath);
+                let packagePath: string = Path.join(modulePath, 'package.json');
+                if (fs.existsSync(packagePath)) {
+                    let pckg: any = require(packagePath);
+                    if (pckg) {
+                        let currentModuleUri: string = pckg['lsd:module'];
+                        let relativePath: string = pckg['lsd:components'];
+                        if (currentModuleUri && relativePath) {
+                            let oldValue: string = data[currentModuleUri];
+                            data[currentModuleUri] = Path.join(modulePath, relativePath);
+                            if (oldValue && data[currentModuleUri] !== oldValue) {
+                                reject('Attempted to load conflicting components for \'' + currentModuleUri
+                                    + '\' at ' + path);
+                            }
+                        }
                     }
                 }
             });
@@ -274,13 +290,22 @@ class Util {
      * Get all currently available component files paths.
      * This checks all available node modules and checks their package.json
      * for `lsd:module` and `lsd:components`.
+     * @param scanGlobal If global modules should also be scanned next to local modules.
      * @return A promise resolving to a mapping of module URI to component file name
      */
-    static getAvailableModuleComponentPaths(): Promise<{[id: string]: string}> {
+    static getAvailableModuleComponentPaths(scanGlobal: boolean): Promise<{[id: string]: string}> {
         return new Promise((resolve, reject) => {
+            let globalPath: string = scanGlobal ? require('global-modules') : null;
             let path: string = Util.getMainModulePath();
             if (path) {
-                return resolve(Util.getModuleComponentPaths(path));
+                return Promise.all([globalPath ? Util.getModuleComponentPaths(globalPath) : {}, Util.getModuleComponentPaths(path)])
+                    .then((paths: [{[id: string]: string}, {[id: string]: string}]) => {
+                        // Local paths can overwrite global paths
+                        resolve(paths.reduce((paths, currentPaths) => {
+                            _.forOwn(currentPaths, (v: string, k: string) => paths[k] = v);
+                            return paths;
+                        }, {}));
+                    });
             } else {
                 reject(null);
             }
@@ -301,11 +326,20 @@ class Util {
                 if (!modulePath) {
                     return resolve(data);
                 }
-                let pckg: any = require(Path.join(modulePath, 'package.json'));
-                if (pckg) {
-                    let contexts: {[key: string]: string} = pckg['lsd:contexts'];
-                    if (contexts) {
-                        _.forOwn(contexts, (value: string, key: string) => data[key] = fs.readFileSync(Path.join(modulePath, value), 'utf8'));
+                let packagePath: string = Path.join(modulePath, 'package.json');
+                if (fs.existsSync(packagePath)) {
+                    let pckg: any = require(packagePath);
+                    if (pckg) {
+                        let contexts: {[key: string]: string} = pckg['lsd:contexts'];
+                        if (contexts) {
+                            _.forOwn(contexts, (value: string, key: string) => {
+                                let oldValue: string = data[key];
+                                data[key] = fs.readFileSync(Path.join(modulePath, value), 'utf8');
+                                if (oldValue && data[key] !== oldValue) {
+                                    reject('Attempted to load conflicting contexts for \'' + key + '\' at ' + path);
+                                }
+                            });
+                        }
                     }
                 }
             });
@@ -316,13 +350,22 @@ class Util {
      * Get all currently available JSON-LD contexts.
      * This checks all available node modules and checks their package.json
      * for `lsd:contexts`.
+     * @param scanGlobal If global modules should also be scanned next to local modules.
      * @return A promise resolving to a mapping of context URL to context contents
      */
-    static getAvailableContexts(): Promise<{[id: string]: string}> {
+    static getAvailableContexts(scanGlobal: boolean): Promise<{[id: string]: string}> {
         return new Promise((resolve, reject) => {
+            let globalPath: string = scanGlobal ? require('global-modules') : null;
             let path: string = Util.getMainModulePath();
             if (path) {
-                return resolve(Util.getContextPaths(path));
+                return Promise.all([globalPath ? Util.getContextPaths(globalPath) : {}, Util.getContextPaths(path)])
+                    .then((paths: [{[id: string]: string}, {[id: string]: string}]) => {
+                        // Local paths can overwrite global paths
+                        resolve(paths.reduce((paths, currentPaths) => {
+                            _.forOwn(currentPaths, (v: string, k: string) => paths[k] = v);
+                            return paths;
+                        }, {}));
+                    });
             } else {
                 reject(null);
             }

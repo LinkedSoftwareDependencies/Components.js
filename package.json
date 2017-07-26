@@ -21,6 +21,7 @@
     "validate": "npm ls"
   },
   "dependencies": {
+    "global-modules": "^1.0.0",
     "jsonld": "^0.4.11",
     "lodash": "^4.17.4",
     "n3": "^0.9.1"
