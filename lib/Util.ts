@@ -199,8 +199,9 @@ class Util {
      * @param path The path to start from.
      * @param cb A callback for each absolute path.
      * @param ignorePaths The paths that should be ignored.
+     * @param haltRecursion If no deeper recursive calls should be done.
      */
-    static getAvailableNodeModules(path: string, cb: (path: string) => any, ignorePaths?: {[key: string]: boolean}) {
+    static getAvailableNodeModules(path: string, cb: (path: string) => any, ignorePaths?: {[key: string]: boolean}, haltRecursion?: boolean) {
         if (!ignorePaths) ignorePaths = {};
         return recurse(Path.basename(path) !== 'node_modules' ? Path.join(path, 'node_modules') : path);
         function recurse(startPath: string) {
@@ -214,6 +215,9 @@ class Util {
                     if (stat.isDirectory()) {
                         if (Path.basename(startPath) === 'node_modules') {
                             cb(Path.join(startPath, '../'));
+                        }
+                        if (haltRecursion) {
+                            return cb(null);
                         }
                         fs.readdir(startPath, (err: NodeJS.ErrnoException, files: string[]) => {
                             let remaining = files.length;
@@ -234,7 +238,7 @@ class Util {
                                                 if (--remaining === 0)
                                                     cb(null);
                                             }
-                                        }, ignorePaths);
+                                        }, ignorePaths, true);
                                     }
                                 } else {
                                     if (--remaining === 0)
