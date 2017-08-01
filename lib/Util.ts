@@ -55,16 +55,17 @@ class Util {
      * @param path The file path or url.
      * @param fromPath The path to base relative paths on.
      *                 Default is the current running directory.
+     * @param absolutizeRelativePaths If relative paths 'file://' should be made absolute 'file:///'.
      * @param ignoreImports If imports should be ignored. Default: false
      * @param contexts The cached JSON-LD contexts
      * @returns A triple stream.
      * @private
      */
     static parseRdf(rdfDataStream: Stream, path: string, fromPath?: string, ignoreImports?: boolean,
-                    contexts?: {[id: string]: string}): Stream {
+                    absolutizeRelativePaths?: boolean, contexts?: {[id: string]: string}): Stream {
         if (!fromPath) fromPath = Path.dirname(path);
         let stream: Stream = new RdfStreamParser(contexts).pipeFrom(rdfDataStream);
-        let ret: Stream = stream.pipe(new RdfStreamIncluder(Util, fromPath, !ignoreImports));
+        let ret: Stream = stream.pipe(new RdfStreamIncluder(Util, fromPath, !ignoreImports, absolutizeRelativePaths));
         stream.on('error', (e: any) => ret.emit('error', e));
         return ret;
     }

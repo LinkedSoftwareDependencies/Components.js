@@ -36,6 +36,9 @@ export class Loader {
 
     constructor(properties?: LoaderProperties) {
         this._properties = properties || {};
+        if (!('absolutizeRelativePaths' in this._properties)) {
+            this._properties.absolutizeRelativePaths = true;
+        }
         if (!this._properties.contexts) {
             this._properties.contexts = <{[id: string]: string}> <any> Util.getAvailableContexts(this._properties.scanGlobal);
         }
@@ -270,7 +273,8 @@ export class Loader {
     registerModuleResourcesUrl(moduleResourceUrl: string, fromPath?: string): Promise<void> {
         return this._getContexts().then((contexts) => {
             return Util.getContentsFromUrlOrPath(moduleResourceUrl, fromPath)
-                .then((data: Stream) => this.registerModuleResourcesStream(Util.parseRdf(data, moduleResourceUrl, fromPath, false, contexts)));
+                .then((data: Stream) => this.registerModuleResourcesStream(Util.parseRdf(data, moduleResourceUrl,
+                    fromPath, false, this._properties.absolutizeRelativePaths, contexts)));
         });
     }
 
@@ -473,7 +477,8 @@ export class Loader {
     getConfigConstructorFromUrl(configResourceUri: string, configResourceUrl: string, fromPath?: string): Promise<IComponentFactory> {
         return this._getContexts().then((contexts) => {
             return Util.getContentsFromUrlOrPath(configResourceUrl, fromPath)
-                .then((data: Stream) => this.getConfigConstructorFromStream(configResourceUri, Util.parseRdf(data, configResourceUrl, fromPath, false, contexts)));
+                .then((data: Stream) => this.getConfigConstructorFromStream(configResourceUri, Util.parseRdf(data,
+                    configResourceUrl, fromPath, false, this._properties.absolutizeRelativePaths, contexts)));
         });
     }
 
@@ -488,7 +493,8 @@ export class Loader {
     instantiateFromUrl(configResourceUri: string, configResourceUrl: string, fromPath?: string): Promise<any> {
         return this._getContexts().then((contexts) => {
             return Util.getContentsFromUrlOrPath(configResourceUrl, fromPath)
-                .then((data: Stream) => this.instantiateFromStream(configResourceUri, Util.parseRdf(data, configResourceUrl, fromPath, false, contexts)));
+                .then((data: Stream) => this.instantiateFromStream(configResourceUri, Util.parseRdf(data,
+                    configResourceUrl, fromPath, false, this._properties.absolutizeRelativePaths, contexts)));
         });
     }
 
@@ -520,5 +526,6 @@ export class Loader {
 
 export interface LoaderProperties {
     scanGlobal?: boolean;
+    absolutizeRelativePaths?: boolean;
     contexts?: {[id: string]: string};
 }
