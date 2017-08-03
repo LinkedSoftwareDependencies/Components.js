@@ -18,7 +18,8 @@
     "test": "mocha",
     "build": "tsc",
     "lint": "jshint .",
-    "validate": "npm ls"
+    "validate": "npm ls",
+    "prepare": "npm run build"
   },
   "dependencies": {
     "global-modules": "^1.0.0",
