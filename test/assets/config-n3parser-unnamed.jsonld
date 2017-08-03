@@ -16,7 +16,7 @@
       "arguments": {
         "@list": [
           {
-            "@type": "Object",
+            "@type": "ObjectMapping",
             "hasField": [
               {
                 "rdfs:label": "format",
@@ -39,7 +39,7 @@
       "arguments": {
         "@list": [
           {
-            "@type": "Object",
+            "@type": "ObjectMapping",
             "hasField": [
               {
                 "rdfs:label": "comments",

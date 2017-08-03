@@ -73,9 +73,13 @@ export class JsonLdStreamParser extends Transform {
         // Rename blank nodes
         if (entity.type === 'blank node')
             return entity.value + 'bnode' + this._blankNodeId;
-        else if (entity.type !== 'literal')
-            return entity.value;
-        else {
+        else if (entity.type !== 'literal') {
+            if (entity.value.startsWith('unknown://'))
+                this.emit('error', 'Could not expand the JSON-LD shortcut "' + entity.value.replace('unknown://', '')
+                    + '". Are all the required modules available and JSON-LD contexts included?');
+            else
+                return entity.value;
+        } else {
             // Add a language tag to the literal if present
             if ('language' in entity)
                 return '"' + entity.value + '"@' + entity.language;
