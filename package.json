@@ -30,7 +30,7 @@
   "devDependencies": {
     "@types/lodash": "^4.14.56",
     "@types/n3": "0.0.2",
-    "@types/node": "^7.0.8",
+    "@types/node": "7.0.8",
     "chai": "^1.9.0",
     "jshint": "^2.1.10",
     "mocha": "^1.17.1",
