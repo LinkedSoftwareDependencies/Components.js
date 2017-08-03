@@ -1,7 +1,6 @@
 import {PassThrough} from "stream";
 import N3 = require("n3");
 import Path = require("path");
-import Util = require("../Util");
 import {Stream} from "stream";
 
 /**
@@ -30,14 +29,15 @@ export class RdfStreamIncluder extends PassThrough {
         if (data) {
             if (this._followImports && data.predicate === this._constants.PREFIXES['owl'] + 'imports') {
                 this._runningImporters++;
-                this._constants.getContentsFromUrlOrPath(N3.Util.getLiteralValue(data.object), this._fromPath)
+                var relativeFilePath = N3.Util.getLiteralValue(data.object);
+                this._constants.getContentsFromUrlOrPath(relativeFilePath, this._fromPath)
                     .then((rawStream: Stream) => {
                         let data: Stream = this._constants.parseRdf(rawStream, null, this._fromPath, true,
                             this._absolutizeRelativePaths);
                         data.on('data', (subData: any) => this.push(subData))
-                            .on('error', (e: any) => this.emit('error', e))
+                            .on('error', (e: any) => this.emit('error', require("../Util").addFilePathToError(e, relativeFilePath, this._fromPath)))
                             .on('end', () => this.push(null));
-                    }).catch((e: any) => this.emit('error', e));
+                    }).catch((e: any) => this.emit('error', require("../Util").addFilePathToError(e, relativeFilePath, this._fromPath)));
             }
             if (this._absolutizeRelativePaths) {
                 data.subject = this._absolutize(data.subject);

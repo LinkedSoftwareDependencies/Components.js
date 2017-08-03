@@ -33,18 +33,21 @@ class Util {
         return new Promise((resolve, reject) => {
             let parsedUrl: any = url.parse(path);
             if (!parsedUrl.protocol) {
-                resolve(fs.createReadStream(Path.join(fromPath || '', parsedUrl.path)).on('error', reject));
+                resolve(fs.createReadStream(Path.join(fromPath || '', parsedUrl.path)).on('error', rejectContext));
             } else {
                 try {
                     var request = http.request(parsedUrl, (data: Stream) => {
-                        data.on('error', reject);
+                        data.on('error', rejectContext);
                         resolve(data);
                     });
-                    request.on('error', reject);
+                    request.on('error', rejectContext);
                     request.end();
                 } catch (e) {
-                    reject(e);
+                    rejectContext(e);
                 }
+            }
+            function rejectContext(e: Error) {
+                reject(Util.addFilePathToError(e, path, fromPath));
             }
         });
     }
@@ -66,7 +69,7 @@ class Util {
         if (!fromPath) fromPath = Path.dirname(path);
         let stream: Stream = new RdfStreamParser(contexts).pipeFrom(rdfDataStream);
         let ret: Stream = stream.pipe(new RdfStreamIncluder(Util, fromPath, !ignoreImports, absolutizeRelativePaths));
-        stream.on('error', (e: any) => ret.emit('error', e));
+        stream.on('error', (e: any) => ret.emit('error', Util.addFilePathToError(e, path || fromPath, path ? fromPath : null)));
         return ret;
     }
 
@@ -391,6 +394,17 @@ class Util {
                 reject(null);
             }
         });
+    }
+
+    /**
+     * Add a file path to an error message.
+     * @param e The original error message.
+     * @param filePath The file path.
+     * @param fromPath The optional base path.
+     * @returns {Error} The new error with file path context.
+     */
+    static addFilePathToError(e: Error, filePath: string, fromPath?: string): Error {
+        return new Error('Invalid components file "' + (fromPath ? Path.join(fromPath, filePath) : filePath) + '":\n' + e);
     }
 }
 
