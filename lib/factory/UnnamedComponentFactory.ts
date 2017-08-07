@@ -3,6 +3,7 @@ import {IComponentFactory} from "./IComponentFactory";
 import {Loader} from "../Loader";
 import NodeUtil = require('util');
 import * as Path from "path";
+import Util = require("../Util");
 
 /**
  * Factory for component definitions with explicit arguments.
@@ -103,19 +104,11 @@ export class UnnamedComponentFactory implements IComponentFactory {
      * @private
      */
     _requireCurrentRunningModuleIfCurrent(requireName: string) {
-        // TODO: improve performance if needed
-        let pckg: any = null;
-        let path: string;
-        for (let nodeModulesPath of (<any> global.process.mainModule).paths) {
-            path = nodeModulesPath.replace(/node_modules$/, 'package.json');
-            try {
-                pckg = require(path);
-                break;
-            } catch (e) {}
-        }
+        let path: string = Util.getMainModulePath();
+        let pckg: any = Util.getPackageJson(Path.join(path, 'package.json'));
         if (pckg) {
             if (requireName === pckg.name) {
-                let mainPath: string = path.replace(/package\.json$/, pckg.main);
+                let mainPath: string = Path.join(path, pckg.main);
                 return require(mainPath);
             }
         }

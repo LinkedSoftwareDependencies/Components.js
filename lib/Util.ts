@@ -267,6 +267,12 @@ class Util {
         }
     }
 
+    /**
+     * Get the package.json file from the given path.
+     * Require's will be cached.
+     * @param path The path.
+     * @returns {any} The package.json or null.
+     */
     static getPackageJson(path: string): any {
         let data: any = Util.NODE_MODULES_PACKAGE_CONTENTS.get(path);
         if (!data) {
