@@ -26,7 +26,8 @@
     "jsonld": "^0.4.11",
     "lodash": "^4.17.4",
     "n3": "^0.9.1",
-    "requireg": "^0.1.7"
+    "requireg": "^0.1.7",
+    "timed-cache": "^1.1.0"
   },
   "devDependencies": {
     "@types/lodash": "^4.14.56",

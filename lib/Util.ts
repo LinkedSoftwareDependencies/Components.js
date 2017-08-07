@@ -9,6 +9,8 @@ import {RdfStreamIncluder} from "./rdf/RdfStreamIncluder";
 import NodeUtil = require('util');
 import {Stats} from "fs";
 let jsonld: any = require("jsonld");
+let Cache: any = require("timed-cache");
+let globalModules: string = require('global-modules');
 
 class Util {
     static readonly PREFIXES: {[id: string]: string} = {
@@ -20,6 +22,8 @@ class Util {
         'doap': 'http://usefulinc.com/ns/doap#',
         'owl': 'http://www.w3.org/2002/07/owl#'
     };
+    private static NODE_MODULES_PACKAGE_CONTENTS = new Cache({ defaultTtl: 5000 });
+    private static MAIN_MODULE_PATH: string = null;
 
     /**
      * Get the file contents from a file path or URL
@@ -189,11 +193,13 @@ class Util {
      * @returns {any} The path to the current main Node module.
      */
     static getMainModulePath(): string {
+        if (Util.MAIN_MODULE_PATH)
+            return Util.MAIN_MODULE_PATH;
         for (let nodeModulesPath of (<any> global.process.mainModule).paths) {
             let path = nodeModulesPath.replace(/node_modules$/, 'package.json');
             try {
                 require(path);
-                return path.replace(/package.json$/, '');
+                return Util.MAIN_MODULE_PATH = path.replace(/package.json$/, '');
             } catch (e) {}
         }
         return null;
@@ -261,6 +267,19 @@ class Util {
         }
     }
 
+    static getPackageJson(path: string): any {
+        let data: any = Util.NODE_MODULES_PACKAGE_CONTENTS.get(path);
+        if (!data) {
+            if (fs.existsSync(path)) {
+                data = require(path);
+                if (data) {
+                    Util.NODE_MODULES_PACKAGE_CONTENTS.put(path, data);
+                }
+            }
+        }
+        return data;
+    }
+
     /**
      * Get all component files paths reachable from the given path.
      * This checks all available node modules and checks their package.json
@@ -275,19 +294,16 @@ class Util {
                 if (!modulePath) {
                     return resolve(data);
                 }
-                let packagePath: string = Path.join(modulePath, 'package.json');
-                if (fs.existsSync(packagePath)) {
-                    let pckg: any = require(packagePath);
-                    if (pckg) {
-                        let currentModuleUri: string = pckg['lsd:module'];
-                        let relativePath: string = pckg['lsd:components'];
-                        if (currentModuleUri && relativePath) {
-                            let oldValue: string = data[currentModuleUri];
-                            data[currentModuleUri] = Path.join(modulePath, relativePath);
-                            if (oldValue && data[currentModuleUri] !== oldValue) {
-                                reject('Attempted to load conflicting components for \'' + currentModuleUri
-                                    + '\' at ' + path);
-                            }
+                let pckg: any = Util.getPackageJson(Path.join(modulePath, 'package.json'));
+                if (pckg) {
+                    let currentModuleUri: string = pckg['lsd:module'];
+                    let relativePath: string = pckg['lsd:components'];
+                    if (currentModuleUri && relativePath) {
+                        let oldValue: string = data[currentModuleUri];
+                        data[currentModuleUri] = Path.join(modulePath, relativePath);
+                        if (oldValue && data[currentModuleUri] !== oldValue) {
+                            reject('Attempted to load conflicting components for \'' + currentModuleUri
+                                + '\' at ' + path);
                         }
                     }
                 }
@@ -304,7 +320,7 @@ class Util {
      */
     static getAvailableModuleComponentPaths(scanGlobal: boolean): Promise<{[id: string]: string}> {
         return new Promise((resolve, reject) => {
-            let globalPath: string = scanGlobal ? require('global-modules') : null;
+            let globalPath: string = scanGlobal ? globalModules : null;
             let path: string = Util.getMainModulePath();
             if (path) {
                 return Promise.all([globalPath ? Util.getModuleComponentPaths(globalPath) : {}, Util.getModuleComponentPaths(path)])
@@ -335,35 +351,32 @@ class Util {
                 if (!modulePath) {
                     return resolve(data);
                 }
-                let packagePath: string = Path.join(modulePath, 'package.json');
-                if (fs.existsSync(packagePath)) {
-                    let pckg: any = require(packagePath);
-                    if (pckg) {
-                        let contexts: {[key: string]: string} = pckg['lsd:contexts'];
-                        if (contexts) {
-                            _.forOwn(contexts, (value: string, key: string) => {
-                                let oldValue: string = data[key];
-                                let filePath: string = Path.join(modulePath, value);
-                                data[key] = fs.readFileSync(filePath, 'utf8');
+                let pckg: any = Util.getPackageJson(Path.join(modulePath, 'package.json'));
+                if (pckg) {
+                    let contexts: {[key: string]: string} = pckg['lsd:contexts'];
+                    if (contexts) {
+                        _.forOwn(contexts, (value: string, key: string) => {
+                            let oldValue: string = data[key];
+                            let filePath: string = Path.join(modulePath, value);
+                            data[key] = fs.readFileSync(filePath, 'utf8');
 
-                                // Crash when duplicate different contexts are found for the same URI
-                                if (oldValue && data[key] !== oldValue) {
-                                    reject(new Error('Attempted to load conflicting contexts for \'' + key + '\' in ' + filePath));
-                                }
+                            // Crash when duplicate different contexts are found for the same URI
+                            if (oldValue && data[key] !== oldValue) {
+                                reject(new Error('Attempted to load conflicting contexts for \'' + key + '\' in ' + filePath));
+                            }
 
-                                // Crash when context is invalid JSON
-                                try {
-                                    let context: any = JSON.parse(data[key]);
-                                    jsonld.compact({}, context, (e: any) => {
-                                        if (e) {
-                                            reject(new Error('Error while parsing context \'' + key + '\' in ' + filePath + ': ' + e.details.cause.message));
-                                        }
-                                    });
-                                } catch(e) {
-                                    reject(new Error('Error while parsing context \'' + key + '\' in ' + filePath + ': ' + e));
-                                }
-                            });
-                        }
+                            // Crash when context is invalid JSON
+                            try {
+                                let context: any = JSON.parse(data[key]);
+                                jsonld.compact({}, context, (e: any) => {
+                                    if (e) {
+                                        reject(new Error('Error while parsing context \'' + key + '\' in ' + filePath + ': ' + e.details.cause.message));
+                                    }
+                                });
+                            } catch(e) {
+                                reject(new Error('Error while parsing context \'' + key + '\' in ' + filePath + ': ' + e));
+                            }
+                        });
                     }
                 }
             });
@@ -379,7 +392,7 @@ class Util {
      */
     static getAvailableContexts(scanGlobal: boolean): Promise<{[id: string]: string}> {
         return new Promise((resolve, reject) => {
-            let globalPath: string = scanGlobal ? require('global-modules') : null;
+            let globalPath: string = scanGlobal ? globalModules : null;
             let path: string = Util.getMainModulePath();
             if (path) {
                 return Promise.all([globalPath ? Util.getContextPaths(globalPath) : {}, Util.getContextPaths(path)])
