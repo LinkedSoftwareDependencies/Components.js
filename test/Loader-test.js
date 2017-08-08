@@ -83,15 +83,17 @@ describe('Loader', function () {
         runner._componentResources.should.have.property(component3);
       });
 
-      it('should allow a config resource to be run', function () {
+      it('should allow a config resource to be run', function (done) {
         let fields = { types: [ new Resource(component1) ] };
         fields['http://example.org/myModule/params#param1'] = [ Resource.newString('ABC') ];
         fields['http://example.org/myModule/params#param2'] = [ Resource.newString('DEF') ];
         fields['http://example.org/myModule/params#param3'] = [ Resource.newString('GHI') ];
-        var run = runner.instantiate(new Resource(null, fields));
-        run._params.should.deepEqual({
-          'http://example.org/myModule/params#param1': ['ABC'],
-          'http://example.org/myModule/params#param3': ['GHI']
+        runner.instantiate(new Resource(null, fields)).then((run) => {
+          run._params.should.deepEqual({
+            'http://example.org/myModule/params#param1': ['ABC'],
+            'http://example.org/myModule/params#param3': ['GHI']
+          });
+          done();
         });
       });
 
@@ -113,15 +115,17 @@ describe('Loader', function () {
         }).catch(done);
       });
 
-      it('should allow a manual run', function () {
+      it('should allow a manual run', function (done) {
         let params = {};
         params['http://example.org/myModule/params#param1'] = 'ABC';
         params['http://example.org/myModule/params#param2'] = 'DEF';
         params['http://example.org/myModule/params#param3'] = 'GHI';
-        let run = runner.instantiateManually(component1, params);
-        run._params.should.deepEqual({
-          'http://example.org/myModule/params#param1': ['ABC'],
-          'http://example.org/myModule/params#param3': ['GHI']
+        runner.instantiateManually(component1, params).then((run) => {
+          run._params.should.deepEqual({
+            'http://example.org/myModule/params#param1': ['ABC'],
+            'http://example.org/myModule/params#param3': ['GHI']
+          });
+          done();
         });
       });
     });
@@ -136,15 +140,17 @@ describe('Loader', function () {
         runner._componentResources.should.have.property('http://example.org/HelloWorldModule#SayHelloComponent');
       });
 
-      it('should allow a config resource to be run', function () {
+      it('should allow a config resource to be run', function (done) {
         let fields = { types: [ new Resource('http://example.org/HelloWorldModule#SayHelloComponent') ] };
         fields['http://example.org/hello/hello'] = [ Resource.newString('WORLD') ];
         fields['http://example.org/hello/say'] = [ Resource.newString('HELLO') ];
         fields['http://example.org/hello/bla'] = [ Resource.newString('BLA') ];
-        var run = runner.instantiate(new Resource(null, fields));
-        run._params.should.deepEqual({
-          'http://example.org/hello/hello': ['WORLD'],
-          'http://example.org/hello/say': ['HELLO']
+        runner.instantiate(new Resource(null, fields)).then((run) => {
+          run._params.should.deepEqual({
+            'http://example.org/hello/hello': ['WORLD'],
+            'http://example.org/hello/say': ['HELLO']
+          });
+          done();
         });
       });
 
@@ -159,15 +165,17 @@ describe('Loader', function () {
         }).catch(done);
       });
 
-      it('should allow a manual run', function () {
+      it('should allow a manual run', function (done) {
         let params = {};
         params['http://example.org/hello/hello'] = 'WORLD';
         params['http://example.org/hello/say'] = 'BONJOUR';
         params['http://example.org/hello/bla'] = 'BLA';
-        let run = runner.instantiateManually('http://example.org/HelloWorldModule#SayHelloComponent', params);
-        run._params.should.deepEqual({
-          'http://example.org/hello/hello': ['WORLD'],
-          'http://example.org/hello/say': ['BONJOUR']
+        runner.instantiateManually('http://example.org/HelloWorldModule#SayHelloComponent', params).then((run) => {
+          run._params.should.deepEqual({
+            'http://example.org/hello/hello': ['WORLD'],
+            'http://example.org/hello/say': ['BONJOUR']
+          });
+          done();
         });
       });
     });

@@ -40,60 +40,77 @@ export class UnnamedComponentFactory implements IComponentFactory {
         }
     }
 
-    static getArgumentValue(value: any, componentRunner: Loader, shallow?: boolean): any {
-        if (value.fields) {
-            // The parameter is an object
-            return value.fields.reduce((data: any, entry: any) => {
-                if (!entry.k) {
-                    throw new Error('Parameter object entries must have keys, but found: ' + NodeUtil.inspect(entry));
-                }
-                if (entry.k.termType !== 'Literal') {
-                    throw new Error('Parameter object keys must be literals, but found type ' + entry.k.termType
-                        + ' for ' + entry.k.value + ' while constructing: ' + NodeUtil.inspect(value));
-                }
-                if (entry.v) {
-                    data[entry.k.value] = UnnamedComponentFactory.getArgumentValue(entry.v, componentRunner, shallow);
-                } else {
-                    // TODO: only throw an error if the parameter is required
-                    //throw new Error('Parameter object entries must have values, but found: ' + JSON.stringify(entry, null, '  '));
-                }
-                return data;
-            }, {});
-        } else if (value.elements) {
-            // The parameter is an object
-            return value.elements.reduce((data: any, entry: any) => {
-                if (!entry.v) {
-                    throw new Error('Parameter array elements must have values, but found: ' + NodeUtil.inspect(entry));
-                }
-                if (entry.v) {
-                    let mapped: any = UnnamedComponentFactory.getArgumentValue(entry.v, componentRunner, shallow);
-                    if (mapped instanceof Array) {
-                        data = data.concat(mapped);
-                    } else {
-                        data.push(mapped);
+    static getArgumentValue(value: any, componentRunner: Loader, shallow?: boolean, resourceBlacklist?: {[id: string]: boolean}): Promise<any> {
+        return new Promise((resolve, reject) => {
+            if (value.fields) {
+                // The parameter is an object
+                return Promise.all(value.fields.map((entry: any) => {
+                    if (!entry.k) {
+                        return reject(new Error('Parameter object entries must have keys, but found: ' + NodeUtil.inspect(entry)));
                     }
+                    if (entry.k.termType !== 'Literal') {
+                        return reject(new Error('Parameter object keys must be literals, but found type ' + entry.k.termType
+                            + ' for ' + entry.k.value + ' while constructing: ' + NodeUtil.inspect(value)));
+                    }
+                    if (entry.v) {
+                        return UnnamedComponentFactory.getArgumentValue(entry.v, componentRunner, shallow, resourceBlacklist)
+                            .then((v) => { return { k: entry.k.value, v: v }});
+                    } else {
+                        // TODO: only throw an error if the parameter is required
+                        //return Promise.reject(new Error('Parameter object entries must have values, but found: ' + JSON.stringify(entry, null, '  ')));
+                        return Promise.resolve(null);
+                    }
+                })).then((entries) => {
+                    return entries.reduce((data: any, entry: any) => {
+                        if (entry)
+                            data[entry.k] = entry.v;
+                        return data;
+                    }, {});
+                }).catch(reject).then(resolve);
+            } else if (value.elements) {
+                // The parameter is a dynamic array
+                return (<Promise<any[]>>Promise.all(value.elements.map((entry: any) => {
+                    if (!entry.v) {
+                        return Promise.reject(new Error('Parameter array elements must have values, but found: ' + NodeUtil.inspect(entry)));
+                    }
+                    if (entry.v) {
+                        return UnnamedComponentFactory.getArgumentValue(entry.v, componentRunner, shallow, resourceBlacklist);
+                    }
+                })).catch(reject)).then((elements: any[]) => {
+                    var ret: any[] = [];
+                    elements.forEach((element) => {
+                        if (element instanceof Array) {
+                            ret = ret.concat(element);
+                        } else {
+                            ret.push(element);
+                        }
+                    });
+                    resolve(ret);
+                });
+            } else if (value instanceof Array) {
+                return (<Promise<any[]>>Promise.all(value.map(
+                    (element) => UnnamedComponentFactory.getArgumentValue(element, componentRunner, shallow, resourceBlacklist)))
+                    .catch(reject)).then(resolve);
+            } else if (value.termType === 'NamedNode' || value.termType === 'BlankNode') {
+                if (shallow) {
+                    return resolve({});
                 }
-                return data;
-            }, []);
-        } else if (value instanceof Array) {
-            return value.map((element) => UnnamedComponentFactory.getArgumentValue(element, componentRunner, shallow));
-        } else if (value.termType === 'NamedNode' || value.termType === 'BlankNode') {
-            if (shallow) {
-                return {};
+                return componentRunner.instantiate(value, resourceBlacklist).catch(reject).then(resolve);
+            } else if (value.termType === 'Literal') {
+                return resolve(value.value);
             }
-            return componentRunner.instantiate(value);
-        } else if (value.termType === 'Literal') {
-            return value.value;
-        }
-        throw new Error('An invalid argument value was found:' + NodeUtil.inspect(value));
+            return reject(new Error('An invalid argument value was found:' + NodeUtil.inspect(value)));
+        });
     }
 
     /**
+     * @param shallow If instances should not be created.
+     * @param resourceBlacklist The config resource id's to ignore in parameters. Used for avoiding infinite recursion.
      * @returns New instantiations of the provided arguments.
      */
-    makeArguments(shallow?: boolean): any[] {
-        return this._componentDefinition.arguments ? this._componentDefinition.arguments.list
-            .map((resource: Resource) => UnnamedComponentFactory.getArgumentValue(resource, this._componentRunner, shallow)) : [];
+    makeArguments(shallow?: boolean, resourceBlacklist?: {[id: string]: boolean}): Promise<any[]> {
+        return this._componentDefinition.arguments ? Promise.all(this._componentDefinition.arguments.list
+            .map((resource: Resource) => UnnamedComponentFactory.getArgumentValue(resource, this._componentRunner, shallow, resourceBlacklist))) : Promise.resolve([]);
     }
 
     /**
@@ -115,51 +132,52 @@ export class UnnamedComponentFactory implements IComponentFactory {
     }
 
     /**
+     * @param resourceBlacklist The config resource id's to ignore in parameters. Used for avoiding infinite recursion.
      * @returns A new instance of the component.
      */
-    create(): any {
-        let requireName: string = this._componentDefinition.requireName.value;
-        requireName = this._overrideRequireNames[requireName] || requireName;
-        let object: any = null;
-        try {
+    create(resourceBlacklist?: {[id: string]: boolean}): Promise<any> {
+        return new Promise((resolve, reject) => {
+            let requireName: string = this._componentDefinition.requireName.value;
+            requireName = this._overrideRequireNames[requireName] || requireName;
+            let object: any = null;
             try {
-                // Always require relative from main module, because Components.js will in most cases just be dependency.
-                object = require.main.require(requireName);
+                try {
+                    // Always require relative from main module, because Components.js will in most cases just be dependency.
+                    object = require.main.require(requireName);
+                } catch (e) {
+                    if (this._componentRunner._properties.scanGlobal) {
+                        object = require('requireg')(requireName);
+                    } else {
+                        return reject(e);
+                    }
+                }
             } catch (e) {
-                if (this._componentRunner._properties.scanGlobal) {
-                    object = require('requireg')(requireName);
-                } else {
-                    throw e;
+                object = this._requireCurrentRunningModuleIfCurrent(this._componentDefinition.requireName.value);
+                if (!object) {
+                    return reject(e);
                 }
             }
-        } catch (e) {
-            object = this._requireCurrentRunningModuleIfCurrent(this._componentDefinition.requireName.value);
-            if (!object) {
-                throw e;
-            }
-        }
 
-        var subObject;
-        if (this._componentDefinition.requireElement) {
-            let requireElementPath = this._componentDefinition.requireElement.value.split('.');
-            subObject = requireElementPath.reduce((object: any, requireElement: string) => object[requireElement], object);
-        }
-        if (!subObject) {
-            console.error(object);
-            throw new Error('Failed to get module element ' + this._componentDefinition.requireElement.value + ' from module ' + requireName);
-        }
-        object = subObject;
-        let instance: any;
-        if (this._constructable) {
-            if (!(object instanceof Function)) {
-                console.error(NodeUtil.inspect(this._componentDefinition));
-                throw new Error('ConstructableComponent is not a function: ' + NodeUtil.inspect(object));
+            var subObject;
+            if (this._componentDefinition.requireElement) {
+                let requireElementPath = this._componentDefinition.requireElement.value.split('.');
+                subObject = requireElementPath.reduce((object: any, requireElement: string) => object[requireElement], object);
             }
-            let args: any[] = this.makeArguments(false);
-            instance = new (Function.prototype.bind.apply(object, [{}].concat(args)));
-        } else {
-            instance = object;
-        }
-        return instance;
+            if (!subObject) {
+                return reject(new Error('Failed to get module element ' + this._componentDefinition.requireElement.value + ' from module ' + requireName + "\n" + NodeUtil.inspect(object)));
+            }
+            object = subObject;
+            if (this._constructable) {
+                if (!(object instanceof Function)) {
+                    return reject(new Error('ConstructableComponent is not a function: ' + NodeUtil.inspect(object)
+                        + "\n" + NodeUtil.inspect(this._componentDefinition)));
+                }
+                this.makeArguments(false, resourceBlacklist).catch(reject).then((args: any[]) => {
+                    resolve(new (Function.prototype.bind.apply(object, [{}].concat(args))));
+                });
+            } else {
+                resolve(object);
+            }
+        });
     }
 }

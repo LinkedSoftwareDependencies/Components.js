@@ -1,5 +1,7 @@
 require('should');
-var expect = require('chai').expect;
+var chai = require("chai");
+var expect = chai.expect;
+chai.use(require("chai-as-promised"));
 const Resource = require("../../lib/rdf/Resource").Resource;
 const fs = require("fs");
 const N3 = require('n3');
@@ -155,18 +157,23 @@ describe('UnmappedNamedComponentFactory', function () {
       constructor.should.not.be.null();
     });
 
-    it('should create valid arguments', function () {
-      constructor.makeArguments().should.deepEqual([{
-        'http://example.org/n3#lineMode': 'true',
-        'http://example.org/n3#n3': 'true',
-        'http://example.org/n3#comments': 'true'
-      }]);
+    it('should create valid arguments', function (done) {
+      constructor.makeArguments().then((args) => {
+        args.should.deepEqual([{
+          'http://example.org/n3#lineMode': 'true',
+          'http://example.org/n3#n3': 'true',
+          'http://example.org/n3#comments': 'true'
+        }]);
+        done();
+      }).catch(done);
     });
 
-    it('should make a valid instance', function () {
-      let instance = constructor.create();
-      instance.should.not.be.null();
-      instance.should.be.instanceof(N3.Lexer);
+    it('should make a valid instance', function (done) {
+      constructor.create().then((instance) => {
+        instance.should.not.be.null();
+        instance.should.be.instanceof(N3.Lexer);
+        done();
+      }).catch(done);
     });
   });
 
@@ -187,17 +194,21 @@ describe('UnmappedNamedComponentFactory', function () {
       constructor.should.not.be.null();
     });
 
-    it('should create valid arguments', function () {
-      let args = constructor.makeArguments();
-      args.length.should.equal(1);
-      args[0].should.have.property('http://example.org/n3#format', 'application/trig');
-      args[0]['http://example.org/n3#lexer'].should.be.instanceof(N3.Lexer);
+    it('should create valid arguments', function (done) {
+      constructor.makeArguments().then((args) => {
+        args.length.should.equal(1);
+        args[0].should.have.property('http://example.org/n3#format', 'application/trig');
+        args[0]['http://example.org/n3#lexer'].should.be.instanceof(N3.Lexer);
+        done();
+      }).catch(done);
     });
 
-    it('should make a valid instance', function () {
-      let instance = constructor.create();
-      instance.should.not.be.null();
-      instance.should.be.instanceof(N3.Parser);
+    it('should make a valid instance', function (done) {
+      constructor.create().then((instance) => {
+        instance.should.not.be.null();
+        instance.should.be.instanceof(N3.Parser);
+        done();
+      }).catch(done);
     });
   });
 
@@ -211,14 +222,19 @@ describe('UnmappedNamedComponentFactory', function () {
       constructor.should.not.be.null();
     });
 
-    it('should create valid arguments', function () {
-      constructor.makeArguments().should.deepEqual([{}]);
+    it('should create valid arguments', function (done) {
+      constructor.makeArguments().then((args) => {
+        args.should.deepEqual([{}]);
+        done();
+      }).catch(done);
     });
 
-    it('should make a valid instance', function () {
-      let instance = constructor.create();
-      instance.should.not.be.null();
-      instance.should.be.instanceof(Function); // Because N3Util is a function
+    it('should make a valid instance', function (done) {
+      constructor.create().then((instance) => {
+        instance.should.not.be.null();
+        instance.should.be.instanceof(Function); // Because N3Util is a function
+        done();
+      }).catch(done);;
     });
   });
 
@@ -234,14 +250,17 @@ describe('UnmappedNamedComponentFactory', function () {
       constructor.should.not.be.null();
     });
 
-    it('should create valid arguments', function () {
-      constructor.makeArguments().should.deepEqual([{
-        'http://example.org/n3#dummyParam': 'true',
-      }]);
+    it('should create valid arguments', function (done) {
+      constructor.makeArguments().then((args) => {
+        args.should.deepEqual([{
+          'http://example.org/n3#dummyParam': 'true',
+        }]);
+        done();
+      }).catch(done);
     });
 
     it('should fail to make a valid instance', function () {
-      expect(constructor.create).to.throw(Error);
+      return expect(constructor.create()).to.be.rejectedWith(Error);
     });
   });
 
@@ -255,15 +274,18 @@ describe('UnmappedNamedComponentFactory', function () {
       constructor.should.not.be.null();
     });
 
-    it('should create valid arguments', function () {
-      constructor.makeArguments().should.deepEqual([{
-        'http://example.org/n3#dummyParam1': [ 'a', 'b' ],
-        'http://example.org/n3#dummyParam2': [ 'a' ],
-      }]);
+    it('should create valid arguments', function (done) {
+      constructor.makeArguments().then((args) => {
+        args.should.deepEqual([{
+          'http://example.org/n3#dummyParam1': [ 'a', 'b' ],
+          'http://example.org/n3#dummyParam2': [ 'a' ],
+        }]);
+        done();
+      }).catch(done);
     });
 
     it('should fail to make a valid instance', function () {
-      expect(constructor.create).to.throw(Error);
+      return expect(constructor.create()).to.be.rejectedWith(Error);
     });
   });
 
@@ -280,15 +302,18 @@ describe('UnmappedNamedComponentFactory', function () {
       constructor.should.not.be.null();
     });
 
-    it('should create valid arguments', function () {
-      constructor.makeArguments().should.deepEqual([{
-        'http://example.org/n3#dummyParam1': 'true',
-        'http://example.org/n3#dummyParam2': 'false',
-      }]);
+    it('should create valid arguments', function (done) {
+      constructor.makeArguments().then((args) => {
+        args.should.deepEqual([{
+          'http://example.org/n3#dummyParam1': 'true',
+          'http://example.org/n3#dummyParam2': 'false',
+        }]);
+        done();
+      }).catch(done);
     });
 
     it('should fail to make a valid instance', function () {
-      expect(constructor.create).to.throw(Error);
+      return expect(constructor.create()).to.be.rejectedWith(Error);
     });
   });
 
@@ -302,15 +327,18 @@ describe('UnmappedNamedComponentFactory', function () {
       constructor.should.not.be.null();
     });
 
-    it('should create valid arguments', function () {
-      constructor.makeArguments().should.deepEqual([{
-        'http://example.org/n3#dummyParam1': [ 'a', 'b' ],
-        'http://example.org/n3#dummyParam2': 'a',
-      }]);
+    it('should create valid arguments', function (done) {
+      constructor.makeArguments().then((args) => {
+        args.should.deepEqual([{
+          'http://example.org/n3#dummyParam1': [ 'a', 'b' ],
+          'http://example.org/n3#dummyParam2': 'a',
+        }]);
+        done();
+      }).catch(done);
     });
 
     it('should fail to make a valid instance', function () {
-      expect(constructor.create).to.throw(Error);
+      return expect(constructor.create()).to.be.rejectedWith(Error);
     });
   });
 
@@ -326,15 +354,18 @@ describe('UnmappedNamedComponentFactory', function () {
       constructor.should.not.be.null();
     });
 
-    it('should create valid arguments', function () {
-      constructor.makeArguments().should.deepEqual([{
-        'http://example.org/n3#dummyParam1': [ 'true', 'a', 'b' ],
-        'http://example.org/n3#dummyParam2': 'a',
-      }]);
+    it('should create valid arguments', function (done) {
+      constructor.makeArguments().then((args) => {
+        args.should.deepEqual([{
+          'http://example.org/n3#dummyParam1': [ 'true', 'a', 'b' ],
+          'http://example.org/n3#dummyParam2': 'a',
+        }]);
+        done();
+      }).catch(done);
     });
 
     it('should fail to make a valid instance', function () {
-      expect(constructor.create).to.throw(Error);
+      return expect(constructor.create()).to.be.rejectedWith(Error);
     });
   });
 

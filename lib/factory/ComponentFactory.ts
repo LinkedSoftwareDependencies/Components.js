@@ -47,12 +47,12 @@ export class ComponentFactory implements IComponentFactory {
         }
     }
 
-    makeArguments(shallow?: boolean): any[] {
-        return this._getComponentFactory().makeArguments(shallow);
+    makeArguments(shallow?: boolean, resourceBlacklist?: {[id: string]: boolean}): Promise<any[]> {
+        return this._getComponentFactory().makeArguments(shallow, resourceBlacklist);
     }
 
-    create(): any {
-        return this._getComponentFactory().create();
+    create(resourceBlacklist?: {[id: string]: boolean}): Promise<any> {
+        return this._getComponentFactory().create(resourceBlacklist);
     }
 
 }

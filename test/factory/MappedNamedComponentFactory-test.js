@@ -279,14 +279,19 @@ describe('MappedNamedComponentFactory', function () {
       constructor.should.not.be.null();
     });
 
-    it('should create valid arguments', function () {
-      constructor.makeArguments().should.deepEqual([ { comments: 'true', lineMode: 'true', n3: 'true' } ]);
+    it('should create valid arguments', function (done) {
+      constructor.makeArguments().then((args) => {
+        args.should.deepEqual([ { comments: 'true', lineMode: 'true', n3: 'true' } ]);
+        done();
+      }).catch(done);
     });
 
-    it('should make a valid instance', function () {
-      let instance = constructor.create();
-      instance.should.not.be.null();
-      instance.should.be.instanceof(N3.Lexer);
+    it('should make a valid instance', function (done) {
+      constructor.create().then((instance) => {
+        instance.should.not.be.null();
+        instance.should.be.instanceof(N3.Lexer);
+        done();
+      }).catch(done);
     });
   });
 
@@ -307,18 +312,22 @@ describe('MappedNamedComponentFactory', function () {
       constructor.should.not.be.null();
     });
 
-    it('should create valid arguments', function () {
-      let args = constructor.makeArguments();
-      args.length.should.equal(1);
-      args[0].format.should.equal('application/trig');
-      args[0].lexer.should.not.be.null();
-      args[0].lexer.should.be.instanceof(N3.Lexer);
+    it('should create valid arguments', function (done) {
+      constructor.makeArguments().then((args) => {
+        args.length.should.equal(1);
+        args[0].format.should.equal('application/trig');
+        args[0].lexer.should.not.be.null();
+        args[0].lexer.should.be.instanceof(N3.Lexer);
+        done();
+      }).catch(done);
     });
 
-    it('should make a valid instance', function () {
-      let instance = constructor.create();
-      instance.should.not.be.null();
-      instance.should.be.instanceof(N3.Parser);
+    it('should make a valid instance', function (done) {
+      constructor.create().then((instance) => {
+        instance.should.not.be.null();
+        instance.should.be.instanceof(N3.Parser);
+        done();
+      }).catch(done);
     });
   });
 
@@ -332,14 +341,19 @@ describe('MappedNamedComponentFactory', function () {
       constructor.should.not.be.null();
     });
 
-    it('should create valid arguments', function () {
-      constructor.makeArguments().should.deepEqual([]);
+    it('should create valid arguments', function (done) {
+      constructor.makeArguments().then((args) => {
+        args.should.deepEqual([]);
+        done();
+      }).catch(done);
     });
 
-    it('should make a valid instance', function () {
-      let instance = constructor.create();
-      instance.should.not.be.null();
-      instance.should.be.instanceof(Function); // Because N3Util is a function
+    it('should make a valid instance', function (done) {
+      constructor.create().then((instance) => {
+        instance.should.not.be.null();
+        instance.should.be.instanceof(Function); // Because N3Util is a function
+        done();
+      }).catch(done);
     });
   });
 
@@ -355,14 +369,17 @@ describe('MappedNamedComponentFactory', function () {
       constructor.should.not.be.null();
     });
 
-    it('should create valid arguments', function () {
-      constructor.makeArguments().should.deepEqual([{
-        'dummyParam': 'true',
-      }]);
+    it('should create valid arguments', function (done) {
+      constructor.makeArguments().then((args) => {
+        args.should.deepEqual([{
+          'dummyParam': 'true',
+        }]);
+        done();
+      }).catch(done);
     });
 
     it('should fail to make a valid instance', function () {
-      expect(constructor.create).to.throw(Error);
+      return expect(constructor.create()).to.be.rejectedWith(Error);
     });
   });
 
@@ -380,15 +397,22 @@ describe('MappedNamedComponentFactory', function () {
       constructor.should.not.be.null();
     });
 
-    it('should create valid arguments', function () {
-      constructor.makeArguments().should.deepEqual([{
-        'dummyParam': 'true',
-        'instanceParam': new Hello()
-      }]);
+    it('should create valid arguments', function (done) {
+      constructor.makeArguments().then((args) => {
+        args.should.deepEqual([{
+          'dummyParam': 'true',
+          'instanceParam': new Hello()
+        }]);
+        done();
+      }).catch(done);
     });
 
-    it('should fail to make a valid instance', function () {
-      expect(constructor.create).to.throw(Error);
+    it('should make a valid instance', function (done) {
+      constructor.create().then((instance) => {
+        instance.should.not.be.null();
+        instance.should.be.instanceof(Hello);
+        done();
+      }).catch(done);
     });
   });
 
@@ -404,14 +428,21 @@ describe('MappedNamedComponentFactory', function () {
       constructor.should.not.be.null();
     });
 
-    it('should create valid arguments', function () {
-      constructor.makeArguments().should.deepEqual([{
-        'idParam': 'http://example.org/myHelloComponent'
-      }]);
+    it('should create valid arguments', function (done) {
+      constructor.makeArguments().then((args) => {
+        args.should.deepEqual([{
+          'idParam': 'http://example.org/myHelloComponent'
+        }]);
+        done();
+      }).catch(done);
     });
 
-    it('should fail to make a valid instance', function () {
-      expect(constructor.create).to.throw(Error);
+    it('should make a valid instance', function (done) {
+      constructor.create().then((instance) => {
+        instance.should.not.be.null();
+        instance.should.be.instanceof(Hello);
+        done();
+      }).catch(done);
     });
   });
 
@@ -428,14 +459,21 @@ describe('MappedNamedComponentFactory', function () {
       constructor.should.not.be.null();
     });
 
-    it('should create valid arguments', function () {
-      constructor.makeArguments().should.deepEqual([[
-        'true', 'false'
-      ]]);
+    it('should create valid arguments', function (done) {
+      constructor.makeArguments().then((args) => {
+        args.should.deepEqual([[
+          'true', 'false'
+        ]]);
+        done();
+      }).catch(done);
     });
 
-    it('should fail to make a valid instance', function () {
-      expect(constructor.create).to.throw(Error);
+    it('should ake a valid instance', function (done) {
+      constructor.create().then((instance) => {
+        instance.should.not.be.null();
+        instance.should.be.instanceof(Hello);
+        done();
+      }).catch(done);
     });
   });
 
@@ -449,15 +487,22 @@ describe('MappedNamedComponentFactory', function () {
       constructor.should.not.be.null();
     });
 
-    it('should create valid arguments', function () {
-      constructor.makeArguments().should.deepEqual([{
-        'dummyParam1': [ 'a', 'b' ],
-        'dummyParam2': [ 'a' ],
-      }]);
+    it('should create valid arguments', function (done) {
+      constructor.makeArguments().then((args) => {
+        args.should.deepEqual([{
+          'dummyParam1': [ 'a', 'b' ],
+          'dummyParam2': [ 'a' ],
+        }]);
+        done();
+      }).catch(done);
     });
 
-    it('should fail to make a valid instance', function () {
-      expect(constructor.create).to.throw(Error);
+    it('should make a valid instance', function (done) {
+      constructor.create().then((instance) => {
+        instance.should.not.be.null();
+        instance.should.be.instanceof(Hello);
+        done();
+      }).catch(done);
     });
   });
 
@@ -474,15 +519,22 @@ describe('MappedNamedComponentFactory', function () {
       constructor.should.not.be.null();
     });
 
-    it('should create valid arguments', function () {
-      constructor.makeArguments().should.deepEqual([{
-        'dummyParam1': 'true',
-        'dummyParam2': 'false',
-      }]);
+    it('should create valid arguments', function (done) {
+      constructor.makeArguments().then((args) => {
+        args.should.deepEqual([{
+          'dummyParam1': 'true',
+          'dummyParam2': 'false',
+        }]);
+        done();
+      }).catch(done);
     });
 
-    it('should fail to make a valid instance', function () {
-      expect(constructor.create).to.throw(Error);
+    it('should make a valid instance', function (done) {
+      constructor.create().then((instance) => {
+        instance.should.not.be.null();
+        instance.should.be.instanceof(Hello);
+        done();
+      }).catch(done);
     });
   });
 

@@ -337,17 +337,23 @@ export class Loader {
     /**
      * Instantiate a component based on a Resource.
      * @param configResource A config resource.
+     * @param resourceBlacklist The config resource id's to ignore in parameters. Used for avoiding infinite recursion.
      * @returns {any} The run instance.
      */
-    instantiate(configResource: Resource): any {
-        if (this._instances[configResource.value]) {
-            return this._instances[configResource.value];
+    instantiate(configResource: Resource, resourceBlacklist?: {[id: string]: boolean}): Promise<any> {
+        // Check if this resource is required as argument in its own chain,
+        // if so, return a dummy value, to avoid infinite recursion.
+        resourceBlacklist = resourceBlacklist || {};
+        if (resourceBlacklist[configResource.value]) {
+            return Promise.resolve({});
         }
-        this._instances[configResource.value] = {}; // This is to avoid self-referenced invocations
-        let constructor: IComponentFactory = this.getConfigConstructor(configResource);
-        let instance: any = constructor.create();
-        this._instances[configResource.value] = instance;
-        return instance;
+
+        if (!this._instances[configResource.value]) {
+            let subBlackList: {[id: string]: boolean} = _.clone(resourceBlacklist || {});
+            subBlackList[configResource.value] = true;
+            this._instances[configResource.value] = this.getConfigConstructor(configResource).create(subBlackList);
+        }
+        return Promise.resolve(this._instances[configResource.value]);
     }
 
     /**

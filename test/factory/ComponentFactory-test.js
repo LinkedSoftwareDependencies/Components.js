@@ -85,10 +85,12 @@ describe('ComponentFactory', function () {
       constructor.should.not.be.null();
     });
 
-    it('should make a valid instance', function () {
-      let instance = constructor.create();
-      instance.should.not.be.null();
-      instance.should.be.instanceof(N3.Lexer);
+    it('should make a valid instance', function (done) {
+      constructor.create().then((instance) => {
+        instance.should.not.be.null();
+        instance.should.be.instanceof(N3.Lexer);
+        done();
+      });
     });
   });
 
@@ -106,10 +108,12 @@ describe('ComponentFactory', function () {
       constructor.should.not.be.null();
     });
 
-    it('should make a valid instance', function () {
-      let instance = constructor.create();
-      instance.should.not.be.null();
-      instance.should.be.instanceof(N3.Lexer);
+    it('should make a valid instance', function (done) {
+      constructor.create().then((instance) => {
+        instance.should.not.be.null();
+        instance.should.be.instanceof(N3.Lexer);
+        done();
+      });
     });
   });
 
@@ -127,10 +131,12 @@ describe('ComponentFactory', function () {
       constructor.should.not.be.null();
     });
 
-    it('should make a valid instance', function () {
-      let instance = constructor.create();
-      instance.should.not.be.null();
-      instance.should.be.instanceof(N3.Lexer);
+    it('should make a valid instance', function (done) {
+      constructor.create().then((instance) => {
+        instance.should.not.be.null();
+        instance.should.be.instanceof(N3.Lexer);
+        done();
+      });
     });
   });
 });

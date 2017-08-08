@@ -60,14 +60,19 @@ let n3LexerComponentArray = new Resource('http://example.org/n3#Lexer', {
 describe('UnnamedComponentFactory', function () {
 
   describe('#getArgumentValue', function () {
-    it('should create valid literals', function () {
-      UnnamedComponentFactory.getArgumentValue(new Resource('"application/trig"')).should.equal('application/trig');
+    it('should create valid literals', function (done) {
+      UnnamedComponentFactory.getArgumentValue(new Resource('"application/trig"')).then((ret) => {
+        ret.should.equal('application/trig');
+        done();
+      });
     });
 
-    it('should create valid instances', function () {
-      let instance = UnnamedComponentFactory.getArgumentValue(n3LexerComponent, new ComponentRunner());
-      instance.should.not.be.null();
-      instance.should.be.instanceof(N3.Lexer);
+    it('should create valid instances', function (done) {
+      UnnamedComponentFactory.getArgumentValue(n3LexerComponent, new ComponentRunner()).then((instance) => {
+        instance.should.not.be.null();
+        instance.should.be.instanceof(N3.Lexer);
+        done();
+      });
     });
   });
 
@@ -81,14 +86,19 @@ describe('UnnamedComponentFactory', function () {
       constructor.should.not.be.null();
     });
 
-    it('should create valid arguments', function () {
-      constructor.makeArguments().should.deepEqual([ { comments: 'true' } ]);
+    it('should create valid arguments', function (done) {
+      constructor.makeArguments().then((args) => {
+        args.should.deepEqual([ { comments: 'true' } ]);
+        done();
+      });
     });
 
-    it('should make a valid instance', function () {
-      let instance = constructor.create();
-      instance.should.not.be.null();
-      instance.should.be.instanceof(N3.Lexer);
+    it('should make a valid instance', function (done) {
+      constructor.create().then((instance) => {
+        instance.should.not.be.null();
+        instance.should.be.instanceof(N3.Lexer);
+        done();
+      });
     });
   });
 
@@ -102,14 +112,19 @@ describe('UnnamedComponentFactory', function () {
       constructor.should.not.be.null();
     });
 
-    it('should create valid arguments', function () {
-      constructor.makeArguments().should.deepEqual([ [ 'A', 'B', 'C' ] ]);
+    it('should create valid arguments', function (done) {
+      constructor.makeArguments().then((args) => {
+        args.should.deepEqual([ [ 'A', 'B', 'C' ] ]);
+        done();
+      });
     });
 
-    it('should make a valid instance', function () {
-      let instance = constructor.create();
-      instance.should.not.be.null();
-      instance.should.be.instanceof(N3.Lexer);
+    it('should make a valid instance', function (done) {
+      constructor.create().then((instance) => {
+        instance.should.not.be.null();
+        instance.should.be.instanceof(N3.Lexer);
+        done();
+      });
     });
   });
 
@@ -123,18 +138,22 @@ describe('UnnamedComponentFactory', function () {
       constructor.should.not.be.null();
     });
 
-    it('should create valid arguments', function () {
-      let args = constructor.makeArguments();
-      args.length.should.equal(1);
-      args[0].format.should.equal('application/trig');
-      args[0].lexer.should.not.be.null();
-      args[0].lexer.should.be.instanceof(N3.Lexer);
+    it('should create valid arguments', function (done) {
+      constructor.makeArguments().then((args) => {
+        args.length.should.equal(1);
+        args[0].format.should.equal('application/trig');
+        args[0].lexer.should.not.be.null();
+        args[0].lexer.should.be.instanceof(N3.Lexer);
+        done();
+      });
     });
 
-    it('should make a valid instance', function () {
-      let instance = constructor.create();
-      instance.should.not.be.null();
-      instance.should.be.instanceof(N3.Parser);
+    it('should make a valid instance', function (done) {
+      constructor.create().then((instance) => {
+        instance.should.not.be.null();
+        instance.should.be.instanceof(N3.Parser);
+        done();
+      });
     });
   });
 
@@ -148,15 +167,19 @@ describe('UnnamedComponentFactory', function () {
       constructor.should.not.be.null();
     });
 
-    it('should create valid arguments', function () {
-      let args = constructor.makeArguments();
-      args.length.should.equal(0);
+    it('should create valid arguments', function (done) {
+      constructor.makeArguments().then((args) => {
+        args.length.should.equal(0);
+        done();
+      });
     });
 
-    it('should make a valid instance', function () {
-      let instance = constructor.create();
-      instance.should.not.be.null();
-      instance.should.be.instanceof(Hello);
+    it('should make a valid instance', function (done) {
+      constructor.create().then((instance) => {
+        instance.should.not.be.null();
+        instance.should.be.instanceof(Hello);
+        done();
+      });
     });
   });
 });
