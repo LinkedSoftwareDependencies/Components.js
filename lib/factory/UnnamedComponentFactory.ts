@@ -148,7 +148,7 @@ export class UnnamedComponentFactory implements IComponentFactory {
                     if (this._componentRunner._properties.scanGlobal) {
                         object = require('requireg')(requireName);
                     } else {
-                        return reject(e);
+                        throw e;
                     }
                 }
             } catch (e) {
