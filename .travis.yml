@@ -3,6 +3,7 @@ node_js:
  - "6"
  - "node"
 script:
+  - npm run prepare
   - npm test
 cache:
   directories:
