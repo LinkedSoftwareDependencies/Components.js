@@ -28,6 +28,7 @@ export class Loader {
 
     _runTypeConfigs: {[id: string]: Resource[]} = {};
     _instances: {[id: string]: any} = {};
+    _registrationFinalized: boolean = false;
 
     /**
      * Shared mapping from resource URI to resource instance for al RDF class loaders.
@@ -122,10 +123,12 @@ export class Loader {
      * @private
      */
     _registerComponentResource(componentResource: Resource) {
+        if (this._registrationFinalized) {
+            throw new Error('Tried registering a component ' + componentResource.value
+                + ' after the loader has been finalized.');
+        }
         this._requireValidComponent(componentResource);
         this._componentResources[componentResource.value] = componentResource;
-        this._inheritParameters(componentResource, (<any> componentResource).classes);
-        this._inheritConstructorParameters(componentResource);
     }
 
     /**
@@ -233,6 +236,10 @@ export class Loader {
      * @param moduleResource A module resource.
      */
     registerModuleResource(moduleResource: Resource) {
+        if (this._registrationFinalized) {
+            throw new Error('Tried registering a module ' + moduleResource.value
+                + ' after the loader has been finalized.');
+        }
         if ((<any> moduleResource).hasComponent) {
             (<any> moduleResource).hasComponent.forEach((component: any) => {
                 component.module = moduleResource;
@@ -413,12 +420,41 @@ export class Loader {
     }
 
     /**
+     * Set the loader to a state where it doesn't accept anymore module and component registrations.
+     * This is required for post-processing the components, for actions such as parameter inheritance,
+     * index creation and cleanup.
+     */
+    finalizeRegistration() {
+        if (this._registrationFinalized) {
+            throw new Error('Attempted to finalize and already finalized loader.');
+        }
+
+        // Component parameter inheritance
+        for (let componentResource of _.values(this._componentResources)) {
+            this._inheritParameters(componentResource, (<any> componentResource).classes);
+            this._inheritConstructorParameters(componentResource);
+        }
+
+        // Freeze component resources
+        this._componentResources = Object.freeze(this._componentResources);
+
+        this._registrationFinalized = true;
+    }
+
+    _checkFinalizeRegistration() {
+        if (!this._registrationFinalized) {
+            this.finalizeRegistration();
+        }
+    }
+
+    /**
      * Get a component config constructor based on a config URI.
      * @param configResourceUri The config resource URI.
      * @param configResourceStream A triple stream containing at least the given config.
      * @returns {Promise<T>} A promise resolving to the component constructor.
      */
     getConfigConstructorFromStream(configResourceUri: string, configResourceStream: Stream): Promise<IComponentFactory> {
+        this._checkFinalizeRegistration();
         return new Promise((resolve, reject) => {
             let loader: RdfClassLoader = this._newConfigLoader();
             configResourceStream
@@ -449,6 +485,7 @@ export class Loader {
      * @returns {Promise<T>} A promise resolving to the run instance.
      */
     instantiateFromStream(configResourceUri: string, configResourceStream: Stream): Promise<any> {
+        this._checkFinalizeRegistration();
         return new Promise((resolve, reject) => {
             let loader: RdfClassLoader = this._newConfigLoader();
             configResourceStream
@@ -481,6 +518,7 @@ export class Loader {
      * @returns {Promise<T>} A promise resolving to the run instance.
      */
     getConfigConstructorFromUrl(configResourceUri: string, configResourceUrl: string, fromPath?: string): Promise<IComponentFactory> {
+        this._checkFinalizeRegistration();
         return this._getContexts().then((contexts) => {
             return Util.getContentsFromUrlOrPath(configResourceUrl, fromPath)
                 .then((data: Stream) => this.getConfigConstructorFromStream(configResourceUri, Util.parseRdf(data,
@@ -511,6 +549,7 @@ export class Loader {
      * @returns {any} The run instance.
      */
     instantiateManually(componentUri: string, params: {[id: string]: string}): any {
+        this._checkFinalizeRegistration();
         let componentResource: Resource = this._componentResources[componentUri];
         if (!componentResource) {
             throw new Error('Could not find a component for URI ' + componentUri);
