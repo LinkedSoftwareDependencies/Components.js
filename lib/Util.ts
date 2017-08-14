@@ -330,7 +330,10 @@ class Util {
             let path: string = Util.getMainModulePath();
             if (path) {
                 return Promise.all([globalPath ? Util.getModuleComponentPaths(globalPath) : {}, Util.getModuleComponentPaths(path)])
+                    .catch(reject)
                     .then((paths: [{[id: string]: string}, {[id: string]: string}]) => {
+                        if (!paths) // Can occur when something was rejected
+                            return reject(null);
                         // Local paths can overwrite global paths
                         resolve(paths.reduce((paths, currentPaths) => {
                             _.forOwn(currentPaths, (v: string, k: string) => paths[k] = v);
@@ -402,7 +405,10 @@ class Util {
             let path: string = Util.getMainModulePath();
             if (path) {
                 return Promise.all([globalPath ? Util.getContextPaths(globalPath) : {}, Util.getContextPaths(path)])
+                    .catch(reject)
                     .then((paths: [{[id: string]: string}, {[id: string]: string}]) => {
+                        if (!paths) // Can occur when something was rejected
+                            return reject(null);
                         // Local paths can overwrite global paths
                         resolve(paths.reduce((paths, currentPaths) => {
                             _.forOwn(currentPaths, (v: string, k: string) => paths[k] = v);
