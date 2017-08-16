@@ -330,16 +330,14 @@ class Util {
             let path: string = Util.getMainModulePath();
             if (path) {
                 return Promise.all([globalPath ? Util.getModuleComponentPaths(globalPath) : {}, Util.getModuleComponentPaths(path)])
-                    .catch(reject)
                     .then((paths: [{[id: string]: string}, {[id: string]: string}]) => {
-                        if (!paths) // Can occur when something was rejected
-                            return reject(null);
                         // Local paths can overwrite global paths
                         resolve(paths.reduce((paths, currentPaths) => {
                             _.forOwn(currentPaths, (v: string, k: string) => paths[k] = v);
                             return paths;
                         }, {}));
-                    });
+                    })
+                    .catch(reject);
             } else {
                 reject(null);
             }
@@ -381,7 +379,7 @@ class Util {
                                     if (e) {
                                         // Resolving remote contexts may fail because local document overriding is
                                         // not in effect yet, as we are still collecting the available contexts.
-                                        if (e.details.cause.details.code !== 'loading remote context failed')
+                                        //if (e.details.cause.details.code !== 'loading remote context failed')
                                             reject(new Error('Error while parsing context \'' + key + '\' in ' + filePath + ': ' + e.details.cause.message));
                                     }
                                 });
@@ -408,16 +406,14 @@ class Util {
             let path: string = Util.getMainModulePath();
             if (path) {
                 return Promise.all([globalPath ? Util.getContextPaths(globalPath) : {}, Util.getContextPaths(path)])
-                    .catch(reject)
                     .then((paths: [{[id: string]: string}, {[id: string]: string}]) => {
-                        if (!paths) // Can occur when something was rejected
-                            return reject(null);
                         // Local paths can overwrite global paths
                         resolve(paths.reduce((paths, currentPaths) => {
                             _.forOwn(currentPaths, (v: string, k: string) => paths[k] = v);
                             return paths;
                         }, {}));
-                    });
+                    })
+                    .catch(reject);
             } else {
                 reject(null);
             }
