@@ -16,15 +16,15 @@ export class MappedNamedComponentFactory extends UnnamedComponentFactory {
         super(MappedNamedComponentFactory.makeUnnamedDefinitionConstructor(moduleDefinition, componentDefinition)(config), constructable, overrideRequireNames, componentRunner);
     }
 
-    static mapValue(v: any, params: any): any {
+    static mapValue(resourceScope: Resource, v: any, params: any): any {
         let value: any;
         if (v.termType === 'NamedNode' && v.value === Util.PREFIXES['rdf'] + 'subject') {
             value = Resource.newString(params.value);
         }
         else if (v.termType === 'NamedNode') {
-            value = Util.applyParameterValues(v, params);
+            value = Util.applyParameterValues(resourceScope, v, params);
         } else {
-            value = MappedNamedComponentFactory.map(v, params);
+            value = MappedNamedComponentFactory.map(resourceScope, v, params);
         }
         return value;
     }
@@ -35,14 +35,15 @@ export class MappedNamedComponentFactory extends UnnamedComponentFactory {
      * For example, the resource { k: Resource.newString('param0'), v: new Resource('http://example.org/param0') }
      * with params { 'http://example.org/param0': Resource.newString('abc') }
      * will be mapped to { k: Resource.newString('param0'), v: Resource.newString('abc') }.
+     * @param resourceScope The resource scope to map in.
      * @param resource The resource to map.
      * @param params The parameters object.
      * @returns {any} The mapped resource.
      */
-    static map(resource: any, params: any): any {
+    static map(resourceScope: Resource, resource: any, params: any): any {
         if (resource.v) {
             if (resource.k && resource.k.termType === 'Literal' && !resource.collectEntriesFrom) {
-                return { k: resource.k, v: MappedNamedComponentFactory.mapValue(resource.v, params) };
+                return { k: resource.k, v: MappedNamedComponentFactory.mapValue(resourceScope, resource.v, params) };
             } else {
                 if (!resource.collectEntriesFrom) {
                     throw new Error('If an object key is a URI, it must provide dynamic entries using the oo:collectEntriesFrom predicate: ' + resource);
@@ -51,7 +52,7 @@ export class MappedNamedComponentFactory extends UnnamedComponentFactory {
                     if (entry.termType !== 'NamedNode') {
                         throw new Error('Dynamic entry identifiers must be URI\'s: ' + entry);
                     }
-                    let values: any = Util.applyParameterValues(entry, params);
+                    let values: any = Util.applyParameterValues(resourceScope, entry, params);
                     if (values) {
                         values.forEach((value: any) => data.push(value));
                     }
@@ -77,12 +78,12 @@ export class MappedNamedComponentFactory extends UnnamedComponentFactory {
                             v = Resource.newString(entryResource.value);
                         }
                         else if (resource.v.termType === 'NamedNode' && resource.v.value === Util.PREFIXES['rdf'] + 'object') {
-                            v = MappedNamedComponentFactory.map(entryResource, params);
+                            v = MappedNamedComponentFactory.map(resourceScope, entryResource, params);
                         }
                         else {
                             if (resource.v && (resource.v.fields || resource.v.elements)) {
                                 // Nested mapping should reduce the parameter scope
-                                v = MappedNamedComponentFactory.mapValue(resource.v, entryResource);
+                                v = MappedNamedComponentFactory.mapValue(resourceScope, resource.v, entryResource);
                             }
                             else if (!entryResource[resource.v.value] || entryResource[resource.v.value].length !== 1) {
                                 throw new Error('Expected exactly one value definition for a dynamic entry '
@@ -99,7 +100,7 @@ export class MappedNamedComponentFactory extends UnnamedComponentFactory {
         else if (resource.fields) {
             return new Resource(null, {
                 fields: resource.fields.reduce((fields: any[], field: any) => {
-                    let mapped: any = MappedNamedComponentFactory.map(field, params);
+                    let mapped: any = MappedNamedComponentFactory.map(resourceScope, field, params);
                     if (mapped instanceof Array) {
                         fields = fields.concat(mapped);
                     } else {
@@ -118,7 +119,7 @@ export class MappedNamedComponentFactory extends UnnamedComponentFactory {
                     if (element.termType !== 'NamedNode' && !element.v) {
                         throw new Error('Parameter array elements must be URI\'s, but found: ' + NodeUtil.inspect(element));
                     }
-                    let mapped: any = { v: MappedNamedComponentFactory.mapValue(element, params) };
+                    let mapped: any = { v: MappedNamedComponentFactory.mapValue(resourceScope, element, params) };
                     elements.push(mapped);
                     return elements;
                 }, [])
@@ -127,7 +128,7 @@ export class MappedNamedComponentFactory extends UnnamedComponentFactory {
         else if (resource.list) {
             return new Resource(null, {
                 list: resource.list.map(
-                    (argument: any) => (argument.fields || argument.elements) ? MappedNamedComponentFactory.map(argument, params) : argument
+                    (argument: any) => (argument.fields || argument.elements) ? MappedNamedComponentFactory.map(resourceScope, argument, params) : argument
                 )
             });
         }
@@ -149,7 +150,7 @@ export class MappedNamedComponentFactory extends UnnamedComponentFactory {
             return new Resource(componentDefinition.value, {
                 requireName: moduleDefinition.requireName || componentDefinition.requireName,
                 requireElement: componentDefinition.requireElement,
-                arguments: componentDefinition.constructorArguments ? MappedNamedComponentFactory.map(_.cloneDeep(componentDefinition.constructorArguments), params) : null
+                arguments: componentDefinition.constructorArguments ? MappedNamedComponentFactory.map(<Resource>params, _.cloneDeep(componentDefinition.constructorArguments), params) : null
             })
         });
     }

@@ -35,8 +35,12 @@ export class Resource {
 
     hasType(typeUri: string): boolean {
         let resource: any = this;
-        if (resource.types) {
-            return resource.types.reduce((acc: boolean, type: Resource) => acc || type.value === typeUri, false);
+        if (typeUri === this.value) {
+            return true;
+        }
+        if (resource.types || resource.classes) {
+            return (resource.types || []).concat(resource.classes || [])
+                .reduce((acc: boolean, type: Resource) => acc || type.hasType(typeUri), false);
         }
         return false;
     }

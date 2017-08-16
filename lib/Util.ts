@@ -8,6 +8,7 @@ import _ = require("lodash");
 import {RdfStreamIncluder} from "./rdf/RdfStreamIncluder";
 import NodeUtil = require('util');
 import {Stats} from "fs";
+import {Resource} from "./rdf/Resource";
 let jsonld: any = require("jsonld");
 let Cache: any = require("timed-cache");
 let globalModules: string = require('global-modules');
@@ -79,15 +80,25 @@ class Util {
 
     /**
      * Apply parameter values for the given parameter.
+     * @param resourceScope The resource scope to map in.
      * @param param A parameter type.
      * @param paramValueMapping A mapping from parameter to value.
      * @return The parameter value(s) or undefined
      */
-    static applyParameterValues(param: any, paramValueMapping: any) {
+    static applyParameterValues(resourceScope: Resource, param: any, paramValueMapping: any) {
         let value: any = paramValueMapping[param.value];
         // Set default value if no value has been given
         if (!value && param.defaults) {
             value = param.defaults;
+        }
+        if (!value && param.defaultScoped) {
+            param.defaultScoped.forEach((scoped: any) => {
+                scoped.scope.forEach((scope: any) => {
+                    if (resourceScope.hasType(scope.value)) {
+                        value = scoped.scopedValue;
+                    }
+                });
+            });
         }
 
         // Force-add fixed parameter values

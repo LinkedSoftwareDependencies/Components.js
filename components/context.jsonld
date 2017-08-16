@@ -33,6 +33,16 @@
     "default": {
       "@id": "oo:defaultValue"
     },
+    "defaultScoped": {
+      "@id": "oo:defaultScoped"
+    },
+    "defaultScope": {
+      "@id": "oo:defaultScope",
+      "@type": "@id"
+    },
+    "defaultScopedValue": {
+      "@id": "oo:defaultScopedValue"
+    },
 
     "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
     "comment": {

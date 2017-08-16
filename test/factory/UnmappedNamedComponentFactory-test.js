@@ -60,6 +60,31 @@ let n3DummyComponentDefaults = new Resource('http://example.org/n3#Dummy', {
   ]
 });
 
+// Component definition for an N3 Dummy with default scoped param values
+let n3DummyComponentDefaultsScoped = new Resource('http://example.org/n3#Dummy', {
+  requireElement: Resource.newString('Dummy'),
+  hasParameter: [
+    new Resource('http://example.org/n3#dummyParam1', {
+      defaultScoped: [
+        {
+          scope: [],
+          scopedValue: [
+            Resource.newString('a'),
+            Resource.newString('b')
+          ]
+        }
+      ]
+    }),
+    new Resource('http://example.org/n3#dummyParam2', {
+      unique: true,
+      defaults: [
+        Resource.newString('a')
+      ]
+    })
+  ]
+});
+n3DummyComponentDefaultsScoped.hasParameter[0].defaultScoped[0].scope.push(n3DummyComponentDefaultsScoped);
+
 // Component definition for an N3 Dummy with fixed param values
 let n3DummyComponentFixed = new Resource('http://example.org/n3#Dummy', {
   requireElement: Resource.newString('Dummy'),
@@ -293,6 +318,59 @@ describe('UnmappedNamedComponentFactory', function () {
     let constructor;
     beforeEach(function () {
       constructor = new UnmappedNamedComponentFactory(n3Module, n3DummyComponentDefaults, {
+        'http://example.org/n3#dummyParam1': Resource.newBoolean(true),
+        'http://example.org/n3#dummyParam2': Resource.newBoolean(false)
+      }, true);
+    });
+
+    it('should be valid', function () {
+      constructor.should.not.be.null();
+    });
+
+    it('should create valid arguments', function (done) {
+      constructor.makeArguments().then((args) => {
+        args.should.deepEqual([{
+          'http://example.org/n3#dummyParam1': 'true',
+          'http://example.org/n3#dummyParam2': 'false',
+        }]);
+        done();
+      }).catch(done);
+    });
+
+    it('should fail to make a valid instance', function () {
+      return expect(constructor.create()).to.be.rejectedWith(Error);
+    });
+  });
+
+  describe('for an N3 Dummy with default scoped values', function () {
+    let constructor;
+    beforeEach(function () {
+      constructor = new UnmappedNamedComponentFactory(n3Module, n3DummyComponentDefaultsScoped, {}, true);
+    });
+
+    it('should be valid', function () {
+      constructor.should.not.be.null();
+    });
+
+    it('should create valid arguments', function (done) {
+      constructor.makeArguments().then((args) => {
+        args.should.deepEqual([{
+          'http://example.org/n3#dummyParam1': [ 'a', 'b' ],
+          'http://example.org/n3#dummyParam2': [ 'a' ],
+        }]);
+        done();
+      }).catch(done);
+    });
+
+    it('should fail to make a valid instance', function () {
+      return expect(constructor.create()).to.be.rejectedWith(Error);
+    });
+  });
+
+  describe('for an N3 Dummy with overridden default scoped values', function () {
+    let constructor;
+    beforeEach(function () {
+      constructor = new UnmappedNamedComponentFactory(n3Module, n3DummyComponentDefaultsScoped, {
         'http://example.org/n3#dummyParam1': Resource.newBoolean(true),
         'http://example.org/n3#dummyParam2': Resource.newBoolean(false)
       }, true);

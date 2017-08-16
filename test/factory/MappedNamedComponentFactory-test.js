@@ -184,7 +184,7 @@ let defaultedParam2 = new Resource('http://example.org/n3#dummyParam2', {
     Resource.newString('a')
   ]
 });
-let helloWorldComponent5 = new Resource('http://example.org/HelloWorldModule#SayHelloComponent1', {
+let helloWorldComponent5 = new Resource('http://example.org/HelloWorldModule#SayHelloComponent4', {
   requireElement: Resource.newString('Hello'),
   types: [ new Resource(Constants.PREFIXES['oo'] + 'Class') ],
   hasParameter: [ defaultedParam1, defaultedParam2, ],
@@ -200,6 +200,46 @@ let helloWorldComponent5 = new Resource('http://example.org/HelloWorldModule#Say
   })
 });
 
+// Component definition for Hello World with default scoped values
+let defaultScopedParam1 = new Resource('http://example.org/n3#dummyParam1', {
+  defaultScoped: [
+    {
+      scope: [],
+      scopedValue: [
+        Resource.newString('a'),
+        Resource.newString('b')
+      ]
+    }
+  ]
+});
+let defaultScopedParam2 = new Resource('http://example.org/n3#dummyParam2', {
+  unique: true,
+  defaultScoped: [
+    {
+      scope: [],
+      scopedValue: [
+        Resource.newString('a')
+      ]
+    }
+  ]
+});
+let helloWorldComponent6 = new Resource('http://example.org/HelloWorldModule#SayHelloComponent5', {
+  requireElement: Resource.newString('Hello'),
+  types: [ new Resource(Constants.PREFIXES['oo'] + 'Class') ],
+  hasParameter: [ defaultScopedParam1, defaultScopedParam2, ],
+  constructorArguments: new Resource(null, {
+    list: [
+      new Resource("_:param_parser_0", {
+        fields: [
+          { k: new Resource('"dummyParam1"'), v: defaultScopedParam1 },
+          { k: new Resource('"dummyParam2"'), v: defaultScopedParam2 }
+        ]
+      })
+    ]
+  })
+});
+helloWorldComponent6.hasParameter.forEach((param) => param.defaultScoped[0].scope.push(helloWorldComponent6));
+
 // Module definition for Hello World
 let helloWorldModule = new Resource('http://example.org/HelloWorldModule', {
   requireName: Resource.newString('test/helloworld'),
@@ -208,7 +248,8 @@ let helloWorldModule = new Resource('http://example.org/HelloWorldModule', {
     helloWorldComponent2,
     helloWorldComponent3,
     helloWorldComponent4,
-    helloWorldComponent5
+    helloWorldComponent5,
+    helloWorldComponent6
   ]
 });
 
@@ -525,6 +566,93 @@ describe('MappedNamedComponentFactory', function () {
           'dummyParam1': 'true',
           'dummyParam2': 'false',
         }]);
+        done();
+      }).catch(done);
+    });
+
+    it('should make a valid instance', function (done) {
+      constructor.create().then((instance) => {
+        instance.should.not.be.null();
+        instance.should.be.instanceof(Hello);
+        done();
+      }).catch(done);
+    });
+  });
+
+  describe('for a hello world component with default scoped values', function () {
+    let constructor;
+    beforeEach(function () {
+      constructor = new MappedNamedComponentFactory(helloWorldModule, helloWorldComponent6, new Resource(null, { types: [ helloWorldComponent6 ] }), true);
+    });
+
+    it('should be valid', function () {
+      constructor.should.not.be.null();
+    });
+
+    it('should create valid arguments', function (done) {
+      constructor.makeArguments().then((args) => {
+        args.should.deepEqual([{
+          'dummyParam1': [ 'a', 'b' ],
+          'dummyParam2': [ 'a' ],
+        }]);
+        done();
+      }).catch(done);
+    });
+
+    it('should make a valid instance', function (done) {
+      constructor.create().then((instance) => {
+        instance.should.not.be.null();
+        instance.should.be.instanceof(Hello);
+        done();
+      }).catch(done);
+    });
+  });
+
+  describe('for a hello world component with overridden default scoped values', function () {
+    let constructor;
+    beforeEach(function () {
+      constructor = new MappedNamedComponentFactory(helloWorldModule, helloWorldComponent6, {
+        'http://example.org/n3#dummyParam1': Resource.newBoolean(true),
+        'http://example.org/n3#dummyParam2': Resource.newBoolean(false)
+      }, true);
+    });
+
+    it('should be valid', function () {
+      constructor.should.not.be.null();
+    });
+
+    it('should create valid arguments', function (done) {
+      constructor.makeArguments().then((args) => {
+        args.should.deepEqual([{
+          'dummyParam1': 'true',
+          'dummyParam2': 'false',
+        }]);
+        done();
+      }).catch(done);
+    });
+
+    it('should make a valid instance', function (done) {
+      constructor.create().then((instance) => {
+        instance.should.not.be.null();
+        instance.should.be.instanceof(Hello);
+        done();
+      }).catch(done);
+    });
+  });
+
+  describe('for a hello world component with non-applicable default scoped values', function () {
+    let constructor;
+    beforeEach(function () {
+      constructor = new MappedNamedComponentFactory(helloWorldModule, helloWorldComponent6, new Resource(null, { types: [ helloWorldComponent5 ] }), true);
+    });
+
+    it('should be valid', function () {
+      constructor.should.not.be.null();
+    });
+
+    it('should create valid arguments', function (done) {
+      constructor.makeArguments().then((args) => {
+        args.should.deepEqual([{}]);
         done();
       }).catch(done);
     });

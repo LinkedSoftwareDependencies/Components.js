@@ -34,7 +34,7 @@ export class UnmappedNamedComponentFactory extends UnnamedComponentFactory {
                             fields: (componentDefinition.hasParameter || []).map((parameterUri: any) => {
                                 return {
                                     k: _.assignIn(parameterUri, { termType: 'Literal' }),
-                                    v: Util.applyParameterValues(parameterUri, params)
+                                    v: Util.applyParameterValues(<Resource>componentDefinition, parameterUri, params)
                                 };
                             })
                         })
