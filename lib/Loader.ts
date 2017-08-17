@@ -442,6 +442,8 @@ export class Loader {
         this._componentResources = Object.freeze(this._componentResources);
 
         this._registrationFinalized = true;
+
+        Util.NODE_MODULES_PACKAGE_CONTENTS = {};
     }
 
     _checkFinalizeRegistration() {

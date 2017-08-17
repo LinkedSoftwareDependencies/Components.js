@@ -23,7 +23,7 @@ class Util {
         'doap': 'http://usefulinc.com/ns/doap#',
         'owl': 'http://www.w3.org/2002/07/owl#'
     };
-    private static NODE_MODULES_PACKAGE_CONTENTS = new Cache({ defaultTtl: 5000 });
+    public static NODE_MODULES_PACKAGE_CONTENTS: {[id: string]: string} = {};
     private static MAIN_MODULE_PATH: string = null;
 
     /**
@@ -285,12 +285,12 @@ class Util {
      * @returns {any} The package.json or null.
      */
     static getPackageJson(path: string): any {
-        let data: any = Util.NODE_MODULES_PACKAGE_CONTENTS.get(path);
+        let data: any = Util.NODE_MODULES_PACKAGE_CONTENTS[path];
         if (!data) {
             if (fs.existsSync(path)) {
                 data = require(path);
                 if (data) {
-                    Util.NODE_MODULES_PACKAGE_CONTENTS.put(path, data);
+                    Util.NODE_MODULES_PACKAGE_CONTENTS[path] = data;
                 }
             }
         }
