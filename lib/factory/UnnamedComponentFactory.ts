@@ -66,17 +66,17 @@ export class UnnamedComponentFactory implements IComponentFactory {
                             data[entry.k] = entry.v;
                         return data;
                     }, {});
-                }).catch(reject).then(resolve);
+                }).then(resolve).catch(reject);
             } else if (value.elements) {
                 // The parameter is a dynamic array
-                return (<Promise<any[]>>Promise.all(value.elements.map((entry: any) => {
+                return Promise.all(value.elements.map((entry: any) => {
                     if (!entry.v) {
                         return Promise.reject(new Error('Parameter array elements must have values, but found: ' + NodeUtil.inspect(entry)));
                     }
                     if (entry.v) {
                         return UnnamedComponentFactory.getArgumentValue(entry.v, componentRunner, shallow, resourceBlacklist);
                     }
-                })).catch(reject)).then((elements: any[]) => {
+                })).then((elements: any[]) => {
                     var ret: any[] = [];
                     elements.forEach((element) => {
                         if (element instanceof Array) {
@@ -86,11 +86,11 @@ export class UnnamedComponentFactory implements IComponentFactory {
                         }
                     });
                     resolve(ret);
-                });
+                }).catch(reject);
             } else if (value instanceof Array) {
-                return (<Promise<any[]>>Promise.all(value.map(
+                return Promise.all(value.map(
                     (element) => UnnamedComponentFactory.getArgumentValue(element, componentRunner, shallow, resourceBlacklist)))
-                    .catch(reject)).then(resolve);
+                    .then(resolve).catch(reject);
             } else if (value.termType === 'NamedNode' || value.termType === 'BlankNode') {
                 if (shallow) {
                     return resolve({});
@@ -172,9 +172,9 @@ export class UnnamedComponentFactory implements IComponentFactory {
                     return reject(new Error('ConstructableComponent is not a function: ' + NodeUtil.inspect(object)
                         + "\n" + NodeUtil.inspect(this._componentDefinition)));
                 }
-                this.makeArguments(false, resourceBlacklist).catch(reject).then((args: any[]) => {
+                this.makeArguments(false, resourceBlacklist).then((args: any[]) => {
                     resolve(new (Function.prototype.bind.apply(object, [{}].concat(args))));
-                });
+                }).catch(reject);
             } else {
                 resolve(object);
             }
