@@ -10,7 +10,6 @@ import NodeUtil = require('util');
 import {Stats} from "fs";
 import {Resource} from "./rdf/Resource";
 let jsonld: any = require("jsonld");
-let Cache: any = require("timed-cache");
 let globalModules: string = require('global-modules');
 
 class Util {
