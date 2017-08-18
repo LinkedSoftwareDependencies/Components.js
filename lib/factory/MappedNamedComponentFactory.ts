@@ -128,7 +128,9 @@ export class MappedNamedComponentFactory extends UnnamedComponentFactory {
         else if (resource.list) {
             return new Resource(null, {
                 list: resource.list.map(
-                    (argument: any) => (argument.fields || argument.elements) ? MappedNamedComponentFactory.map(resourceScope, argument, params) : argument
+                    (argument: any) => (argument.fields || argument.elements)
+                        ? MappedNamedComponentFactory.map(resourceScope, argument, params)
+                        : MappedNamedComponentFactory.mapValue(resourceScope, argument, params)
                 )
             });
         }
