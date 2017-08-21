@@ -389,7 +389,7 @@ class Util {
                                     if (e) {
                                         // Resolving remote contexts may fail because local document overriding is
                                         // not in effect yet, as we are still collecting the available contexts.
-                                        //if (e.details.cause.details.code !== 'loading remote context failed')
+                                        if (e.details.cause.details.code !== 'loading remote context failed')
                                             reject(new Error('Error while parsing context \'' + key + '\' in ' + filePath + ': ' + e.details.cause.message));
                                     }
                                 });
