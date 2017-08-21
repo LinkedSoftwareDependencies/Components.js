@@ -36,7 +36,9 @@ class Util {
     static getContentsFromUrlOrPath(path: string, fromPath?: string): Promise<Stream> {
         return new Promise((resolve, reject) => {
             let parsedUrl: any = url.parse(path);
-            if (!parsedUrl.protocol) {
+            let separatorPos: number = path.indexOf(':');
+            if ((separatorPos >= 0 && separatorPos < path.length && path.charAt(separatorPos + 1) === '\\')
+                || !parsedUrl.protocol) {
                 resolve(fs.createReadStream(Path.join(fromPath || '', parsedUrl.path)).on('error', rejectContext));
             } else {
                 try {
