@@ -207,7 +207,7 @@ class Util {
     static getMainModulePath(): string {
         if (Util.MAIN_MODULE_PATH)
             return Util.MAIN_MODULE_PATH;
-        for (let nodeModulesPath of (<any> global.process.mainModule).paths) {
+        for (let nodeModulesPath of (<any> global.process.mainModule).paths.reverse()) {
             let path = nodeModulesPath.replace(/node_modules$/, 'package.json');
             try {
                 require(path);
