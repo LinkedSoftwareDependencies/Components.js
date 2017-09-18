@@ -226,50 +226,60 @@ class Util {
      */
     static getAvailableNodeModules(path: string, cb: (path: string) => any, ignorePaths?: {[key: string]: boolean}, haltRecursion?: boolean) {
         if (!ignorePaths) ignorePaths = {};
-        return recurse(Path.basename(path) !== 'node_modules' ? Path.join(path, 'node_modules') : path);
+        return recurse(path);
         function recurse(startPath: string) {
             fs.stat(startPath, (err: NodeJS.ErrnoException, stat: Stats) => {
                 if (!err) {
-                    startPath = fs.realpathSync(startPath); // Normalize softlinks
-                    if (ignorePaths[startPath]) { // Avoid infinite loops
-                        return cb(null);
-                    }
-                    ignorePaths[startPath] = true;
-                    if (stat.isDirectory()) {
-                        if (Path.basename(startPath) === 'node_modules') {
-                            cb(Path.join(startPath, '../'));
-                        }
-                        if (haltRecursion) {
+                    // Normalize softlinks
+                    fs.realpath(startPath, (err, startPath) => {
+                        if (ignorePaths[startPath]) { // Avoid infinite loops
                             return cb(null);
                         }
-                        fs.readdir(startPath, (err: NodeJS.ErrnoException, files: string[]) => {
-                            let remaining = files.length;
-                            files.forEach((file) => {
-                                let fullFilePath: string = Path.join(startPath, file);
-                                let directory: boolean = false;
-                                try {
-                                    directory = fs.statSync(fullFilePath).isDirectory();
-                                } catch (e) {}
-                                if (directory) {
-                                    if (Path.basename(fullFilePath).charAt(0) === '@') {
-                                        recurse(fullFilePath);
-                                    } else {
-                                        Util.getAvailableNodeModules(fullFilePath, (subPath: string) => {
-                                            if (subPath) {
-                                                cb(subPath);
-                                            } else {
-                                                if (--remaining === 0)
-                                                    cb(null);
-                                            }
-                                        }, ignorePaths, true);
-                                    }
-                                } else {
-                                    if (--remaining === 0)
-                                        cb(null);
+                        ignorePaths[startPath] = true;
+                        if (stat.isDirectory()) {
+                            fs.stat(Path.join(startPath, 'package.json'), (err: NodeJS.ErrnoException, stat: Stats) => {
+                                let startPathModules = startPath;
+                                if (!err && stat.isFile()) {
+                                    cb(startPath);
+                                    startPathModules = Path.join(startPath, 'node_modules');
                                 }
+
+                                if (haltRecursion) {
+                                    return cb(null);
+                                }
+
+                                fs.readdir(startPathModules, (err: NodeJS.ErrnoException, files: string[]) => {
+                                    if (!err && files) {
+                                        let remaining = files.length;
+                                        files.forEach((file) => {
+                                            let fullFilePath: string = Path.join(startPathModules, file);
+                                            fs.stat(fullFilePath, (err: NodeJS.ErrnoException, stat: Stats) => {
+                                                if (!err && stat.isDirectory()) {
+                                                    if (Path.basename(fullFilePath).charAt(0) === '@') {
+                                                        recurse(fullFilePath);
+                                                    } else {
+                                                        Util.getAvailableNodeModules(fullFilePath, (subPath: string) => {
+                                                            if (subPath) {
+                                                                cb(subPath);
+                                                            } else {
+                                                                if (--remaining === 0)
+                                                                    cb(null);
+                                                            }
+                                                        }, ignorePaths, true);
+                                                    }
+                                                } else {
+                                                    if (--remaining === 0)
+                                                        cb(null);
+                                                }
+                                            });
+                                        });
+                                    } else {
+                                        cb(null);
+                                    }
+                                });
                             });
-                        });
-                    } else cb(null);
+                        } else cb(null);
+                    });
                 } else {
                     if (Path.basename(path).charAt(0) === '@') {
                         recurse(path);
