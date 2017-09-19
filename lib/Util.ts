@@ -263,18 +263,14 @@ class Util {
                                             let fullFilePath: string = Path.join(startPathModules, file);
                                             fs.stat(fullFilePath, (err: NodeJS.ErrnoException, stat: Stats) => {
                                                 if (!err && stat.isDirectory()) {
-                                                    if (Path.basename(fullFilePath).charAt(0) === '@') {
-                                                        recurse(fullFilePath);
-                                                    } else {
-                                                        Util.getAvailableNodeModules(fullFilePath, (subPath: string) => {
-                                                            if (subPath) {
-                                                                cb(subPath);
-                                                            } else {
-                                                                if (--remaining === 0)
-                                                                    cb(null);
-                                                            }
-                                                        }, ignorePaths, true);
-                                                    }
+                                                    Util.getAvailableNodeModules(fullFilePath, (subPath: string) => {
+                                                        if (subPath) {
+                                                            cb(subPath);
+                                                        } else {
+                                                            if (--remaining === 0)
+                                                                cb(null);
+                                                        }
+                                                    }, ignorePaths, Path.basename(fullFilePath).charAt(0) !== '@');
                                                 } else {
                                                     if (--remaining === 0)
                                                         cb(null);
