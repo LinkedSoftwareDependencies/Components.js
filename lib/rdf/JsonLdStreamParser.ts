@@ -49,7 +49,7 @@ export class JsonLdStreamParser extends Transform {
             let parsed: any = JSON.parse(this._data);
             this._jsonld.toRDF(parsed, (error: any, triples: any) => {
                 if (error) {
-                    this.emit('error', error.details.cause.message);
+                    this.emit('error', error.details.cause);
                 } else {
                     for (var graphName in triples) {
                         triples[graphName].forEach((triple: any) => {

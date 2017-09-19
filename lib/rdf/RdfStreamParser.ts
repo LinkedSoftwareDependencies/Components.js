@@ -32,14 +32,14 @@ export class RdfStreamParser extends PassThrough {
             .on('data', (data: any) => this.push(data))
             .on('end', () => this.emit('end'));
         stream2.pipe(<any> this._jsonParser)
-            .on('error', errorHandler)
+            .on('error', (e: any) => errorHandler(e))
             .on('data', (data: any) => this.push(data))
             .on('end', () => this.emit('end'));
 
         let errors: Array<any> = [];
         let self: any = this;
         function errorHandler(e: any) {
-            errors.push(e.toString());
+            errors.push(e);
             if (errors.length === 2) {
                 self.emit('error', new Error('No valid parser was found, both N3 and JSON-LD failed:\n' + NodeUtil.inspect(errors)));
             }
