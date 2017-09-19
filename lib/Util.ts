@@ -202,6 +202,14 @@ class Util {
     }
 
     /**
+     * Set the main module path.
+     * @param {string} path A path.
+     */
+    static setMainModulePath(path: string) {
+        Util.MAIN_MODULE_PATH = path;
+    }
+
+    /**
      * @returns {any} The path to the current main Node module.
      */
     static getMainModulePath(): string {

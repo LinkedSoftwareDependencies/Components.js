@@ -37,6 +37,9 @@ export class Loader {
 
     constructor(properties?: LoaderProperties) {
         this._properties = properties || {};
+        if (this._properties.mainModulePath) {
+            Util.setMainModulePath(this._properties.mainModulePath);
+        }
         if (!('absolutizeRelativePaths' in this._properties)) {
             this._properties.absolutizeRelativePaths = true;
         }
@@ -578,4 +581,5 @@ export interface LoaderProperties {
     scanGlobal?: boolean;
     absolutizeRelativePaths?: boolean;
     contexts?: {[id: string]: string};
+    mainModulePath?: string;
 }
