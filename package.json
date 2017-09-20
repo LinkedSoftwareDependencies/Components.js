@@ -42,6 +42,13 @@
     "sinon-chai": "^2.12.0",
     "typescript": "^2.2.1"
   },
+  "files": [
+    "components",
+    "lib/**/*.d.ts",
+    "lib/**/*.js",
+    "index.d.ts",
+    "index.js"
+  ],
   "pre-commit": [
     "build",
     "test"
