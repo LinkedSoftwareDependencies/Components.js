@@ -257,7 +257,7 @@ class Util {
                                 }
 
                                 fs.readdir(startPathModules, (err: NodeJS.ErrnoException, files: string[]) => {
-                                    if (!err && files) {
+                                    if (!err && files && files.length) {
                                         let remaining = files.length;
                                         files.forEach((file) => {
                                             let fullFilePath: string = Path.join(startPathModules, file);
