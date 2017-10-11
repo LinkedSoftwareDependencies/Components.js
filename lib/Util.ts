@@ -38,7 +38,7 @@ class Util {
             let parsedUrl: any = url.parse(path);
             let separatorPos: number = path.indexOf(':');
             if ((separatorPos >= 0 && separatorPos < path.length && path.charAt(separatorPos + 1) === '\\')
-                || !parsedUrl.protocol) {
+                || !parsedUrl.protocol || parsedUrl.protocol === 'file:') {
                 resolve(fs.createReadStream(Path.join(fromPath || '', parsedUrl.path)).on('error', rejectContext));
             } else {
                 try {
