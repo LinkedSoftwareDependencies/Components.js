@@ -16,7 +16,7 @@ export class MappedNamedComponentFactory extends UnnamedComponentFactory {
         super(MappedNamedComponentFactory.makeUnnamedDefinitionConstructor(moduleDefinition, componentDefinition)(config), constructable, overrideRequireNames, componentRunner);
     }
 
-    static mapValue(resourceScope: Resource, v: any, params: any): any {
+    static mapValue(resourceScope: Resource, v: any, params: any, rawValue?: boolean): any {
         let value: any;
         if (v.termType === 'NamedNode' && v.value === Util.PREFIXES['rdf'] + 'subject') {
             value = Resource.newString(params.value);
@@ -25,6 +25,9 @@ export class MappedNamedComponentFactory extends UnnamedComponentFactory {
             value = Util.applyParameterValues(resourceScope, v, params);
         } else {
             value = MappedNamedComponentFactory.map(resourceScope, v, params);
+        }
+        if (rawValue) {
+            value = Resource.newString(value.value);
         }
         return value;
     }
@@ -41,9 +44,9 @@ export class MappedNamedComponentFactory extends UnnamedComponentFactory {
      * @returns {any} The mapped resource.
      */
     static map(resourceScope: Resource, resource: any, params: any): any {
-        if (resource.v) {
+        if (resource.v || resource.vRaw) {
             if (resource.k && resource.k.termType === 'Literal' && !resource.collectEntriesFrom) {
-                return { k: resource.k, v: MappedNamedComponentFactory.mapValue(resourceScope, resource.v, params) };
+                return { k: resource.k, v: MappedNamedComponentFactory.mapValue(resourceScope, resource.v || resource.vRaw, params, resource.vRaw) };
             } else {
                 if (!resource.collectEntriesFrom) {
                     throw new Error('If an object key is a URI, it must provide dynamic entries using the oo:collectEntriesFrom predicate: ' + resource);

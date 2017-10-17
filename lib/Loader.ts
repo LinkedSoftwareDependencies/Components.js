@@ -84,6 +84,7 @@ export class Loader {
         loader.bindProperty('fixed', Util.PREFIXES['oo'] + 'hasFixedValue');
         loader.bindProperty('k', Util.PREFIXES['om'] + 'fieldName', true);
         loader.bindProperty('v', Util.PREFIXES['om'] + 'fieldValue', true);
+        loader.bindProperty('vRaw', Util.PREFIXES['om'] + 'fieldValueRaw', true);
         loader.bindProperty('types', Util.PREFIXES['rdf'] + 'type');
 
         loader.bindProperty('classes', Util.PREFIXES['rdfs'] + 'subClassOf', false);
@@ -115,6 +116,7 @@ export class Loader {
         loader.bindProperty('unique', Util.PREFIXES['oo'] + 'uniqueValue', true);
         loader.bindProperty('k', Util.PREFIXES['om'] + 'fieldName', true);
         loader.bindProperty('v', Util.PREFIXES['om'] + 'fieldValue', true);
+        loader.bindProperty('vRaw', Util.PREFIXES['om'] + 'fieldValueRaw', true);
         loader.bindProperty('types', Util.PREFIXES['rdf'] + 'type');
 
         loader.bindProperty('imports', Util.PREFIXES['owl'] + 'imports', false);

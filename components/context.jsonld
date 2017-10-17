@@ -116,6 +116,10 @@
     "value": {
       "@id": "om:fieldValue",
       "@type": "@id"
+    },
+    "valueRaw": {
+      "@id": "om:fieldValueRaw",
+      "@type": "@id"
     }
   }
 }
