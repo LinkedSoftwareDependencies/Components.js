@@ -89,9 +89,6 @@ class Util {
     static applyParameterValues(resourceScope: Resource, param: any, paramValueMapping: any) {
         let value: any = paramValueMapping[param.value];
         // Set default value if no value has been given
-        if (!value && param.defaults) {
-            value = param.defaults;
-        }
         if (!value && param.defaultScoped) {
             param.defaultScoped.forEach((scoped: any) => {
                 scoped.scope.forEach((scope: any) => {
@@ -100,6 +97,9 @@ class Util {
                     }
                 });
             });
+        }
+        if (!value && param.defaults) {
+            value = param.defaults;
         }
 
         // Force-add fixed parameter values
