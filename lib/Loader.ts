@@ -147,7 +147,8 @@ export class Loader {
      */
     _isValidComponent(componentResource: Resource) {
         return componentResource.hasType(Util.PREFIXES['oo'] + 'AbstractClass')
-            || componentResource.hasType(Util.PREFIXES['oo'] + 'Class');
+            || componentResource.hasType(Util.PREFIXES['oo'] + 'Class')
+            || componentResource.hasType(Util.PREFIXES['oo'] + 'ComponentInstance');
     }
 
     /**
