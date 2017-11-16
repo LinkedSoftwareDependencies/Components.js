@@ -28,7 +28,7 @@ export class ComponentFactory implements IComponentFactory {
     _getComponentFactory(): IComponentFactory {
         if (!this._config.requireName && !this._config.requireElement) {
             let constructable: boolean = !this._componentDefinition.types
-                || this._componentDefinition.types.indexOf(Util.PREFIXES['oo'] + 'ComponentInstance') < 0;
+                || !this._componentDefinition.hasType(Util.PREFIXES['oo'] + 'ComponentInstance');
             if (!this._componentDefinition.constructorArguments) {
                 return new UnmappedNamedComponentFactory(
                     this._moduleDefinition, this._componentDefinition, this._config, constructable,
@@ -42,7 +42,7 @@ export class ComponentFactory implements IComponentFactory {
             }
         } else {
             return new UnnamedComponentFactory(this._config,
-                !this._config.types || this._config.types.indexOf(Util.PREFIXES['oo'] + 'ComponentInstance') < 0,
+                !this._config.types || !this._config.hasType(Util.PREFIXES['oo'] + 'ComponentInstance'),
                 this._overrideRequireNames, this._componentRunner);
         }
     }
