@@ -1,6 +1,7 @@
 import {RdfStreamParser} from "./rdf/RdfStreamParser";
 import {Stream} from "stream";
 import http = require("http");
+import https = require("https");
 import fs = require("fs");
 import Path = require("path");
 import url = require("url");
@@ -42,7 +43,7 @@ class Util {
                 resolve(fs.createReadStream(Path.join(fromPath || '', parsedUrl.path)).on('error', rejectContext));
             } else {
                 try {
-                    var request = http.request(parsedUrl, (data: Stream) => {
+                    var request = (<any> (parsedUrl.protocol == 'https:' ? https : http)).request(parsedUrl, (data: Stream) => {
                         data.on('error', rejectContext);
                         resolve(data);
                     });
