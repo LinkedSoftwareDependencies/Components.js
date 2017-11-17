@@ -101,7 +101,7 @@ export class Loader {
      * @private
      */
     _newConfigLoader(): RdfClassLoader {
-        let loader: RdfClassLoader = new RdfClassLoader({ captureAllProperties: true, captureAllClasses: true });
+        let loader: RdfClassLoader = new RdfClassLoader({ captureAllProperties: true, captureAllClasses: true, normalizeLists: true });
         loader.resources = this.resources;
 
         loader.bindClass('constructables', Util.PREFIXES['oo'] + 'Class');
