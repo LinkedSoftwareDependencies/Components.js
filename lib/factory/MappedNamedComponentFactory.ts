@@ -47,6 +47,8 @@ export class MappedNamedComponentFactory extends UnnamedComponentFactory {
         if (resource.v || resource.vRaw) {
             if (resource.k && resource.k.termType === 'Literal' && !resource.collectEntriesFrom) {
                 return { k: resource.k, v: MappedNamedComponentFactory.mapValue(resourceScope, resource.v || resource.vRaw, params, resource.vRaw) };
+            } else if (!resource.k && !resource.collectEntriesFrom) {
+                return MappedNamedComponentFactory.mapValue(resourceScope, resource.v || resource.vRaw, params, resource.vRaw);
             } else {
                 if (!resource.collectEntriesFrom) {
                     throw new Error('If an object key is a URI, it must provide dynamic entries using the oo:collectEntriesFrom predicate: ' + resource);
@@ -119,7 +121,7 @@ export class MappedNamedComponentFactory extends UnnamedComponentFactory {
             }
             return new Resource(null, {
                 elements: resource.elements.list.reduce((elements: any[], element: any) => {
-                    if (element.termType !== 'NamedNode' && !element.v) {
+                    if (element.termType !== 'NamedNode' && !element.v && !element.vRaw) {
                         throw new Error('Parameter array elements must be URI\'s, but found: ' + NodeUtil.inspect(element));
                     }
                     let mapped: any = { v: MappedNamedComponentFactory.mapValue(resourceScope, element, params) };

@@ -122,8 +122,7 @@
       "@type": "@id"
     },
     "valueRaw": {
-      "@id": "om:fieldValueRaw",
-      "@type": "@id"
+      "@id": "om:fieldValueRaw"
     }
   }
 }
