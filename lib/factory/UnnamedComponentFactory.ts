@@ -110,7 +110,7 @@ export class UnnamedComponentFactory implements IComponentFactory {
      */
     makeArguments(shallow?: boolean, resourceBlacklist?: {[id: string]: boolean}): Promise<any[]> {
         return this._componentDefinition.arguments ? Promise.all(this._componentDefinition.arguments.list
-            .map((resource: Resource) => UnnamedComponentFactory.getArgumentValue(resource, this._componentRunner, shallow, resourceBlacklist))) : Promise.resolve([]);
+            .map((resource: Resource) => resource ? UnnamedComponentFactory.getArgumentValue(resource, this._componentRunner, shallow, resourceBlacklist) : undefined)) : Promise.resolve([]);
     }
 
     /**
