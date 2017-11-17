@@ -92,7 +92,13 @@ class Util {
         // Set default value if no value has been given
         if (!value && param.defaultScoped) {
             param.defaultScoped.forEach((scoped: any) => {
+                if (!scoped.scope) {
+                    throw new Error('Missing required oo:defaultScope value for a default scope.\n' + NodeUtil.inspect(param));
+                }
                 scoped.scope.forEach((scope: any) => {
+                    if (!scoped.scopedValue) {
+                        throw new Error('Missing required oo:defaultScopedValue value for a default scope.\n' + NodeUtil.inspect(param));
+                    }
                     if (resourceScope.hasType(scope.value)) {
                         value = scoped.scopedValue;
                     }
