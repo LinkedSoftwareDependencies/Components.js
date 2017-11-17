@@ -92,6 +92,9 @@ export class UnnamedComponentFactory implements IComponentFactory {
                     (element) => UnnamedComponentFactory.getArgumentValue(element, componentRunner, shallow, resourceBlacklist)))
                     .then(resolve).catch(reject);
             } else if (value.termType === 'NamedNode' || value.termType === 'BlankNode') {
+                if (value.v || value.vRaw) {
+                    return resolve(UnnamedComponentFactory.getArgumentValue(value.v || value.vRaw, componentRunner, shallow, resourceBlacklist));
+                }
                 if (shallow) {
                     return resolve({});
                 }
