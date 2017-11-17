@@ -240,6 +240,26 @@ let helloWorldComponent6 = new Resource('http://example.org/HelloWorldModule#Say
 });
 helloWorldComponent6.hasParameter.forEach((param) => param.defaultScoped[0].scope.push(helloWorldComponent6));
 
+// Component definition for Hello World with array parameters
+let helloWorldComponent7 = new Resource('http://example.org/HelloWorldModule#SayHelloComponent6', {
+    requireElement: Resource.newString('Hello'),
+    types: [ new Resource(Constants.PREFIXES['oo'] + 'Class') ],
+    hasParameter: [
+        new Resource('http://example.org/HelloWorldModule#requiredParam', { required: true })
+    ],
+    constructorArguments: new Resource(null, {
+        list: [
+            new Resource("_:param_hello_0", {
+                elements: {
+                    list: [
+                        new Resource('http://example.org/HelloWorldModule#requiredParam')
+                    ]
+                }
+            })
+        ]
+    })
+});
+
 // Module definition for Hello World
 let helloWorldModule = new Resource('http://example.org/HelloWorldModule', {
   requireName: Resource.newString('test/helloworld'),
@@ -249,7 +269,8 @@ let helloWorldModule = new Resource('http://example.org/HelloWorldModule', {
     helloWorldComponent3,
     helloWorldComponent4,
     helloWorldComponent5,
-    helloWorldComponent6
+    helloWorldComponent6,
+    helloWorldComponent7
   ]
 });
 
@@ -665,5 +686,50 @@ describe('MappedNamedComponentFactory', function () {
       }).catch(done);
     });
   });
+
+    describe('for a hello world component with a missing required parameter', function () {
+        let constructor;
+        beforeEach(function () {
+            constructor = new MappedNamedComponentFactory(helloWorldModule, helloWorldComponent7, {}, true);
+        });
+
+        it('should be valid', function () {
+            constructor.should.not.be.null();
+        });
+
+        it('should not make a valid instance', function (done) {
+            constructor.create().then(() => done('Instance can not be valid')).catch(() => done());
+        });
+    });
+
+    describe('for a hello world component with a valid required parameter', function () {
+        let constructor;
+        beforeEach(function () {
+            constructor = new MappedNamedComponentFactory(helloWorldModule, helloWorldComponent7, {
+                'http://example.org/HelloWorldModule#requiredParam': Resource.newBoolean(true),
+            }, true);
+        });
+
+        it('should be valid', function () {
+            constructor.should.not.be.null();
+        });
+
+        it('should create valid arguments', function (done) {
+            constructor.makeArguments().then((args) => {
+                args.should.deepEqual([[
+                    'true'
+                ]]);
+                done();
+            }).catch(done);
+        });
+
+        it('should make a valid instance', function (done) {
+            constructor.create().then((instance) => {
+                instance.should.not.be.null();
+                instance.should.be.instanceof(Hello);
+                done();
+            }).catch(done);
+        });
+    });
 
 });

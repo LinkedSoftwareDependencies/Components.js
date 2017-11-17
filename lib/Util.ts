@@ -108,6 +108,9 @@ class Util {
         if (!value && param.defaults) {
             value = param.defaults;
         }
+        if (!value && param.required) {
+            throw new Error('Parameter ' + param.value + ' is required, but no value for it has been set in ' + paramValueMapping.value + '.\n' + NodeUtil.inspect(paramValueMapping));
+        }
 
         // Force-add fixed parameter values
         if (param.fixed) {

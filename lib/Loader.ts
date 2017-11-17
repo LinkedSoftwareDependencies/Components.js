@@ -77,6 +77,7 @@ export class Loader {
         loader.bindProperty('elements', Util.PREFIXES['om'] + 'elements', true);
         loader.bindProperty('collectEntriesFrom', Util.PREFIXES['om'] + 'collectsEntriesFrom');
         loader.bindProperty('unique', Util.PREFIXES['oo'] + 'uniqueValue', true);
+        loader.bindProperty('required', Util.PREFIXES['oo'] + 'required', true);
         loader.bindProperty('defaults', Util.PREFIXES['oo'] + 'defaultValue');
         loader.bindProperty('defaultScoped', Util.PREFIXES['oo'] + 'defaultScoped');
         loader.bindProperty('scope', Util.PREFIXES['oo'] + 'defaultScope');

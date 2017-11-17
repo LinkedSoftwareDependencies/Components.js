@@ -30,6 +30,9 @@
     "unique": {
       "@id": "oo:uniqueValue"
     },
+    "required": {
+      "@id": "oo:required"
+    },
     "default": {
       "@id": "oo:defaultValue"
     },
