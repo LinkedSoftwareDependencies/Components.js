@@ -52,9 +52,9 @@ export class UnnamedComponentFactory implements IComponentFactory {
                         return reject(new Error('Parameter object keys must be literals, but found type ' + entry.k.termType
                             + ' for ' + entry.k.value + ' while constructing: ' + NodeUtil.inspect(value)));
                     }
-                    if (entry.v || entry.vRaw) {
-                        return UnnamedComponentFactory.getArgumentValue(entry.v || entry.vRaw, componentRunner, shallow, resourceBlacklist)
-                            .then((v) => { return { k: entry.k.value, v: v || entry.vRaw }});
+                    if (entry.v) {
+                        return UnnamedComponentFactory.getArgumentValue(entry.v, componentRunner, shallow, resourceBlacklist)
+                            .then((v) => { return { k: entry.k.value, v: v }});
                     } else {
                         // TODO: only throw an error if the parameter is required
                         //return Promise.reject(new Error('Parameter object entries must have values, but found: ' + JSON.stringify(entry, null, '  ')));
@@ -92,8 +92,8 @@ export class UnnamedComponentFactory implements IComponentFactory {
                     (element) => UnnamedComponentFactory.getArgumentValue(element, componentRunner, shallow, resourceBlacklist)))
                     .then(resolve).catch(reject);
             } else if (value.termType === 'NamedNode' || value.termType === 'BlankNode') {
-                if (value.v || value.vRaw) {
-                    return resolve(UnnamedComponentFactory.getArgumentValue(value.v || value.vRaw, componentRunner, shallow, resourceBlacklist));
+                if (value.v) {
+                    return resolve(UnnamedComponentFactory.getArgumentValue(value.v, componentRunner, shallow, resourceBlacklist));
                 }
                 if (shallow) {
                     return resolve({});

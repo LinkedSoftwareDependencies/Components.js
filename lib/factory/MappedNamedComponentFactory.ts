@@ -124,7 +124,7 @@ export class MappedNamedComponentFactory extends UnnamedComponentFactory {
                     if (element.termType !== 'NamedNode' && !element.v && !element.vRaw) {
                         throw new Error('Parameter array elements must be URI\'s, but found: ' + NodeUtil.inspect(element));
                     }
-                    let mapped: any = { v: MappedNamedComponentFactory.mapValue(resourceScope, element, params) };
+                    let mapped: any = { v: MappedNamedComponentFactory.mapValue(resourceScope, element, params, element.vRaw) };
                     elements.push(mapped);
                     return elements;
                 }, [])
