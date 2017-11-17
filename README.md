@@ -3,7 +3,7 @@
 _A semantic dependency injection framework_
 
 [![Build Status](https://travis-ci.org/LinkedSoftwareDependencies/Components.js.svg?branch=master)](https://travis-ci.org/LinkedSoftwareDependencies/Components.js)
-[![npm version](https://badge.fury.io/js/lsd-components.svg)](https://www.npmjs.com/package/lsd-components)
+[![npm version](https://badge.fury.io/js/componentsjs.svg)](https://www.npmjs.com/package/componentsjs)
 
 This repository contains the source code of Components.js.
 Full documentation on its usage can be found at http://componentsjs.readthedocs.io/.
@@ -23,7 +23,7 @@ This software is aimed for developers who want to build _modular_ and _easily co
 
 Components.js can be installed using npm:
 ```bash
-$ [sudo] npm install lsd-components
+$ [sudo] npm install componentsjs
 ```
 
 #### 1. Define your module and its components
@@ -82,7 +82,7 @@ This configuration is a semantic representation of the instantiation of `MyCompo
 
 ```javascript
 ...
-const Loader = require('lsd-components').Loader;
+const Loader = require('componentsjs').Loader;
 
 const loader = new Loader();
 await loader.registerModuleResourcesUrl('path/or/url/to/my-module.jsonld');
