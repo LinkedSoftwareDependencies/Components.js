@@ -167,6 +167,9 @@ export class UnnamedComponentFactory implements IComponentFactory {
                     return reject(new Error('Failed to get module element ' + this._componentDefinition.requireElement.value + ' from module ' + requireName + "\n" + NodeUtil.inspect(object)));
                 }
             }
+            else {
+                return reject(new Error('No oo:componentPath was defined on a component.\n' + NodeUtil.inspect(this._componentDefinition)));
+            }
             if (!subObject) {
                 return reject(new Error('Failed to get module element ' + this._componentDefinition.requireElement.value + ' from module ' + requireName + "\n" + NodeUtil.inspect(object)));
             }
