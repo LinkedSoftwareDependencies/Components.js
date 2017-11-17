@@ -226,7 +226,7 @@ export class Loader {
                             object.fields.push(field);
                         }
                     });
-                } else if (!superObject.hasType(Util.PREFIXES['om'] + 'ObjectMapping') && !superObject.classes) {
+                } else if (!superObject.hasType(Util.PREFIXES['om'] + 'ObjectMapping') && !superObject.classes && !superObject.onProperty) {
                     throw new Error('The referenced constructor mappings object ' + superObject.value
                         + ' from ' + object.value + ' is not valid, i.e., it doesn\'t contain mapping fields '
                         + ', has the om:ObjectMapping type or has a superclass. '
