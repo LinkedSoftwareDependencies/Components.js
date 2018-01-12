@@ -1,6 +1,6 @@
 {
   "name": "componentsjs",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "A semantic dependency injection framework",
   "lsd:contexts": {
     "https://linkedsoftwaredependencies.org/contexts/components.jsonld": "components/context.jsonld"
