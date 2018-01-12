@@ -466,6 +466,15 @@ class Util {
     static addFilePathToError(e: Error, filePath: string, fromPath?: string): Error {
         return new Error('Invalid components file "' + (fromPath ? Path.join(fromPath, filePath) : filePath) + '":\n' + e);
     }
+
+    /**
+     * Deterministically converts a URI to a variable name that is safe for usage within JavaScript.
+     * @param {string} uri A URI.
+     * @return {string} A variable name.
+     */
+    static uriToVariableName(uri: string): string {
+        return uri.replace(/[\/:\\.@-]/g, '_');
+    }
 }
 
 export = Util;

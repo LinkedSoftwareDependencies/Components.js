@@ -287,7 +287,6 @@ describe('MappedNamedComponentFactory', function () {
     it('should create a resource with undefined arguments when constructed with no arguments', function () {
       let instance = MappedNamedComponentFactory.makeUnnamedDefinitionConstructor(n3Module, n3LexerComponent)({});
       instance.should.be.instanceof(Resource);
-      instance.should.have.property('value', 'http://example.org/n3#Lexer');
       instance.should.have.property('termType', 'NamedNode');
       instance.should.have.property('requireName', Resource.newString('n3'));
       instance.should.have.property('requireElement', Resource.newString('Lexer'));
@@ -310,7 +309,6 @@ describe('MappedNamedComponentFactory', function () {
         'http://example.org/n3#comments': Resource.newBoolean(true)
       });
       instance.should.be.instanceof(Resource);
-      instance.should.have.property('value', 'http://example.org/n3#Lexer');
       instance.should.have.property('termType', 'NamedNode');
       instance.should.have.property('requireName', Resource.newString('n3'));
       instance.should.have.property('requireElement', Resource.newString('Lexer'));

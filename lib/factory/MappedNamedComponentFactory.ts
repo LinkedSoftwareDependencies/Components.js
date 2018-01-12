@@ -154,7 +154,7 @@ export class MappedNamedComponentFactory extends UnnamedComponentFactory {
     static makeUnnamedDefinitionConstructor(moduleDefinition: any, componentDefinition: any): ((params: any) => Resource) {
         // TODO: validate param types
         return ((params: any) => {
-            return new Resource(componentDefinition.value, {
+            return new Resource(params.value, {
                 requireName: moduleDefinition.requireName || componentDefinition.requireName,
                 requireElement: componentDefinition.requireElement,
                 arguments: componentDefinition.constructorArguments ? MappedNamedComponentFactory.map(<Resource>params, _.cloneDeep(componentDefinition.constructorArguments), params) : null

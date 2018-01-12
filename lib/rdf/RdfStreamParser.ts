@@ -30,11 +30,11 @@ export class RdfStreamParser extends PassThrough {
         stream1.pipe(<any> this._n3Parser)
             .on('error', errorHandler)
             .on('data', (data: any) => this.push(data))
-            .on('end', () => this.emit('end'));
+            .on('end', () => this.push(null), this.emit('end'));
         stream2.pipe(<any> this._jsonParser)
             .on('error', (e: any) => errorHandler(e))
             .on('data', (data: any) => this.push(data))
-            .on('end', () => this.emit('end'));
+            .on('end', () => this.push(null), this.emit('end'));
 
         let errors: Array<any> = [];
         let self: any = this;

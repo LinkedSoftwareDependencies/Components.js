@@ -1,6 +1,7 @@
 export * from './lib/Loader';
 export * from './lib/rdf/Resource';
 export * from './lib/rdf/RdfClassLoader';
+export * from './lib/rdf/RdfStreamParser';
 export * from './lib/rdf/JsonLdStreamParser';
 export * from './lib/rdf/JsonLdStreamer';
 export * from './lib/factory/UnnamedComponentFactory';

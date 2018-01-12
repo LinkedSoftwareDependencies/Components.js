@@ -6,7 +6,7 @@ import N3 = require("n3");
 import _ = require("lodash");
 import Triple = N3.Triple;
 import Util = require("./Util");
-import {IComponentFactory} from "./factory/IComponentFactory";
+import {IComponentFactory, ICreationSettings} from "./factory/IComponentFactory";
 import NodeUtil = require('util');
 
 /**
@@ -354,13 +354,14 @@ export class Loader {
     /**
      * Instantiate a component based on a Resource.
      * @param configResource A config resource.
-     * @param resourceBlacklist The config resource id's to ignore in parameters. Used for avoiding infinite recursion.
+     * @param settings The settings for creating the instance.
      * @returns {any} The run instance.
      */
-    instantiate(configResource: Resource, resourceBlacklist?: {[id: string]: boolean}): Promise<any> {
+    instantiate(configResource: Resource, settings?: ICreationSettings): Promise<any> {
+        settings = settings || {};
         // Check if this resource is required as argument in its own chain,
         // if so, return a dummy value, to avoid infinite recursion.
-        resourceBlacklist = resourceBlacklist || {};
+        const resourceBlacklist = settings.resourceBlacklist || {};
         if (resourceBlacklist[configResource.value]) {
             return Promise.resolve({});
         }
@@ -368,7 +369,8 @@ export class Loader {
         if (!this._instances[configResource.value]) {
             let subBlackList: {[id: string]: boolean} = _.clone(resourceBlacklist || {});
             subBlackList[configResource.value] = true;
-            this._instances[configResource.value] = this.getConfigConstructor(configResource).create(subBlackList);
+            this._instances[configResource.value] = this.getConfigConstructor(configResource).create(
+                _.defaults({ resourceBlacklist: subBlackList }, settings));
         }
         return Promise.resolve(this._instances[configResource.value]);
     }
@@ -494,9 +496,10 @@ export class Loader {
      * Instantiate a component based on a config URI and a stream.
      * @param configResourceUri The config resource URI.
      * @param configResourceStream A triple stream containing at least the given config.
+     * @param settings The settings for creating the instance.
      * @returns {Promise<T>} A promise resolving to the run instance.
      */
-    instantiateFromStream(configResourceUri: string, configResourceStream: Stream): Promise<any> {
+    instantiateFromStream(configResourceUri: string, configResourceStream: Stream, settings?: ICreationSettings): Promise<any> {
         this._checkFinalizeRegistration();
         return new Promise((resolve, reject) => {
             let loader: RdfClassLoader = this._newConfigLoader();
@@ -506,12 +509,12 @@ export class Loader {
                 .on('finish', () => {
                     let configResource: Resource = loader.resources[configResourceUri];
                     if (!configResource) {
-                        throw new Error('Could not find a component config with URI '
-                            + configResourceUri + ' in the triple stream.');
+                        reject(new Error('Could not find a component config with URI '
+                            + configResourceUri + ' in the triple stream.'));
                     }
                     let instance: any;
                     try {
-                        instance = this.instantiate(configResource);
+                        instance = this.instantiate(configResource, settings);
                     } catch (e) {
                         reject(e);
                         return;
@@ -544,13 +547,14 @@ export class Loader {
      * @param configResourceUrl An RDF document URL
      * @param fromPath The path to base relative paths on. This will typically be __dirname.
      *                 Default is the current running directory.
+     * @param settings The settings for creating the instance.
      * @returns {Promise<T>} A promise resolving to the run instance.
      */
-    instantiateFromUrl(configResourceUri: string, configResourceUrl: string, fromPath?: string): Promise<any> {
+    instantiateFromUrl(configResourceUri: string, configResourceUrl: string, fromPath?: string, settings?: ICreationSettings): Promise<any> {
         return this._getContexts().then((contexts) => {
             return Util.getContentsFromUrlOrPath(configResourceUrl, fromPath)
                 .then((data: Stream) => this.instantiateFromStream(configResourceUri, Util.parseRdf(data,
-                    configResourceUrl, fromPath, false, this._properties.absolutizeRelativePaths, contexts)));
+                    configResourceUrl, fromPath, false, this._properties.absolutizeRelativePaths, contexts), settings));
         });
     }
 
@@ -558,9 +562,10 @@ export class Loader {
      * Instantiate a component based on component URI and a set of parameters.
      * @param componentUri The URI of a component.
      * @param params A dictionary with named parameters.
+     * @param settings The settings for creating the instance.
      * @returns {any} The run instance.
      */
-    instantiateManually(componentUri: string, params: {[id: string]: string}): any {
+    instantiateManually(componentUri: string, params: {[id: string]: string}, settings?: ICreationSettings): any {
         this._checkFinalizeRegistration();
         let componentResource: Resource = this._componentResources[componentUri];
         if (!componentResource) {
@@ -576,7 +581,7 @@ export class Loader {
         });
         let constructor: ComponentFactory = new ComponentFactory(moduleResource, componentResource,
             new Resource(null, transformedParams), this.overrideRequireNames);
-        return constructor.create();
+        return constructor.create(settings);
     }
 
 }

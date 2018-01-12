@@ -1,8 +1,8 @@
 import {Resource} from "../rdf/Resource";
-import {IComponentFactory} from "./IComponentFactory";
+import {IComponentFactory, ICreationSettings} from "./IComponentFactory";
 import {Loader} from "../Loader";
-import NodeUtil = require('util');
 import * as Path from "path";
+import NodeUtil = require('util');
 import Util = require("../Util");
 
 /**
@@ -40,7 +40,8 @@ export class UnnamedComponentFactory implements IComponentFactory {
         }
     }
 
-    static getArgumentValue(value: any, componentRunner: Loader, shallow?: boolean, resourceBlacklist?: {[id: string]: boolean}): Promise<any> {
+    static getArgumentValue(value: any, componentRunner: Loader, settings?: ICreationSettings): Promise<any> {
+        settings = settings || {};
         return new Promise((resolve, reject) => {
             if (value.fields) {
                 // The parameter is an object
@@ -53,7 +54,7 @@ export class UnnamedComponentFactory implements IComponentFactory {
                             + ' for ' + entry.k.value + ' while constructing: ' + NodeUtil.inspect(value)));
                     }
                     if (entry.v) {
-                        return UnnamedComponentFactory.getArgumentValue(entry.v, componentRunner, shallow, resourceBlacklist)
+                        return UnnamedComponentFactory.getArgumentValue(entry.v, componentRunner, settings)
                             .then((v) => { return { k: entry.k.value, v: v }});
                     } else {
                         // TODO: only throw an error if the parameter is required
@@ -62,8 +63,12 @@ export class UnnamedComponentFactory implements IComponentFactory {
                     }
                 })).then((entries) => {
                     return entries.reduce((data: any, entry: any) => {
-                        if (entry)
+                        if (entry) {
+                            if (settings.serializations) {
+                                entry.k = '\'' + entry.k + '\'';
+                            }
                             data[entry.k] = entry.v;
+                        }
                         return data;
                     }, {});
                 }).then(resolve).catch(reject);
@@ -74,7 +79,7 @@ export class UnnamedComponentFactory implements IComponentFactory {
                         return Promise.reject(new Error('Parameter array elements must have values, but found: ' + NodeUtil.inspect(entry)));
                     }
                     if (entry.v) {
-                        return UnnamedComponentFactory.getArgumentValue(entry.v, componentRunner, shallow, resourceBlacklist);
+                        return UnnamedComponentFactory.getArgumentValue(entry.v, componentRunner, settings);
                     }
                 })).then((elements: any[]) => {
                     var ret: any[] = [];
@@ -89,31 +94,34 @@ export class UnnamedComponentFactory implements IComponentFactory {
                 }).catch(reject);
             } else if (value instanceof Array) {
                 return Promise.all(value.map(
-                    (element) => UnnamedComponentFactory.getArgumentValue(element, componentRunner, shallow, resourceBlacklist)))
+                    (element) => UnnamedComponentFactory.getArgumentValue(element, componentRunner, settings)))
                     .then(resolve).catch(reject);
             } else if (value.termType === 'NamedNode' || value.termType === 'BlankNode') {
                 if (value.v) {
-                    return resolve(UnnamedComponentFactory.getArgumentValue(value.v, componentRunner, shallow, resourceBlacklist));
+                    return resolve(UnnamedComponentFactory.getArgumentValue(value.v, componentRunner, settings));
                 }
-                if (shallow) {
+                if (settings.shallow) {
                     return resolve({});
                 }
-                return componentRunner.instantiate(value, resourceBlacklist).catch(reject).then(resolve);
+                return componentRunner.instantiate(value, settings).catch(reject).then(resolve);
             } else if (value.termType === 'Literal') {
-                return resolve(value.value);
+                if (settings.serializations && typeof value.value === 'string') {
+                    return resolve('\'' + value.value + '\'');
+                } else {
+                    return resolve(value.value);
+                }
             }
             return reject(new Error('An invalid argument value was found:' + NodeUtil.inspect(value)));
         });
     }
 
     /**
-     * @param shallow If instances should not be created.
-     * @param resourceBlacklist The config resource id's to ignore in parameters. Used for avoiding infinite recursion.
+     * @param settings The settings for creating the instance.
      * @returns New instantiations of the provided arguments.
      */
-    makeArguments(shallow?: boolean, resourceBlacklist?: {[id: string]: boolean}): Promise<any[]> {
+    makeArguments(settings?: ICreationSettings): Promise<any[]> {
         return this._componentDefinition.arguments ? Promise.all(this._componentDefinition.arguments.list
-            .map((resource: Resource) => resource ? UnnamedComponentFactory.getArgumentValue(resource, this._componentRunner, shallow, resourceBlacklist) : undefined)) : Promise.resolve([]);
+            .map((resource: Resource) => resource ? UnnamedComponentFactory.getArgumentValue(resource, this._componentRunner, settings) : undefined)) : Promise.resolve([]);
     }
 
     /**
@@ -135,18 +143,32 @@ export class UnnamedComponentFactory implements IComponentFactory {
     }
 
     /**
-     * @param resourceBlacklist The config resource id's to ignore in parameters. Used for avoiding infinite recursion.
+     * @return {string} The index module path of the current running module.
+     * @private
+     */
+    _getCurrentRunningModuleMain(): string {
+        let path: string = Util.getMainModulePath();
+        let pckg: any = Util.getPackageJson(Path.join(path, 'package.json'));
+        return Path.join(path, pckg.main);
+    }
+
+    /**
+     * @param settings The settings for creating the instance.
      * @returns A new instance of the component.
      */
-    create(resourceBlacklist?: {[id: string]: boolean}): Promise<any> {
-        return new Promise((resolve, reject) => {
+    create(settings?: ICreationSettings): Promise<any> {
+        settings = settings || {};
+        const serialize: boolean = !!settings.serializations;
+        return new Promise(async (resolve, reject) => {
             let requireName: string = this._componentDefinition.requireName.value;
             requireName = this._overrideRequireNames[requireName] || requireName;
             let object: any = null;
+            let resultingRequirePath = null;
             try {
                 try {
                     // Always require relative from main module, because Components.js will in most cases just be dependency.
                     object = require.main.require(requireName);
+                    if (serialize) resultingRequirePath = requireName;
                 } catch (e) {
                     if (this._componentRunner._properties.scanGlobal) {
                         object = require('requireg')(requireName);
@@ -158,12 +180,17 @@ export class UnnamedComponentFactory implements IComponentFactory {
                 object = this._requireCurrentRunningModuleIfCurrent(this._componentDefinition.requireName.value);
                 if (!object) {
                     return reject(e);
+                } else if (serialize) {
+                    resultingRequirePath = this._getCurrentRunningModuleMain();
                 }
             }
+
+            var serialization = serialize ? 'require(\'' + resultingRequirePath + '\')' : null;
 
             var subObject;
             if (this._componentDefinition.requireElement) {
                 let requireElementPath = this._componentDefinition.requireElement.value.split('.');
+                if (serialize) serialization += '.' + this._componentDefinition.requireElement.value;
                 try {
                     subObject = requireElementPath.reduce((object: any, requireElement: string) => object[requireElement], object);
                 } catch (e) {
@@ -182,12 +209,24 @@ export class UnnamedComponentFactory implements IComponentFactory {
                     return reject(new Error('ConstructableComponent is not a function: ' + NodeUtil.inspect(object)
                         + "\n" + NodeUtil.inspect(this._componentDefinition)));
                 }
-                this.makeArguments(false, resourceBlacklist).then((args: any[]) => {
-                    resolve(new (Function.prototype.bind.apply(object, [{}].concat(args))));
-                }).catch(reject);
-            } else {
-                resolve(object);
+                try {
+                    const args: any[] = await this.makeArguments(settings);
+                    if (serialize) {
+                        serialization = 'new (' + serialization + ')(' + args.map((arg) => JSON.stringify(arg, null, '  ').replace(/"/g, '')).join(',') + ')';
+                    } else {
+                        object = new (Function.prototype.bind.apply(object, [{}].concat(args)));
+                    }
+                } catch (e) {
+                    reject(e);
+                }
             }
+            if (serialize) {
+                const serializationVariableName = Util.uriToVariableName(this._componentDefinition.value);
+                serialization = 'const ' + serializationVariableName + ' = ' + serialization + ';';
+                settings.serializations.push(serialization);
+                serialization = serializationVariableName;
+            }
+            serialize ? resolve(serialization) : resolve(object);
         });
     }
 }

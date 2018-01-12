@@ -1,4 +1,4 @@
-import {IComponentFactory} from "./IComponentFactory";
+import {IComponentFactory, ICreationSettings} from "./IComponentFactory";
 import {Resource} from "../rdf/Resource";
 import {UnnamedComponentFactory} from "./UnnamedComponentFactory";
 import {UnmappedNamedComponentFactory} from "./UnmappedNamedComponentFactory";
@@ -47,12 +47,12 @@ export class ComponentFactory implements IComponentFactory {
         }
     }
 
-    makeArguments(shallow?: boolean, resourceBlacklist?: {[id: string]: boolean}): Promise<any[]> {
-        return this._getComponentFactory().makeArguments(shallow, resourceBlacklist);
+    makeArguments(settings?: ICreationSettings): Promise<any[]> {
+        return this._getComponentFactory().makeArguments(settings);
     }
 
-    create(resourceBlacklist?: {[id: string]: boolean}): Promise<any> {
-        return this._getComponentFactory().create(resourceBlacklist);
+    create(settings?: ICreationSettings): Promise<any> {
+        return this._getComponentFactory().create(settings);
     }
 
 }

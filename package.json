@@ -6,6 +6,9 @@
     "https://linkedsoftwaredependencies.org/contexts/components.jsonld": "components/context.jsonld"
   },
   "main": "index.js",
+  "bin": {
+    "componentsjs-compile-config": "./bin/compile-config.js"
+  },
   "typings": "index",
   "repository": "https://github.com/LinkedSoftwareDependencies/Components.js",
   "keywords": [
@@ -17,7 +20,7 @@
   "license": "MIT",
   "scripts": {
     "test": "mocha",
-    "build": "tsc",
+    "build": "tsc && chmod +x ./bin/compile-config.js",
     "lint": "jshint .",
     "validate": "npm ls",
     "prepare": "npm run build"
@@ -26,11 +29,13 @@
     "global-modules": "^1.0.0",
     "jsonld": "^0.4.11",
     "lodash": "^4.17.4",
+    "minimist": "^1.2.0",
     "n3": "^0.9.1",
     "requireg": "^0.1.7"
   },
   "devDependencies": {
     "@types/lodash": "^4.14.56",
+    "@types/minimist": "^1.2.0",
     "@types/n3": "0.0.3",
     "@types/node": "7.0.8",
     "chai": "^4.1.1",
@@ -47,6 +52,8 @@
     "components",
     "lib/**/*.d.ts",
     "lib/**/*.js",
+    "bin/**/*.d.ts",
+    "bin/**/*.js",
     "index.d.ts",
     "index.js"
   ],
