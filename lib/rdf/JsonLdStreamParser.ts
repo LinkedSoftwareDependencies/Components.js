@@ -22,7 +22,7 @@ export class JsonLdStreamParser extends Transform {
         super({ decodeStrings: true });
         (<any> this)._readableState.objectMode = true;
         this._blankNodeId = JsonLdStreamParser.BLANK_NODE_COUNTER++;
-        this._jsonld = require("jsonld");
+        this._jsonld = require("jsonld")();
         this._contexts = _.defaults(contexts || {}, JsonLdStreamParser.DEFAULT_CONTEXTS);
 
         let originalDocumentLoader: any = this._jsonld.documentLoader;
