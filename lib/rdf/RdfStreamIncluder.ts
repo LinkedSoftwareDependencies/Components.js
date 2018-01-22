@@ -15,14 +15,17 @@ export class RdfStreamIncluder extends PassThrough {
     _fromPath: string;
     _followImports: boolean;
     _absolutizeRelativePaths: boolean;
+    _contexts?: {[id: string]: string};
 
-    constructor(constants: any, fromPath: string, followImports: boolean, absolutizeRelativePaths: boolean) {
+    constructor(constants: any, fromPath: string, followImports: boolean, absolutizeRelativePaths: boolean,
+                contexts?: {[id: string]: string}) {
         super({ objectMode: true });
         (<any> this)._readableState.objectMode = true;
         this._constants = constants;
         this._fromPath = fromPath;
         this._followImports = followImports;
         this._absolutizeRelativePaths = absolutizeRelativePaths;
+        this._contexts = contexts;
     }
 
     push(data: any, encoding?: string): boolean {
@@ -33,7 +36,7 @@ export class RdfStreamIncluder extends PassThrough {
                 this._constants.getContentsFromUrlOrPath(relativeFilePath, this._fromPath)
                     .then((rawStream: Stream) => {
                         let data: Stream = this._constants.parseRdf(rawStream, null, this._fromPath, true,
-                            this._absolutizeRelativePaths);
+                            this._absolutizeRelativePaths, this._contexts);
                         data.on('data', (subData: any) => this.push(subData))
                             .on('error', (e: any) => this.emit('error', require("../Util").addFilePathToError(e, relativeFilePath, this._fromPath)))
                             .on('end', () => this.push(null));

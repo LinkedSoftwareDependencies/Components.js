@@ -75,7 +75,7 @@ class Util {
                     absolutizeRelativePaths?: boolean, contexts?: {[id: string]: string}): Stream {
         if (!fromPath) fromPath = Path.dirname(path);
         let stream: Stream = new RdfStreamParser(contexts).pipeFrom(rdfDataStream);
-        let ret: Stream = stream.pipe(new RdfStreamIncluder(Util, fromPath, !ignoreImports, absolutizeRelativePaths));
+        let ret: Stream = stream.pipe(new RdfStreamIncluder(Util, fromPath, !ignoreImports, absolutizeRelativePaths, contexts));
         stream.on('error', (e: any) => ret.emit('error', Util.addFilePathToError(e, path || fromPath, path ? fromPath : null)));
         return ret;
     }
