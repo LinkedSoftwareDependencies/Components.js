@@ -185,7 +185,7 @@ export class UnnamedComponentFactory implements IComponentFactory {
                 }
             }
 
-            var serialization = serialize ? 'require(\'' + resultingRequirePath + '\')' : null;
+            var serialization = serialize ? 'require(\'' + resultingRequirePath.replace(/\\/g, '\\\\') + '\')' : null;
 
             var subObject;
             if (this._componentDefinition.requireElement) {
