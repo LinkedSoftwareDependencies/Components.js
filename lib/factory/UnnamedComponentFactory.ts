@@ -212,7 +212,7 @@ export class UnnamedComponentFactory implements IComponentFactory {
                 try {
                     const args: any[] = await this.makeArguments(settings);
                     if (serialize) {
-                        serialization = 'new (' + serialization + ')(' + args.map((arg) => JSON.stringify(arg, null, '  ').replace(/"/g, '')).join(',') + ')';
+                        serialization = 'new (' + serialization + ')(' + args.map((arg) => JSON.stringify(arg, null, '  ').replace(/(^|[^\\])"/g, '$1')).join(',') + ')';
                     } else {
                         object = new (Function.prototype.bind.apply(object, [{}].concat(args)));
                     }
