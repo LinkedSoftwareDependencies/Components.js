@@ -3,16 +3,15 @@
 
 import {Stream} from "stream";
 
-const Loader = require(__dirname + '/..').Loader;
 import {ParsedArgs} from "minimist";
 import minimist = require('minimist');
 import * as fs from "fs";
 import * as Path from "path";
-import Util = require("../lib/Util");
+import {compileConfig} from "../index"
 
 const args: ParsedArgs = minimist(process.argv.slice(2));
 if (args._.length !== 1 || args.h || args.help) {
-    throw new Error(`compile-config compiles a Components.js config file to a JavaScript module
+    console.error(`compile-config compiles a Components.js config file to a JavaScript module
 
 Usage:
   compile-config http://example.org/myInstance -c config.jsonld
@@ -25,6 +24,7 @@ Options:
   -e      The instance by config URI that will be exported, by default this is the provided instance URI.
   --help  print this help message
       `);
+    process.exit(1);
 }
 
 const configResourceUri: string = args._[0];
@@ -48,25 +48,10 @@ if (args.p) {
 
 let exportVariableName: string = null;
 if (args.e) {
-    exportVariableName = Util.uriToVariableName(args.e);
+    exportVariableName = args.e;
 }
 
-let scanGlobal: boolean = !!args.g;
+const scanGlobal: boolean = !!args.g;
 
-const loader = new Loader({ mainModulePath, scanGlobal });
-loader.registerAvailableModuleResources()
-    .then(function() {
-        return loader._getContexts().then((contexts: {[id: string]: string}) => {
-            const configStream: Stream = Util.parseRdf(configStreamRaw, configPath, mainModulePath, false, true, contexts);
-            const moduleLines: string[] = [];
-            loader.instantiateFromStream(configResourceUri, configStream, { serializations: moduleLines })
-                .then((serializationVariableName: any) => {
-                    let document: string = moduleLines.join('\n');
-                    if (exportVariableName !== serializationVariableName) {
-                        // Remove the instantiation of the runner component, as it will not be needed anymore.
-                        document = document.replace('new (require(\'@comunica/runner\').Runner)', '');
-                    }
-                    console.log(document + '\n' + 'module.exports = ' + (exportVariableName || serializationVariableName) + ';');
-                }).catch(console.error);
-        }).catch(console.error);
-    }).catch(console.error);
+compileConfig({ mainModulePath, scanGlobal }, configPath, configStreamRaw, configResourceUri,
+    exportVariableName).then(console.log).catch(console.error);
