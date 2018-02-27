@@ -181,7 +181,8 @@ export class UnnamedComponentFactory implements IComponentFactory {
                 if (!object) {
                     return reject(e);
                 } else if (serialize) {
-                    resultingRequirePath = this._getCurrentRunningModuleMain();
+                    resultingRequirePath = '.' + Path.sep
+                        + Path.relative(Util.getMainModulePath(), this._getCurrentRunningModuleMain());
                 }
             }
 
