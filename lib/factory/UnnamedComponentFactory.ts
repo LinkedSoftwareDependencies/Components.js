@@ -1,6 +1,6 @@
-import {Resource} from "../rdf/Resource";
-import {IComponentFactory, ICreationSettings} from "./IComponentFactory";
-import {Loader} from "../Loader";
+import { Resource } from "../rdf/Resource";
+import { IComponentFactory, ICreationSettings } from "./IComponentFactory";
+import { Loader } from "../Loader";
 import * as Path from "path";
 import NodeUtil = require('util');
 import Util = require("../Util");
@@ -12,11 +12,11 @@ export class UnnamedComponentFactory implements IComponentFactory {
 
     _componentDefinition: any;
     _constructable: boolean;
-    _overrideRequireNames: {[id: string]: string};
+    _overrideRequireNames: { [id: string]: string };
     _componentRunner: Loader;
 
-    constructor(componentDefinition: Resource, constructable: boolean, overrideRequireNames?: {[id: string]: string},
-                componentRunner?: Loader) {
+    constructor(componentDefinition: Resource, constructable: boolean, overrideRequireNames?: { [id: string]: string },
+        componentRunner?: Loader) {
         this._componentDefinition = componentDefinition;
         this._constructable = constructable;
         this._overrideRequireNames = overrideRequireNames || {};
@@ -55,7 +55,7 @@ export class UnnamedComponentFactory implements IComponentFactory {
                     }
                     if (entry.v) {
                         return UnnamedComponentFactory.getArgumentValue(entry.v, componentRunner, settings)
-                            .then((v) => { return { k: entry.k.value, v: v }});
+                            .then((v) => { return { k: entry.k.value, v: v } });
                     } else {
                         // TODO: only throw an error if the parameter is required
                         //return Promise.reject(new Error('Parameter object entries must have values, but found: ' + JSON.stringify(entry, null, '  ')));
@@ -199,7 +199,7 @@ export class UnnamedComponentFactory implements IComponentFactory {
                 }
             }
             else {
-                return reject(new Error('No oo:componentPath was defined on a component.\n' + NodeUtil.inspect(this._componentDefinition)));
+                subObject = object;
             }
             if (!subObject) {
                 return reject(new Error('Failed to get module element ' + this._componentDefinition.requireElement.value + ' from module ' + requireName + "\n" + NodeUtil.inspect(object)));
