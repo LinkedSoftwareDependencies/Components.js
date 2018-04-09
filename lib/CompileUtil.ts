@@ -13,7 +13,7 @@ import Util = require("./Util");
  */
 export function compileConfig(properties: LoaderProperties, configPath: string, configStreamRaw: Stream,
                               configResourceUri: string, exportVariableName?: string): Promise<string> {
-    exportVariableName = Util.uriToVariableName(exportVariableName);
+    exportVariableName = exportVariableName ? Util.uriToVariableName(exportVariableName) : exportVariableName;
     const loader = new Loader(properties);
     return loader.registerAvailableModuleResources()
         .then(() => {
