@@ -1,8 +1,5 @@
 import {IComponentFactory, ICreationSettings} from "./IComponentFactory";
 import {Resource} from "../rdf/Resource";
-import {UnnamedComponentFactory} from "./UnnamedComponentFactory";
-import {UnmappedNamedComponentFactory} from "./UnmappedNamedComponentFactory";
-import {MappedNamedComponentFactory} from "./MappedNamedComponentFactory";
 import Util = require("../Util");
 import {Loader} from "../Loader";
 
@@ -30,18 +27,18 @@ export class ComponentFactory implements IComponentFactory {
             let constructable: boolean = !this._componentDefinition.types
                 || !this._componentDefinition.hasType(Util.PREFIXES['oo'] + 'ComponentInstance');
             if (!this._componentDefinition.constructorArguments) {
-                return new UnmappedNamedComponentFactory(
+                return new (require('./UnmappedNamedComponentFactory').UnmappedNamedComponentFactory)(
                     this._moduleDefinition, this._componentDefinition, this._config, constructable,
                     this._overrideRequireNames, this._componentRunner
                 );
             } else {
-                return new MappedNamedComponentFactory(
+                return new (require('./MappedNamedComponentFactory').MappedNamedComponentFactory)(
                     this._moduleDefinition, this._componentDefinition, this._config, constructable,
                     this._overrideRequireNames, this._componentRunner
                 );
             }
         } else {
-            return new UnnamedComponentFactory(this._config,
+            return new (require('./UnnamedComponentFactory').UnnamedComponentFactory)(this._config,
                 !this._config.types || !this._config.hasType(Util.PREFIXES['oo'] + 'ComponentInstance'),
                 this._overrideRequireNames, this._componentRunner);
         }
