@@ -30,6 +30,9 @@
     "unique": {
       "@id": "oo:uniqueValue"
     },
+    "lazy": {
+      "@id": "oo:lazyValue"
+    },
     "required": {
       "@id": "oo:required"
     },

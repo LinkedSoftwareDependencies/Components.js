@@ -103,12 +103,25 @@ export class UnnamedComponentFactory implements IComponentFactory {
                 if (settings.shallow) {
                     return resolve({});
                 }
-                return componentRunner.instantiate(value, settings).catch(reject).then(resolve);
-            } else if (value.termType === 'Literal') {
-                if (settings.serializations && typeof value.value === 'string') {
-                    return resolve('\'' + value.value + '\'');
+                if (value.lazy && value.lazy.value === 'true') {
+                    return resolve(() => componentRunner.instantiate(value, settings));
                 } else {
-                    return resolve(value.value);
+                    return componentRunner.instantiate(value, settings).catch(reject).then(resolve);
+                }
+            } else if (value.termType === 'Literal') {
+                const rawValue: any = value.value;
+                if (value.lazy && value.lazy.value === 'true') {
+                    if (settings.serializations && typeof value.value === 'string') {
+                        return resolve('new function() { return Promise.resolve(\'' + rawValue + '\'); }');
+                    } else {
+                        return resolve(() => Promise.resolve(rawValue));
+                    }
+                } else {
+                    if (settings.serializations && typeof value.value === 'string') {
+                        return resolve('\'' + rawValue + '\'');
+                    } else {
+                        return resolve(rawValue);
+                    }
                 }
             }
             return reject(new Error('An invalid argument value was found:' + NodeUtil.inspect(value)));

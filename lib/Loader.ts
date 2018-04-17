@@ -77,6 +77,7 @@ export class Loader {
         loader.bindProperty('elements', Util.PREFIXES['om'] + 'elements', true);
         loader.bindProperty('collectEntriesFrom', Util.PREFIXES['om'] + 'collectsEntriesFrom');
         loader.bindProperty('unique', Util.PREFIXES['oo'] + 'uniqueValue', true);
+        loader.bindProperty('lazy', Util.PREFIXES['oo'] + 'lazyValue', true);
         loader.bindProperty('required', Util.PREFIXES['oo'] + 'required', true);
         loader.bindProperty('defaults', Util.PREFIXES['oo'] + 'defaultValue');
         loader.bindProperty('defaultScoped', Util.PREFIXES['oo'] + 'defaultScoped');
@@ -115,6 +116,7 @@ export class Loader {
         loader.bindProperty('elements', Util.PREFIXES['om'] + 'elements', true);
         loader.bindProperty('collectEntriesFrom', Util.PREFIXES['om'] + 'collectsEntriesFrom');
         loader.bindProperty('unique', Util.PREFIXES['oo'] + 'uniqueValue', true);
+        loader.bindProperty('lazy', Util.PREFIXES['oo'] + 'lazyValue', true);
         loader.bindProperty('k', Util.PREFIXES['om'] + 'fieldName', true);
         loader.bindProperty('v', Util.PREFIXES['om'] + 'fieldValue', true);
         loader.bindProperty('vRaw', Util.PREFIXES['om'] + 'fieldValueRaw', true);

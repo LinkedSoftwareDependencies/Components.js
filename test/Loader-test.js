@@ -649,4 +649,23 @@ describe('Loader', function () {
       }).catch(done);
     });
   });
+
+    describe('constructing an component with lazy parameters values', function () {
+        beforeEach(function (done) {
+            let moduleStream = fs.createReadStream(__dirname + '/assets/module-hello-world-lazy.jsonld').pipe(new JsonLdStreamParser());
+            runner.registerModuleResourcesStream(moduleStream).then(done);
+        });
+
+        it('should produce instances with lazy parameter values', function (done) {
+            let configResourceStream = fs.createReadStream(__dirname + '/assets/config-hello-world-lazy.jsonld').pipe(new JsonLdStreamParser());
+            runner.instantiateFromStream('http://example.org/myHelloWorldLazy1', configResourceStream).then((run) => {
+                run._params.somethingLazy().then((val) => {
+                    val._params.somethingLazy().then((val) => {
+                        val.should.equal('bla');
+                        done();
+                    }).catch(done);
+                }).catch(done);
+            }).catch(done);
+        });
+    });
 });

@@ -147,6 +147,12 @@ class Util {
             }
         }
 
+        // If the parameter is marked as lazy,
+        // make the value inherit this lazy tag so that it can be handled later.
+        if (value && param.lazy) {
+            value.lazy = param.lazy;
+        }
+
         return value;
     }
 

@@ -85,6 +85,17 @@ let n3DummyComponentDefaultsScoped = new Resource('http://example.org/n3#Dummy',
 });
 n3DummyComponentDefaultsScoped.hasParameter[0].defaultScoped[0].scope.push(n3DummyComponentDefaultsScoped);
 
+// Component definition for an N3 Dummy with a lazy parameter
+let n3DummyComponentLazy = new Resource('http://example.org/n3#DummyLazy', {
+    requireElement: Resource.newString('Dummy'),
+    hasParameter: [
+        new Resource('http://example.org/n3#dummyParam', {
+          lazy: Resource.newBoolean(true)
+        }),
+    ]
+});
+
+
 // Component definition for an N3 Dummy with fixed param values
 let n3DummyComponentFixed = new Resource('http://example.org/n3#Dummy', {
   requireElement: Resource.newString('Dummy'),
@@ -111,7 +122,8 @@ let n3Module = new Resource('http://example.org/n3', {
     n3UtilComponent,
     n3DummyComponent,
     n3DummyComponentDefaults,
-    n3DummyComponentFixed
+    n3DummyComponentFixed,
+    n3DummyComponentLazy
   ]
 });
 
@@ -444,6 +456,28 @@ describe('UnmappedNamedComponentFactory', function () {
 
     it('should fail to make a valid instance', function () {
       return expect(constructor.create()).to.be.rejectedWith(Error);
+    });
+  });
+
+  describe('for an N3 Dummy with a lazy parameter', function () {
+    let constructor;
+    beforeEach(function () {
+      constructor = new UnmappedNamedComponentFactory(n3Module, n3DummyComponentLazy, {
+        'http://example.org/n3#dummyParam': Resource.newBoolean(true)
+      }, true);
+    });
+
+    it('should be valid', function () {
+      constructor.should.not.be.null();
+    });
+
+    it('should create valid arguments', function (done) {
+      constructor.makeArguments().then((args) => {
+        args[0]['http://example.org/n3#dummyParam']().then((value) => {
+          value.should.equal('true');
+          done();
+        });
+      }).catch(done);
     });
   });
 

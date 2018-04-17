@@ -260,6 +260,28 @@ let helloWorldComponent7 = new Resource('http://example.org/HelloWorldModule#Say
     })
 });
 
+// Component definition for Hello World with lazy parameters
+let helloWorldComponent8 = new Resource('http://example.org/HelloWorldModule#SayHelloComponent8', {
+    requireElement: Resource.newString('Hello'),
+    types: [ new Resource(Constants.PREFIXES['oo'] + 'Class') ],
+    hasParameter: [
+        new Resource('http://example.org/HelloWorldModule#dummyParamLazy', { lazy: Resource.newBoolean(true) }),
+        new Resource('http://example.org/HelloWorldModule#instanceParamLazy', { lazy: Resource.newBoolean(true) }),
+        new Resource('http://example.org/HelloWorldModule#idParamLazy', { lazy: Resource.newBoolean(true) })
+    ],
+    constructorArguments: new Resource(null, {
+        list: [
+            new Resource("_:param_hello_0_lazy", {
+                fields: [
+                    { k: new Resource('"dummyParamLazy"'), v: new Resource('http://example.org/HelloWorldModule#dummyParamLazy', { lazy: Resource.newBoolean(true) }) },
+                    { k: new Resource('"instanceParamLazy"'), v: new Resource('http://example.org/HelloWorldModule#instanceParamLazy', { lazy: Resource.newBoolean(true) }) },
+                    { k: new Resource('"idParamLazy"'), v: new Resource(Constants.PREFIXES['rdf'] + 'subject') }
+                ]
+            })
+        ]
+    })
+});
+
 // Module definition for Hello World
 let helloWorldModule = new Resource('http://example.org/HelloWorldModule', {
   requireName: Resource.newString('test/helloworld'),
@@ -270,7 +292,8 @@ let helloWorldModule = new Resource('http://example.org/HelloWorldModule', {
     helloWorldComponent4,
     helloWorldComponent5,
     helloWorldComponent6,
-    helloWorldComponent7
+    helloWorldComponent7,
+    helloWorldComponent8
   ]
 });
 
@@ -718,6 +741,36 @@ describe('MappedNamedComponentFactory', function () {
                     'true'
                 ]]);
                 done();
+            }).catch(done);
+        });
+
+        it('should make a valid instance', function (done) {
+            constructor.create().then((instance) => {
+                instance.should.not.be.null();
+                instance.should.be.instanceof(Hello);
+                done();
+            }).catch(done);
+        });
+    });
+
+    describe('for a hello world component with lazy parameters', function () {
+        let constructor;
+        beforeEach(function () {
+            constructor = new MappedNamedComponentFactory(helloWorldModule, helloWorldComponent8, {
+                'http://example.org/HelloWorldModule#dummyParamLazy': Resource.newBoolean(true),
+            }, true);
+        });
+
+        it('should be valid', function () {
+            constructor.should.not.be.null();
+        });
+
+        it('should create valid arguments', function (done) {
+            constructor.makeArguments().then((args) => {
+                args[0]['dummyParamLazy']().then((value) => {
+                    value.should.equal('true');
+                    done();
+                });
             }).catch(done);
         });
 
