@@ -4,6 +4,7 @@ _A semantic dependency injection framework_
 
 [![Build Status](https://travis-ci.org/LinkedSoftwareDependencies/Components.js.svg?branch=master)](https://travis-ci.org/LinkedSoftwareDependencies/Components.js)
 [![npm version](https://badge.fury.io/js/componentsjs.svg)](https://www.npmjs.com/package/componentsjs)
+[![DOI](https://zenodo.org/badge/90724301.svg)](https://zenodo.org/badge/latestdoi/90724301)
 
 This repository contains the source code of Components.js.
 Full documentation on its usage can be found at http://componentsjs.readthedocs.io/.
