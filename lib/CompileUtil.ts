@@ -17,8 +17,8 @@ export function compileConfig(properties: LoaderProperties, configPath: string, 
     const loader = new Loader(properties);
     return loader.registerAvailableModuleResources()
         .then(() => {
-            return loader._getContexts().then((contexts: {[id: string]: string}) => {
-                const configStream: Stream = Util.parseRdf(configStreamRaw, configPath, properties.mainModulePath, false, true, contexts);
+            return Promise.all([loader._getContexts(), loader._getImportPaths()]).then(([contexts, importPaths]: {[id: string]: string}[]) => {
+                const configStream: Stream = Util.parseRdf(configStreamRaw, configPath, properties.mainModulePath, false, true, contexts, importPaths);
                 const moduleLines: string[] = [];
                 return loader.instantiateFromStream(configResourceUri, configStream, { serializations: moduleLines })
                     .then((serializationVariableName: any) => {

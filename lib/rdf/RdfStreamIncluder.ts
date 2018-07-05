@@ -16,9 +16,10 @@ export class RdfStreamIncluder extends PassThrough {
     _followImports: boolean;
     _absolutizeRelativePaths: boolean;
     _contexts?: {[id: string]: string};
+    _importPaths?: {[id: string]: string};
 
     constructor(constants: any, fromPath: string, followImports: boolean, absolutizeRelativePaths: boolean,
-                contexts?: {[id: string]: string}) {
+                contexts?: {[id: string]: string}, importPaths?: {[id: string]: string}) {
         super({ objectMode: true });
         (<any> this)._readableState.objectMode = true;
         this._constants = constants;
@@ -26,17 +27,29 @@ export class RdfStreamIncluder extends PassThrough {
         this._followImports = followImports;
         this._absolutizeRelativePaths = absolutizeRelativePaths;
         this._contexts = contexts;
+        this._importPaths = importPaths;
     }
 
     push(data: any, encoding?: string): boolean {
         if (data) {
             if (this._followImports && data.predicate === this._constants.PREFIXES['owl'] + 'imports') {
                 this._runningImporters++;
-                var relativeFilePath = N3.Util.getLiteralValue(data.object);
+                var relativeFilePath = data.object;
+
+                // Try overriding path using defined import paths
+                if (this._importPaths) {
+                    for (const prefix of Object.keys(this._importPaths)) {
+                        if (relativeFilePath.startsWith(prefix)) {
+                            relativeFilePath = this._importPaths[prefix] + relativeFilePath.substr(prefix.length);
+                            break;
+                        }
+                    }
+                }
+
                 this._constants.getContentsFromUrlOrPath(relativeFilePath, this._fromPath)
                     .then((rawStream: Stream) => {
                         let data: Stream = this._constants.parseRdf(rawStream, null, this._fromPath, true,
-                            this._absolutizeRelativePaths, this._contexts);
+                            this._absolutizeRelativePaths, this._contexts, this._importPaths);
                         data.on('data', (subData: any) => this.push(subData))
                             .on('error', (e: any) => this.emit('error', require("../Util").addFilePathToError(e, relativeFilePath, this._fromPath)))
                             .on('end', () => this.push(null));

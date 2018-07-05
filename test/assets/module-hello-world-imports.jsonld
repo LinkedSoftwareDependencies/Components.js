@@ -10,7 +10,7 @@
   "@type": "Module",
   "requireName": "test/helloworld",
   "import": [
-    "file:///assets/module-hello-world-imported1.jsonld",
-    "assets/module-hello-world-imported2.jsonld"
+    "http://example.org/assets/module-hello-world-imported1.jsonld",
+    "http://example.org/assets/module-hello-world-imported2.jsonld"
   ]
 }

@@ -70,7 +70,8 @@
 
     "owl": "http://www.w3.org/2002/07/owl#",
     "import": {
-      "@id": "owl:imports"
+      "@id": "owl:imports",
+      "@type": "@id"
     },
     "InheritanceValue": {
       "@id": "owl:Restriction"

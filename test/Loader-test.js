@@ -11,7 +11,7 @@ const Readable = require("stream").Readable;
 describe('Loader', function () {
   var runner;
   beforeEach(function () {
-    runner = new Loader();
+    runner = new Loader({ importPaths: { 'http://example.org/': __dirname + '/' } });
   });
 
   describe('constructing an N3 Parser, unnamed', function () {
@@ -207,7 +207,7 @@ describe('Loader', function () {
 
     describe('with a valid ttl file path', function () {
       beforeEach(function (done) {
-        runner.registerModuleResourcesUrl('/assets/module-hello-world.ttl', __dirname).then(done, done);
+        runner.registerModuleResourcesUrl('assets/module-hello-world.ttl', __dirname).then(done, done);
       });
 
       it('should allow module components to be registered', function () {
@@ -217,14 +217,14 @@ describe('Loader', function () {
 
     describe('with an invalid file path', function () {
       it('should reject the promise', function () {
-        return runner.registerModuleResourcesUrl('/assets/module-hello-world.jsonld.invalid', __dirname)
+        return runner.registerModuleResourcesUrl('assets/module-hello-world.jsonld.invalid', __dirname)
           .should.be.rejected();
       });
     });
 
     describe('with import statements', function () {
       beforeEach(function (done) {
-        runner.registerModuleResourcesUrl('/assets/module-hello-world-imports.jsonld', __dirname).then(done, done);
+        runner.registerModuleResourcesUrl('assets/module-hello-world-imports.jsonld', __dirname).then(done, done);
       });
 
       it('should import components', function () {

@@ -40,6 +40,9 @@ class Util {
             let separatorPos: number = path.indexOf(':');
             if ((separatorPos >= 0 && separatorPos < path.length && path.charAt(separatorPos + 1) === '\\')
                 || !parsedUrl.protocol || parsedUrl.protocol === 'file:') {
+                if (Path.isAbsolute(parsedUrl.path)) {
+                    fromPath = '';
+                }
                 resolve(fs.createReadStream(Path.join(fromPath || '', parsedUrl.path)).on('error', rejectContext));
             } else {
                 try {
@@ -68,14 +71,16 @@ class Util {
      * @param absolutizeRelativePaths If relative paths 'file://' should be made absolute 'file:///'.
      * @param ignoreImports If imports should be ignored. Default: false
      * @param contexts The cached JSON-LD contexts
+     * @param importPaths The cached import paths.
      * @returns A triple stream.
      * @private
      */
     static parseRdf(rdfDataStream: Stream, path: string, fromPath?: string, ignoreImports?: boolean,
-                    absolutizeRelativePaths?: boolean, contexts?: {[id: string]: string}): Stream {
+                    absolutizeRelativePaths?: boolean, contexts?: {[id: string]: string},
+                    importPaths?: {[id: string]: string}): Stream {
         if (!fromPath) fromPath = Path.dirname(path);
         let stream: Stream = new RdfStreamParser(contexts).pipeFrom(rdfDataStream);
-        let ret: Stream = stream.pipe(new RdfStreamIncluder(Util, fromPath, !ignoreImports, absolutizeRelativePaths, contexts));
+        let ret: Stream = stream.pipe(new RdfStreamIncluder(Util, fromPath, !ignoreImports, absolutizeRelativePaths, contexts, importPaths));
         stream.on('error', (e: any) => ret.emit('error', Util.addFilePathToError(e, path || fromPath, path ? fromPath : null)));
         return ret;
     }
@@ -448,6 +453,71 @@ class Util {
             let path: string = Util.getMainModulePath();
             if (path) {
                 return Promise.all([globalPath ? Util.getContextPaths(globalPath) : {}, Util.getContextPaths(path)])
+                    .then((paths: [{[id: string]: string}, {[id: string]: string}]) => {
+                        // Local paths can overwrite global paths
+                        resolve(paths.reduce((paths, currentPaths) => {
+                            _.forOwn(currentPaths, (v: string, k: string) => paths[k] = v);
+                            return paths;
+                        }, {}));
+                    })
+                    .catch(reject);
+            } else {
+                reject(null);
+            }
+        });
+    }
+
+    /**
+     * Get all import paths reachable from the given path.
+     * This checks all available node modules and checks their package.json
+     * for `lsd:importPaths`.
+     * @param path The path to search from.
+     * @return A promise resolving to a mapping of an import prefix URL to an import prefix path
+     */
+    static getImportPaths(path: string): Promise<{[id: string]: string}> {
+        return new Promise((resolve, reject) => {
+            let data: {[id: string]: string} = {};
+            Util.getAvailableNodeModules(path, (modulePath) => {
+                if (!modulePath) {
+                    return resolve(data);
+                }
+                let pckg: any = Util.getPackageJson(Path.join(modulePath, 'package.json'));
+                if (pckg) {
+                    let contexts: {[key: string]: string} = pckg['lsd:importPaths'];
+                    if (contexts) {
+                        _.forOwn(contexts, (value: string, key: string) => {
+                            let oldValue: string = data[key];
+                            data[key] = Path.join(modulePath, value);
+
+                            // Crash when duplicate different contexts are found for the same URI
+                            if (oldValue && data[key] !== oldValue) {
+                                reject(new Error('Attempted to load conflicting import path for \'' + key + '\' in ' + data[key]));
+                            }
+
+                            // Crash when the context prefix target does not exist
+                            if (!fs.existsSync(data[key])) {
+                                reject(new Error('Error while parsing import path \'' + key + '\' in ' + modulePath + ': ' + data[key] + ' does not exist.'));
+                            }
+                        });
+                    }
+                }
+            });
+        });
+    }
+
+    /**
+     * Get all currently import prefix paths.
+     * This checks all available node modules and checks their package.json
+     * for `lsd:importPaths`.
+     * @param scanGlobal If global modules should also be scanned next to local modules.
+     * @return A promise resolving to a mapping of an import prefix URL to an import prefix path
+     */
+    static getAvailableImportPaths(scanGlobal: boolean): Promise<{[id: string]: string}> {
+        return new Promise((resolve, reject) => {
+            let globalPath: string = scanGlobal ? globalModules : null;
+            let path: string = Util.getMainModulePath();
+            if (path) {
+                return Promise.all([globalPath ? Util.getImportPaths(globalPath) : {}, Util.getImportPaths(path)])
                     .then((paths: [{[id: string]: string}, {[id: string]: string}]) => {
                         // Local paths can overwrite global paths
                         resolve(paths.reduce((paths, currentPaths) => {

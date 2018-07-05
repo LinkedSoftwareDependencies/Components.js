@@ -46,12 +46,22 @@ export class Loader {
         if (!this._properties.contexts) {
             this._properties.contexts = <{[id: string]: string}> <any> Util.getAvailableContexts(this._properties.scanGlobal);
         }
+        if (!this._properties.importPaths) {
+            this._properties.importPaths = <{[id: string]: string}> <any> Util.getAvailableImportPaths(this._properties.scanGlobal);
+        }
     }
 
     _getContexts(): Promise<{[id: string]: string}> {
         return Promise.resolve(this._properties.contexts).then((contexts) => {
             this._properties.contexts = contexts;
             return contexts;
+        })
+    }
+
+    _getImportPaths(): Promise<{[id: string]: string}> {
+        return Promise.resolve(this._properties.importPaths).then((configPrefixes) => {
+            this._properties.importPaths = configPrefixes;
+            return configPrefixes;
         })
     }
 
@@ -290,11 +300,12 @@ export class Loader {
      * @returns {Promise<T>} A promise that resolves once loading has finished.
      */
     registerModuleResourcesUrl(moduleResourceUrl: string, fromPath?: string): Promise<void> {
-        return this._getContexts().then((contexts) => {
-            return Util.getContentsFromUrlOrPath(moduleResourceUrl, fromPath)
-                .then((data: Stream) => this.registerModuleResourcesStream(Util.parseRdf(data, moduleResourceUrl,
-                    fromPath, false, this._properties.absolutizeRelativePaths, contexts)));
-        });
+        return Promise.all([this._getContexts(), this._getImportPaths()])
+            .then(([contexts, importPaths]: {[id: string]: string}[]) => {
+                return Util.getContentsFromUrlOrPath(moduleResourceUrl, fromPath)
+                    .then((data: Stream) => this.registerModuleResourcesStream(Util.parseRdf(data, moduleResourceUrl,
+                        fromPath, false, this._properties.absolutizeRelativePaths, contexts, importPaths)));
+            });
     }
 
     /**
@@ -536,11 +547,12 @@ export class Loader {
      */
     getConfigConstructorFromUrl(configResourceUri: string, configResourceUrl: string, fromPath?: string): Promise<IComponentFactory> {
         this._checkFinalizeRegistration();
-        return this._getContexts().then((contexts) => {
-            return Util.getContentsFromUrlOrPath(configResourceUrl, fromPath)
-                .then((data: Stream) => this.getConfigConstructorFromStream(configResourceUri, Util.parseRdf(data,
-                    configResourceUrl, fromPath, false, this._properties.absolutizeRelativePaths, contexts)));
-        });
+        return Promise.all([this._getContexts(), this._getImportPaths()])
+            .then(([contexts, importPaths]: {[id: string]: string}[]) => {
+                return Util.getContentsFromUrlOrPath(configResourceUrl, fromPath)
+                    .then((data: Stream) => this.getConfigConstructorFromStream(configResourceUri, Util.parseRdf(data,
+                        configResourceUrl, fromPath, false, this._properties.absolutizeRelativePaths, contexts, importPaths)));
+            });
     }
 
     /**
@@ -553,11 +565,12 @@ export class Loader {
      * @returns {Promise<T>} A promise resolving to the run instance.
      */
     instantiateFromUrl(configResourceUri: string, configResourceUrl: string, fromPath?: string, settings?: ICreationSettings): Promise<any> {
-        return this._getContexts().then((contexts) => {
-            return Util.getContentsFromUrlOrPath(configResourceUrl, fromPath)
-                .then((data: Stream) => this.instantiateFromStream(configResourceUri, Util.parseRdf(data,
-                    configResourceUrl, fromPath, false, this._properties.absolutizeRelativePaths, contexts), settings));
-        });
+        return Promise.all([this._getContexts(), this._getImportPaths()])
+            .then(([contexts, importPaths]: {[id: string]: string}[]) => {
+                return Util.getContentsFromUrlOrPath(configResourceUrl, fromPath)
+                    .then((data: Stream) => this.instantiateFromStream(configResourceUri, Util.parseRdf(data,
+                        configResourceUrl, fromPath, false, this._properties.absolutizeRelativePaths, contexts, importPaths), settings));
+            });
     }
 
     /**
@@ -592,5 +605,6 @@ export interface LoaderProperties {
     scanGlobal?: boolean;
     absolutizeRelativePaths?: boolean;
     contexts?: {[id: string]: string};
+    importPaths?: {[id: string]: string};
     mainModulePath?: string;
 }
