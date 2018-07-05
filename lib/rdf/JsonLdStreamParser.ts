@@ -9,7 +9,7 @@ export class JsonLdStreamParser extends Transform {
 
     static BLANK_NODE_COUNTER: number = 0;
     static DEFAULT_CONTEXTS: {[id: string]: string} = {
-        'https://linkedsoftwaredependencies.org/contexts/components.jsonld':
+        'https://linkedsoftwaredependencies.org/bundles/npm/componentsjs/^3.0.0/components/context.jsonld':
             fs.readFileSync(__dirname + '/../../components/context.jsonld', 'utf8')
     };
 

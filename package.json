@@ -3,7 +3,7 @@
   "version": "3.0.0",
   "description": "A semantic dependency injection framework",
   "lsd:contexts": {
-    "https://linkedsoftwaredependencies.org/contexts/components.jsonld": "components/context.jsonld"
+    "https://linkedsoftwaredependencies.org/bundles/npm/componentsjs/^3.0.0/components/context.jsonld": "components/context.jsonld"
   },
   "main": "index.js",
   "bin": {
