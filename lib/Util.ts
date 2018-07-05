@@ -549,7 +549,7 @@ class Util {
      * @return {string} A variable name.
      */
     static uriToVariableName(uri: string): string {
-        return uri.replace(/[\/:\\.@-]/g, '_');
+        return uri.replace(/[\\#\\^\/:\\.@-]/g, '_');
     }
 }
 
