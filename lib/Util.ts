@@ -25,6 +25,7 @@ class Util {
     };
     public static NODE_MODULES_PACKAGE_CONTENTS: {[id: string]: string} = {};
     private static MAIN_MODULE_PATH: string = null;
+    private static MAIN_MODULE_PATHS: string[] = null;
 
     /**
      * Get the file contents from a file path or URL
@@ -224,10 +225,28 @@ class Util {
 
     /**
      * Set the main module path.
+     * This will also update the main module paths.
      * @param {string} path A path.
      */
     static setMainModulePath(path: string) {
-        Util.MAIN_MODULE_PATH = path;
+        Util.MAIN_MODULE_PATH = fs.realpathSync(path);
+        const sections: string[] = Util.MAIN_MODULE_PATH.split(Path.sep);
+        const paths: string[] = [];
+        for (let i = sections.length; i > 1; i--) {
+            paths.push(sections.slice(0, i).join(Path.sep));
+        }
+        Util.setMainModulePaths(paths);
+    }
+
+    static initDefaultMainModulePath() {
+        for (let nodeModulesPath of (<any> global.process.mainModule).paths) {
+            let path = nodeModulesPath.replace(/node_modules$/, 'package.json');
+            try {
+                require(path);
+                Util.setMainModulePath(path.replace(/package.json$/, ''));
+                return Util.getMainModulePath();
+            } catch (e) {}
+        }
     }
 
     /**
@@ -236,14 +255,27 @@ class Util {
     static getMainModulePath(): string {
         if (Util.MAIN_MODULE_PATH)
             return Util.MAIN_MODULE_PATH;
-        for (let nodeModulesPath of (<any> global.process.mainModule).paths) {
-            let path = nodeModulesPath.replace(/node_modules$/, 'package.json');
-            try {
-                require(path);
-                return Util.MAIN_MODULE_PATH = path.replace(/package.json$/, '');
-            } catch (e) {}
-        }
-        return null;
+        Util.initDefaultMainModulePath();
+        return Util.MAIN_MODULE_PATH;
+    }
+
+    /**
+     * Set the main module paths.
+     * @param {string[]} paths A list paths. Like require.main.paths, but starting from the main module path.
+     */
+    static setMainModulePaths(paths: string[]) {
+        Util.MAIN_MODULE_PATHS = paths;
+    }
+
+    /**
+     * Set the main module paths.
+     * @return {string[]} A list of paths. Like require.main.paths, but starting from the main module path.
+     */
+    static getMainModulePaths(): string[] {
+        if (Util.MAIN_MODULE_PATHS)
+            return Util.MAIN_MODULE_PATHS;
+        Util.initDefaultMainModulePath();
+        return Util.MAIN_MODULE_PATHS;
     }
 
     /**
@@ -374,9 +406,9 @@ class Util {
     static getAvailableModuleComponentPaths(scanGlobal: boolean): Promise<{[id: string]: string}> {
         return new Promise((resolve, reject) => {
             let globalPath: string = scanGlobal ? globalModules : null;
-            let path: string = Util.getMainModulePath();
-            if (path) {
-                return Promise.all([globalPath ? Util.getModuleComponentPaths(globalPath) : {}, Util.getModuleComponentPaths(path)])
+            let paths: string[] = Util.getMainModulePaths();
+            if (paths) {
+                return Promise.all([globalPath ? Util.getModuleComponentPaths(globalPath) : {}].concat(paths.map(Util.getModuleComponentPaths)))
                     .then((paths: [{[id: string]: string}, {[id: string]: string}]) => {
                         // Local paths can overwrite global paths
                         resolve(paths.reduce((paths, currentPaths) => {
@@ -450,9 +482,9 @@ class Util {
     static getAvailableContexts(scanGlobal: boolean): Promise<{[id: string]: string}> {
         return new Promise((resolve, reject) => {
             let globalPath: string = scanGlobal ? globalModules : null;
-            let path: string = Util.getMainModulePath();
-            if (path) {
-                return Promise.all([globalPath ? Util.getContextPaths(globalPath) : {}, Util.getContextPaths(path)])
+            let paths: string[] = Util.getMainModulePaths();
+            if (paths) {
+                return Promise.all([globalPath ? Util.getContextPaths(globalPath) : {}].concat(paths.map(Util.getContextPaths)))
                     .then((paths: [{[id: string]: string}, {[id: string]: string}]) => {
                         // Local paths can overwrite global paths
                         resolve(paths.reduce((paths, currentPaths) => {
@@ -515,9 +547,9 @@ class Util {
     static getAvailableImportPaths(scanGlobal: boolean): Promise<{[id: string]: string}> {
         return new Promise((resolve, reject) => {
             let globalPath: string = scanGlobal ? globalModules : null;
-            let path: string = Util.getMainModulePath();
-            if (path) {
-                return Promise.all([globalPath ? Util.getImportPaths(globalPath) : {}, Util.getImportPaths(path)])
+            let paths: string[] = Util.getMainModulePaths();
+            if (paths) {
+                return Promise.all([globalPath ? Util.getImportPaths(globalPath) : {}].concat(paths.map(Util.getImportPaths)))
                     .then((paths: [{[id: string]: string}, {[id: string]: string}]) => {
                         // Local paths can overwrite global paths
                         resolve(paths.reduce((paths, currentPaths) => {
