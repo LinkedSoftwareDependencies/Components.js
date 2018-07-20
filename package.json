@@ -37,7 +37,7 @@
     "@types/lodash": "^4.14.56",
     "@types/minimist": "^1.2.0",
     "@types/n3": "0.0.3",
-    "@types/node": "7.0.8",
+    "@types/node": "8.10.21",
     "chai": "^4.1.1",
     "chai-as-promised": "^7.1.1",
     "jshint": "^2.1.10",

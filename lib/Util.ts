@@ -8,10 +8,13 @@ import url = require("url");
 import _ = require("lodash");
 import {RdfStreamIncluder} from "./rdf/RdfStreamIncluder";
 import NodeUtil = require('util');
-import {Stats} from "fs";
 import {Resource} from "./rdf/Resource";
-let jsonld: any = require("jsonld");
-let globalModules: string = require('global-modules');
+
+const jsonld: any = require("jsonld");
+const globalModules: string = require('global-modules');
+const stat = NodeUtil.promisify(fs.stat);
+const readdir = NodeUtil.promisify(fs.readdir);
+const realpath = NodeUtil.promisify(fs.realpath);
 
 class Util {
     static readonly PREFIXES: {[id: string]: string} = {
@@ -26,6 +29,8 @@ class Util {
     public static NODE_MODULES_PACKAGE_CONTENTS: {[id: string]: string} = {};
     private static MAIN_MODULE_PATH: string = null;
     private static MAIN_MODULE_PATHS: string[] = null;
+
+    private static cachedAvailableNodeModules: {[id: string]: Promise<string[]>} = {};
 
     /**
      * Get the file contents from a file path or URL
@@ -283,66 +288,57 @@ class Util {
      * @param path The path to start from.
      * @param cb A callback for each absolute path.
      * @param ignorePaths The paths that should be ignored.
-     * @param haltRecursion If no deeper recursive calls should be done.
      */
-    static getAvailableNodeModules(path: string, cb: (path: string) => any, ignorePaths?: {[key: string]: boolean}, haltRecursion?: boolean) {
-        if (!ignorePaths) ignorePaths = {};
-        return recurse(path);
-        function recurse(startPath: string) {
-            fs.stat(startPath, (err: NodeJS.ErrnoException, stat: Stats) => {
-                if (!err) {
-                    // Normalize softlinks
-                    fs.realpath(startPath, (err, startPath) => {
-                        if (ignorePaths[startPath]) { // Avoid infinite loops
-                            return cb(null);
-                        }
-                        ignorePaths[startPath] = true;
-                        if (stat.isDirectory()) {
-                            fs.stat(Path.join(startPath, 'package.json'), (err: NodeJS.ErrnoException, stat: Stats) => {
-                                let startPathModules = startPath;
-                                if (!err && stat.isFile()) {
-                                    cb(startPath);
-                                    startPathModules = Path.join(startPath, 'node_modules');
-                                }
-
-                                if (haltRecursion) {
-                                    return cb(null);
-                                }
-
-                                fs.readdir(startPathModules, (err: NodeJS.ErrnoException, files: string[]) => {
-                                    if (!err && files && files.length) {
-                                        let remaining = files.length;
-                                        files.forEach((file) => {
-                                            let fullFilePath: string = Path.join(startPathModules, file);
-                                            fs.stat(fullFilePath, (err: NodeJS.ErrnoException, stat: Stats) => {
-                                                if (!err && stat.isDirectory()) {
-                                                    Util.getAvailableNodeModules(fullFilePath, (subPath: string) => {
-                                                        if (subPath) {
-                                                            cb(subPath);
-                                                        } else {
-                                                            if (--remaining === 0)
-                                                                cb(null);
-                                                        }
-                                                    }, ignorePaths, Path.basename(fullFilePath).charAt(0) !== '@');
-                                                } else {
-                                                    if (--remaining === 0)
-                                                        cb(null);
-                                                }
-                                            });
-                                        });
-                                    } else {
-                                        cb(null);
-                                    }
-                                });
-                            });
-                        } else cb(null);
-                    });
-                } else {
-                    if (Path.basename(path).charAt(0) === '@') {
-                        recurse(path);
-                    } else cb(null);
-                }
+    static getAvailableNodeModules(path: string, cb: (path: string) => any, ignorePaths?: {[key: string]: boolean}) {
+        if (Util.cachedAvailableNodeModules[path]) {
+            Promise.resolve(Util.cachedAvailableNodeModules[path]).then((paths) => {
+                paths.forEach(cb);
+                cb(null);
             });
+        } else {
+            Util.cachedAvailableNodeModules[path] = new Promise<string[]>((resolve, reject) => {
+                const paths: string[] = [];
+                if (!ignorePaths) ignorePaths = {};
+                recurse(path, (p) => { paths.push(p), cb(p); }).then(() => {
+                    resolve(paths);
+                    cb(null);
+                }).catch(reject);
+            });
+        }
+        async function recurse(path: string, cb: (path: string) => any): Promise<any> {
+            path = await realpath(path);
+
+            if (ignorePaths[path]) { // Avoid infinite loops
+                return null;
+            }
+            ignorePaths[path] = true;
+
+            try {
+                // Check if the path is a node module
+                if ((await stat(Path.join(path, 'package.json'))).isFile()) {
+                    cb(path);
+
+                    // Start iterating through all node modules inside this root module.
+                    const rootNodeModules = Path.join(path, 'node_modules');
+                    const modules: string[] = await readdir(rootNodeModules);
+                    for (const module of modules) {
+                        // Ignore .bin folders
+                        if (!module.startsWith('.')) {
+                            const modulePath = Path.join(rootNodeModules, module);
+                            // Iterate one level deeper when we find '@' folders
+                            if (module.startsWith('@')) {
+                                const scopedModules: string[] = await readdir(modulePath);
+                                for (const scopedModule of scopedModules) {
+                                    await recurse(Path.join(modulePath, scopedModule), cb);
+                                }
+                            } else {
+                                await recurse(modulePath, cb);
+                            }
+                        }
+                    }
+                }
+            } catch (e) {}
+            return null;
         }
     }
 
