@@ -18,6 +18,9 @@
   ],
   "author": "Ruben Taelman <ruben.taelman@ugent.be>",
   "license": "MIT",
+  "engines": {
+    "node": ">=8.0"
+  },
   "scripts": {
     "test": "mocha",
     "build": "tsc && chmod +x ./bin/compile-config.js",
