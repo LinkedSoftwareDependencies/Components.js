@@ -26,7 +26,8 @@
     "build": "tsc && chmod +x ./bin/compile-config.js",
     "lint": "jshint .",
     "validate": "npm ls",
-    "prepare": "npm run build"
+    "prepare": "npm run build",
+    "version": "manual-git-changelog onversion"
   },
   "dependencies": {
     "global-modules": "^1.0.0",
@@ -44,6 +45,7 @@
     "chai": "^4.1.1",
     "chai-as-promised": "^7.1.1",
     "jshint": "^2.1.10",
+    "manual-git-changelog": "^1.0.1",
     "mocha": "^1.17.1",
     "pre-commit": "^1.2.2",
     "should": "^11.2.1",
