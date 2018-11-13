@@ -178,25 +178,29 @@ export class UnnamedComponentFactory implements IComponentFactory {
             let object: any = null;
             let resultingRequirePath = null;
             try {
+                object = this._requireCurrentRunningModuleIfCurrent(this._componentDefinition.requireName.value);
+                if (!object) {
+                    throw new Error('Component is not the main module');
+                } else if (serialize) {
+                    resultingRequirePath = '.' + Path.sep
+                      + Path.relative(Util.getMainModulePath(), this._getCurrentRunningModuleMain());
+                }
+            } catch (e) {
                 try {
                     // Always require relative from main module, because Components.js will in most cases just be dependency.
                     object = require.main.require(requireName);
                     if (serialize) resultingRequirePath = requireName;
                 } catch (e) {
                     if (this._componentRunner._properties.scanGlobal) {
-                        object = require('requireg')(requireName);
+                        try {
+                            object = require('requireg')(requireName);
+                        } catch (e) {
+                            return reject(e);
+                        }
                     } else {
-                        throw e;
+                        return reject(e);
                     }
-                }
-            } catch (e) {
-                object = this._requireCurrentRunningModuleIfCurrent(this._componentDefinition.requireName.value);
-                if (!object) {
-                    return reject(e);
-                } else if (serialize) {
-                    resultingRequirePath = '.' + Path.sep
-                        + Path.relative(Util.getMainModulePath(), this._getCurrentRunningModuleMain());
-                }
+              }
             }
 
             var serialization = serialize ? 'require(\'' + resultingRequirePath.replace(/\\/g, '/') + '\')' : null;
