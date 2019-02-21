@@ -380,11 +380,8 @@ class Util {
                     let currentModuleUri: string = pckg['lsd:module'];
                     let relativePath: string = pckg['lsd:components'];
                     if (currentModuleUri && relativePath) {
-                        let oldValue: string = data[currentModuleUri];
-                        data[currentModuleUri] = Path.join(modulePath, relativePath);
-                        if (oldValue && data[currentModuleUri] !== oldValue) {
-                            reject('Attempted to load conflicting components for \'' + currentModuleUri
-                                + '\' at ' + path);
+                        if (!(currentModuleUri in data)) {
+                            data[currentModuleUri] = Path.join(modulePath, relativePath);
                         }
                     }
                 }
@@ -438,28 +435,24 @@ class Util {
                     let contexts: {[key: string]: string} = pckg['lsd:contexts'];
                     if (contexts) {
                         _.forOwn(contexts, (value: string, key: string) => {
-                            let oldValue: string = data[key];
-                            let filePath: string = Path.join(modulePath, value);
-                            data[key] = fs.readFileSync(filePath, 'utf8');
+                            if (!(key in data)) {
+                                let filePath: string = Path.join(modulePath, value);
+                                data[key] = fs.readFileSync(filePath, 'utf8');
 
-                            // Crash when duplicate different contexts are found for the same URI
-                            if (oldValue && data[key] !== oldValue) {
-                                reject(new Error('Attempted to load conflicting contexts for \'' + key + '\' in ' + filePath));
-                            }
-
-                            // Crash when context is invalid JSON
-                            try {
-                                let context: any = JSON.parse(data[key]);
-                                jsonld.compact({}, context, (e: any) => {
-                                    if (e) {
-                                        // Resolving remote contexts may fail because local document overriding is
-                                        // not in effect yet, as we are still collecting the available contexts.
-                                        if (e.details.cause.details.code !== 'loading remote context failed')
-                                            reject(new Error('Error while parsing context \'' + key + '\' in ' + filePath + ': ' + e.details.cause.message));
-                                    }
-                                });
-                            } catch(e) {
-                                reject(new Error('Error while parsing context \'' + key + '\' in ' + filePath + ': ' + e));
+                                // Crash when context is invalid JSON
+                                try {
+                                    let context: any = JSON.parse(data[key]);
+                                    jsonld.compact({}, context, (e: any) => {
+                                        if (e) {
+                                            // Resolving remote contexts may fail because local document overriding is
+                                            // not in effect yet, as we are still collecting the available contexts.
+                                            if (e.details.cause.details.code !== 'loading remote context failed')
+                                                reject(new Error('Error while parsing context \'' + key + '\' in ' + filePath + ': ' + e.details.cause.message));
+                                        }
+                                    });
+                                } catch (e) {
+                                    reject(new Error('Error while parsing context \'' + key + '\' in ' + filePath + ': ' + e));
+                                }
                             }
                         });
                     }
@@ -514,17 +507,13 @@ class Util {
                     let contexts: {[key: string]: string} = pckg['lsd:importPaths'];
                     if (contexts) {
                         _.forOwn(contexts, (value: string, key: string) => {
-                            let oldValue: string = data[key];
-                            data[key] = Path.join(modulePath, value);
+                            if (!(key in data)) {
+                                data[key] = Path.join(modulePath, value);
 
-                            // Crash when duplicate different contexts are found for the same URI
-                            if (oldValue && data[key] !== oldValue) {
-                                reject(new Error('Attempted to load conflicting import path for \'' + key + '\' in ' + data[key]));
-                            }
-
-                            // Crash when the context prefix target does not exist
-                            if (!fs.existsSync(data[key])) {
-                                reject(new Error('Error while parsing import path \'' + key + '\' in ' + modulePath + ': ' + data[key] + ' does not exist.'));
+                                // Crash when the context prefix target does not exist
+                                if (!fs.existsSync(data[key])) {
+                                    reject(new Error('Error while parsing import path \'' + key + '\' in ' + modulePath + ': ' + data[key] + ' does not exist.'));
+                                }
                             }
                         });
                     }
