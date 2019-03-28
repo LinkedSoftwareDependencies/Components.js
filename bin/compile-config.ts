@@ -54,4 +54,7 @@ if (args.e) {
 const scanGlobal: boolean = !!args.g;
 
 compileConfig({ mainModulePath, scanGlobal }, configPath, configStreamRaw, configResourceUri,
-    exportVariableName).then(console.log).catch(console.error);
+    exportVariableName).then(console.log).catch((e) => {
+        console.error(e);
+        process.exit(1);
+      });
