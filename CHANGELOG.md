@@ -1,6 +1,15 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v3.3.0"></a>
+## [v3.3.0](https://github.com/LinkedSoftwareDependencies/Components.js/compare/v3.2.1...v3.3.0) - 2019-10-21
+
+### Added
+* [Allow requireName to be a relative path inside the module](https://github.com/LinkedSoftwareDependencies/Components.js/commit/562470dfbe6d3b1ab50e1202d8319adfafda024c)
+
+### Changed
+* [Return error code on failure to compile](https://github.com/LinkedSoftwareDependencies/Components.js/commit/06aa3420911a41963a97586cabbf34ae477084b1)
+
 <a name="v3.2.1"></a>
 ## [v3.2.1](https://github.com/LinkedSoftwareDependencies/Components.js/compare/v3.2.0...v3.2.1) - 2019-02-21
 
