@@ -188,7 +188,9 @@ export class UnnamedComponentFactory implements IComponentFactory {
             } catch (e) {
                 try {
                     // Always require relative from main module, because Components.js will in most cases just be dependency.
-                    object = require.main.require(requireName);
+                    object = require.main.require(requireName.charAt(0) === '.'
+                      ? Path.join(process.cwd(), requireName)
+                      : requireName);
                     if (serialize) resultingRequirePath = requireName;
                 } catch (e) {
                     if (this._componentRunner._properties.scanGlobal) {
