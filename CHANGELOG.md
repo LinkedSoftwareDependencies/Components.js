@@ -1,6 +1,15 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v3.4.0"></a>
+## [v3.4.0](https://github.com/LinkedSoftwareDependencies/Components.js/compare/v3.3.0...v3.4.0) - 2020-04-06
+
+### Added
+* [Add requireNoConstructor option for raw requireElements](https://github.com/LinkedSoftwareDependencies/Components.js/commit/2d3144b8baad1464d590b691da10b752f7b83342)
+
+### Fixed
+* [Fix incorrect error message for invalid dynamic entries](https://github.com/LinkedSoftwareDependencies/Components.js/commit/91b3a543973c06e3a0f3b6f667cc04a49e499103)
+
 <a name="v3.3.0"></a>
 ## [v3.3.0](https://github.com/LinkedSoftwareDependencies/Components.js/compare/v3.2.1...v3.3.0) - 2019-10-21
 
