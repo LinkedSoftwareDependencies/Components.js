@@ -92,7 +92,7 @@ export class MappedNamedComponentFactory extends UnnamedComponentFactory {
                             }
                             else if (!entryResource[resource.v.value] || entryResource[resource.v.value].length !== 1) {
                                 throw new Error('Expected exactly one value definition for a dynamic entry '
-                                    + resource.k.value + ' in ' + entryResource.value + '\nFound: ' + entryResource.toString());
+                                    + resource.v.value + ' in ' + entryResource.value + '\nFound: ' + entryResource.toString());
                             }
                             else {
                                 v = entryResource[resource.v.value][0];
