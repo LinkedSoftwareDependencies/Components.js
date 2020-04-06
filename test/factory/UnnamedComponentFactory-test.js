@@ -57,6 +57,13 @@ let n3LexerComponentArray = new Resource('http://example.org/n3#Lexer', {
   })
 });
 
+// Component definition for an N3 Lexer without constructor
+let n3LexerComponentNoConstructor = new Resource('http://example.org/n3#Lexer', {
+  requireName: Resource.newString('n3'),
+  requireElement: Resource.newString('Lexer'),
+  requireNoConstructor: Resource.newBoolean(true),
+});
+
 describe('UnnamedComponentFactory', function () {
 
   describe('#getArgumentValue', function () {
@@ -178,6 +185,25 @@ describe('UnnamedComponentFactory', function () {
       constructor.create().then((instance) => {
         instance.should.not.be.null();
         instance.should.be.instanceof(Hello);
+        done();
+      });
+    });
+  });
+
+  describe('for an N3 Lexer without constructor', function () {
+    let constructor;
+    beforeEach(function () {
+      constructor = new UnnamedComponentFactory(n3LexerComponentNoConstructor, true);
+    });
+
+    it('should be valid', function () {
+      constructor.should.not.be.null();
+    });
+
+    it('should make a valid instance', function (done) {
+      constructor.create().then((instance) => {
+        instance.should.not.be.null();
+        instance.should.equal(N3.Lexer);
         done();
       });
     });

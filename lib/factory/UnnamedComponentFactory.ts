@@ -25,6 +25,7 @@ export class UnnamedComponentFactory implements IComponentFactory {
         // Validate params
         this._validateParam(this._componentDefinition, 'requireName', 'Literal');
         this._validateParam(this._componentDefinition, 'requireElement', 'Literal', true);
+        this._validateParam(this._componentDefinition, 'requireNoConstructor', 'Literal', true);
     }
 
     _validateParam(resource: any, field: string, type: string, optional?: boolean) {
@@ -224,20 +225,22 @@ export class UnnamedComponentFactory implements IComponentFactory {
                 return reject(new Error('Failed to get module element ' + this._componentDefinition.requireElement.value + ' from module ' + requireName + "\n" + NodeUtil.inspect(object)));
             }
             object = subObject;
-            if (this._constructable) {
-                if (!(object instanceof Function)) {
-                    return reject(new Error('ConstructableComponent is not a function: ' + NodeUtil.inspect(object)
-                        + "\n" + NodeUtil.inspect(this._componentDefinition)));
-                }
-                try {
-                    const args: any[] = await this.makeArguments(settings);
-                    if (serialize) {
-                        serialization = 'new (' + serialization + ')(' + args.map((arg) => JSON.stringify(arg, null, '  ').replace(/(^|[^\\])"/g, '$1')).join(',') + ')';
-                    } else {
-                        object = new (Function.prototype.bind.apply(object, [{}].concat(args)));
+            if (!this._componentDefinition.requireNoConstructor || this._componentDefinition.requireNoConstructor.value !== 'true') {
+                if (this._constructable) {
+                    if (!(object instanceof Function)) {
+                        return reject(new Error('ConstructableComponent is not a function: ' + NodeUtil.inspect(object)
+                          + "\n" + NodeUtil.inspect(this._componentDefinition)));
                     }
-                } catch (e) {
-                    reject(e);
+                    try {
+                        const args: any[] = await this.makeArguments(settings);
+                        if (serialize) {
+                            serialization = 'new (' + serialization + ')(' + args.map((arg) => JSON.stringify(arg, null, '  ').replace(/(^|[^\\])"/g, '$1')).join(',') + ')';
+                        } else {
+                            object = new (Function.prototype.bind.apply(object, [{}].concat(args)));
+                        }
+                    } catch (e) {
+                        reject(e);
+                    }
                 }
             }
             if (serialize) {

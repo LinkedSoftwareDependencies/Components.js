@@ -80,6 +80,7 @@ export class Loader {
 
         loader.bindProperty('requireName', Util.PREFIXES['doap'] + 'name', true);
         loader.bindProperty('requireElement', Util.PREFIXES['oo'] + 'componentPath', true);
+        loader.bindProperty('requireNoConstructor', Util.PREFIXES['oo'] + 'componentNoConstructor', true);
         loader.bindProperty('hasComponent', Util.PREFIXES['oo'] + 'component');
         loader.bindProperty('hasParameter', Util.PREFIXES['oo'] + 'parameter');
         loader.bindProperty('constructorArguments', Util.PREFIXES['oo'] + 'constructorArguments', true);

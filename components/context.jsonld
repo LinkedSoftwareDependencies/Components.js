@@ -95,6 +95,9 @@
     "requireElement": {
       "@id": "oo:componentPath"
     },
+    "requireNoConstructor": {
+      "@id": "oo:componentNoConstructor"
+    },
 
     "om": "https://linkedsoftwaredependencies.org/vocabularies/object-mapping#",
     "ObjectMapping": {
