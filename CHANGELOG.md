@@ -1,6 +1,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v3.4.1"></a>
+## [v3.4.1](https://github.com/LinkedSoftwareDependencies/Components.js/compare/v3.4.0...v3.4.1) - 2020-07-01
+
+### Changed
+* [Make types proper dependencies](https://github.com/LinkedSoftwareDependencies/Components.js/commit/d50005517d606798de130a6cb2a4a4456683574c)
+
 <a name="v3.4.0"></a>
 ## [v3.4.0](https://github.com/LinkedSoftwareDependencies/Components.js/compare/v3.3.0...v3.4.0) - 2020-04-06
 
