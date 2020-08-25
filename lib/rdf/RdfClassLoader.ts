@@ -48,6 +48,15 @@ export class RdfClassLoader extends Writable {
                         delete element.__listFirst;
                         delete element.__listRest;
                         delete this.resources[keys[i]];
+                    } else {
+                        // Also check properties with empty lists
+                        for (const key in element) {
+                            if (key !== 'value' && key !== 'termType') {
+                                if (element[key].length > 0 && element[key][0].value === Util.PREFIXES['rdf'] + 'nil') {
+                                    element[key][0].list = [];
+                                }
+                            }
+                        }
                     }
                 }
                 delete this.resources[Util.PREFIXES['rdf'] + 'nil'];

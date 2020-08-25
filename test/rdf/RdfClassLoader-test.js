@@ -180,6 +180,43 @@ describe('RdfClassLoader', function () {
     });
   });
 
+  describe('for list-empty.ttl', function () {
+    var tripleStream;
+    beforeEach(function () {
+      tripleStream = new N3.StreamParser();
+      var fileStream = fs.createReadStream(__dirname + '/../assets/list-empty.ttl');
+      fileStream.pipe(tripleStream);
+    });
+
+    describe('with bound properties and classes', function () {
+      var loader;
+      beforeEach(function () {
+        loader = new RdfClassLoader();
+
+        loader.bindProperty('withList', 'http://example.org/withList');
+        loader.bindClass('a', 'http://example.org/A');
+      });
+
+      describe('with triple stream piping', function () {
+        beforeEach(function (done) {
+          tripleStream.pipe(loader);
+          loader.on('finish', done);
+        });
+
+        it('should have 1 resource', function () {
+          Object.keys(loader.resources).length.should.equal(1);
+          loader.resources.should.have.property('a');
+        });
+
+        it('"a" should have a list', function () {
+          let list = loader.resources['a'].withList[0];
+          list.should.have.property('list');
+          list.list.length.should.equal(0);
+        });
+      });
+    });
+  });
+
   describe('for triples-unique.ttl', function () {
     var tripleStream;
     beforeEach(function () {
