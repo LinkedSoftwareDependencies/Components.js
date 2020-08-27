@@ -1,6 +1,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v3.4.2"></a>
+## [v3.4.2](https://github.com/LinkedSoftwareDependencies/Components.js/compare/v3.4.1...v3.4.2) - 2020-08-27
+
+### Fixed
+* [Fix empty list class loading failure](https://github.com/LinkedSoftwareDependencies/Components.js/commit/3590171287d2d765417469ea85012b651c88064b)
+
 <a name="v3.4.1"></a>
 ## [v3.4.1](https://github.com/LinkedSoftwareDependencies/Components.js/compare/v3.4.0...v3.4.1) - 2020-07-01
 
