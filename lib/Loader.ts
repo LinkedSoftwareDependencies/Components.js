@@ -77,6 +77,7 @@ export class Loader {
         loader.bindClass('instances', Util.PREFIXES['oo'] + 'Instance');
         loader.bindClass('abstractConstructables', Util.PREFIXES['oo'] + 'AbstractClass');
         loader.bindClass('modules', Util.PREFIXES['oo'] + 'Module');
+        loader.bindClass('variables', Util.PREFIXES['om'] + 'Variable');
 
         loader.bindProperty('requireName', Util.PREFIXES['doap'] + 'name', true);
         loader.bindProperty('requireElement', Util.PREFIXES['oo'] + 'componentPath', true);
@@ -378,6 +379,15 @@ export class Loader {
         const resourceBlacklist = settings.resourceBlacklist || {};
         if (resourceBlacklist[configResource.value]) {
             return Promise.resolve({});
+        }
+
+        // Before instantiating, first check if the resource is a variable
+        if (configResource.hasType(Util.PREFIXES['om'] + 'Variable')) {
+            const value = settings.variables ? settings.variables[configResource.value] : undefined;
+            if (value === undefined) {
+                return Promise.reject(new Error('Undefined variable: ' + configResource.value));
+            }
+            return Promise.resolve(value);
         }
 
         if (!this._instances[configResource.value]) {

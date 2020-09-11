@@ -25,4 +25,8 @@ export interface ICreationSettings {
      * This may only be non-falsy if the instance should be serialized.
      */
     serializations?: string[];
+    /**
+     * Mapping of variable id's to values.
+     */
+    variables?: {[id: string]: any};
 }

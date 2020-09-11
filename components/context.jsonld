@@ -136,6 +136,9 @@
     "valueRawReference": {
       "@id": "om:fieldValueRaw",
       "@type": "@id"
+    },
+    "Variable": {
+      "@id": "om:Variable"
     }
   }
 }

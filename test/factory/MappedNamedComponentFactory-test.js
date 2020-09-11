@@ -783,4 +783,64 @@ describe('MappedNamedComponentFactory', function () {
         });
     });
 
+  describe('for a hello world component with variables', function () {
+    let constructor;
+    beforeEach(function () {
+      const variable = new Resource('ex:var');
+      variable.types = [new Resource(Constants.PREFIXES['om'] + 'Variable')];
+      constructor = new MappedNamedComponentFactory(helloWorldModule, helloWorldComponent2, {
+        'http://example.org/HelloWorldModule#dummyParam': variable,
+        'http://example.org/HelloWorldModule#instanceParam': MappedNamedComponentFactory
+            .makeUnnamedDefinitionConstructor(helloWorldModule, helloWorldComponent1)({})
+      }, true);
+    });
+
+    it('should be valid', function () {
+      constructor.should.not.be.null();
+    });
+
+    it('should create valid arguments', function (done) {
+      constructor.makeArguments({
+        variables: {
+          'ex:var': 3000,
+        },
+      }).then((args) => {
+        args.should.deepEqual([{
+          'dummyParam': 3000,
+          'instanceParam': new Hello()
+        }]);
+        done();
+      }).catch(done);
+    });
+
+    it('should throw when a variable remains undefined', function (done) {
+      constructor.makeArguments({
+        variables: {},
+      }).catch((error) => {
+        error.should.deepEqual(new Error('Undefined variable: ex:var'));
+        done();
+      });
+    });
+
+    it('should throw when no variables are passed', function (done) {
+      constructor.makeArguments().catch((error) => {
+        error.should.deepEqual(new Error('Undefined variable: ex:var'));
+        done();
+      });
+    });
+
+    it('should make a valid instance', function (done) {
+      constructor.create({
+        variables: {
+          'ex:var': 3000,
+        },
+      }).then((instance) => {
+        instance.should.not.be.null();
+        instance.should.be.instanceof(Hello);
+        instance._params.dummyParam.should.equal(3000);
+        done();
+      }).catch(done);
+    });
+  });
+
 });
