@@ -1,6 +1,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v3.5.0"></a>
+## [v3.5.0](https://github.com/LinkedSoftwareDependencies/Components.js/compare/v3.4.2...v3.5.0) - 2020-09-11
+
+### Added
+* [Accept variables as parameter values, that can be set at init](https://github.com/LinkedSoftwareDependencies/Components.js/commit/cbd6f115cabf2bfcdcc8466f434d5cf52a4c23d5)
+
 <a name="v3.4.2"></a>
 ## [v3.4.2](https://github.com/LinkedSoftwareDependencies/Components.js/compare/v3.4.1...v3.4.2) - 2020-08-27
 
