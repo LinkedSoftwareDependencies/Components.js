@@ -26,6 +26,12 @@ export interface ICreationSettings {
      */
     serializations?: string[];
     /**
+     * If the exported instance should be exposed as a function, which accepts an optional hash of variables.
+     * Only applicable during serialization.
+     * If this is true, variables will be extracted from the `variables` hash.
+     */
+    asFunction?: boolean;
+    /**
      * Mapping of variable id's to values.
      */
     variables?: {[id: string]: any};

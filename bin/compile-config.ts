@@ -22,6 +22,7 @@ Options:
   -p      The main module path, if not provided, this defaults to the working directory
   -g      If global modules should be included as well next to local modules.
   -e      The instance by config URI that will be exported, by default this is the provided instance URI.
+  -f      If the exported instance should be exposed as a function, which accepts an optional hash of variables.
   --help  print this help message
       `);
     process.exit(1);
@@ -53,8 +54,10 @@ if (args.e) {
 
 const scanGlobal: boolean = !!args.g;
 
+const asFunction: boolean = !!args.f;
+
 compileConfig({ mainModulePath, scanGlobal }, configPath, configStreamRaw, configResourceUri,
-    exportVariableName).then(console.log).catch((e) => {
+    exportVariableName, asFunction).then(console.log).catch((e) => {
         console.error(e);
         process.exit(1);
       });

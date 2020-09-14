@@ -383,11 +383,19 @@ export class Loader {
 
         // Before instantiating, first check if the resource is a variable
         if (configResource.hasType(Util.PREFIXES['om'] + 'Variable')) {
-            const value = settings.variables ? settings.variables[configResource.value] : undefined;
-            if (value === undefined) {
-                return Promise.reject(new Error('Undefined variable: ' + configResource.value));
+            if (settings.serializations) {
+                if (settings.asFunction) {
+                    return Promise.resolve(`getVariableValue('${configResource.value}')`);
+                } else {
+                    return Promise.reject(new Error('Detected a variable during config compilation: ' + configResource.value + '. Variables are not supported, but require the -f flag to expose the compiled config as function.'));
+                }
+            } else {
+                const value = settings.variables ? settings.variables[configResource.value] : undefined;
+                if (value === undefined) {
+                    return Promise.reject(new Error('Undefined variable: ' + configResource.value));
+                }
+                return Promise.resolve(value);
             }
-            return Promise.resolve(value);
         }
 
         if (!this._instances[configResource.value]) {
