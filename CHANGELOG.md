@@ -1,6 +1,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v3.6.0"></a>
+## [v3.6.0](https://github.com/LinkedSoftwareDependencies/Components.js/compare/v3.5.0...v3.6.0) - 2020-09-14
+
+### Added
+* [Supporting variables in config compilation](https://github.com/LinkedSoftwareDependencies/Components.js/commit/5eb5def9d77b7755d9e121b07c9d23676684a5f1)
+
 <a name="v3.5.0"></a>
 ## [v3.5.0](https://github.com/LinkedSoftwareDependencies/Components.js/compare/v3.4.2...v3.5.0) - 2020-09-11
 
