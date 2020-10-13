@@ -215,14 +215,14 @@ export class UnnamedComponentFactory implements IComponentFactory {
                 try {
                     subObject = requireElementPath.reduce((object: any, requireElement: string) => object[requireElement], object);
                 } catch (e) {
-                    return reject(new Error('Failed to get module element ' + this._componentDefinition.requireElement.value + ' from module ' + requireName + "\n" + NodeUtil.inspect(object)));
+                    return reject(new Error('Failed to get module element ' + this._componentDefinition.requireElement.value + ' from module ' + requireName));
                 }
             }
             else {
                 subObject = object;
             }
             if (!subObject) {
-                return reject(new Error('Failed to get module element ' + this._componentDefinition.requireElement.value + ' from module ' + requireName + "\n" + NodeUtil.inspect(object)));
+                return reject(new Error('Failed to get module element ' + this._componentDefinition.requireElement.value + ' from module ' + requireName));
             }
             object = subObject;
             if (!this._componentDefinition.requireNoConstructor || this._componentDefinition.requireNoConstructor.value !== 'true') {

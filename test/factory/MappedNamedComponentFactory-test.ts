@@ -1,16 +1,15 @@
-require('should');
-var expect = require('chai').expect;
-const Constants = require("../../lib/Util");
-const Resource = require("../../lib/rdf/Resource").Resource;
-const fs = require("fs");
+import { Resource } from '../../lib/rdf/Resource';
+import Util = require('../../lib/Util');
+import { MappedNamedComponentFactory } from '../../lib/factory/MappedNamedComponentFactory';
+
+// TODO: improve these imports
 const N3 = require('n3');
-const MappedNamedComponentFactory = require("../../lib/factory/MappedNamedComponentFactory").MappedNamedComponentFactory;
-const Hello = require("../helloworld").Hello;
+const Hello = require("../../__mocks__/helloworld").Hello;
 
 // Component definition for an N3 Parser
 let n3ParserComponent = new Resource('http://example.org/n3#Parser', {
   requireElement: Resource.newString('Parser'),
-  types: [ new Resource(Constants.PREFIXES['oo'] + 'Class') ],
+  types: [ new Resource(Util.PREFIXES['oo'] + 'Class') ],
   hasParameter: [
     new Resource('http://example.org/n3#format'),
     new Resource('http://example.org/n3#blankNodePrefix'),
@@ -34,7 +33,7 @@ let n3ParserComponent = new Resource('http://example.org/n3#Parser', {
 // Component definition for an N3 Lexer
 let n3LexerComponent = new Resource('http://example.org/n3#Lexer', {
   requireElement: Resource.newString('Lexer'),
-  types: [ new Resource(Constants.PREFIXES['oo'] + 'Class') ],
+  types: [ new Resource(Util.PREFIXES['oo'] + 'Class') ],
   hasParameter: [
     new Resource('http://example.org/n3#lineMode'),
     new Resource('http://example.org/n3#n3'),
@@ -56,13 +55,13 @@ let n3LexerComponent = new Resource('http://example.org/n3#Lexer', {
 // Component definition for an N3 Util
 let n3UtilComponent = new Resource('http://example.org/n3#Util', {
   requireElement: Resource.newString('Util'),
-  types: [ new Resource(Constants.PREFIXES['oo'] + 'ComponentInstance') ],
+  types: [ new Resource(Util.PREFIXES['oo'] + 'ComponentInstance') ],
 });
 
 // Component definition for an N3 Dummy
 let n3DummyComponent = new Resource('http://example.org/n3#Dummy', {
   requireElement: Resource.newString('Dummy'),
-  types: [ new Resource(Constants.PREFIXES['oo'] + 'Class') ],
+  types: [ new Resource(Util.PREFIXES['oo'] + 'Class') ],
   hasParameter: [
     new Resource('http://example.org/n3#dummyParam')
   ],
@@ -91,7 +90,7 @@ let n3Module = new Resource('http://example.org/n3', {
 // Component definition for Hello World
 let helloWorldComponent1 = new Resource('http://example.org/HelloWorldModule#SayHelloComponent1', {
   requireElement: Resource.newString('Hello'),
-  types: [ new Resource(Constants.PREFIXES['oo'] + 'Class') ],
+  types: [ new Resource(Util.PREFIXES['oo'] + 'Class') ],
   hasParameter: [
     new Resource('http://example.org/HelloWorldModule#dummyParam')
   ],
@@ -109,7 +108,7 @@ let helloWorldComponent1 = new Resource('http://example.org/HelloWorldModule#Say
 // Component definition for Hello World
 let helloWorldComponent2 = new Resource('http://example.org/HelloWorldModule#SayHelloComponent2', {
   requireElement: Resource.newString('Hello'),
-  types: [ new Resource(Constants.PREFIXES['oo'] + 'Class') ],
+  types: [ new Resource(Util.PREFIXES['oo'] + 'Class') ],
   hasParameter: [
     new Resource('http://example.org/HelloWorldModule#dummyParam'),
     new Resource('http://example.org/HelloWorldModule#instanceParam')
@@ -129,7 +128,7 @@ let helloWorldComponent2 = new Resource('http://example.org/HelloWorldModule#Say
 // Component definition for Hello World
 let helloWorldComponent3 = new Resource('http://example.org/HelloWorldModule#SayHelloComponent3', {
   requireElement: Resource.newString('Hello'),
-  types: [ new Resource(Constants.PREFIXES['oo'] + 'Class') ],
+  types: [ new Resource(Util.PREFIXES['oo'] + 'Class') ],
   hasParameter: [
     new Resource('http://example.org/HelloWorldModule#dummyParam'),
     new Resource('http://example.org/HelloWorldModule#instanceParam'),
@@ -141,7 +140,7 @@ let helloWorldComponent3 = new Resource('http://example.org/HelloWorldModule#Say
         fields: [
           { k: new Resource('"dummyParam"'), v: new Resource('http://example.org/HelloWorldModule#dummyParam') },
           { k: new Resource('"instanceParam"'), v: new Resource('http://example.org/HelloWorldModule#instanceParam') },
-          { k: new Resource('"idParam"'), v: new Resource(Constants.PREFIXES['rdf'] + 'subject') }
+          { k: new Resource('"idParam"'), v: new Resource(Util.PREFIXES['rdf'] + 'subject') }
         ]
       })
     ]
@@ -151,7 +150,7 @@ let helloWorldComponent3 = new Resource('http://example.org/HelloWorldModule#Say
 // Component definition for Hello World with array parameters
 let helloWorldComponent4 = new Resource('http://example.org/HelloWorldModule#SayHelloComponent3', {
   requireElement: Resource.newString('Hello'),
-  types: [ new Resource(Constants.PREFIXES['oo'] + 'Class') ],
+  types: [ new Resource(Util.PREFIXES['oo'] + 'Class') ],
   hasParameter: [
     new Resource('http://example.org/HelloWorldModule#dummyParam'),
     new Resource('http://example.org/HelloWorldModule#instanceParam'),
@@ -186,7 +185,7 @@ let defaultedParam2 = new Resource('http://example.org/n3#dummyParam2', {
 });
 let helloWorldComponent5 = new Resource('http://example.org/HelloWorldModule#SayHelloComponent4', {
   requireElement: Resource.newString('Hello'),
-  types: [ new Resource(Constants.PREFIXES['oo'] + 'Class') ],
+  types: [ new Resource(Util.PREFIXES['oo'] + 'Class') ],
   hasParameter: [ defaultedParam1, defaultedParam2, ],
   constructorArguments: new Resource(null, {
     list: [
@@ -223,9 +222,9 @@ let defaultScopedParam2 = new Resource('http://example.org/n3#dummyParam2', {
     }
   ]
 });
-let helloWorldComponent6 = new Resource('http://example.org/HelloWorldModule#SayHelloComponent5', {
+let helloWorldComponent6: any = new Resource('http://example.org/HelloWorldModule#SayHelloComponent5', {
   requireElement: Resource.newString('Hello'),
-  types: [ new Resource(Constants.PREFIXES['oo'] + 'Class') ],
+  types: [ new Resource(Util.PREFIXES['oo'] + 'Class') ],
   hasParameter: [ defaultScopedParam1, defaultScopedParam2, ],
   constructorArguments: new Resource(null, {
     list: [
@@ -238,12 +237,12 @@ let helloWorldComponent6 = new Resource('http://example.org/HelloWorldModule#Say
     ]
   })
 });
-helloWorldComponent6.hasParameter.forEach((param) => param.defaultScoped[0].scope.push(helloWorldComponent6));
+helloWorldComponent6.hasParameter.forEach((param: any) => param.defaultScoped[0].scope.push(helloWorldComponent6));
 
 // Component definition for Hello World with array parameters
 let helloWorldComponent7 = new Resource('http://example.org/HelloWorldModule#SayHelloComponent6', {
     requireElement: Resource.newString('Hello'),
-    types: [ new Resource(Constants.PREFIXES['oo'] + 'Class') ],
+    types: [ new Resource(Util.PREFIXES['oo'] + 'Class') ],
     hasParameter: [
         new Resource('http://example.org/HelloWorldModule#requiredParam', { required: true })
     ],
@@ -263,7 +262,7 @@ let helloWorldComponent7 = new Resource('http://example.org/HelloWorldModule#Say
 // Component definition for Hello World with lazy parameters
 let helloWorldComponent8 = new Resource('http://example.org/HelloWorldModule#SayHelloComponent8', {
     requireElement: Resource.newString('Hello'),
-    types: [ new Resource(Constants.PREFIXES['oo'] + 'Class') ],
+    types: [ new Resource(Util.PREFIXES['oo'] + 'Class') ],
     hasParameter: [
         new Resource('http://example.org/HelloWorldModule#dummyParamLazy', { lazy: Resource.newBoolean(true) }),
         new Resource('http://example.org/HelloWorldModule#instanceParamLazy', { lazy: Resource.newBoolean(true) }),
@@ -275,7 +274,7 @@ let helloWorldComponent8 = new Resource('http://example.org/HelloWorldModule#Say
                 fields: [
                     { k: new Resource('"dummyParamLazy"'), v: new Resource('http://example.org/HelloWorldModule#dummyParamLazy', { lazy: Resource.newBoolean(true) }) },
                     { k: new Resource('"instanceParamLazy"'), v: new Resource('http://example.org/HelloWorldModule#instanceParamLazy', { lazy: Resource.newBoolean(true) }) },
-                    { k: new Resource('"idParamLazy"'), v: new Resource(Constants.PREFIXES['rdf'] + 'subject') }
+                    { k: new Resource('"idParamLazy"'), v: new Resource(Util.PREFIXES['rdf'] + 'subject') }
                 ]
             })
         ]
@@ -284,7 +283,7 @@ let helloWorldComponent8 = new Resource('http://example.org/HelloWorldModule#Say
 
 // Module definition for Hello World
 let helloWorldModule = new Resource('http://example.org/HelloWorldModule', {
-  requireName: Resource.newString('test/helloworld'),
+  requireName: Resource.newString('helloworld'),
   hasComponent: [
     helloWorldComponent1,
     helloWorldComponent2,
@@ -302,19 +301,20 @@ describe('MappedNamedComponentFactory', function () {
   describe('#makeUnnamedDefinitionConstructor', function () {
     it('should create a valid definition constructor', function () {
       let constructor = MappedNamedComponentFactory.makeUnnamedDefinitionConstructor(n3Module, n3LexerComponent);
-      constructor.should.not.be.null();
-      constructor.should.be.instanceof(Function);
-      constructor({}).should.be.instanceof(Resource);
+      expect(constructor).toBeTruthy();
+      expect(constructor).toBeInstanceOf(Function);
+      expect(constructor({})).toBeInstanceOf(Resource);
     });
 
     it('should create a resource with undefined arguments when constructed with no arguments', function () {
-      let instance = MappedNamedComponentFactory.makeUnnamedDefinitionConstructor(n3Module, n3LexerComponent)({});
-      instance.should.be.instanceof(Resource);
-      instance.should.have.property('termType', 'NamedNode');
-      instance.should.have.property('requireName', Resource.newString('n3'));
-      instance.should.have.property('requireElement', Resource.newString('Lexer'));
-      instance.should.have.property('arguments');
-      instance.arguments.list.should.deepEqual([
+      let instance: any = MappedNamedComponentFactory.makeUnnamedDefinitionConstructor(n3Module, n3LexerComponent)({});
+      expect(instance).toBeInstanceOf(Resource);
+      expect(instance).toHaveProperty('termType', 'NamedNode');
+      expect(instance).toHaveProperty('termType', 'NamedNode');
+      expect(instance).toHaveProperty('requireName', Resource.newString('n3'));
+      expect(instance).toHaveProperty('requireElement', Resource.newString('Lexer'));
+      expect(instance).toHaveProperty('arguments');
+      expect(instance.arguments.list).toEqual([
         new Resource(null, {
           fields: [
             { k: Resource.newString('lineMode'), v: undefined },
@@ -326,17 +326,17 @@ describe('MappedNamedComponentFactory', function () {
     });
 
     it('should create a resource with defined arguments when constructed with arguments', function () {
-      let instance = MappedNamedComponentFactory.makeUnnamedDefinitionConstructor(n3Module, n3LexerComponent)({
+      let instance: any = MappedNamedComponentFactory.makeUnnamedDefinitionConstructor(n3Module, n3LexerComponent)({
         'http://example.org/n3#lineMode': Resource.newBoolean(true),
         'http://example.org/n3#n3': Resource.newBoolean(true),
         'http://example.org/n3#comments': Resource.newBoolean(true)
       });
-      instance.should.be.instanceof(Resource);
-      instance.should.have.property('termType', 'NamedNode');
-      instance.should.have.property('requireName', Resource.newString('n3'));
-      instance.should.have.property('requireElement', Resource.newString('Lexer'));
-      instance.should.have.property('arguments');
-      instance.arguments.list.should.deepEqual([
+      expect(instance).toBeInstanceOf(Resource);
+      expect(instance).toHaveProperty('termType', 'NamedNode');
+      expect(instance).toHaveProperty('requireName', Resource.newString('n3'));
+      expect(instance).toHaveProperty('requireElement', Resource.newString('Lexer'));
+      expect(instance).toHaveProperty('arguments');
+      expect(instance.arguments.list).toEqual([
         new Resource(null, {
           fields: [
             { k: Resource.newString('lineMode'), v: Resource.newBoolean(true) },
@@ -349,7 +349,7 @@ describe('MappedNamedComponentFactory', function () {
   });
 
   describe('for an N3 Lexer', function () {
-    let constructor;
+    let constructor: MappedNamedComponentFactory;
     beforeEach(function () {
       constructor = new MappedNamedComponentFactory(n3Module, n3LexerComponent, {
         'http://example.org/n3#lineMode': Resource.newBoolean(true),
@@ -359,27 +359,23 @@ describe('MappedNamedComponentFactory', function () {
     });
 
     it('should be valid', function () {
-      constructor.should.not.be.null();
+      expect(constructor).toBeTruthy();
     });
 
-    it('should create valid arguments', function (done) {
-      constructor.makeArguments().then((args) => {
-        args.should.deepEqual([ { comments: 'true', lineMode: 'true', n3: 'true' } ]);
-        done();
-      }).catch(done);
+    it('should create valid arguments', async() => {
+      const args = await constructor.makeArguments();
+      expect(args).toEqual([ { comments: 'true', lineMode: 'true', n3: 'true' } ]);
     });
 
-    it('should make a valid instance', function (done) {
-      constructor.create().then((instance) => {
-        instance.should.not.be.null();
-        instance.should.be.instanceof(N3.Lexer);
-        done();
-      }).catch(done);
+    it('should make a valid instance', async() => {
+      const instance = await constructor.create();
+      expect(instance).toBeTruthy();
+      expect(instance).toBeInstanceOf(N3.Lexer);
     });
   });
 
   describe('for an N3 Parser', function () {
-    let constructor;
+    let constructor: MappedNamedComponentFactory;
     beforeEach(function () {
       constructor = new MappedNamedComponentFactory(n3Module, n3ParserComponent, {
         'http://example.org/n3#format': Resource.newString('application/trig'),
@@ -392,56 +388,47 @@ describe('MappedNamedComponentFactory', function () {
     });
 
     it('should be valid', function () {
-      constructor.should.not.be.null();
+      expect(constructor).toBeTruthy();
     });
 
-    it('should create valid arguments', function (done) {
-      constructor.makeArguments().then((args) => {
-        args.length.should.equal(1);
-        args[0].format.should.equal('application/trig');
-        args[0].lexer.should.not.be.null();
-        args[0].lexer.should.be.instanceof(N3.Lexer);
-        done();
-      }).catch(done);
+    it('should create valid arguments', async() => {
+      const args = await constructor.makeArguments();
+      expect(args[0].format).toEqual('application/trig');
+      expect(args[0].lexer).toBeTruthy();
+      expect(args[0].lexer).toBeInstanceOf(N3.Lexer);
     });
 
-    it('should make a valid instance', function (done) {
-      constructor.create().then((instance) => {
-        instance.should.not.be.null();
-        instance.should.be.instanceof(N3.Parser);
-        done();
-      }).catch(done);
+    it('should make a valid instance', async() => {
+      const instance = await constructor.create();
+      expect(instance).toBeTruthy();
+      expect(instance).toBeInstanceOf(N3.Parser);
     });
   });
 
   describe('for an N3 Util', function () {
-    let constructor;
+    let constructor: MappedNamedComponentFactory;
     beforeEach(function () {
       constructor = new MappedNamedComponentFactory(n3Module, n3UtilComponent, {}, false);
     });
 
     it('should be valid', function () {
-      constructor.should.not.be.null();
+      expect(constructor).toBeTruthy();
     });
 
-    it('should create valid arguments', function (done) {
-      constructor.makeArguments().then((args) => {
-        args.should.deepEqual([]);
-        done();
-      }).catch(done);
+    it('should create valid arguments', async() => {
+      const args = await constructor.makeArguments();
+      expect(args).toEqual([]);
     });
 
-    it('should make a valid instance', function (done) {
-      constructor.create().then((instance) => {
-        instance.should.not.be.null();
-        instance.should.be.instanceof(Function); // Because N3Util is a function
-        done();
-      }).catch(done);
+    it('should make a valid instance', async() => {
+      const instance = await constructor.create();
+      expect(instance).toBeTruthy();
+      expect(instance).toBeInstanceOf(Function); // Because N3Util is a function
     });
   });
 
   describe('for an N3 Dummy', function () {
-    let constructor;
+    let constructor: MappedNamedComponentFactory;
     beforeEach(function () {
       constructor = new MappedNamedComponentFactory(n3Module, n3DummyComponent, {
         'http://example.org/n3#dummyParam': Resource.newBoolean(true)
@@ -449,25 +436,23 @@ describe('MappedNamedComponentFactory', function () {
     });
 
     it('should be valid', function () {
-      constructor.should.not.be.null();
+      expect(constructor).toBeTruthy();
     });
 
-    it('should create valid arguments', function (done) {
-      constructor.makeArguments().then((args) => {
-        args.should.deepEqual([{
-          'dummyParam': 'true',
-        }]);
-        done();
-      }).catch(done);
+    it('should create valid arguments', async() => {
+      const args = await constructor.makeArguments();
+      expect(args).toEqual([ {
+        'dummyParam': 'true',
+      } ]);
     });
 
-    it('should fail to make a valid instance', function () {
-      return expect(constructor.create()).to.be.rejectedWith(Error);
+    it('should fail to make a valid instance', async()  => {
+      await expect(constructor.create()).rejects.toThrow(new Error('Failed to get module element Dummy from module n3'));
     });
   });
 
   describe('for a hello world component', function () {
-    let constructor;
+    let constructor: MappedNamedComponentFactory;
     beforeEach(function () {
       constructor = new MappedNamedComponentFactory(helloWorldModule, helloWorldComponent2, {
         'http://example.org/HelloWorldModule#dummyParam': Resource.newBoolean(true),
@@ -477,30 +462,26 @@ describe('MappedNamedComponentFactory', function () {
     });
 
     it('should be valid', function () {
-      constructor.should.not.be.null();
+      expect(constructor).toBeTruthy();
     });
 
-    it('should create valid arguments', function (done) {
-      constructor.makeArguments().then((args) => {
-        args.should.deepEqual([{
-          'dummyParam': 'true',
-          'instanceParam': new Hello()
-        }]);
-        done();
-      }).catch(done);
+    it('should create valid arguments', async() => {
+      const args = await constructor.makeArguments();
+      expect(args).toEqual([ {
+        'dummyParam': 'true',
+        'instanceParam': new Hello()
+      } ]);
     });
 
-    it('should make a valid instance', function (done) {
-      constructor.create().then((instance) => {
-        instance.should.not.be.null();
-        instance.should.be.instanceof(Hello);
-        done();
-      }).catch(done);
+    it('should make a valid instance', async() => {
+      const instance = await constructor.create();
+      expect(instance).toBeTruthy();
+      expect(instance).toBeInstanceOf(Hello);
     });
   });
 
   describe('for a hello world component with id param', function () {
-    let constructor;
+    let constructor: MappedNamedComponentFactory;
     beforeEach(function () {
       constructor = new MappedNamedComponentFactory(helloWorldModule, helloWorldComponent3, {
         value: 'http://example.org/myHelloComponent'
@@ -508,29 +489,25 @@ describe('MappedNamedComponentFactory', function () {
     });
 
     it('should be valid', function () {
-      constructor.should.not.be.null();
+      expect(constructor).toBeTruthy();
     });
 
-    it('should create valid arguments', function (done) {
-      constructor.makeArguments().then((args) => {
-        args.should.deepEqual([{
-          'idParam': 'http://example.org/myHelloComponent'
-        }]);
-        done();
-      }).catch(done);
+    it('should create valid arguments', async() => {
+      const args = await constructor.makeArguments();
+      expect(args).toEqual([ {
+        'idParam': 'http://example.org/myHelloComponent'
+      } ]);
     });
 
-    it('should make a valid instance', function (done) {
-      constructor.create().then((instance) => {
-        instance.should.not.be.null();
-        instance.should.be.instanceof(Hello);
-        done();
-      }).catch(done);
+    it('should make a valid instance', async() => {
+      const instance = await constructor.create();
+      expect(instance).toBeTruthy();
+      expect(instance).toBeInstanceOf(Hello);
     });
   });
 
   describe('for a hello world component with array params', function () {
-    let constructor;
+    let constructor: MappedNamedComponentFactory;
     beforeEach(function () {
       constructor = new MappedNamedComponentFactory(helloWorldModule, helloWorldComponent4, {
         'http://example.org/HelloWorldModule#dummyParam': Resource.newBoolean(true),
@@ -539,58 +516,50 @@ describe('MappedNamedComponentFactory', function () {
     });
 
     it('should be valid', function () {
-      constructor.should.not.be.null();
+      expect(constructor).toBeTruthy();
     });
 
-    it('should create valid arguments', function (done) {
-      constructor.makeArguments().then((args) => {
-        args.should.deepEqual([[
-          'true', 'false'
-        ]]);
-        done();
-      }).catch(done);
+    it('should create valid arguments', async() => {
+      const args = await constructor.makeArguments();
+      expect(args).toEqual([[
+        'true', 'false'
+      ]]);
     });
 
-    it('should ake a valid instance', function (done) {
-      constructor.create().then((instance) => {
-        instance.should.not.be.null();
-        instance.should.be.instanceof(Hello);
-        done();
-      }).catch(done);
+    it('should ake a valid instance', async() => {
+      const instance = await constructor.create();
+      expect(instance).toBeTruthy();
+      expect(instance).toBeInstanceOf(Hello);
     });
   });
 
   describe('for a hello world component with default values', function () {
-    let constructor;
+    let constructor: MappedNamedComponentFactory;
     beforeEach(function () {
       constructor = new MappedNamedComponentFactory(helloWorldModule, helloWorldComponent5, {}, true);
     });
 
     it('should be valid', function () {
-      constructor.should.not.be.null();
+      expect(constructor).toBeTruthy();
     });
 
-    it('should create valid arguments', function (done) {
-      constructor.makeArguments().then((args) => {
-        args.should.deepEqual([{
-          'dummyParam1': [ 'a', 'b' ],
-          'dummyParam2': [ 'a' ],
-        }]);
-        done();
-      }).catch(done);
+    it('should create valid arguments', async() => {
+      const args = await constructor.makeArguments();
+      expect(args).toEqual([{
+        'dummyParam1': [ 'a', 'b' ],
+        'dummyParam2': [ 'a' ],
+      }]);
     });
 
-    it('should make a valid instance', function (done) {
-      constructor.create().then((instance) => {
-        instance.should.not.be.null();
-        instance.should.be.instanceof(Hello);
-        done();
-      }).catch(done);
+    it('should make a valid instance', async() => {
+      const instance = await constructor.create();
+      expect(instance).toBeTruthy();
+      expect(instance).toBeInstanceOf(Hello);
     });
   });
 
   describe('for a hello world component with overridden default values', function () {
-    let constructor;
+    let constructor: MappedNamedComponentFactory;
     beforeEach(function () {
       constructor = new MappedNamedComponentFactory(helloWorldModule, helloWorldComponent5, {
         'http://example.org/n3#dummyParam1': Resource.newBoolean(true),
@@ -599,59 +568,51 @@ describe('MappedNamedComponentFactory', function () {
     });
 
     it('should be valid', function () {
-      constructor.should.not.be.null();
+      expect(constructor).toBeTruthy();
     });
 
-    it('should create valid arguments', function (done) {
-      constructor.makeArguments().then((args) => {
-        args.should.deepEqual([{
-          'dummyParam1': 'true',
-          'dummyParam2': 'false',
-        }]);
-        done();
-      }).catch(done);
+    it('should create valid arguments', async() => {
+      const args = await constructor.makeArguments();
+      expect(args).toEqual([{
+        'dummyParam1': 'true',
+        'dummyParam2': 'false',
+      }]);
     });
 
-    it('should make a valid instance', function (done) {
-      constructor.create().then((instance) => {
-        instance.should.not.be.null();
-        instance.should.be.instanceof(Hello);
-        done();
-      }).catch(done);
+    it('should make a valid instance', async() => {
+      const instance = await constructor.create();
+      expect(instance).toBeTruthy();
+      expect(instance).toBeInstanceOf(Hello);
     });
   });
 
   describe('for a hello world component with default scoped values', function () {
-    let constructor;
+    let constructor: MappedNamedComponentFactory;
     beforeEach(function () {
       constructor = new MappedNamedComponentFactory(helloWorldModule, helloWorldComponent6, new Resource(null, { types: [ helloWorldComponent6 ] }), true);
     });
 
     it('should be valid', function () {
-      constructor.should.not.be.null();
+      expect(constructor).toBeTruthy();
     });
 
-    it('should create valid arguments', function (done) {
-      constructor.makeArguments().then((args) => {
-        args.should.deepEqual([{
-          'dummyParam1': [ 'a', 'b' ],
-          'dummyParam2': [ 'a' ],
-        }]);
-        done();
-      }).catch(done);
+    it('should create valid arguments', async() => {
+      const args = await constructor.makeArguments();
+      expect(args).toEqual([{
+        'dummyParam1': [ 'a', 'b' ],
+        'dummyParam2': [ 'a' ],
+      }]);
     });
 
-    it('should make a valid instance', function (done) {
-      constructor.create().then((instance) => {
-        instance.should.not.be.null();
-        instance.should.be.instanceof(Hello);
-        done();
-      }).catch(done);
+    it('should make a valid instance', async() => {
+      const instance = await constructor.create();
+      expect(instance).toBeTruthy();
+      expect(instance).toBeInstanceOf(Hello);
     });
   });
 
   describe('for a hello world component with overridden default scoped values', function () {
-    let constructor;
+    let constructor: MappedNamedComponentFactory;
     beforeEach(function () {
       constructor = new MappedNamedComponentFactory(helloWorldModule, helloWorldComponent6, {
         'http://example.org/n3#dummyParam1': Resource.newBoolean(true),
@@ -660,71 +621,64 @@ describe('MappedNamedComponentFactory', function () {
     });
 
     it('should be valid', function () {
-      constructor.should.not.be.null();
+      expect(constructor).toBeTruthy();
     });
 
-    it('should create valid arguments', function (done) {
-      constructor.makeArguments().then((args) => {
-        args.should.deepEqual([{
-          'dummyParam1': 'true',
-          'dummyParam2': 'false',
-        }]);
-        done();
-      }).catch(done);
+    it('should create valid arguments', async() => {
+      const args = await constructor.makeArguments();
+      expect(args).toEqual([{
+        'dummyParam1': 'true',
+        'dummyParam2': 'false',
+      }]);
     });
 
-    it('should make a valid instance', function (done) {
-      constructor.create().then((instance) => {
-        instance.should.not.be.null();
-        instance.should.be.instanceof(Hello);
-        done();
-      }).catch(done);
+    it('should make a valid instance', async() => {
+      const instance = await constructor.create();
+      expect(instance).toBeTruthy();
+      expect(instance).toBeInstanceOf(Hello);
     });
   });
 
   describe('for a hello world component with non-applicable default scoped values', function () {
-    let constructor;
+    let constructor: MappedNamedComponentFactory;
     beforeEach(function () {
       constructor = new MappedNamedComponentFactory(helloWorldModule, helloWorldComponent6, new Resource(null, { types: [ helloWorldComponent5 ] }), true);
     });
 
     it('should be valid', function () {
-      constructor.should.not.be.null();
+      expect(constructor).toBeTruthy();
     });
 
-    it('should create valid arguments', function (done) {
-      constructor.makeArguments().then((args) => {
-        args.should.deepEqual([{}]);
-        done();
-      }).catch(done);
+    it('should create valid arguments', async() => {
+      const args = await constructor.makeArguments();
+      expect(args).toEqual([{}]);
     });
 
-    it('should make a valid instance', function (done) {
-      constructor.create().then((instance) => {
-        instance.should.not.be.null();
-        instance.should.be.instanceof(Hello);
-        done();
-      }).catch(done);
+    it('should make a valid instance', async() => {
+      const instance = await constructor.create();
+      expect(instance).toBeTruthy();
+      expect(instance).toBeInstanceOf(Hello);
     });
   });
 
     describe('for a hello world component with a missing required parameter', function () {
-        let constructor;
+        let constructor: MappedNamedComponentFactory;
         beforeEach(function () {
             constructor = new MappedNamedComponentFactory(helloWorldModule, helloWorldComponent7, {}, true);
         });
 
         it('should be valid', function () {
-            constructor.should.not.be.null();
+            expect(constructor).toBeTruthy();
         });
 
-        it('should not make a valid instance', function (done) {
-            constructor.create().then(() => done('Instance can not be valid')).catch(() => done());
+        it('should not make a valid instance', async() => {
+            await expect(constructor.create()).rejects
+              .toThrow(new Error('Parameter array elements must have values, but found: { v: undefined }'));
         });
     });
 
     describe('for a hello world component with a valid required parameter', function () {
-        let constructor;
+        let constructor: MappedNamedComponentFactory;
         beforeEach(function () {
             constructor = new MappedNamedComponentFactory(helloWorldModule, helloWorldComponent7, {
                 'http://example.org/HelloWorldModule#requiredParam': Resource.newBoolean(true),
@@ -732,29 +686,25 @@ describe('MappedNamedComponentFactory', function () {
         });
 
         it('should be valid', function () {
-            constructor.should.not.be.null();
+            expect(constructor).toBeTruthy();
         });
 
-        it('should create valid arguments', function (done) {
-            constructor.makeArguments().then((args) => {
-                args.should.deepEqual([[
-                    'true'
-                ]]);
-                done();
-            }).catch(done);
+        it('should create valid arguments', async() => {
+          const args = await constructor.makeArguments();
+          expect(args).toEqual([[
+            'true'
+          ]]);
         });
 
-        it('should make a valid instance', function (done) {
-            constructor.create().then((instance) => {
-                instance.should.not.be.null();
-                instance.should.be.instanceof(Hello);
-                done();
-            }).catch(done);
+        it('should make a valid instance', async() => {
+          const instance = await constructor.create();
+          expect(instance).toBeTruthy();
+          expect(instance).toBeInstanceOf(Hello);
         });
     });
 
     describe('for a hello world component with lazy parameters', function () {
-        let constructor;
+        let constructor: MappedNamedComponentFactory;
         beforeEach(function () {
             constructor = new MappedNamedComponentFactory(helloWorldModule, helloWorldComponent8, {
                 'http://example.org/HelloWorldModule#dummyParamLazy': Resource.newBoolean(true),
@@ -762,32 +712,26 @@ describe('MappedNamedComponentFactory', function () {
         });
 
         it('should be valid', function () {
-            constructor.should.not.be.null();
+            expect(constructor).toBeTruthy();
         });
 
-        it('should create valid arguments', function (done) {
-            constructor.makeArguments().then((args) => {
-                args[0]['dummyParamLazy']().then((value) => {
-                    value.should.equal('true');
-                    done();
-                });
-            }).catch(done);
+        it('should create valid arguments', async() => {
+          const args = await constructor.makeArguments();
+          expect(await args[0]['dummyParamLazy']()).toEqual('true');
         });
 
-        it('should make a valid instance', function (done) {
-            constructor.create().then((instance) => {
-                instance.should.not.be.null();
-                instance.should.be.instanceof(Hello);
-                done();
-            }).catch(done);
+        it('should make a valid instance', async() => {
+          const instance = await constructor.create();
+          expect(instance).toBeTruthy();
+          expect(instance).toBeInstanceOf(Hello);
         });
     });
 
   describe('for a hello world component with variables', function () {
-    let constructor;
+    let constructor: MappedNamedComponentFactory;
     beforeEach(function () {
-      const variable = new Resource('ex:var');
-      variable.types = [new Resource(Constants.PREFIXES['om'] + 'Variable')];
+      const variable: any = new Resource('ex:var');
+      variable.types = [new Resource(Util.PREFIXES['om'] + 'Variable')];
       constructor = new MappedNamedComponentFactory(helloWorldModule, helloWorldComponent2, {
         'http://example.org/HelloWorldModule#dummyParam': variable,
         'http://example.org/HelloWorldModule#instanceParam': MappedNamedComponentFactory
@@ -796,50 +740,40 @@ describe('MappedNamedComponentFactory', function () {
     });
 
     it('should be valid', function () {
-      constructor.should.not.be.null();
+      expect(constructor).toBeTruthy();
     });
 
-    it('should create valid arguments', function (done) {
-      constructor.makeArguments({
+    it('should create valid arguments', async() => {
+      const args = await constructor.makeArguments({
         variables: {
           'ex:var': 3000,
         },
-      }).then((args) => {
-        args.should.deepEqual([{
-          'dummyParam': 3000,
-          'instanceParam': new Hello()
-        }]);
-        done();
-      }).catch(done);
+      });
+      expect(args).toEqual([{
+        'dummyParam': 3000,
+        'instanceParam': new Hello()
+      }]);
     });
 
-    it('should throw when a variable remains undefined', function (done) {
-      constructor.makeArguments({
+    it('should throw when a variable remains undefined', async() => {
+      await expect(constructor.makeArguments({
         variables: {},
-      }).catch((error) => {
-        error.should.deepEqual(new Error('Undefined variable: ex:var'));
-        done();
-      });
+      })).rejects.toThrow(new Error('Undefined variable: ex:var'));
     });
 
-    it('should throw when no variables are passed', function (done) {
-      constructor.makeArguments().catch((error) => {
-        error.should.deepEqual(new Error('Undefined variable: ex:var'));
-        done();
-      });
+    it('should throw when no variables are passed', async() => {
+      await expect(constructor.makeArguments()).rejects.toThrow(new Error('Undefined variable: ex:var'));
     });
 
-    it('should make a valid instance', function (done) {
-      constructor.create({
+    it('should make a valid instance', async() => {
+      const instance = await constructor.create({
         variables: {
           'ex:var': 3000,
         },
-      }).then((instance) => {
-        instance.should.not.be.null();
-        instance.should.be.instanceof(Hello);
-        instance._params.dummyParam.should.equal(3000);
-        done();
-      }).catch(done);
+      });
+      expect(instance).toBeTruthy();
+      expect(instance).toBeInstanceOf(Hello);
+      expect(instance._params.dummyParam).toEqual(3000);
     });
   });
 

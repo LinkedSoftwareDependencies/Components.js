@@ -1,9 +1,8 @@
-require('should');
-const Resource = require("../../lib/rdf/Resource").Resource;
-const UnnamedComponentFactory = require("../../lib/factory/UnnamedComponentFactory").UnnamedComponentFactory;
-const ComponentRunner = require("../../lib/Loader").Loader;
-const Hello = require("../helloworld").HelloNested.Deeper.Hello;
-const fs = require("fs");
+import { Resource } from '../../lib/rdf/Resource';
+import { UnnamedComponentFactory } from '../../lib/factory/UnnamedComponentFactory';
+import { Loader } from '../../lib/Loader';
+
+const Hello = require("../../__mocks__/helloworld").HelloNested.Deeper.Hello;
 const N3 = require('n3');
 
 // Component definition for an N3 Lexer
@@ -37,7 +36,7 @@ let n3ParserComponent = new Resource('http://example.org/n3#Parser', {
 
 // Component definition for an N3 Parser
 let nestedHelloWorldComponent = new Resource('http://example.org/n3#Parser', {
-  requireName: Resource.newString('test/helloworld'),
+  requireName: Resource.newString('helloworld'),
   requireElement: Resource.newString('HelloNested.Deeper.Hello'),
   arguments: new Resource(null, {
     list: []
@@ -67,145 +66,123 @@ let n3LexerComponentNoConstructor = new Resource('http://example.org/n3#Lexer', 
 describe('UnnamedComponentFactory', function () {
 
   describe('#getArgumentValue', function () {
-    it('should create valid literals', function (done) {
-      UnnamedComponentFactory.getArgumentValue(new Resource('"application/trig"')).then((ret) => {
-        ret.should.equal('application/trig');
-        done();
-      });
+    it('should create valid literals', async() => {
+      expect(await UnnamedComponentFactory.getArgumentValue(new Resource('"application/trig"'), new Loader()))
+        .toEqual('application/trig');
     });
 
-    it('should create valid instances', function (done) {
-      UnnamedComponentFactory.getArgumentValue(n3LexerComponent, new ComponentRunner()).then((instance) => {
-        instance.should.not.be.null();
-        instance.should.be.instanceof(N3.Lexer);
-        done();
-      });
+    it('should create valid instances', async() => {
+      const ret = await UnnamedComponentFactory.getArgumentValue(n3LexerComponent, new Loader());
+      expect(ret).toBeTruthy();
+      expect(ret).toBeInstanceOf(N3.Lexer);
     });
   });
 
   describe('for an N3 Lexer', function () {
-    let constructor;
+    let constructor: UnnamedComponentFactory;
     beforeEach(function () {
       constructor = new UnnamedComponentFactory(n3LexerComponent, true);
     });
 
     it('should be valid', function () {
-      constructor.should.not.be.null();
+      expect(constructor).toBeTruthy();
     });
 
-    it('should create valid arguments', function (done) {
-      constructor.makeArguments().then((args) => {
-        args.should.deepEqual([ { comments: 'true' } ]);
-        done();
-      });
+    it('should create valid arguments', async() => {
+      const args = await constructor.makeArguments();
+      expect(args).toEqual([ { comments: 'true' } ]);
     });
 
-    it('should make a valid instance', function (done) {
-      constructor.create().then((instance) => {
-        instance.should.not.be.null();
-        instance.should.be.instanceof(N3.Lexer);
-        done();
-      });
+    it('should make a valid instance', async() => {
+      const ret = await UnnamedComponentFactory.getArgumentValue(n3LexerComponent, new Loader());
+      expect(ret).toBeTruthy();
+      expect(ret).toBeInstanceOf(N3.Lexer);
     });
   });
 
   describe('for an N3 Lexer with array arguments', function () {
-    let constructor;
+    let constructor: UnnamedComponentFactory;
     beforeEach(function () {
       constructor = new UnnamedComponentFactory(n3LexerComponentArray, true);
     });
 
     it('should be valid', function () {
-      constructor.should.not.be.null();
+      expect(constructor).toBeTruthy();
     });
 
-    it('should create valid arguments', function (done) {
-      constructor.makeArguments().then((args) => {
-        args.should.deepEqual([ [ 'A', 'B', 'C' ] ]);
-        done();
-      });
+    it('should create valid arguments', async() => {
+      const args = await constructor.makeArguments();
+      expect(args).toEqual([['A', 'B', 'C']]);
     });
 
-    it('should make a valid instance', function (done) {
-      constructor.create().then((instance) => {
-        instance.should.not.be.null();
-        instance.should.be.instanceof(N3.Lexer);
-        done();
-      });
+    it('should make a valid instance', async() => {
+      const instance = await constructor.create();
+      expect(instance).toBeTruthy();
+      expect(instance).toBeInstanceOf(N3.Lexer);
     });
   });
 
   describe('for an N3 Parser', function () {
-    let constructor;
+    let constructor: UnnamedComponentFactory;
     beforeEach(function () {
       constructor = new UnnamedComponentFactory(n3ParserComponent, true);
     });
 
     it('should be valid', function () {
-      constructor.should.not.be.null();
+      expect(constructor).toBeTruthy();
     });
 
-    it('should create valid arguments', function (done) {
-      constructor.makeArguments().then((args) => {
-        args.length.should.equal(1);
-        args[0].format.should.equal('application/trig');
-        args[0].lexer.should.not.be.null();
-        args[0].lexer.should.be.instanceof(N3.Lexer);
-        done();
-      });
+    it('should create valid arguments', async() => {
+      const args = await constructor.makeArguments();
+      expect(args.length).toEqual(1);
+      expect(args[0].format).toEqual('application/trig');
+      expect(args[0].lexer).toBeTruthy();
+      expect(args[0].lexer).toBeInstanceOf(N3.Lexer);
     });
 
-    it('should make a valid instance', function (done) {
-      constructor.create().then((instance) => {
-        instance.should.not.be.null();
-        instance.should.be.instanceof(N3.Parser);
-        done();
-      });
+    it('should make a valid instance', async() => {
+      const instance = await constructor.create();
+      expect(instance).toBeTruthy();
+      expect(instance).toBeInstanceOf(N3.Parser);
     });
   });
 
   describe('for a nested HelloWorld component', function () {
-    let constructor;
+    let constructor: UnnamedComponentFactory;
     beforeEach(function () {
       constructor = new UnnamedComponentFactory(nestedHelloWorldComponent, true);
     });
 
     it('should be valid', function () {
-      constructor.should.not.be.null();
+      expect(constructor).toBeTruthy();
     });
 
-    it('should create valid arguments', function (done) {
-      constructor.makeArguments().then((args) => {
-        args.length.should.equal(0);
-        done();
-      });
+    it('should create valid arguments', async() => {
+      const args = await constructor.makeArguments();
+      expect(args).toEqual([]);
     });
 
-    it('should make a valid instance', function (done) {
-      constructor.create().then((instance) => {
-        instance.should.not.be.null();
-        instance.should.be.instanceof(Hello);
-        done();
-      });
+    it('should make a valid instance', async() => {
+      const instance = await constructor.create();
+      expect(instance).toBeTruthy();
+      expect(instance).toBeInstanceOf(Hello);
     });
   });
 
   describe('for an N3 Lexer without constructor', function () {
-    let constructor;
+    let constructor: UnnamedComponentFactory;
     beforeEach(function () {
       constructor = new UnnamedComponentFactory(n3LexerComponentNoConstructor, true);
     });
 
     it('should be valid', function () {
-      constructor.should.not.be.null();
+      expect(constructor).toBeTruthy();
     });
 
-    it('should make a valid instance', function (done) {
-      constructor.create().then((instance) => {
-        instance.should.not.be.null();
-        instance.should.equal(N3.Lexer);
-        done();
-      });
+    it('should make a valid instance', async() => {
+      const instance = await constructor.create();
+      expect(instance).toBeTruthy();
+      expect(instance()).toBeInstanceOf(N3.Lexer);
     });
   });
 });

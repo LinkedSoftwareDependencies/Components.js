@@ -45,7 +45,7 @@
     {
       "@id": "ex:HelloWorldModule",
       "@type": "Module",
-      "requireName": "test/helloworld",
+      "requireName": "helloworld",
       "components": [
         {
           "@id": "ex:HelloWorldModule#SayHelloComponent1",

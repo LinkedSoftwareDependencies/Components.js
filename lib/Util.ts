@@ -223,8 +223,7 @@ class Util {
         return value;
 
         function incorrectType() {
-            throw new Error(value.value + ' is not of type ' + param.range.value + ' for parameter ' + param.value
-                + '.\n' + NodeUtil.inspect(param));
+            throw new Error(value.value + ' is not of type ' + param.range.value + ' for parameter ' + param.value);
         }
     }
 
@@ -244,7 +243,7 @@ class Util {
     }
 
     static initDefaultMainModulePath() {
-        for (let nodeModulesPath of (<any> global.process.mainModule).paths) {
+        for (let nodeModulesPath of require.main.paths) {
             let path = nodeModulesPath.replace(/node_modules$/, 'package.json');
             try {
                 require(path);

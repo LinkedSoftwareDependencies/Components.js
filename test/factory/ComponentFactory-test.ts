@@ -1,17 +1,17 @@
-require('should');
-const Resource = require("../../lib/rdf/Resource").Resource;
-const ComponentFactory = require("../../lib/factory/ComponentFactory").ComponentFactory;
-const UnnamedComponentFactory = require("../../lib/factory/UnnamedComponentFactory").UnnamedComponentFactory;
-const NamedComponentFactory = require("../../lib/factory/UnmappedNamedComponentFactory").UnmappedNamedComponentFactory;
-const MappedNamedComponentFactory = require("../../lib/factory/MappedNamedComponentFactory").MappedNamedComponentFactory;
-const fs = require("fs");
+import { Resource } from '../../lib/rdf/Resource';
+import { ComponentFactory } from '../../lib/factory/ComponentFactory';
+import { UnnamedComponentFactory } from '../../lib/factory/UnnamedComponentFactory';
+import { MappedNamedComponentFactory } from '../../lib/factory/MappedNamedComponentFactory';
+import { UnmappedNamedComponentFactory } from '../../lib/factory/UnmappedNamedComponentFactory';
+import Util = require('../../lib/Util');
+
+// TODO: improve these imports
 const N3 = require('n3');
 const _ = require('lodash');
-const Constants = require("../../lib/Util");
 
 // Unnamed component config for an N3 Lexer
 let n3LexerComponentConfigUnnamed = new Resource('http://example.org/MyLexer', {
-  types: [ new Resource(Constants.PREFIXES['oo'] + 'Class') ],
+  types: [ new Resource(Util.PREFIXES['oo'] + 'Class') ],
   requireName: Resource.newString('n3'),
   requireElement: Resource.newString('Lexer'),
   arguments: new Resource(null, {
@@ -30,7 +30,7 @@ let n3LexerComponentConfigNamed = _.assign(new Resource('http://example.org/MyLe
 
 // Named component definition for an N3 Lexer
 let n3LexerComponentDefinitionUnmapped = new Resource('http://example.org/n3#Lexer', {
-  types: [ new Resource(Constants.PREFIXES['oo'] + 'Class') ],
+  types: [ new Resource(Util.PREFIXES['oo'] + 'Class') ],
   requireElement: Resource.newString('Lexer'),
   hasParameter: [
     new Resource('http://example.org/n3#lineMode'),
@@ -41,7 +41,7 @@ let n3LexerComponentDefinitionUnmapped = new Resource('http://example.org/n3#Lex
 
 // Mapped component definition for an N3 Lexer
 let n3LexerComponentDefinitionMapped = new Resource('http://example.org/n3#Lexer', {
-  types: [ new Resource(Constants.PREFIXES['oo'] + 'Class') ],
+  types: [ new Resource(Util.PREFIXES['oo'] + 'Class') ],
   requireElement: Resource.newString('Lexer'),
   hasParameter: [
     new Resource('http://example.org/n3#lineMode'),
@@ -72,71 +72,65 @@ let n3ModuleDefinition = new Resource('http://example.org/n3', {
 describe('ComponentFactory', function () {
 
   describe('for an unnamed N3 Lexer config', function () {
-    let constructor;
+    let constructor: ComponentFactory;
     beforeEach(function () {
       constructor = new ComponentFactory(n3ModuleDefinition, n3LexerComponentDefinitionUnmapped, n3LexerComponentConfigUnnamed);
     });
 
     it('should use the unnamed component factory', function () {
-      constructor._getComponentFactory().should.be.instanceof(UnnamedComponentFactory);
+      expect(constructor._getComponentFactory()).toBeInstanceOf(UnnamedComponentFactory);
     });
 
     it('should be valid', function () {
-      constructor.should.not.be.null();
+      expect(constructor).toBeTruthy();
     });
 
-    it('should make a valid instance', function (done) {
-      constructor.create().then((instance) => {
-        instance.should.not.be.null();
-        instance.should.be.instanceof(N3.Lexer);
-        done();
-      });
+    it('should make a valid instance', async() => {
+      const instance = await constructor.create();
+      expect(instance).toBeTruthy();
+      expect(instance).toBeInstanceOf(N3.Lexer);
     });
   });
 
   describe('for a named N3 Lexer config and unmapped definition', function () {
-    let constructor;
+    let constructor: ComponentFactory;
     beforeEach(function () {
       constructor = new ComponentFactory(n3ModuleDefinition, n3LexerComponentDefinitionUnmapped, n3LexerComponentConfigNamed);
     });
 
     it('should use the unmapped component factory', function () {
-      constructor._getComponentFactory().should.be.instanceof(NamedComponentFactory);
+      expect(constructor._getComponentFactory()).toBeInstanceOf(UnmappedNamedComponentFactory);
     });
 
     it('should be valid', function () {
-      constructor.should.not.be.null();
+      expect(constructor).toBeTruthy();
     });
 
-    it('should make a valid instance', function (done) {
-      constructor.create().then((instance) => {
-        instance.should.not.be.null();
-        instance.should.be.instanceof(N3.Lexer);
-        done();
-      });
+    it('should make a valid instance', async() => {
+      const instance = await constructor.create();
+      expect(instance).toBeTruthy();
+      expect(instance).toBeInstanceOf(N3.Lexer);
     });
   });
 
   describe('for a named N3 Lexer config and mapped definition', function () {
-    let constructor;
+    let constructor: ComponentFactory;
     beforeEach(function () {
       constructor = new ComponentFactory(n3ModuleDefinition, n3LexerComponentDefinitionMapped, n3LexerComponentConfigNamed);
     });
 
     it('should use the mapped component factory', function () {
-      constructor._getComponentFactory().should.be.instanceof(MappedNamedComponentFactory);
+      expect(constructor._getComponentFactory()).toBeInstanceOf(MappedNamedComponentFactory);
     });
 
     it('should be valid', function () {
-      constructor.should.not.be.null();
+      expect(constructor).toBeTruthy();
     });
 
-    it('should make a valid instance', function (done) {
-      constructor.create().then((instance) => {
-        instance.should.not.be.null();
-        instance.should.be.instanceof(N3.Lexer);
-        done();
-      });
+    it('should make a valid instance', async() => {
+      const instance = await constructor.create();
+      expect(instance).toBeTruthy();
+      expect(instance).toBeInstanceOf(N3.Lexer);
     });
   });
 });

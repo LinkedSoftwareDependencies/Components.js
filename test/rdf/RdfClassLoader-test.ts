@@ -1,11 +1,11 @@
-require('should');
-const RdfClassLoader = require("../../lib/rdf/RdfClassLoader").RdfClassLoader;
+import { RdfClassLoader } from '../../lib/rdf/RdfClassLoader';
+
 const N3 = require("n3");
 const fs = require("fs");
 
 describe('RdfClassLoader', function () {
   describe('for triples.ttl', function () {
-    var tripleStream;
+    var tripleStream: any;
     beforeEach(function () {
       tripleStream = new N3.StreamParser();
       var fileStream = fs.createReadStream(__dirname + '/../assets/triples.ttl');
@@ -13,17 +13,17 @@ describe('RdfClassLoader', function () {
     });
 
     describe('without bound properties and classes', function () {
-      var loader;
+      var loader: RdfClassLoader;
       beforeEach(function () {
-        loader = new RdfClassLoader();
+        loader = new RdfClassLoader({ normalizeLists: false });
       });
 
       it('should have no properties', function () {
-        loader._properties.should.be.empty;
+        expect(loader._properties).toEqual({});
       });
 
       it('should have no classes', function () {
-        loader._classes.should.be.empty;
+        expect(loader._classes).toEqual({});
       });
 
       describe('with triple stream piping', function () {
@@ -33,19 +33,19 @@ describe('RdfClassLoader', function () {
         });
 
         it('should have 2 resources', function () {
-          Object.keys(loader.resources).length.should.equal(2);
-          loader.resources.should.have.property('a');
-          loader.resources.should.have.property('b');
+          expect(Object.keys(loader.resources).length).toEqual(2);
+          expect(loader.resources).toHaveProperty('a');
+          expect(loader.resources).toHaveProperty('b');
         });
 
         it('should have no types', function () {
-          Object.keys(loader.typedResources).length.should.equal(0);
+          expect(Object.keys(loader.typedResources).length).toEqual(0);
         });
       });
     });
 
     describe('with bound properties and classes', function () {
-      var loader;
+      var loader: RdfClassLoader;
       beforeEach(function () {
         loader = new RdfClassLoader();
 
@@ -58,9 +58,9 @@ describe('RdfClassLoader', function () {
       });
 
       it('should allow property binding', function () {
-        loader._properties.should.have.property('http://example.org/p0', 'field0');
-        loader._properties.should.have.property('http://example.org/p1', 'field1');
-        loader._properties.should.have.property('http://example.org/p2', 'field2');
+        expect(loader._properties['http://example.org/p0']).toEqual('field0');
+        expect(loader._properties['http://example.org/p1']).toEqual('field1');
+        expect(loader._properties['http://example.org/p2']).toEqual('field2');
       });
 
       it('should allow triple stream transformation', function () {
@@ -74,71 +74,71 @@ describe('RdfClassLoader', function () {
         });
 
         it('should have 9 resources', function () {
-          Object.keys(loader.resources).length.should.equal(9);
-          loader.resources.should.have.property('a');
-          loader.resources.should.have.property('b');
-          loader.resources.should.have.property('"a0a"');
-          loader.resources.should.have.property('"a0b"');
-          loader.resources.should.have.property('"a0c"');
-          loader.resources.should.have.property('"a1a"');
-          loader.resources.should.have.property('"b0a"');
-          loader.resources.should.have.property('"b2a"');
-          loader.resources.should.have.property('"b2b"');
+          expect(Object.keys(loader.resources).length).toEqual(9);
+          expect(loader.resources).toHaveProperty('a');
+          expect(loader.resources).toHaveProperty('b');
+          expect(loader.resources).toHaveProperty('"a0a"');
+          expect(loader.resources).toHaveProperty('"a0b"');
+          expect(loader.resources).toHaveProperty('"a0c"');
+          expect(loader.resources).toHaveProperty('"a1a"');
+          expect(loader.resources).toHaveProperty('"b0a"');
+          expect(loader.resources).toHaveProperty('"b2a"');
+          expect(loader.resources).toHaveProperty('"b2b"');
         });
 
         it('should have 2 typed resources', function () {
-          Object.keys(loader.typedResources).length.should.equal(2);
-          loader.typedResources.should.have.property('a');
-          loader.typedResources.should.have.property('b');
+          expect(Object.keys(loader.typedResources).length).toEqual(2);
+          expect(loader.typedResources).toHaveProperty('a');
+          expect(loader.typedResources).toHaveProperty('b');
         });
 
         it('resource "a" should have fields', function () {
-          let field0 = loader.resources['a'].field0;
-          Object.keys(field0).length.should.equal(3);
-          field0.should.have.containEql(loader.resources['"a0a"']);
-          field0.should.have.containEql(loader.resources['"a0b"']);
-          field0.should.have.containEql(loader.resources['"a0c"']);
+          let field0 = (<any> loader.resources['a']).field0;
+          expect(Object.keys(field0).length).toEqual(3);
+          expect(field0).toContainEqual(loader.resources['"a0a"']);
+          expect(field0).toContainEqual(loader.resources['"a0b"']);
+          expect(field0).toContainEqual(loader.resources['"a0c"']);
 
-          let field1 = loader.resources['a'].field1;
-          Object.keys(field1).length.should.equal(1);
-          field1.should.have.containEql(loader.resources['"a1a"']);
+          let field1 = (<any> loader.resources['a']).field1;
+          expect(Object.keys(field1).length).toEqual(1);
+          expect(field1).toContainEqual(loader.resources['"a1a"']);
 
-          let field2 = loader.resources['a'].field2;
-          Object.keys(field2).length.should.equal(1);
-          field2.should.have.containEql(loader.resources['b']);
+          let field2 = (<any> loader.resources['a']).field2;
+          expect(Object.keys(field2).length).toEqual(1);
+          expect(field2).toContainEqual(loader.resources['b']);
         });
 
         it('resource "b" should have fields', function () {
-          let field0 = loader.resources['b'].field0;
-          Object.keys(field0).length.should.equal(1);
-          field0.should.have.containEql(loader.resources['"b0a"']);
+          let field0 = (<any> loader.resources['b']).field0;
+          expect(Object.keys(field0).length).toEqual(1);
+          expect(field0).toContainEqual(loader.resources['"b0a"']);
 
-          let field1 = loader.resources['b'].field1;
-          Object.keys(field1).length.should.equal(1);
-          field1.should.have.containEql(loader.resources['a']);
+          let field1 = (<any> loader.resources['b']).field1;
+          expect(Object.keys(field1).length).toEqual(1);
+          expect(field1).toContainEqual(loader.resources['a']);
 
-          let field2 = loader.resources['b'].field2;
-          Object.keys(field2).length.should.equal(2);
-          field2.should.have.containEql(loader.resources['"b2a"']);
-          field2.should.have.containEql(loader.resources['"b2b"']);
+          let field2 = (<any> loader.resources['b']).field2;
+          expect(Object.keys(field2).length).toEqual(2);
+          expect(field2).toContainEqual(loader.resources['"b2a"']);
+          expect(field2).toContainEqual(loader.resources['"b2b"']);
         });
 
         it('should have 2 type "a" resources', function () {
-          loader.typedResources['a'].length.should.equal(2);
-          loader.typedResources['a'].should.have.containEql(loader.resources['a']);
-          loader.typedResources['a'].should.have.containEql(loader.resources['b']);
+          expect(loader.typedResources['a'].length).toEqual(2);
+          expect(loader.typedResources['a']).toContainEqual(loader.resources['a']);
+          expect(loader.typedResources['a']).toContainEqual(loader.resources['b']);
         });
 
         it('should have 1 type "b" resource', function () {
-          loader.typedResources['b'].length.should.equal(1);
-          loader.typedResources['b'].should.have.containEql(loader.resources['b']);
+          expect(loader.typedResources['b'].length).toEqual(1);
+          expect(loader.typedResources['b']).toContainEqual(loader.resources['b']);
         });
       });
     });
   });
 
   describe('for list.ttl', function () {
-    var tripleStream;
+    var tripleStream: any;
     beforeEach(function () {
       tripleStream = new N3.StreamParser();
       var fileStream = fs.createReadStream(__dirname + '/../assets/list.ttl');
@@ -146,7 +146,7 @@ describe('RdfClassLoader', function () {
     });
 
     describe('with bound properties and classes', function () {
-      var loader;
+      var loader: RdfClassLoader;
       beforeEach(function () {
         loader = new RdfClassLoader();
 
@@ -161,27 +161,27 @@ describe('RdfClassLoader', function () {
         });
 
         it('should have 1 resource', function () {
-          Object.keys(loader.resources).length.should.equal(4);
-          loader.resources.should.have.property('a');
-          loader.resources.should.have.property('1');
-          loader.resources.should.have.property('2');
-          loader.resources.should.have.property('3');
+          expect(Object.keys(loader.resources).length).toEqual(4);
+          expect(loader.resources).toHaveProperty('a');
+          expect(loader.resources).toHaveProperty('1');
+          expect(loader.resources).toHaveProperty('2');
+          expect(loader.resources).toHaveProperty('3');
         });
 
         it('"a" should have a list', function () {
-          let list = loader.resources['a'].withList[0];
-          list.should.have.property('list');
-          list.list.length.should.equal(3);
-          list.list.should.have.containEql(loader.resources['1']);
-          list.list.should.have.containEql(loader.resources['2']);
-          list.list.should.have.containEql(loader.resources['3']);
+          let list = (<any> loader.resources['a']).withList[0];
+          expect(list).toHaveProperty('list');
+          expect(list.list.length).toEqual(3);
+          expect(list.list).toContainEqual(loader.resources['1']);
+          expect(list.list).toContainEqual(loader.resources['2']);
+          expect(list.list).toContainEqual(loader.resources['3']);
         });
       });
     });
   });
 
   describe('for list-empty.ttl', function () {
-    var tripleStream;
+    var tripleStream: any;
     beforeEach(function () {
       tripleStream = new N3.StreamParser();
       var fileStream = fs.createReadStream(__dirname + '/../assets/list-empty.ttl');
@@ -189,7 +189,7 @@ describe('RdfClassLoader', function () {
     });
 
     describe('with bound properties and classes', function () {
-      var loader;
+      var loader: RdfClassLoader;
       beforeEach(function () {
         loader = new RdfClassLoader();
 
@@ -204,21 +204,21 @@ describe('RdfClassLoader', function () {
         });
 
         it('should have 1 resource', function () {
-          Object.keys(loader.resources).length.should.equal(1);
-          loader.resources.should.have.property('a');
+          expect(Object.keys(loader.resources).length).toEqual(1);
+          expect(loader.resources).toHaveProperty('a');
         });
 
         it('"a" should have a list', function () {
-          let list = loader.resources['a'].withList[0];
-          list.should.have.property('list');
-          list.list.length.should.equal(0);
+          let list = (<any> loader.resources['a']).withList[0];
+          expect(list).toHaveProperty('list');
+          expect(list.list.length).toEqual(0);
         });
       });
     });
   });
 
   describe('for triples-unique.ttl', function () {
-    var tripleStream;
+    var tripleStream: any;
     beforeEach(function () {
       tripleStream = new N3.StreamParser();
       var fileStream = fs.createReadStream(__dirname + '/../assets/triples-unique.ttl');
@@ -226,7 +226,7 @@ describe('RdfClassLoader', function () {
     });
 
     describe('with bound unique properties', function () {
-      var loader;
+      var loader: RdfClassLoader;
       beforeEach(function () {
         loader = new RdfClassLoader();
 
@@ -240,9 +240,9 @@ describe('RdfClassLoader', function () {
       });
 
       it('should have set unique properties', function () {
-        loader._uniqueProperties.should.have.property('field0', true);
-        loader._uniqueProperties.should.have.property('field1', true);
-        loader._uniqueProperties.should.have.property('field2', true);
+        expect(loader._uniqueProperties).toHaveProperty('field0', true);
+        expect(loader._uniqueProperties).toHaveProperty('field1', true);
+        expect(loader._uniqueProperties).toHaveProperty('field2', true);
       });
 
       it('should allow triple stream transformation', function () {
@@ -256,16 +256,16 @@ describe('RdfClassLoader', function () {
         });
 
         it('resource "a" should have unique fields', function () {
-          loader.resources['a'].field0.should.equal(loader.resources['"a0a"']);
-          loader.resources['a'].field1.should.equal(loader.resources['"a1a"']);
-          loader.resources['a'].field2.should.equal(loader.resources['b']);
+          expect((<any> loader.resources['a']).field0).toEqual(loader.resources['"a0a"']);
+          expect((<any> loader.resources['a']).field1).toEqual(loader.resources['"a1a"']);
+          expect((<any> loader.resources['a']).field2).toEqual(loader.resources['b']);
         });
       });
     });
   });
 
   describe('for triples-nonunique.ttl', function () {
-    var tripleStream;
+    var tripleStream: any;
     beforeEach(function () {
       tripleStream = new N3.StreamParser();
       var fileStream = fs.createReadStream(__dirname + '/../assets/triples-nonunique.ttl');
@@ -273,7 +273,7 @@ describe('RdfClassLoader', function () {
     });
 
     describe('with bound unique properties', function () {
-      var loader;
+      var loader: RdfClassLoader;
       beforeEach(function () {
         loader = new RdfClassLoader();
 
