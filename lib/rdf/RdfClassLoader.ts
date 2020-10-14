@@ -1,8 +1,8 @@
 import {Writable} from "stream";
-import N3 = require('n3');
 import {Resource} from "./Resource";
-import Triple = N3.Triple;
 import Util = require("../Util");
+import type * as RDF from "rdf-js";
+import { quadToStringQuad, IStringQuad } from "rdf-string";
 
 /**
  * An RdfClassLoader is a writable stream that accepts triple streams and loads resources in-memory.
@@ -102,7 +102,7 @@ export class RdfClassLoader extends Writable {
         return instance;
     }
 
-    _pushPredicate(fieldName: string, triple: Triple) {
+    _pushPredicate(fieldName: string, triple: IStringQuad) {
         let subjectInstance: any = this._getOrMakeResource(triple.subject);
         let objectInstance: any = this._getOrMakeResource(triple.object);
         if (!this._uniqueProperties[fieldName]) {
@@ -123,7 +123,8 @@ export class RdfClassLoader extends Writable {
         }
     }
 
-    _write(triple: Triple, encoding: any, done: any) {
+    _write(tripleOriginal: RDF.Quad, encoding: any, done: any) {
+        const triple = quadToStringQuad(tripleOriginal);
         // Store fields for the configured predicates
         let fieldName: string = this._properties[triple.predicate];
         if (this._captureAllProperties) {

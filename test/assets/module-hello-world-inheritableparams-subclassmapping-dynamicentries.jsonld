@@ -21,7 +21,7 @@
           ],
           "constructorArguments": [
             {
-              "@id": "ex:HelloWorldModule#SayHelloComponent1#constructorArgumentsObject",
+              "@id": "ex:HelloWorldModule#SayHelloComponent1_constructorArgumentsObject",
               "fields": [
                 {
                   "keyRaw": "somethings1",
@@ -62,7 +62,7 @@
           "constructorArguments": [
             {
               "@type": "om:ObjectMapping",
-              "extends": "ex:HelloWorldModule#SayHelloComponent1#constructorArgumentsObject",
+              "extends": "ex:HelloWorldModule#SayHelloComponent1_constructorArgumentsObject",
               "fields": [
                 {
 

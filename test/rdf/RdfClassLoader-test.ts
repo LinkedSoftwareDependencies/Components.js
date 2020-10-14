@@ -1,15 +1,14 @@
 import { RdfClassLoader } from '../../lib/rdf/RdfClassLoader';
-
-const N3 = require("n3");
-const fs = require("fs");
+import rdfParser from 'rdf-parse';
+import { Readable } from "stream";
+import * as fs from 'fs';
 
 describe('RdfClassLoader', function () {
   describe('for triples.ttl', function () {
-    var tripleStream: any;
+    let tripleStream: Readable;
     beforeEach(function () {
-      tripleStream = new N3.StreamParser();
-      var fileStream = fs.createReadStream(__dirname + '/../assets/triples.ttl');
-      fileStream.pipe(tripleStream);
+      tripleStream = rdfParser.parse(fs
+        .createReadStream(__dirname + '/../assets/triples.ttl'), { contentType: 'text/turtle'});
     });
 
     describe('without bound properties and classes', function () {
@@ -140,9 +139,8 @@ describe('RdfClassLoader', function () {
   describe('for list.ttl', function () {
     var tripleStream: any;
     beforeEach(function () {
-      tripleStream = new N3.StreamParser();
-      var fileStream = fs.createReadStream(__dirname + '/../assets/list.ttl');
-      fileStream.pipe(tripleStream);
+      tripleStream = rdfParser.parse(fs
+        .createReadStream(__dirname + '/../assets/list.ttl'), { contentType: 'text/turtle'});
     });
 
     describe('with bound properties and classes', function () {
@@ -183,9 +181,8 @@ describe('RdfClassLoader', function () {
   describe('for list-empty.ttl', function () {
     var tripleStream: any;
     beforeEach(function () {
-      tripleStream = new N3.StreamParser();
-      var fileStream = fs.createReadStream(__dirname + '/../assets/list-empty.ttl');
-      fileStream.pipe(tripleStream);
+      tripleStream = rdfParser.parse(fs
+        .createReadStream(__dirname + '/../assets/list-empty.ttl'), { contentType: 'text/turtle'});
     });
 
     describe('with bound properties and classes', function () {
@@ -220,9 +217,8 @@ describe('RdfClassLoader', function () {
   describe('for triples-unique.ttl', function () {
     var tripleStream: any;
     beforeEach(function () {
-      tripleStream = new N3.StreamParser();
-      var fileStream = fs.createReadStream(__dirname + '/../assets/triples-unique.ttl');
-      fileStream.pipe(tripleStream);
+      tripleStream = rdfParser.parse(fs
+        .createReadStream(__dirname + '/../assets/triples-unique.ttl'), { contentType: 'text/turtle'});
     });
 
     describe('with bound unique properties', function () {
@@ -267,9 +263,8 @@ describe('RdfClassLoader', function () {
   describe('for triples-nonunique.ttl', function () {
     var tripleStream: any;
     beforeEach(function () {
-      tripleStream = new N3.StreamParser();
-      var fileStream = fs.createReadStream(__dirname + '/../assets/triples-nonunique.ttl');
-      fileStream.pipe(tripleStream);
+      tripleStream = rdfParser.parse(fs
+        .createReadStream(__dirname + '/../assets/triples-nonunique.ttl'), { contentType: 'text/turtle'});
     });
 
     describe('with bound unique properties', function () {

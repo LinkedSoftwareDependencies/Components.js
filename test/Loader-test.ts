@@ -4,7 +4,8 @@ import { Resource } from '../lib/rdf/Resource';
 import { Readable } from 'stream';
 import Util = require('../lib/Util');
 import * as fs from 'fs';
-import { JsonLdStreamParser } from '../lib/rdf/JsonLdStreamParser';
+import rdfParser from 'rdf-parse';
+const quad = require('rdf-quad');
 
 const Hello = require("../__mocks__/helloworld").Hello;
 
@@ -58,21 +59,21 @@ describe('Loader', function () {
 
       beforeEach(async() => {
         let moduleStream = new Readable({ objectMode: true });
-        moduleStream.push({ subject: module, predicate: Util.PREFIXES['rdf'] + 'type', object: Util.PREFIXES['oo'] + 'Module'});
-        moduleStream.push({ subject: module, predicate: Util.PREFIXES['oo'] + 'component', object: component1});
-        moduleStream.push({ subject: module, predicate: Util.PREFIXES['doap'] + 'name', object: '"helloworld"'});
-        moduleStream.push({ subject: component1, predicate: Util.PREFIXES['rdf'] + 'type', object: Util.PREFIXES['oo'] + 'Class'});
-        moduleStream.push({ subject: component1, predicate: Util.PREFIXES['oo'] + 'componentPath', object: '"Hello"'});
-        moduleStream.push({ subject: component1, predicate: Util.PREFIXES['oo'] + 'parameter', object: 'http://example.org/myModule/params#param1'});
-        moduleStream.push({ subject: component1, predicate: Util.PREFIXES['oo'] + 'parameter', object: 'http://example.org/myModule/params#param3'});
-        moduleStream.push({ subject: module, predicate: Util.PREFIXES['oo'] + 'component', object: component2});
-        moduleStream.push({ subject: component2, predicate: Util.PREFIXES['rdf'] + 'type', object: Util.PREFIXES['oo'] + 'Class'});
-        moduleStream.push({ subject: component2, predicate: Util.PREFIXES['oo'] + 'componentPath', object: '"Hello"'});
-        moduleStream.push({ subject: component2, predicate: Util.PREFIXES['oo'] + 'parameter', object: 'http://example.org/myModule/params#param1'});
-        moduleStream.push({ subject: module, predicate: Util.PREFIXES['oo'] + 'component', object: component3});
-        moduleStream.push({ subject: component3, predicate: Util.PREFIXES['rdf'] + 'type', object: Util.PREFIXES['oo'] + 'Class'});
-        moduleStream.push({ subject: component3, predicate: Util.PREFIXES['oo'] + 'componentPath', object: '"Hello"'});
-        moduleStream.push({ subject: component3, predicate: Util.PREFIXES['oo'] + 'parameter', object: 'http://example.org/myModule/params#param2'});
+        moduleStream.push(quad(module, Util.PREFIXES['rdf'] + 'type', Util.PREFIXES['oo'] + 'Module'));
+        moduleStream.push(quad(module, Util.PREFIXES['oo'] + 'component', component1));
+        moduleStream.push(quad(module, Util.PREFIXES['doap'] + 'name', '"helloworld"'));
+        moduleStream.push(quad(component1, Util.PREFIXES['rdf'] + 'type', Util.PREFIXES['oo'] + 'Class'));
+        moduleStream.push(quad(component1, Util.PREFIXES['oo'] + 'componentPath', '"Hello"'));
+        moduleStream.push(quad(component1, Util.PREFIXES['oo'] + 'parameter', 'http://example.org/myModule/params#param1'));
+        moduleStream.push(quad(component1, Util.PREFIXES['oo'] + 'parameter', 'http://example.org/myModule/params#param3'));
+        moduleStream.push(quad(module, Util.PREFIXES['oo'] + 'component', component2));
+        moduleStream.push(quad(component2, Util.PREFIXES['rdf'] + 'type', Util.PREFIXES['oo'] + 'Class'));
+        moduleStream.push(quad(component2, Util.PREFIXES['oo'] + 'componentPath', '"Hello"'));
+        moduleStream.push(quad(component2, Util.PREFIXES['oo'] + 'parameter', 'http://example.org/myModule/params#param1'));
+        moduleStream.push(quad(module, Util.PREFIXES['oo'] + 'component', component3));
+        moduleStream.push(quad(component3, Util.PREFIXES['rdf'] + 'type', Util.PREFIXES['oo'] + 'Class'));
+        moduleStream.push(quad(component3, Util.PREFIXES['oo'] + 'componentPath', '"Hello"'));
+        moduleStream.push(quad(component3, Util.PREFIXES['oo'] + 'parameter', 'http://example.org/myModule/params#param2'));
         moduleStream.push(null);
         await runner.registerModuleResourcesStream(moduleStream);
       });
@@ -98,10 +99,10 @@ describe('Loader', function () {
       it('should allow a config stream to be run', async() => {
         let config1 = 'http://example.org/myModule#myconfig1';
         let configResourceStream = new Readable({ objectMode: true });
-        configResourceStream.push({ subject: config1, predicate: Util.PREFIXES['rdf'] + 'type', object: component1});
-        configResourceStream.push({ subject: config1, predicate: 'http://example.org/myModule/params#param1', object: '"ABC"'});
-        configResourceStream.push({ subject: config1, predicate: 'http://example.org/myModule/params#param2', object: '"DEF"'});
-        configResourceStream.push({ subject: config1, predicate: 'http://example.org/myModule/params#param3', object: '"GHI"'});
+        configResourceStream.push(quad(config1, Util.PREFIXES['rdf'] + 'type', component1));
+        configResourceStream.push(quad(config1, 'http://example.org/myModule/params#param1', '"ABC"'));
+        configResourceStream.push(quad(config1, 'http://example.org/myModule/params#param2', '"DEF"'));
+        configResourceStream.push(quad(config1, 'http://example.org/myModule/params#param3', '"GHI"'));
         configResourceStream.push(null);
 
         const run = await runner.instantiateFromStream(config1, configResourceStream);
@@ -126,8 +127,10 @@ describe('Loader', function () {
 
     describe('with a file triple stream', function () {
       beforeEach(async() => {
-        let moduleStream = fs.createReadStream(__dirname + '/assets/module-hello-world.jsonld').pipe(new JsonLdStreamParser());
-        await runner.registerModuleResourcesStream(moduleStream);
+        await runner.registerModuleResourcesStream(rdfParser.parse(
+          fs.createReadStream(__dirname + '/assets/module-hello-world.jsonld'),
+          { contentType: 'application/ld+json' },
+        ));
       });
 
       it('should allow module components to be registered', function () {
@@ -147,7 +150,10 @@ describe('Loader', function () {
       });
 
       it('should allow a config stream to be run', async() => {
-        let configResourceStream = fs.createReadStream(__dirname + '/assets/config-hello-world.jsonld').pipe(new JsonLdStreamParser());
+        let configResourceStream = rdfParser.parse(
+          fs.createReadStream(__dirname + '/assets/config-hello-world.jsonld'),
+          { contentType: 'application/ld+json' },
+        );
         const run = await runner.instantiateFromStream('http://example.org/myconfig', configResourceStream);
         expect(run._params).toEqual({
           'http://example.org/hello/hello': ['WORLD'],
@@ -223,13 +229,21 @@ describe('Loader', function () {
 
   describe('constructing an component with constructor mappings', function () {
     beforeEach(async() => {
-      let moduleStream = fs.createReadStream(__dirname + '/assets/module-hello-world-mapping.jsonld').pipe(new JsonLdStreamParser());
-      await runner.registerModuleResourcesStream(moduleStream);
+      await runner.registerModuleResourcesStream(rdfParser.parse(
+        fs.createReadStream(__dirname + '/assets/module-hello-world-mapping.jsonld'),
+        { contentType: 'application/ld+json' },
+      ));
     });
 
     it('should produce instances with correct parameter values', async() => {
-      let configResourceStream1 = fs.createReadStream(__dirname + '/assets/config-hello-world-mapping.jsonld').pipe(new JsonLdStreamParser());
-      let configResourceStream2 = fs.createReadStream(__dirname + '/assets/config-hello-world-mapping.jsonld').pipe(new JsonLdStreamParser());
+      let configResourceStream1 = rdfParser.parse(
+        fs.createReadStream(__dirname + '/assets/config-hello-world-mapping.jsonld'),
+        { contentType: 'application/ld+json' },
+      );
+      let configResourceStream2 = rdfParser.parse(
+        fs.createReadStream(__dirname + '/assets/config-hello-world-mapping.jsonld'),
+        { contentType: 'application/ld+json' },
+      );
       const run1 = await runner.instantiateFromStream('http://example.org/myHelloWorld1', configResourceStream1)
       expect(run1._params).toEqual({
         'something1': ['SOMETHING1', 'SOMETHING2'],
@@ -241,12 +255,18 @@ describe('Loader', function () {
 
   describe('constructing an component with referenced parameters values', function () {
     beforeEach(async() => {
-      let moduleStream = fs.createReadStream(__dirname + '/assets/module-hello-world.jsonld').pipe(new JsonLdStreamParser());
+      let moduleStream = rdfParser.parse(
+        fs.createReadStream(__dirname + '/assets/module-hello-world.jsonld'),
+        { contentType: 'application/ld+json' },
+      );
       await runner.registerModuleResourcesStream(moduleStream);
     });
 
     it('should produce instances with equal parameter values', async() => {
-      let configResourceStream = fs.createReadStream(__dirname + '/assets/config-hello-world-referenced.jsonld').pipe(new JsonLdStreamParser());
+      let configResourceStream = rdfParser.parse(
+        fs.createReadStream(__dirname + '/assets/config-hello-world-referenced.jsonld'),
+        { contentType: 'application/ld+json' },
+      );
       const run = await runner.instantiateFromStream('http://example.org/myHelloWorld1', configResourceStream);
       expect(run._params).toEqual({
         'http://example.org/hello/hello': [new Hello()],
@@ -256,7 +276,10 @@ describe('Loader', function () {
     });
 
     it('should produce instances with different parameter values', async() => {
-      let configResourceStream = fs.createReadStream(__dirname + '/assets/config-hello-world-unreferenced.jsonld').pipe(new JsonLdStreamParser());
+      let configResourceStream = rdfParser.parse(
+        fs.createReadStream(__dirname + '/assets/config-hello-world-unreferenced.jsonld'),
+        { contentType: 'application/ld+json' },
+      );
       const run = await runner.instantiateFromStream('http://example.org/myHelloWorld1', configResourceStream);
       expect(run._params).toEqual({
         'http://example.org/hello/hello': [new Hello()],
@@ -266,7 +289,10 @@ describe('Loader', function () {
     });
 
     it('should produce invalid instances with itself as parameter value when self-referenced', async() => {
-      let configResourceStream = fs.createReadStream(__dirname + '/assets/config-hello-world-selfreferenced.jsonld').pipe(new JsonLdStreamParser());
+      let configResourceStream = rdfParser.parse(
+        fs.createReadStream(__dirname + '/assets/config-hello-world-selfreferenced.jsonld'),
+        { contentType: 'application/ld+json' },
+      );
       const run = await runner.instantiateFromStream('http://example.org/myHelloWorld1', configResourceStream);
       expect(run._params).toEqual({
         'http://example.org/hello/hello': [{}]
@@ -276,13 +302,22 @@ describe('Loader', function () {
 
   describe('constructing an component with inheritable parameter values', function () {
     beforeEach(async() => {
-      let moduleStream = fs.createReadStream(__dirname + '/assets/module-hello-world-inheritableparams.jsonld').pipe(new JsonLdStreamParser());
+      let moduleStream = rdfParser.parse(
+        fs.createReadStream(__dirname + '/assets/module-hello-world-inheritableparams.jsonld'),
+        { contentType: 'application/ld+json' },
+      );
       await runner.registerModuleResourcesStream(moduleStream);
     });
 
     it('should produce instances with inherited parameter values', async() => {
-      let configResourceStream1 = fs.createReadStream(__dirname + '/assets/config-hello-world-inheritableparams.jsonld').pipe(new JsonLdStreamParser());
-      let configResourceStream2 = fs.createReadStream(__dirname + '/assets/config-hello-world-inheritableparams.jsonld').pipe(new JsonLdStreamParser());
+      let configResourceStream1 = rdfParser.parse(
+        fs.createReadStream(__dirname + '/assets/config-hello-world-inheritableparams.jsonld'),
+        { contentType: 'application/ld+json' },
+      );
+      let configResourceStream2 = rdfParser.parse(
+        fs.createReadStream(__dirname + '/assets/config-hello-world-inheritableparams.jsonld'),
+        { contentType: 'application/ld+json' },
+      );
       const run1 = await runner.instantiateFromStream('http://example.org/myHelloWorld1', configResourceStream1)
       expect(run1._params).toEqual({
         'http://example.org/hello/something': ["SOMETHING"]
@@ -296,12 +331,17 @@ describe('Loader', function () {
 
   describe('constructing components from an abstract component', function () {
     beforeEach(async() => {
-      let moduleStream = fs.createReadStream(__dirname + '/assets/module-hello-world-subclass.jsonld').pipe(new JsonLdStreamParser());
-      await runner.registerModuleResourcesStream(moduleStream);
+      await runner.registerModuleResourcesStream(rdfParser.parse(
+        fs.createReadStream(__dirname + '/assets/module-hello-world-subclass.jsonld'),
+        { contentType: 'application/ld+json' },
+      ));
     });
 
     it('should allow a config stream with component instances with inherited parameters from the parent to be run', async() => {
-      let configResourceStream = fs.createReadStream(__dirname + '/assets/config-hello-world-subclass.jsonld').pipe(new JsonLdStreamParser());
+      let configResourceStream = rdfParser.parse(
+        fs.createReadStream(__dirname + '/assets/config-hello-world-subclass.jsonld'),
+        { contentType: 'application/ld+json' },
+      );
       const run = await runner.instantiateFromStream('http://example.org/myHelloWorld1', configResourceStream);
       expect(run._params).toEqual({
         'http://example.org/hello/something': ["SOMETHING1"]
@@ -309,7 +349,10 @@ describe('Loader', function () {
     });
 
     it('should allow a config stream with component instances with inherited parameters from the parent\'s parent to be run', async() => {
-      let configResourceStream = fs.createReadStream(__dirname + '/assets/config-hello-world-subclass.jsonld').pipe(new JsonLdStreamParser());
+      let configResourceStream = rdfParser.parse(
+        fs.createReadStream(__dirname + '/assets/config-hello-world-subclass.jsonld'),
+        { contentType: 'application/ld+json' },
+      );
       const run = await runner.instantiateFromStream('http://example.org/myHelloWorld2', configResourceStream);
       expect(run._params).toEqual({
         'http://example.org/hello/something': ["SOMETHING2"]
@@ -319,12 +362,18 @@ describe('Loader', function () {
 
   describe('constructing components from an abstract component with constructor mappings', function () {
     beforeEach(async() => {
-      let moduleStream = fs.createReadStream(__dirname + '/assets/module-hello-world-subclassmapping.jsonld').pipe(new JsonLdStreamParser());
+      let moduleStream = rdfParser.parse(
+        fs.createReadStream(__dirname + '/assets/module-hello-world-subclassmapping.jsonld'),
+        { contentType: 'application/ld+json' },
+      );
       await runner.registerModuleResourcesStream(moduleStream);
     });
 
     it('should allow a config stream with component instances with inherited parameters from the parent to be run', async() => {
-      let configResourceStream = fs.createReadStream(__dirname + '/assets/config-hello-world-subclassmapping.jsonld').pipe(new JsonLdStreamParser());
+      let configResourceStream = rdfParser.parse(
+        fs.createReadStream(__dirname + '/assets/config-hello-world-subclassmapping.jsonld'),
+        { contentType: 'application/ld+json' },
+      );
       const run = await runner.instantiateFromStream('http://example.org/myHelloWorld1', configResourceStream)
       expect(run._params).toEqual({
         'something': ["SOMETHING"],
@@ -333,7 +382,10 @@ describe('Loader', function () {
     });
 
     it('should allow a config stream with component instances with inherited parameters from the parent\'s parent to be run', async() => {
-      let configResourceStream = fs.createReadStream(__dirname + '/assets/config-hello-world-subclassmapping.jsonld').pipe(new JsonLdStreamParser());
+      let configResourceStream = rdfParser.parse(
+        fs.createReadStream(__dirname + '/assets/config-hello-world-subclassmapping.jsonld'),
+        { contentType: 'application/ld+json' },
+      );
       const run = await runner.instantiateFromStream('http://example.org/myHelloWorld2', configResourceStream);
       expect(run._params).toEqual({
         'something': ["SOMETHING"],
@@ -343,7 +395,10 @@ describe('Loader', function () {
     });
 
     it('should allow a config stream with component instances with inherited parameters from the parent\'s parent\'s parent to be run', async() => {
-      let configResourceStream = fs.createReadStream(__dirname + '/assets/config-hello-world-subclassmapping.jsonld').pipe(new JsonLdStreamParser());
+      let configResourceStream = rdfParser.parse(
+        fs.createReadStream(__dirname + '/assets/config-hello-world-subclassmapping.jsonld'),
+        { contentType: 'application/ld+json' },
+      );
       const run = await runner.instantiateFromStream('http://example.org/myHelloWorld3', configResourceStream);
       expect(run._params).toEqual({
         'something': ["SOMETHING"],
@@ -355,13 +410,22 @@ describe('Loader', function () {
 
   describe('constructing an component with inheritable parameter values with constructor mappings', function () {
     beforeEach(async() => {
-      let moduleStream = fs.createReadStream(__dirname + '/assets/module-hello-world-inheritableparams-subclassmapping.jsonld').pipe(new JsonLdStreamParser());
+      let moduleStream = rdfParser.parse(
+        fs.createReadStream(__dirname + '/assets/module-hello-world-inheritableparams-subclassmapping.jsonld'),
+        { contentType: 'application/ld+json' },
+      );
       await runner.registerModuleResourcesStream(moduleStream);
     });
 
     it('should produce instances with inherited parameter values', async() => {
-      let configResourceStream1 = fs.createReadStream(__dirname + '/assets/config-hello-world-inheritableparams.jsonld').pipe(new JsonLdStreamParser());
-      let configResourceStream2 = fs.createReadStream(__dirname + '/assets/config-hello-world-inheritableparams.jsonld').pipe(new JsonLdStreamParser());
+      let configResourceStream1 = rdfParser.parse(
+        fs.createReadStream(__dirname + '/assets/config-hello-world-inheritableparams.jsonld'),
+        { contentType: 'application/ld+json' },
+      );
+      let configResourceStream2 = rdfParser.parse(
+        fs.createReadStream(__dirname + '/assets/config-hello-world-inheritableparams.jsonld'),
+        { contentType: 'application/ld+json' },
+      );
       const run1 = await runner.instantiateFromStream('http://example.org/myHelloWorld1', configResourceStream1);
       expect(run1._params).toEqual({
         'something': ["SOMETHING"]
@@ -375,12 +439,18 @@ describe('Loader', function () {
 
   describe('constructing components from an abstract component with dynamic entries in constructor mappings', function () {
     beforeEach(async() => {
-      let moduleStream = fs.createReadStream(__dirname + '/assets/module-hello-world-dynamicentries.jsonld').pipe(new JsonLdStreamParser());
+      let moduleStream = rdfParser.parse(
+        fs.createReadStream(__dirname + '/assets/module-hello-world-dynamicentries.jsonld'),
+        { contentType: 'application/ld+json' },
+      );
       await runner.registerModuleResourcesStream(moduleStream);
     });
 
     it('should allow a config stream with component instances to be run', async() => {
-      let configResourceStream = fs.createReadStream(__dirname + '/assets/config-hello-world-dynamicentries.jsonld').pipe(new JsonLdStreamParser());
+      let configResourceStream = rdfParser.parse(
+        fs.createReadStream(__dirname + '/assets/config-hello-world-dynamicentries.jsonld'),
+        { contentType: 'application/ld+json' },
+      );
       const run = await runner.instantiateFromStream('http://example.org/myHelloWorld1', configResourceStream)
       expect(run._params).toEqual({
         'KEY1': 'VALUE1',
@@ -389,7 +459,10 @@ describe('Loader', function () {
     });
 
     it('should allow a config stream with component instances to be run', async() => {
-      let configResourceStream = fs.createReadStream(__dirname + '/assets/config-hello-world-dynamicentries.jsonld').pipe(new JsonLdStreamParser());
+      let configResourceStream = rdfParser.parse(
+        fs.createReadStream(__dirname + '/assets/config-hello-world-dynamicentries.jsonld'),
+        { contentType: 'application/ld+json' },
+      );
       const run = await runner.instantiateFromStream('http://example.org/myHelloWorld2', configResourceStream)
       expect(run._params).toEqual({
         'KEY3': 'VALUE3',
@@ -400,12 +473,18 @@ describe('Loader', function () {
 
   describe('constructing components from an abstract component with constructor mappings with inheritable parameters and dynamic entries', function () {
     beforeEach(async() => {
-      let moduleStream = fs.createReadStream(__dirname + '/assets/module-hello-world-subclassmapping-dynamicentries.jsonld').pipe(new JsonLdStreamParser());
+      let moduleStream = rdfParser.parse(
+        fs.createReadStream(__dirname + '/assets/module-hello-world-subclassmapping-dynamicentries.jsonld'),
+        { contentType: 'application/ld+json' },
+      );
       await runner.registerModuleResourcesStream(moduleStream);
     });
 
     it('should allow a config stream with component instances with inherited parameters from the parent to be run', async() => {
-      let configResourceStream = fs.createReadStream(__dirname + '/assets/config-hello-world-subclassmapping-dynamicentries.jsonld').pipe(new JsonLdStreamParser());
+      let configResourceStream = rdfParser.parse(
+        fs.createReadStream(__dirname + '/assets/config-hello-world-subclassmapping-dynamicentries.jsonld'),
+        { contentType: 'application/ld+json' },
+      );
       const run = await runner.instantiateFromStream('http://example.org/myHelloWorld1', configResourceStream)
       expect(run._params).toEqual({
         '0KEY1': '0VALUE1',
@@ -416,7 +495,10 @@ describe('Loader', function () {
     });
 
     it('should allow a config stream with component instances with inherited parameters from the parent\'s parent to be run', async() => {
-      let configResourceStream = fs.createReadStream(__dirname + '/assets/config-hello-world-subclassmapping-dynamicentries.jsonld').pipe(new JsonLdStreamParser());
+      let configResourceStream = rdfParser.parse(
+        fs.createReadStream(__dirname + '/assets/config-hello-world-subclassmapping-dynamicentries.jsonld'),
+        { contentType: 'application/ld+json' },
+      );
       const run = await runner.instantiateFromStream('http://example.org/myHelloWorld2', configResourceStream)
       expect(run._params).toEqual({
         '0KEY1': '0VALUE1',
@@ -431,13 +513,22 @@ describe('Loader', function () {
 
   describe('constructing an component with inheritable parameter values with constructor mappings, inherited parameters and dynamic entries', function () {
     beforeEach(async() => {
-      let moduleStream = fs.createReadStream(__dirname + '/assets/module-hello-world-inheritableparams-subclassmapping-dynamicentries.jsonld').pipe(new JsonLdStreamParser());
+      let moduleStream = rdfParser.parse(
+        fs.createReadStream(__dirname + '/assets/module-hello-world-inheritableparams-subclassmapping-dynamicentries.jsonld'),
+        { contentType: 'application/ld+json' },
+      );
       await runner.registerModuleResourcesStream(moduleStream);
     });
 
     it('should produce instances with inherited parameter values', async() => {
-      let configResourceStream1 = fs.createReadStream(__dirname + '/assets/config-hello-world-dynamicentries2.jsonld').pipe(new JsonLdStreamParser());
-      let configResourceStream2 = fs.createReadStream(__dirname + '/assets/config-hello-world-dynamicentries2.jsonld').pipe(new JsonLdStreamParser());
+      let configResourceStream1 = rdfParser.parse(
+        fs.createReadStream(__dirname + '/assets/config-hello-world-dynamicentries2.jsonld'),
+        { contentType: 'application/ld+json' },
+      );
+      let configResourceStream2 = rdfParser.parse(
+        fs.createReadStream(__dirname + '/assets/config-hello-world-dynamicentries2.jsonld'),
+        { contentType: 'application/ld+json' },
+      );
       const run1 = await runner.instantiateFromStream('http://example.org/myHelloWorld1', configResourceStream1)
       expect(run1._params).toEqual({
         'somethings1': {
@@ -465,13 +556,22 @@ describe('Loader', function () {
 
   describe('constructing an component with inheritable parameter values and dynamic entries', function () {
     beforeEach(async() => {
-      let moduleStream = fs.createReadStream(__dirname + '/assets/module-hello-world-inheritableparams-dynamicentries.jsonld').pipe(new JsonLdStreamParser());
+      let moduleStream = rdfParser.parse(
+        fs.createReadStream(__dirname + '/assets/module-hello-world-inheritableparams-dynamicentries.jsonld'),
+        { contentType: 'application/ld+json' },
+      );
       await runner.registerModuleResourcesStream(moduleStream);
     });
 
     it('should produce instances with inherited parameter values', async() => {
-      let configResourceStream1 = fs.createReadStream(__dirname + '/assets/config-hello-world-inheritableparams-dynamicentries.jsonld').pipe(new JsonLdStreamParser());
-      let configResourceStream2 = fs.createReadStream(__dirname + '/assets/config-hello-world-inheritableparams-dynamicentries.jsonld').pipe(new JsonLdStreamParser());
+      let configResourceStream1 = rdfParser.parse(
+        fs.createReadStream(__dirname + '/assets/config-hello-world-inheritableparams-dynamicentries.jsonld'),
+        { contentType: 'application/ld+json' },
+      );
+      let configResourceStream2 = rdfParser.parse(
+        fs.createReadStream(__dirname + '/assets/config-hello-world-inheritableparams-dynamicentries.jsonld'),
+        { contentType: 'application/ld+json' },
+      );
       const run1 = await runner.instantiateFromStream('http://example.org/myHelloWorld1', configResourceStream1)
       expect(run1._params).toEqual({
         'KEY1': 'VALUE1',
@@ -515,13 +615,22 @@ describe('Loader', function () {
 
   describe('constructing an component with typed parameters', function () {
     beforeEach(async() => {
-      let moduleStream = fs.createReadStream(__dirname + '/assets/module-hello-world-paramranges.jsonld').pipe(new JsonLdStreamParser());
+      let moduleStream = rdfParser.parse(
+        fs.createReadStream(__dirname + '/assets/module-hello-world-paramranges.jsonld'),
+        { contentType: 'application/ld+json' },
+      );
       await runner.registerModuleResourcesStream(moduleStream);
     });
 
     it('should produce instances with correct parameter values after an erroring instantiation', async() => {
-      let configResourceStream1 = fs.createReadStream(__dirname + '/assets/config-hello-world.jsonld').pipe(new JsonLdStreamParser());
-      let configResourceStream2 = fs.createReadStream(__dirname + '/assets/config-hello-world-paramranges.jsonld').pipe(new JsonLdStreamParser());
+      let configResourceStream1 = rdfParser.parse(
+        fs.createReadStream(__dirname + '/assets/config-hello-world.jsonld'),
+        { contentType: 'application/ld+json' },
+      );
+      let configResourceStream2 = rdfParser.parse(
+        fs.createReadStream(__dirname + '/assets/config-hello-world-paramranges.jsonld'),
+        { contentType: 'application/ld+json' },
+      );
       await expect(runner.instantiateFromStream('http://example.org/myconfig', configResourceStream1))
         .rejects.toThrow(new Error('HI is not of type http://www.w3.org/2001/XMLSchema#boolean for parameter http://example.org/hello/say'));
       const run2 = await runner.instantiateFromStream('http://example.org/myconfig2', configResourceStream2)
@@ -534,12 +643,18 @@ describe('Loader', function () {
 
   describe('constructing components from a component with nested dynamic entries in constructor mappings', function () {
     beforeEach(async() => {
-      let moduleStream = fs.createReadStream(__dirname + '/assets/module-hello-world-dynamicentries-nested.jsonld').pipe(new JsonLdStreamParser());
+      let moduleStream = rdfParser.parse(
+        fs.createReadStream(__dirname + '/assets/module-hello-world-dynamicentries-nested.jsonld'),
+        { contentType: 'application/ld+json' },
+      );
       await runner.registerModuleResourcesStream(moduleStream);
     });
 
     it('should allow a config stream with component instances to be run with nested array mappings', async() => {
-      let configResourceStream = fs.createReadStream(__dirname + '/assets/config-hello-world-dynamicentries-nested.jsonld').pipe(new JsonLdStreamParser());
+      let configResourceStream = rdfParser.parse(
+        fs.createReadStream(__dirname + '/assets/config-hello-world-dynamicentries-nested.jsonld'),
+        { contentType: 'application/ld+json' },
+      );
       const run = await runner.instantiateFromStream('http://example.org/myHelloWorld1', configResourceStream)
       expect(run._params).toEqual({
         'KEY1': {
@@ -553,7 +668,10 @@ describe('Loader', function () {
     });
 
     it('should allow a config stream with component instances to be run with nested object mappings', async() => {
-      let configResourceStream = fs.createReadStream(__dirname + '/assets/config-hello-world-dynamicentries-nested.jsonld').pipe(new JsonLdStreamParser());
+      let configResourceStream = rdfParser.parse(
+        fs.createReadStream(__dirname + '/assets/config-hello-world-dynamicentries-nested.jsonld'),
+        { contentType: 'application/ld+json' },
+      );
       const run = await runner.instantiateFromStream('http://example.org/myHelloWorld2', configResourceStream);
       expect(run._params).toEqual({
         'KEY1': {
@@ -576,7 +694,10 @@ describe('Loader', function () {
     });
 
     it('should allow a config stream with component instances to be run with double nested array mappings', async() => {
-      let configResourceStream = fs.createReadStream(__dirname + '/assets/config-hello-world-dynamicentries-nested.jsonld').pipe(new JsonLdStreamParser());
+      let configResourceStream = rdfParser.parse(
+        fs.createReadStream(__dirname + '/assets/config-hello-world-dynamicentries-nested.jsonld'),
+        { contentType: 'application/ld+json' },
+      );
       const run = await runner.instantiateFromStream('http://example.org/myHelloWorld3', configResourceStream);
       expect(run._params).toEqual({
         'KEY1': [
@@ -591,17 +712,23 @@ describe('Loader', function () {
   });
 
     describe('constructing an component with lazy parameters values', function () {
-        beforeEach(async() => {
-            let moduleStream = fs.createReadStream(__dirname + '/assets/module-hello-world-lazy.jsonld').pipe(new JsonLdStreamParser());
-            await runner.registerModuleResourcesStream(moduleStream);
-        });
+      beforeEach(async () => {
+        let moduleStream = rdfParser.parse(
+          fs.createReadStream(__dirname + '/assets/module-hello-world-lazy.jsonld'),
+          {contentType: 'application/ld+json'},
+        );
+        await runner.registerModuleResourcesStream(moduleStream);
+      });
 
-        it('should produce instances with lazy parameter values', async() => {
-            let configResourceStream = fs.createReadStream(__dirname + '/assets/config-hello-world-lazy.jsonld').pipe(new JsonLdStreamParser());
-          const run = await runner.instantiateFromStream('http://example.org/myHelloWorldLazy1', configResourceStream)
-          const val1 = await run._params.somethingLazy();
-          const val2 = await val1._params.somethingLazy();
-          expect(val2).toEqual('bla');
-        });
+      it('should produce instances with lazy parameter values', async () => {
+        let configResourceStream = rdfParser.parse(
+          fs.createReadStream(__dirname + '/assets/config-hello-world-lazy.jsonld'),
+          {contentType: 'application/ld+json'},
+        );
+        const run = await runner.instantiateFromStream('http://example.org/myHelloWorldLazy1', configResourceStream)
+        const val1 = await run._params.somethingLazy();
+        const val2 = await val1._params.somethingLazy();
+        expect(val2).toEqual('bla');
+      });
     });
 });

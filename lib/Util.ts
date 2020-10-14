@@ -1,12 +1,10 @@
-import {RdfStreamParser} from "./rdf/RdfStreamParser";
-import {Stream} from "stream";
+import { Readable } from "stream";
 import http = require("http");
 import https = require("https");
 import fs = require("fs");
 import Path = require("path");
 import url = require("url");
 import _ = require("lodash");
-import {RdfStreamIncluder} from "./rdf/RdfStreamIncluder";
 import NodeUtil = require('util');
 import {Resource} from "./rdf/Resource";
 
@@ -40,7 +38,7 @@ class Util {
      * @returns {Promise<T>} A promise resolving to the data stream.
      * @private
      */
-    static getContentsFromUrlOrPath(path: string, fromPath?: string): Promise<Stream> {
+    static getContentsFromUrlOrPath(path: string, fromPath?: string): Promise<Readable> {
         return new Promise((resolve, reject) => {
             let parsedUrl: any = url.parse(path);
             let separatorPos: number = path.indexOf(':');
@@ -52,7 +50,7 @@ class Util {
                 resolve(fs.createReadStream(Path.join(fromPath || '', parsedUrl.path)).on('error', rejectContext));
             } else {
                 try {
-                    var request = (<any> (parsedUrl.protocol == 'https:' ? https : http)).request(parsedUrl, (data: Stream) => {
+                    var request = (<any> (parsedUrl.protocol == 'https:' ? https : http)).request(parsedUrl, (data: Readable) => {
                         data.on('error', rejectContext);
                         resolve(data);
                     });
@@ -66,29 +64,6 @@ class Util {
                 reject(Util.addFilePathToError(e, path, fromPath));
             }
         });
-    }
-
-    /**
-     * Parse the given data stream to a triple stream.
-     * @param rdfDataStream The data stream.
-     * @param path The file path or url.
-     * @param fromPath The path to base relative paths on.
-     *                 Default is the current running directory.
-     * @param absolutizeRelativePaths If relative paths 'file://' should be made absolute 'file:///'.
-     * @param ignoreImports If imports should be ignored. Default: false
-     * @param contexts The cached JSON-LD contexts
-     * @param importPaths The cached import paths.
-     * @returns A triple stream.
-     * @private
-     */
-    static parseRdf(rdfDataStream: Stream, path: string, fromPath?: string, ignoreImports?: boolean,
-                    absolutizeRelativePaths?: boolean, contexts?: {[id: string]: string},
-                    importPaths?: {[id: string]: string}): Stream {
-        if (!fromPath) fromPath = Path.dirname(path);
-        let stream: Stream = new RdfStreamParser(contexts).pipeFrom(rdfDataStream);
-        let ret: Stream = stream.pipe(new RdfStreamIncluder(Util, fromPath, !ignoreImports, absolutizeRelativePaths, contexts, importPaths));
-        stream.on('error', (e: any) => ret.emit('error', Util.addFilePathToError(e, path || fromPath, path ? fromPath : null)));
-        return ret;
     }
 
     /**
@@ -556,7 +531,7 @@ class Util {
      * @returns {Error} The new error with file path context.
      */
     static addFilePathToError(e: Error, filePath: string, fromPath?: string): Error {
-        return new Error('Invalid components file "' + (fromPath ? Path.join(fromPath, filePath) : filePath) + '":\n' + e);
+        return new Error('Invalid components file "' + (fromPath ? Path.join(fromPath, filePath) : filePath) + '":\n' + e.stack);
     }
 
     /**

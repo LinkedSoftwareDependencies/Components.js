@@ -21,7 +21,7 @@
           ],
           "constructorArguments": [
             {
-              "@id": "ex:HelloWorldModule#SayHelloComponentLazy#constructorArgumentsObject",
+              "@id": "ex:HelloWorldModule#SayHelloComponentLazy_constructorArgumentsObject",
               "fields": [
                 {
                   "keyRaw": "somethingLazy",

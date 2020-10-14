@@ -1,46 +1,11 @@
 {
-  "@context": {
-    "oo": "https://linkedsoftwaredependencies.org/vocabularies/object-oriented#",
-    "om": "https://linkedsoftwaredependencies.org/vocabularies/object-mapping#",
-    "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
-    "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
-    "owl": "http://www.w3.org/2002/07/owl#",
-
-    "doap": "http://usefulinc.com/ns/doap#",
-
-    "hello": "http://example.org/hello/",
-    "ex": "http://example.org/",
-
-    "Module": { "@id": "oo:Module" },
-    "Class": { "@id": "oo:Class" },
-    "AbstractClass": { "@id": "oo:AbstractClass" },
-    "Instance": { "@id": "oo:ComponentInstance" },
-    "components": { "@id": "oo:component" },
-    "parameters": { "@id": "oo:parameter" },
-    "constructorArguments": { "@id": "oo:constructorArguments", "@type": "oo:ObjectMapping", "@container": "@list" },
-
-    "comment": { "@id": "rdfs:comment", "@type": "@id" },
-    "extends": { "@id": "rdfs:subClassOf", "@type": "@id" },
-
-    "import": { "@id": "owl:imports" },
-
-    "InheritanceValue": { "@id": "owl:Restriction" },
-    "inheritValues": { "@id": "rdfs:subClassOf", "@type": "@id" },
-    "onParameter": { "@id": "owl:onProperty", "@type": "@id" },
-    "from": { "@id": "owl:allValuesFrom", "@type": "@id" },
-
-    "requireName": { "@id": "doap:name" },
-    "requireElement": { "@id": "oo:componentPath" },
-
-    "ObjectMapping": { "@id": "om:ObjectMapping" },
-    "ArrayMapping": { "@id": "om:ArrayMapping" },
-    "fields": { "@id": "om:field",  "@type": "om:ObjectMappingEntry" },
-    "elements": { "@id": "om:element", "@type": "om:ArrayMappingEntry" },
-    "collectEntries": { "@id": "om:collectsEntriesFrom", "@type": "@id" },
-    "keyRaw": { "@id": "om:fieldName" },
-    "key": { "@id": "om:fieldName", "@type": "@id" },
-    "value": { "@id": "om:fieldValue", "@type": "@id" }
-  },
+  "@context": [
+    "https://linkedsoftwaredependencies.org/bundles/npm/componentsjs/^3.0.0/components/context.jsonld",
+    {
+      "hello": "http://example.org/hello/",
+      "ex": "http://example.org/"
+    }
+  ],
   "@graph": [
     {
       "@id": "ex:HelloWorldModule",

@@ -21,7 +21,7 @@
           ],
           "constructorArguments": [
             {
-              "@id": "ex:HelloWorldModule#SayHelloComponent1#constructorArgumentsObject",
+              "@id": "ex:HelloWorldModule#SayHelloComponent1_constructorArgumentsObject",
               "fields": [
                 {
                   "keyRaw": "something1",
@@ -40,7 +40,7 @@
           ],
           "constructorArguments": [
             {
-              "@id": "ex:HelloWorldModule#SayHelloComponent2#constructorArgumentsObject",
+              "@id": "ex:HelloWorldModule#SayHelloComponent2_constructorArgumentsObject",
               "elements": [
                 "hello:something2"
               ]

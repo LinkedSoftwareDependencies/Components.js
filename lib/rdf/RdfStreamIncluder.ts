@@ -1,78 +1,72 @@
-import {PassThrough} from "stream";
-import N3 = require("n3");
+import { PassThrough, Readable } from "stream";
 import Path = require("path");
-import {Stream} from "stream";
+import { RdfParser, RdfParserOptions } from './RdfParser';
+import type * as RDF from "rdf-js";
+import { mapTerms } from "rdf-terms";
+import { DataFactory } from "rdf-data-factory";
+import Util = require('../Util');
+
+const DF = new DataFactory();
 
 /**
  * A RdfStreamIncluder takes a triple stream and detects owl:includes to automatically include other files.
  */
 export class RdfStreamIncluder extends PassThrough {
 
-    static RELATIVE_PATH_MATCHER: RegExp = /^"file:\/\/([^\/].*)".*$/;
+    private static readonly RELATIVE_PATH_MATCHER: RegExp = /^"file:\/\/([^\/].*)".*$/;
 
-    _runningImporters: number = 1;
-    _constants: any;
-    _fromPath: string;
-    _followImports: boolean;
-    _absolutizeRelativePaths: boolean;
-    _contexts?: {[id: string]: string};
-    _importPaths?: {[id: string]: string};
+    private runningImporters: number = 1;
+    private readonly parserOptions: RdfParserOptions;
 
-    constructor(constants: any, fromPath: string, followImports: boolean, absolutizeRelativePaths: boolean,
-                contexts?: {[id: string]: string}, importPaths?: {[id: string]: string}) {
+    constructor(parserOptions: RdfParserOptions) {
         super({ objectMode: true });
         (<any> this)._readableState.objectMode = true;
-        this._constants = constants;
-        this._fromPath = fromPath;
-        this._followImports = followImports;
-        this._absolutizeRelativePaths = absolutizeRelativePaths;
-        this._contexts = contexts;
-        this._importPaths = importPaths;
+        this.parserOptions = parserOptions;
     }
 
-    push(data: any, encoding?: string): boolean {
+    push(data: RDF.Quad, encoding?: string): boolean {
         if (data) {
-            if (this._followImports && data.predicate === this._constants.PREFIXES['owl'] + 'imports') {
-                this._runningImporters++;
-                var relativeFilePath = data.object;
+            if (!this.parserOptions.ignoreImports && data.predicate.value === Util.PREFIXES['owl'] + 'imports') {
+                this.runningImporters++;
+                var relativeFilePath = data.object.value;
 
                 // Try overriding path using defined import paths
-                if (this._importPaths) {
-                    for (const prefix of Object.keys(this._importPaths)) {
+                if (this.parserOptions.importPaths) {
+                    for (const prefix of Object.keys(this.parserOptions.importPaths)) {
                         if (relativeFilePath.startsWith(prefix)) {
-                            relativeFilePath = this._importPaths[prefix] + relativeFilePath.substr(prefix.length);
+                            relativeFilePath = this.parserOptions.importPaths[prefix] + relativeFilePath.substr(prefix.length);
                             break;
                         }
                     }
                 }
 
-                this._constants.getContentsFromUrlOrPath(relativeFilePath, this._fromPath)
-                    .then((rawStream: Stream) => {
-                        let data: Stream = this._constants.parseRdf(rawStream, null, this._fromPath, true,
-                            this._absolutizeRelativePaths, this._contexts, this._importPaths);
+                Util.getContentsFromUrlOrPath(relativeFilePath, this.parserOptions.baseIRI)
+                    .then((rawStream: Readable) => {
+                        let data: Readable = new RdfParser().parse(rawStream, this.parserOptions);
                         data.on('data', (subData: any) => this.push(subData))
-                            .on('error', (e: any) => this.emit('error', require("../Util").addFilePathToError(e, relativeFilePath, this._fromPath)))
+                            .on('error', (e: any) => this.emit('error', Util.addFilePathToError(e, relativeFilePath, this.parserOptions.baseIRI)))
                             .on('end', () => this.push(null));
-                    }).catch((e: any) => this.emit('error', require("../Util").addFilePathToError(e, relativeFilePath, this._fromPath)));
+                    }).catch((e: any) => this.emit('error', Util.addFilePathToError(e, relativeFilePath, this.parserOptions.baseIRI)));
             }
-            if (this._absolutizeRelativePaths) {
-                data.subject = this._absolutize(data.subject);
-                data.predicate = this._absolutize(data.predicate);
-                data.object = this._absolutize(data.object);
+            if (this.parserOptions.absolutizeRelativePaths) {
+                data = mapTerms(data, (term) => this._absolutize(term));
             }
             return super.push(data);
         }
-        else if (!--this._runningImporters) {
+        else if (!--this.runningImporters) {
             super.push(null);
         }
     }
 
-    _absolutize(uri: string): string {
-        // Make relative paths absolute
-        var match = RdfStreamIncluder.RELATIVE_PATH_MATCHER.exec(uri);
-        if (match) {
-            return '"file:///' + Path.join(this._fromPath, match[1]) + '"' + this._constants.PREFIXES['xsd'] + 'string';
+    _absolutize(term: RDF.Term): RDF.Term {
+        if (term.termType !== 'NamedNode') {
+            return term;
         }
-        return uri;
+        // Make relative paths absolute
+        var match = RdfStreamIncluder.RELATIVE_PATH_MATCHER.exec(term.value);
+        if (match) {
+            return DF.namedNode('"file:///' + Path.join(this.parserOptions.baseIRI, match[1]) + '"' + Util.PREFIXES['xsd'] + 'string');
+        }
+        return term;
     }
 }

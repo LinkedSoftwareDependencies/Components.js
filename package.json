@@ -37,11 +37,15 @@
     "@types/minimist": "^1.2.0",
     "@types/n3": "0.0.3",
     "@types/node": "^14.11.8",
+    "@types/rdf-js": "*",
     "global-modules": "^1.0.0",
     "jsonld": "^0.4.11",
     "lodash": "^4.17.4",
     "minimist": "^1.2.0",
     "n3": "^0.9.1",
+    "rdf-parse": "^1.5.0",
+    "rdf-terms": "^1.6.2",
+    "rdf-quad": "^1.5.0",
     "requireg": "^0.1.7"
   },
   "devDependencies": {
@@ -78,7 +82,11 @@
       "ts",
       "js"
     ],
-    "moduleDirectories": ["node_modules", "lib", "test"],
+    "moduleDirectories": [
+      "node_modules",
+      "lib",
+      "test"
+    ],
     "collectCoverage": true
   }
 }

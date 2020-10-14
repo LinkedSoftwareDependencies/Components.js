@@ -1,13 +1,12 @@
-import {Stream} from "stream";
+import { Readable, Stream } from "stream";
 import {RdfClassLoader} from "./rdf/RdfClassLoader";
 import {ComponentFactory} from "./factory/ComponentFactory";
 import {Resource} from "./rdf/Resource";
-import N3 = require("n3");
 import _ = require("lodash");
-import Triple = N3.Triple;
 import Util = require("./Util");
 import {IComponentFactory, ICreationSettings} from "./factory/IComponentFactory";
 import NodeUtil = require('util');
+import { RdfParser } from './rdf/RdfParser';
 
 /**
  * A loader class for component configs.
@@ -305,8 +304,15 @@ export class Loader {
         return Promise.all([this._getContexts(), this._getImportPaths()])
             .then(([contexts, importPaths]: {[id: string]: string}[]) => {
                 return Util.getContentsFromUrlOrPath(moduleResourceUrl, fromPath)
-                    .then((data: Stream) => this.registerModuleResourcesStream(Util.parseRdf(data, moduleResourceUrl,
-                        fromPath, false, this._properties.absolutizeRelativePaths, contexts, importPaths)));
+                    .then((data: Readable) => this.registerModuleResourcesStream(
+                new RdfParser().parse(data, {
+                    fromPath: fromPath,
+                    path: moduleResourceUrl,
+                    contexts,
+                    importPaths,
+                    ignoreImports: false,
+                    absolutizeRelativePaths: this._properties.absolutizeRelativePaths,
+                })));
             });
     }
 
@@ -569,8 +575,15 @@ export class Loader {
         return Promise.all([this._getContexts(), this._getImportPaths()])
             .then(([contexts, importPaths]: {[id: string]: string}[]) => {
                 return Util.getContentsFromUrlOrPath(configResourceUrl, fromPath)
-                    .then((data: Stream) => this.getConfigConstructorFromStream(configResourceUri, Util.parseRdf(data,
-                        configResourceUrl, fromPath, false, this._properties.absolutizeRelativePaths, contexts, importPaths)));
+                    .then((data: Readable) => this.getConfigConstructorFromStream(configResourceUri,
+                      new RdfParser().parse(data, {
+                          fromPath: fromPath,
+                          path: configResourceUrl,
+                          contexts,
+                          importPaths,
+                          ignoreImports: false,
+                          absolutizeRelativePaths: this._properties.absolutizeRelativePaths,
+                      })));
             });
     }
 
@@ -587,8 +600,15 @@ export class Loader {
         return Promise.all([this._getContexts(), this._getImportPaths()])
             .then(([contexts, importPaths]: {[id: string]: string}[]) => {
                 return Util.getContentsFromUrlOrPath(configResourceUrl, fromPath)
-                    .then((data: Stream) => this.instantiateFromStream(configResourceUri, Util.parseRdf(data,
-                        configResourceUrl, fromPath, false, this._properties.absolutizeRelativePaths, contexts, importPaths), settings));
+                    .then((data: Readable) => this.instantiateFromStream(configResourceUri,
+                      new RdfParser().parse(data, {
+                          fromPath: fromPath,
+                          path: configResourceUrl,
+                          contexts,
+                          importPaths,
+                          ignoreImports: false,
+                          absolutizeRelativePaths: this._properties.absolutizeRelativePaths,
+                      }), settings));
             });
     }
 

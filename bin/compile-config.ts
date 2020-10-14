@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Compiles a configuration to a module (single file) that exports the instantiated instance, where all dependencies are injected.
 
-import {Stream} from "stream";
+import { Readable, Stream } from "stream";
 
 import {ParsedArgs} from "minimist";
 import minimist = require('minimist');
@@ -30,7 +30,7 @@ Options:
 
 const configResourceUri: string = args._[0];
 
-let configStreamRaw: Stream;
+let configStreamRaw: Readable;
 let configPath: string;
 if (args.c) {
     configStreamRaw = fs.createReadStream(args.c, { encoding: 'utf8' });

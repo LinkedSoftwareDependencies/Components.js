@@ -1,6 +1,7 @@
 import {Loader, LoaderProperties} from "./Loader";
 import {Stream} from "stream";
 import Util = require("./Util");
+import { RdfParser } from './rdf/RdfParser';
 
 /**
  * Compile a configuration stream to a JavaScript source file.
@@ -12,14 +13,21 @@ import Util = require("./Util");
  * @param {boolean} asFunction If the exported instance should be exposed as a function, which accepts an optional hash of variables.
  * @return {Promise<string>} A string resolving to the JavaScript contents.
  */
-export function compileConfig(properties: LoaderProperties, configPath: string, configStreamRaw: Stream,
+export function compileConfig(properties: LoaderProperties, configPath: string, configStreamRaw: NodeJS.ReadableStream,
                               configResourceUri: string, exportVariableName?: string, asFunction?: boolean): Promise<string> {
     exportVariableName = exportVariableName ? Util.uriToVariableName(exportVariableName) : exportVariableName;
     const loader = new Loader(properties);
     return loader.registerAvailableModuleResources()
         .then(() => {
             return Promise.all([loader._getContexts(), loader._getImportPaths()]).then(([contexts, importPaths]: {[id: string]: string}[]) => {
-                const configStream: Stream = Util.parseRdf(configStreamRaw, configPath, properties.mainModulePath, false, true, contexts, importPaths);
+                const configStream: Stream = new RdfParser().parse(configStreamRaw, {
+                  fromPath: configPath,
+                  path: properties.mainModulePath,
+                  contexts,
+                  importPaths,
+                  ignoreImports: false,
+                  absolutizeRelativePaths: true,
+                });
                 const moduleLines: string[] = [];
                 return loader.instantiateFromStream(configResourceUri, configStream, { serializations: moduleLines, asFunction })
                     .then((serializationVariableName: any) => {
