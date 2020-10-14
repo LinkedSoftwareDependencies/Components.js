@@ -20,7 +20,7 @@ export function compileConfig(properties: LoaderProperties, configPath: string, 
     return loader.registerAvailableModuleResources()
         .then(() => {
             return Promise.all([loader._getContexts(), loader._getImportPaths()]).then(([contexts, importPaths]: {[id: string]: string}[]) => {
-                const configStream: Stream = new RdfParser().parse(configStreamRaw, {
+                const configStream = new RdfParser().parse(configStreamRaw, {
                   fromPath: configPath,
                   path: properties.mainModulePath,
                   contexts,

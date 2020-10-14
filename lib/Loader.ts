@@ -7,6 +7,7 @@ import Util = require("./Util");
 import {IComponentFactory, ICreationSettings} from "./factory/IComponentFactory";
 import NodeUtil = require('util');
 import { RdfParser } from './rdf/RdfParser';
+import * as RDF from 'rdf-js';
 
 /**
  * A loader class for component configs.
@@ -279,7 +280,7 @@ export class Loader {
      * @param moduleResourceStream A triple stream containing modules.
      * @returns {Promise<T>} A promise that resolves once loading has finished.
      */
-    registerModuleResourcesStream(moduleResourceStream: Stream): Promise<void> {
+    registerModuleResourcesStream(moduleResourceStream: RDF.Stream & Readable): Promise<void> {
         return new Promise<void>((resolve: any, reject: any) => {
             let loader: RdfClassLoader = this._newModuleLoader();
             moduleResourceStream
@@ -505,7 +506,7 @@ export class Loader {
      * @param configResourceStream A triple stream containing at least the given config.
      * @returns {Promise<T>} A promise resolving to the component constructor.
      */
-    getConfigConstructorFromStream(configResourceUri: string, configResourceStream: Stream): Promise<IComponentFactory> {
+    getConfigConstructorFromStream(configResourceUri: string, configResourceStream: RDF.Stream & Readable): Promise<IComponentFactory> {
         this._checkFinalizeRegistration();
         return new Promise((resolve, reject) => {
             let loader: RdfClassLoader = this._newConfigLoader();
@@ -537,7 +538,7 @@ export class Loader {
      * @param settings The settings for creating the instance.
      * @returns {Promise<T>} A promise resolving to the run instance.
      */
-    instantiateFromStream(configResourceUri: string, configResourceStream: Stream, settings?: ICreationSettings): Promise<any> {
+    instantiateFromStream(configResourceUri: string, configResourceStream: RDF.Stream & Readable, settings?: ICreationSettings): Promise<any> {
         this._checkFinalizeRegistration();
         return new Promise((resolve, reject) => {
             let loader: RdfClassLoader = this._newConfigLoader();
