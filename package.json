@@ -27,7 +27,7 @@
     "test-watch": "jest ${1} --watch",
     "build": "tsc && chmod +x ./bin/compile-config.js",
     "build-watch": "tsc --watch",
-    "lint": "jshint .",
+    "lint": "echo 'Disabled'",
     "validate": "npm ls",
     "prepare": "npm run build",
     "version": "manual-git-changelog onversion"
