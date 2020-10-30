@@ -6,7 +6,10 @@ import Path = require("path");
 import url = require("url");
 import _ = require("lodash");
 import NodeUtil = require('util');
-import {Resource} from "./rdf/Resource";
+import { Resource } from "rdf-object";
+import { DataFactory } from 'rdf-data-factory';
+import * as RDF from 'rdf-js';
+import { RdfObjectLoader } from 'rdf-object/index';
 
 const jsonld: any = require("jsonld");
 const globalModules: string = require('global-modules');
@@ -27,6 +30,13 @@ class Util {
     public static NODE_MODULES_PACKAGE_CONTENTS: {[id: string]: string} = {};
     private static MAIN_MODULE_PATH: string = null;
     private static MAIN_MODULE_PATHS: string[] = null;
+
+    public static readonly DF: DataFactory = new DataFactory<RDF.Quad>();
+    public static readonly IRI_ABSTRACT_CLASS: RDF.NamedNode = Util.DF.namedNode(Util.PREFIXES['oo'] + 'AbstractClass');
+    public static readonly IRI_CLASS: RDF.NamedNode = Util.DF.namedNode(Util.PREFIXES['oo'] + 'Class');
+    public static readonly IRI_COMPONENT_INSTANCE: RDF.NamedNode = Util.DF.namedNode(Util.PREFIXES['oo'] + 'ComponentInstance');
+    public static readonly IRI_VARIABLE: RDF.NamedNode = Util.DF.namedNode(Util.PREFIXES['om'] + 'Variable');
+    public static readonly IRI_MODULE: RDF.NamedNode = Util.DF.namedNode(Util.PREFIXES['oo'] + 'Module');
 
     private static cachedAvailableNodeModules: {[id: string]: Promise<string[]>} = {};
 
@@ -71,72 +81,88 @@ class Util {
      * @param resourceScope The resource scope to map in.
      * @param param A parameter type.
      * @param paramValueMapping A mapping from parameter to value.
+     * @param objectLoader The current RDF object loader.
      * @return The parameter value(s) or undefined
      */
-    static applyParameterValues(resourceScope: Resource, param: any, paramValueMapping: any) {
-        let value: any = paramValueMapping[param.value];
+    static applyParameterValues(resourceScope: Resource, param: Resource, paramValueMapping: Resource, objectLoader: RdfObjectLoader): Resource[] {
+        let value: Resource[] = paramValueMapping.properties[param.value];
         // Set default value if no value has been given
-        if (!value && param.defaultScoped) {
-            param.defaultScoped.forEach((scoped: any) => {
-                if (!scoped.scope) {
+        if (value.length === 0 && param.property.defaultScoped) {
+            param.properties.defaultScoped.forEach((scoped: Resource) => {
+                if (!scoped.property.defaultScope) {
                     throw new Error('Missing required oo:defaultScope value for a default scope.\n' + NodeUtil.inspect(param));
                 }
-                scoped.scope.forEach((scope: any) => {
-                    if (!scoped.scopedValue) {
+                scoped.properties.defaultScope.forEach((scope: Resource) => {
+                    if (!scoped.property.defaultScopedValue) {
                         throw new Error('Missing required oo:defaultScopedValue value for a default scope.\n' + NodeUtil.inspect(param));
                     }
-                    if (resourceScope.hasType(scope.value)) {
-                        value = scoped.scopedValue;
+                    if (resourceScope.isA(scope.term)) {
+                        value = scoped.properties.defaultScopedValue;
                     }
                 });
             });
         }
-        if (!value && param.defaults) {
-            value = param.defaults;
+
+        if (value.length === 0 && param.property.default) {
+            value = param.properties.default;
         }
-        if (!value && param.required) {
+        if (value.length === 0 && param.property.required) {
             throw new Error('Parameter ' + param.value + ' is required, but no value for it has been set in ' + paramValueMapping.value + '.\n' + NodeUtil.inspect(paramValueMapping));
         }
 
         // Force-add fixed parameter values
-        if (param.fixed) {
-            // If the paramater value must be unique and a value has already been set, crash
-            if (param.unique) {
-                if (value) {
+        if (param.property.fixed) {
+            // If the parameter value must be unique and a value has already been set, crash
+            if (param.property.unique) {
+                if (value.length > 0) {
                     throw new Error('A parameter is unique, has a fixed value, but also has another defined value.\n' + NodeUtil.inspect(param));
                 } else {
-                    value = param.fixed;
+                    value = param.properties.fixed;
                 }
             } else {
                 // Otherwise, add to the value
-                if (!value) {
-                    value = [];
-                }
                 if (!(value instanceof Array)) {
                     throw new Error('Values must be an array\n' + NodeUtil.inspect(param));
                 }
-                param.fixed.forEach((f: any) => value.push(f));
+                param.properties.fixed.forEach((f: any) => value.push(f));
             }
         }
 
         // If the value is singular, and the value should be unique, transform the array to a single element
-        if (param.unique && param.unique.value === 'true' && value instanceof Array) {
-            value = value[0];
+        if (param.property.unique && param.property.unique.value === 'true') {
+            value = [ value[0] ];
+
+            // !!!Hack incoming!!!
+            // We make a manual resource to ensure uniqueness from other resources.
+            // This is needed because literals may occur different times in param values.
+            // This ensures that the unique label is only applied to the current occurrence, instead of all occurrences.
+            // TODO: improve this
+            if (value[0]) {
+                const newValue = new Resource({term: value[0].term, context: objectLoader.contextResolved});
+                for (const key of Object.keys(value[0].properties)) {
+                    for (const v of value[0].properties[key]) {
+                        newValue.properties[key].push(v);
+                    }
+                }
+                value = [newValue];
+            }
+
+            value.forEach(v => {
+                if (v) {
+                    v.property.unique = param.property.unique;
+                }
+            });
         }
 
         // If a param range is defined, apply the type and validate the range.
-        if (param.range) {
-            if (value instanceof Array) {
-                value = value.map((e) => Util.captureType(e, param));
-            } else {
-                value = Util.captureType(value, param);
-            }
+        if (param.property.range) {
+            value.forEach((e) => Util.captureType(e, param));
         }
 
         // If the parameter is marked as lazy,
         // make the value inherit this lazy tag so that it can be handled later.
-        if (value && param.lazy) {
-            value.lazy = param.lazy;
+        if (value && param.property.lazy) {
+            value.forEach(v => v.property.lazy = param.property.lazy);
         }
 
         return value;
@@ -149,19 +175,16 @@ class Util {
      * Will be ignored if the value is not a literal or the type is not recognized.
      * @param value The value.
      * @param param The parameter.
-     * @returns {any} The tranformed value.
      */
-    static captureType(value: any, param: any): any {
-        if (!value) return value;
-        let raw = value.value;
-        if (value.termType === 'Literal') {
+    static captureType(value: Resource, param: Resource): Resource {
+        if (value.type === 'Literal') {
             let parsed;
-            switch(param.range.value) {
+            switch(param.property.range.value) {
                 case Util.PREFIXES['xsd'] + 'boolean':
-                    if (raw === 'true') {
-                        raw = true;
-                    } else if (raw === 'false') {
-                        raw = false;
+                    if (value.value === 'true') {
+                        (<any> value.term).valueRaw = true;
+                    } else if (value.value === 'false') {
+                        (<any> value.term).valueRaw = false;
                     } else {
                         incorrectType();
                     }
@@ -171,34 +194,33 @@ class Util {
                 case Util.PREFIXES['xsd'] + 'int':
                 case Util.PREFIXES['xsd'] + 'byte':
                 case Util.PREFIXES['xsd'] + 'long':
-                    parsed = parseInt(raw);
+                    parsed = parseInt(value.value);
                     if (isNaN(parsed)) {
                         incorrectType();
                     } else {
                         // parseInt also parses floats to ints!
-                        if (String(parsed) !== raw) {
+                        if (String(parsed) !== value.value) {
                             incorrectType();
                         }
-                        raw = parsed;
+                        (<any> value.term).valueRaw = parsed;
                     }
                     break;
                 case Util.PREFIXES['xsd'] + 'float':
                 case Util.PREFIXES['xsd'] + 'decimal':
                 case Util.PREFIXES['xsd'] + 'double':
-                    parsed = parseFloat(raw);
+                    parsed = parseFloat(value.value);
                     if (isNaN(parsed)) {
                         incorrectType();
                     } else {
-                        raw = parsed;
+                        (<any> value.term).valueRaw = parsed;
                     }
                     break;
             }
-            return { value: raw, termType: 'Literal' };
+            return value;
         }
-        return value;
 
         function incorrectType() {
-            throw new Error(value.value + ' is not of type ' + param.range.value + ' for parameter ' + param.value);
+            throw new Error(value.value + ' is not of type ' + param.property.range.value + ' for parameter ' + param.value);
         }
     }
 

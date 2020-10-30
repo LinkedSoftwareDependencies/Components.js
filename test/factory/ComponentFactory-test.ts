@@ -1,122 +1,149 @@
-import { Resource } from '../../lib/rdf/Resource';
+import { Resource } from 'rdf-object';
 import { ComponentFactory } from '../../lib/factory/ComponentFactory';
 import { UnnamedComponentFactory } from '../../lib/factory/UnnamedComponentFactory';
 import { MappedNamedComponentFactory } from '../../lib/factory/MappedNamedComponentFactory';
 import { UnmappedNamedComponentFactory } from '../../lib/factory/UnmappedNamedComponentFactory';
 import Util = require('../../lib/Util');
+import { Loader } from '../../lib/Loader';
+import { RdfObjectLoader } from 'rdf-object/index';
 
 // TODO: improve these imports
 const N3 = require('n3');
 const _ = require('lodash');
 
-// Unnamed component config for an N3 Lexer
-let n3LexerComponentConfigUnnamed = new Resource('http://example.org/MyLexer', {
-  types: [ new Resource(Util.PREFIXES['oo'] + 'Class') ],
-  requireName: Resource.newString('n3'),
-  requireElement: Resource.newString('Lexer'),
-  arguments: new Resource(null, {
-    list: [
-      new Resource("_:param_lexer_0", {
-        fields: [ { k: new Resource('"comments"'), v: new Resource('"true"') } ]
-      })
-    ]
-  })
-});
-
-// Named component config for an N3 Lexer
-let n3LexerComponentConfigNamed = _.assign(new Resource('http://example.org/MyLexer', {
-  types: [ new Resource('http://example.org/n3#Lexer') ],
-}), { 'http://example.org/n3#comments': Resource.newBoolean(true) });
-
-// Named component definition for an N3 Lexer
-let n3LexerComponentDefinitionUnmapped = new Resource('http://example.org/n3#Lexer', {
-  types: [ new Resource(Util.PREFIXES['oo'] + 'Class') ],
-  requireElement: Resource.newString('Lexer'),
-  hasParameter: [
-    new Resource('http://example.org/n3#lineMode'),
-    new Resource('http://example.org/n3#n3'),
-    new Resource('http://example.org/n3#comments')
-  ]
-});
-
-// Mapped component definition for an N3 Lexer
-let n3LexerComponentDefinitionMapped = new Resource('http://example.org/n3#Lexer', {
-  types: [ new Resource(Util.PREFIXES['oo'] + 'Class') ],
-  requireElement: Resource.newString('Lexer'),
-  hasParameter: [
-    new Resource('http://example.org/n3#lineMode'),
-    new Resource('http://example.org/n3#n3'),
-    new Resource('http://example.org/n3#comments')
-  ],
-  constructorArguments: new Resource(null, {
-    list: [
-      new Resource("_:param_parser_0", {
-        fields: [
-          { k: new Resource('"lineMode"'), v: new Resource('http://example.org/n3#lineMode') },
-          { k: new Resource('"n3"'), v: new Resource('http://example.org/n3#n3') },
-          { k: new Resource('"comments"'), v: new Resource('http://example.org/n3#comments') }
-        ]
-      })
-    ]
-  })
-});
-
-// Module definition for N3
-let n3ModuleDefinition = new Resource('http://example.org/n3', {
-  requireName: Resource.newString('n3'),
-  hasComponent: [
-    n3LexerComponentDefinitionMapped,
-  ]
-});
-
 describe('ComponentFactory', function () {
-
-  describe('for an unnamed N3 Lexer config', function () {
-    let constructor: ComponentFactory;
-    beforeEach(function () {
-      constructor = new ComponentFactory(n3ModuleDefinition, n3LexerComponentDefinitionUnmapped, n3LexerComponentConfigUnnamed);
-    });
-
-    it('should use the unnamed component factory', function () {
-      expect(constructor._getComponentFactory()).toBeInstanceOf(UnnamedComponentFactory);
-    });
-
-    it('should be valid', function () {
-      expect(constructor).toBeTruthy();
-    });
-
-    it('should make a valid instance', async() => {
-      const instance = await constructor.create();
-      expect(instance).toBeTruthy();
-      expect(instance).toBeInstanceOf(N3.Lexer);
-    });
+  let loader: Loader;
+  let objectLoader: RdfObjectLoader;
+  beforeEach(() => {
+    loader = new Loader();
+    // Create resources via object loader, so we can use CURIEs
+    objectLoader = loader.objectLoader;
   });
 
-  describe('for a named N3 Lexer config and unmapped definition', function () {
-    let constructor: ComponentFactory;
+  describe('for an unmapped N3 Lexer definition', function () {
+    let n3LexerComponentDefinitionUnmapped: Resource;
+    let module: Resource;
     beforeEach(function () {
-      constructor = new ComponentFactory(n3ModuleDefinition, n3LexerComponentDefinitionUnmapped, n3LexerComponentConfigNamed);
+      n3LexerComponentDefinitionUnmapped = objectLoader.createCompactedResource({
+        '@id': 'http://example.org/n3#Lexer',
+        types: [ Util.PREFIXES['oo'] + 'Class' ],
+        requireElement: '"Lexer"',
+        parameters: [
+          'http://example.org/n3#lineMode',
+          'http://example.org/n3#n3',
+          'http://example.org/n3#comments'
+        ]
+      });
+      module = objectLoader.createCompactedResource({
+        '@id': 'http://example.org/n3',
+        requireName: '"n3"',
+        components: [
+          n3LexerComponentDefinitionUnmapped,
+        ]
+      });
     });
 
-    it('should use the unmapped component factory', function () {
-      expect(constructor._getComponentFactory()).toBeInstanceOf(UnmappedNamedComponentFactory);
+    describe('for an unnamed config', function () {
+      let n3LexerComponentConfigUnnamed: Resource;
+      let constructor: ComponentFactory;
+      beforeEach(function () {
+        n3LexerComponentConfigUnnamed = objectLoader.createCompactedResource({
+          types: [ Util.PREFIXES['oo'] + 'Class' ],
+          requireName: '"n3"',
+          requireElement: '"Lexer"',
+          arguments: {
+            list: [
+              {
+                fields: [ { key: '"comments"', value: '"true"' } ]
+              }
+            ]
+          }
+        });
+        constructor = new ComponentFactory(module, n3LexerComponentDefinitionUnmapped, n3LexerComponentConfigUnnamed, {}, loader);
+      });
+
+      it('should use the unnamed component factory', function () {
+        expect(constructor._getComponentFactory()).toBeInstanceOf(UnnamedComponentFactory);
+      });
+
+      it('should be valid', function () {
+        expect(constructor).toBeTruthy();
+      });
+
+      it('should make a valid instance', async() => {
+        const instance = await constructor.create();
+        expect(instance).toBeTruthy();
+        expect(instance).toBeInstanceOf(N3.Lexer);
+      });
     });
 
-    it('should be valid', function () {
-      expect(constructor).toBeTruthy();
-    });
+    describe('for a named config', function () {
+      let n3LexerComponentConfigNamed: Resource;
+      let constructor: ComponentFactory;
+      beforeEach(function () {
+        n3LexerComponentConfigNamed = objectLoader.createCompactedResource({
+          '@id': 'http://example.org/MyLexer',
+          types: [ 'http://example.org/n3#Lexer' ],
+          'http://example.org/n3#comments': '"true"',
+        });
+        constructor = new ComponentFactory(module, n3LexerComponentDefinitionUnmapped, n3LexerComponentConfigNamed, {}, loader);
+      });
 
-    it('should make a valid instance', async() => {
-      const instance = await constructor.create();
-      expect(instance).toBeTruthy();
-      expect(instance).toBeInstanceOf(N3.Lexer);
+      it('should use the unmapped component factory', function () {
+        expect(constructor._getComponentFactory()).toBeInstanceOf(UnmappedNamedComponentFactory);
+      });
+
+      it('should be valid', function () {
+        expect(constructor).toBeTruthy();
+      });
+
+      it('should make a valid instance', async() => {
+        const instance = await constructor.create();
+        expect(instance).toBeTruthy();
+        expect(instance).toBeInstanceOf(N3.Lexer);
+      });
     });
   });
 
   describe('for a named N3 Lexer config and mapped definition', function () {
+    let n3LexerComponentDefinitionMapped: Resource;
+    let n3LexerComponentConfigNamed: Resource;
+    let module: Resource;
     let constructor: ComponentFactory;
     beforeEach(function () {
-      constructor = new ComponentFactory(n3ModuleDefinition, n3LexerComponentDefinitionMapped, n3LexerComponentConfigNamed);
+      n3LexerComponentDefinitionMapped = objectLoader.createCompactedResource({
+        types: [ Util.PREFIXES['oo'] + 'Class' ],
+        requireElement: '"Lexer"',
+        parameters: [
+          'http://example.org/n3#lineMode',
+          'http://example.org/n3#n3',
+          'http://example.org/n3#comments'
+        ],
+        constructorArguments: {
+          list: [
+            {
+              fields: [
+                { key: '"lineMode"', value: 'http://example.org/n3#lineMode' },
+                { key: '"n3"', value: 'http://example.org/n3#n3' },
+                { key: '"comments"', value: 'http://example.org/n3#comments' }
+              ]
+            }
+          ]
+        }
+      });
+      n3LexerComponentConfigNamed = objectLoader.createCompactedResource({
+        '@id': 'http://example.org/MyLexer',
+        types: ['http://example.org/n3#Lexer'],
+        'http://example.org/n3#comments': '"true"',
+      });
+      module = objectLoader.createCompactedResource({
+        '@id': 'http://example.org/n3',
+        requireName: '"n3"',
+        components: [
+          n3LexerComponentDefinitionMapped,
+        ]
+      });
+      constructor = new ComponentFactory(module, n3LexerComponentDefinitionMapped, n3LexerComponentConfigNamed, {}, loader);
     });
 
     it('should use the mapped component factory', function () {

@@ -1,5 +1,5 @@
 import {IComponentFactory, ICreationSettings} from "./IComponentFactory";
-import {Resource} from "../rdf/Resource";
+import { Resource } from "rdf-object";
 import Util = require("../Util");
 import {Loader} from "../Loader";
 
@@ -8,13 +8,13 @@ import {Loader} from "../Loader";
  */
 export class ComponentFactory implements IComponentFactory {
 
-    _moduleDefinition: any;
-    _componentDefinition: any;
-    _config: any;
+    _moduleDefinition: Resource;
+    _componentDefinition: Resource;
+    _config: Resource;
     _overrideRequireNames: {[id: string]: string};
     _componentRunner: Loader;
 
-    constructor(moduleDefinition: Resource, componentDefinition: Resource, config: Resource, overrideRequireNames?: {[id: string]: string}, componentRunner?: Loader) {
+    constructor(moduleDefinition: Resource, componentDefinition: Resource, config: Resource, overrideRequireNames: {[id: string]: string}, componentRunner: Loader) {
         this._moduleDefinition = moduleDefinition;
         this._componentDefinition = componentDefinition;
         this._config = config;
@@ -23,10 +23,9 @@ export class ComponentFactory implements IComponentFactory {
     }
 
     _getComponentFactory(): IComponentFactory {
-        if (!this._config.requireName && !this._config.requireElement) {
-            let constructable: boolean = !this._componentDefinition.types
-                || !this._componentDefinition.hasType(Util.PREFIXES['oo'] + 'ComponentInstance');
-            if (!this._componentDefinition.constructorArguments) {
+        if (!this._config.property.requireName && !this._config.property.requireElement) {
+            let constructable: boolean = !this._componentDefinition.isA(Util.DF.namedNode(Util.PREFIXES['oo'] + 'ComponentInstance'));
+            if (!this._componentDefinition.property.constructorArguments) {
                 return new (require('./UnmappedNamedComponentFactory').UnmappedNamedComponentFactory)(
                     this._moduleDefinition, this._componentDefinition, this._config, constructable,
                     this._overrideRequireNames, this._componentRunner
@@ -39,7 +38,7 @@ export class ComponentFactory implements IComponentFactory {
             }
         } else {
             return new (require('./UnnamedComponentFactory').UnnamedComponentFactory)(this._config,
-                !this._config.types || !this._config.hasType(Util.PREFIXES['oo'] + 'ComponentInstance'),
+                !this._config.isA(Util.DF.namedNode(Util.PREFIXES['oo'] + 'ComponentInstance')),
                 this._overrideRequireNames, this._componentRunner);
         }
     }

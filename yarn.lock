@@ -2846,7 +2846,7 @@ json5@2.x, json5@^2.1.2:
   dependencies:
     minimist "^1.2.5"
 
-jsonld-context-parser@^2.0.1:
+jsonld-context-parser@^2.0.1, jsonld-context-parser@^2.0.2:
   version "2.1.1"
   resolved "https://registry.yarnpkg.com/jsonld-context-parser/-/jsonld-context-parser-2.1.1.tgz#0de2b459465b199ef6014a94d7af9b2485360374"
   integrity sha512-7yKhnwFaiCnDPUZYQuAWyT0zZBfOKZDyjtqFVNbXrYRkboU+m55UsastsfXbo7qNroTGdFiEyxHEHDEfBC0P4Q==
@@ -3660,7 +3660,7 @@ rc@~1.2.7:
     minimist "^1.2.0"
     strip-json-comments "~2.0.1"
 
-rdf-data-factory@^1.0.0, rdf-data-factory@^1.0.1, rdf-data-factory@^1.0.2:
+rdf-data-factory@^1.0.0, rdf-data-factory@^1.0.1, rdf-data-factory@^1.0.2, rdf-data-factory@^1.0.3, rdf-data-factory@^1.0.4:
   version "1.0.4"
   resolved "https://registry.yarnpkg.com/rdf-data-factory/-/rdf-data-factory-1.0.4.tgz#4e22fc462620fbca650eb2d26c4a13a103edd777"
   integrity sha512-ZIIwEkLcV7cTc+atvQFzAETFVRHz1BRe/MhdkZqYse8vxskErj8/bF/Ittc3B5c0GTyw6O3jVF2V7xBRGyRoSQ==
@@ -3682,6 +3682,16 @@ rdf-literal@^1.2.0:
   dependencies:
     "@types/rdf-js" "^4.0.0"
     rdf-data-factory "^1.0.1"
+
+rdf-object@^1.4.0:
+  version "1.4.0"
+  resolved "https://registry.yarnpkg.com/rdf-object/-/rdf-object-1.4.0.tgz#10cec6c6a333e0e549fc23d4aab80114f83a2731"
+  integrity sha512-iRba1XITW3msfi1XCF1vZKrfIGUQdUqWg+FXTeFKbW0sjZKe0Qm3wOzDsL9+dT+goVidYnqDkPhp48Ej2IH02A==
+  dependencies:
+    jsonld-context-parser "^2.0.2"
+    rdf-data-factory "^1.0.3"
+    rdf-string "^1.5.0"
+    streamify-array "^1.0.1"
 
 rdf-parse@^1.5.0:
   version "1.5.0"
@@ -4281,6 +4291,11 @@ stream-to-string@^1.2.0:
   integrity sha512-8drZlFIKBHSMdX9GCWv8V9AAWnQcTqw0iAI6/GC7UJ0H0SwKeFKjOoZfGY1tOU00GGU7FYZQoJ/ZCUEoXhD7yQ==
   dependencies:
     promise-polyfill "^1.1.6"
+
+streamify-array@^1.0.1:
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/streamify-array/-/streamify-array-1.0.1.tgz#741cd1e7eaf1d451a0da484e5dc986a76dfa479c"
+  integrity sha512-ZnswaBcC6B1bhPLSQOlC6CdaDUSzU0wr2lvvHpbHNms8V7+DLd8uEAzDAWpsjxbFkijBHhuObFO/qqu52DZUMA==
 
 string-length@^4.0.1:
   version "4.0.1"

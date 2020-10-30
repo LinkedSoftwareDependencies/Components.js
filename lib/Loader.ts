@@ -1,13 +1,13 @@
-import { Readable, Stream } from "stream";
-import {RdfClassLoader} from "./rdf/RdfClassLoader";
+import { Readable } from "stream";
+import { RdfObjectLoader, Resource } from "rdf-object";
 import {ComponentFactory} from "./factory/ComponentFactory";
-import {Resource} from "./rdf/Resource";
 import _ = require("lodash");
 import Util = require("./Util");
 import {IComponentFactory, ICreationSettings} from "./factory/IComponentFactory";
 import NodeUtil = require('util');
 import { RdfParser } from './rdf/RdfParser';
 import * as RDF from 'rdf-js';
+import * as fs from "fs";
 
 /**
  * A loader class for component configs.
@@ -16,6 +16,8 @@ import * as RDF from 'rdf-js';
  * Components with the same URI will only be instantiated once.
  */
 export class Loader {
+
+    public readonly objectLoader: RdfObjectLoader;
 
     _properties: LoaderProperties;
 
@@ -30,13 +32,13 @@ export class Loader {
     _instances: {[id: string]: any} = {};
     _registrationFinalized: boolean = false;
 
-    /**
-     * Shared mapping from resource URI to resource instance for al RDF class loaders.
-     */
-    resources: {[id: string]: Resource} = {};
-
     constructor(properties?: LoaderProperties) {
         this._properties = properties || {};
+
+        this.objectLoader = new RdfObjectLoader({
+            context: JSON.parse(fs.readFileSync(__dirname + '/../components/context.jsonld', 'utf8')),
+        })
+
         if (this._properties.mainModulePath) {
             Util.setMainModulePath(this._properties.mainModulePath);
         }
@@ -66,80 +68,6 @@ export class Loader {
     }
 
     /**
-     * @returns {RdfClassLoader} A new RDF class loader for loading modules and components
-     * @private
-     */
-    _newModuleLoader(): RdfClassLoader {
-        let loader: RdfClassLoader = new RdfClassLoader({ captureAllProperties: true, normalizeLists: true });
-        loader.resources = this.resources;
-
-        loader.bindClass('constructables', Util.PREFIXES['oo'] + 'Class');
-        loader.bindClass('instances', Util.PREFIXES['oo'] + 'Instance');
-        loader.bindClass('abstractConstructables', Util.PREFIXES['oo'] + 'AbstractClass');
-        loader.bindClass('modules', Util.PREFIXES['oo'] + 'Module');
-        loader.bindClass('variables', Util.PREFIXES['om'] + 'Variable');
-
-        loader.bindProperty('requireName', Util.PREFIXES['doap'] + 'name', true);
-        loader.bindProperty('requireElement', Util.PREFIXES['oo'] + 'componentPath', true);
-        loader.bindProperty('requireNoConstructor', Util.PREFIXES['oo'] + 'componentNoConstructor', true);
-        loader.bindProperty('hasComponent', Util.PREFIXES['oo'] + 'component');
-        loader.bindProperty('hasParameter', Util.PREFIXES['oo'] + 'parameter');
-        loader.bindProperty('constructorArguments', Util.PREFIXES['oo'] + 'constructorArguments', true);
-        loader.bindProperty('fields', Util.PREFIXES['om'] + 'field');
-        loader.bindProperty('elements', Util.PREFIXES['om'] + 'elements', true);
-        loader.bindProperty('collectEntriesFrom', Util.PREFIXES['om'] + 'collectsEntriesFrom');
-        loader.bindProperty('unique', Util.PREFIXES['oo'] + 'uniqueValue', true);
-        loader.bindProperty('lazy', Util.PREFIXES['oo'] + 'lazyValue', true);
-        loader.bindProperty('required', Util.PREFIXES['oo'] + 'required', true);
-        loader.bindProperty('defaults', Util.PREFIXES['oo'] + 'defaultValue');
-        loader.bindProperty('defaultScoped', Util.PREFIXES['oo'] + 'defaultScoped');
-        loader.bindProperty('scope', Util.PREFIXES['oo'] + 'defaultScope');
-        loader.bindProperty('scopedValue', Util.PREFIXES['oo'] + 'defaultScopedValue');
-        loader.bindProperty('fixed', Util.PREFIXES['oo'] + 'hasFixedValue');
-        loader.bindProperty('k', Util.PREFIXES['om'] + 'fieldName', true);
-        loader.bindProperty('v', Util.PREFIXES['om'] + 'fieldValue', true);
-        loader.bindProperty('vRaw', Util.PREFIXES['om'] + 'fieldValueRaw', true);
-        loader.bindProperty('types', Util.PREFIXES['rdf'] + 'type');
-
-        loader.bindProperty('classes', Util.PREFIXES['rdfs'] + 'subClassOf', false);
-        loader.bindProperty('onProperty', Util.PREFIXES['owl'] + 'onProperty', false);
-        loader.bindProperty('allValuesFrom', Util.PREFIXES['owl'] + 'allValuesFrom', false);
-        loader.bindProperty('imports', Util.PREFIXES['owl'] + 'imports', false);
-        loader.bindProperty('range', Util.PREFIXES['rdfs'] + 'range', true);
-
-        return loader;
-    }
-
-    /**
-     * @returns {RdfClassLoader} A new RDF class loader for loading component configs
-     * @private
-     */
-    _newConfigLoader(): RdfClassLoader {
-        let loader: RdfClassLoader = new RdfClassLoader({ captureAllProperties: true, captureAllClasses: true, normalizeLists: true });
-        loader.resources = this.resources;
-
-        loader.bindClass('constructables', Util.PREFIXES['oo'] + 'Class');
-        loader.bindClass('instances', Util.PREFIXES['oo'] + 'ComponentInstance');
-
-        loader.bindProperty('requireName', Util.PREFIXES['doap'] + 'name', true);
-        loader.bindProperty('requireElement', Util.PREFIXES['oo'] + 'componentPath', true);
-        loader.bindProperty('arguments', Util.PREFIXES['oo'] + 'arguments', true);
-        loader.bindProperty('fields', Util.PREFIXES['om'] + 'field');
-        loader.bindProperty('elements', Util.PREFIXES['om'] + 'elements', true);
-        loader.bindProperty('collectEntriesFrom', Util.PREFIXES['om'] + 'collectsEntriesFrom');
-        loader.bindProperty('unique', Util.PREFIXES['oo'] + 'uniqueValue', true);
-        loader.bindProperty('lazy', Util.PREFIXES['oo'] + 'lazyValue', true);
-        loader.bindProperty('k', Util.PREFIXES['om'] + 'fieldName', true);
-        loader.bindProperty('v', Util.PREFIXES['om'] + 'fieldValue', true);
-        loader.bindProperty('vRaw', Util.PREFIXES['om'] + 'fieldValueRaw', true);
-        loader.bindProperty('types', Util.PREFIXES['rdf'] + 'type');
-
-        loader.bindProperty('imports', Util.PREFIXES['owl'] + 'imports', false);
-
-        return loader;
-    }
-
-    /**
      * Register a new component.
      * This will ensure that component configs referring to this component as type are recognized.
      * @param componentResource A component resource.
@@ -161,9 +89,9 @@ export class Loader {
      * @private
      */
     _isValidComponent(componentResource: Resource) {
-        return componentResource.hasType(Util.PREFIXES['oo'] + 'AbstractClass')
-            || componentResource.hasType(Util.PREFIXES['oo'] + 'Class')
-            || componentResource.hasType(Util.PREFIXES['oo'] + 'ComponentInstance');
+        return componentResource.isA(Util.IRI_ABSTRACT_CLASS)
+            || componentResource.isA(Util.IRI_CLASS)
+            || componentResource.isA(Util.IRI_COMPONENT_INSTANCE);
     }
 
     /**
@@ -184,24 +112,21 @@ export class Loader {
     /**
      * Let the given component inherit parameters from the given component(s) if applicable.
      * @param componentResource The component resource
-     * @param classes The component classes to inherit from.
+     * @param inheritValues The component inheritValues to inherit from.
      * @private
      */
-    _inheritParameters(componentResource: any, classes?: Resource[]) {
-        if (classes) {
-            if (!componentResource.hasParameter) {
-                componentResource.hasParameter = [];
-            }
-            classes.forEach((component: any) => {
+    _inheritParameters(componentResource: Resource, inheritValues?: Resource[]) {
+        if (inheritValues) {
+            inheritValues.forEach((component: Resource) => {
                 this._requireValidComponent(component, componentResource);
                 if (this._isValidComponent(component)) {
-                    if (component.hasParameter) {
-                        component.hasParameter.forEach((parameter: Resource) => {
-                            if (componentResource.hasParameter.indexOf(parameter) < 0) {
-                                componentResource.hasParameter.push(parameter);
+                    if (component.property.parameters) {
+                        component.properties.parameters.forEach((parameter: Resource) => {
+                            if (componentResource.properties.parameters.indexOf(parameter) < 0) {
+                                componentResource.properties.parameters.push(parameter);
                             }
                         });
-                        this._inheritParameters(componentResource, component.classes);
+                        this._inheritParameters(componentResource, component.properties.inheritValues);
                     }
                 }
             });
@@ -213,11 +138,11 @@ export class Loader {
      * @param componentResource The component resource
      * @private
      */
-    _inheritConstructorParameters(componentResource: any) {
-        if (componentResource.constructorArguments) {
-            componentResource.constructorArguments.list.forEach((object: Resource) => {
-                if ((<any> object).classes) {
-                    this._inheritObjectFields(object, (<any> object).classes);
+    _inheritConstructorParameters(componentResource: Resource) {
+        if (componentResource.property.constructorArguments) {
+            componentResource.property.constructorArguments.list.forEach((object: Resource) => {
+                if (object.property.inheritValues) {
+                    this._inheritObjectFields(object, object.properties.inheritValues);
                 }
             });
         }
@@ -226,29 +151,26 @@ export class Loader {
     /**
      * Let the given object inherit the given fields from the given component(s) if applicable.
      * @param object The object resource
-     * @param classes The objects to inherit from.
+     * @param inheritValues The objects to inherit from.
      * @private
      */
-    _inheritObjectFields(object: any, classes?: Resource[]) {
-        if (classes) {
-            if (!object.fields) {
-                object.fields = [];
-            }
-            classes.forEach((superObject: any) => {
-                if (superObject.fields) {
-                    superObject.fields.forEach((field: Resource) => {
-                        if (object.fields.indexOf(field) < 0) {
-                            object.fields.push(field);
+    _inheritObjectFields(object: Resource, inheritValues?: Resource[]) {
+        if (inheritValues) {
+            inheritValues.forEach((superObject: Resource) => {
+                if (superObject.property.fields) {
+                    superObject.properties.fields.forEach((field: Resource) => {
+                        if (object.properties.fields.indexOf(field) < 0) {
+                            object.properties.fields.push(field);
                         }
                     });
-                } else if (!superObject.hasType(Util.PREFIXES['om'] + 'ObjectMapping') && !superObject.classes && !superObject.onProperty) {
+                } else if (!superObject.isA(Util.DF.namedNode(Util.PREFIXES['om'] + 'ObjectMapping')) && !superObject.property.inheritValues && !superObject.property.onParameter) {
                     throw new Error('The referenced constructor mappings object ' + superObject.value
                         + ' from ' + object.value + ' is not valid, i.e., it doesn\'t contain mapping fields '
                         + ', has the om:ObjectMapping type or has a superclass. '
                         + 'It possibly is incorrectly referenced or not defined at all.');
                 }
-                if (superObject.classes) {
-                    this._inheritObjectFields(object, superObject.classes);
+                if (superObject.property.inheritValues) {
+                    this._inheritObjectFields(object, superObject.properties.inheritValues);
                 }
             });
         }
@@ -264,12 +186,12 @@ export class Loader {
             throw new Error('Tried registering a module ' + moduleResource.value
                 + ' after the loader has been finalized.');
         }
-        if ((<any> moduleResource).hasComponent) {
-            (<any> moduleResource).hasComponent.forEach((component: any) => {
-                component.module = moduleResource;
+        if (moduleResource.properties.components) {
+            moduleResource.properties.components.forEach((component: Resource) => {
+                component.property.module = moduleResource;
                 this._registerComponentResource(component);
             });
-        } else if (!(<any> moduleResource).imports) {
+        } else if (!moduleResource.property.imports) {
             throw new Error('Tried to register the module ' + moduleResource.value + ' that has no components.');
         }
     }
@@ -280,18 +202,13 @@ export class Loader {
      * @param moduleResourceStream A triple stream containing modules.
      * @returns {Promise<T>} A promise that resolves once loading has finished.
      */
-    registerModuleResourcesStream(moduleResourceStream: RDF.Stream & Readable): Promise<void> {
-        return new Promise<void>((resolve: any, reject: any) => {
-            let loader: RdfClassLoader = this._newModuleLoader();
-            moduleResourceStream
-                .on('error', reject)
-                .pipe(loader)
-                .on('finish', () => {
-                    (loader.typedResources.modules || []).forEach((module) => this.registerModuleResource(module));
-                    resolve();
-                })
-                .on('error', reject);
-        });
+    async registerModuleResourcesStream(moduleResourceStream: RDF.Stream & Readable): Promise<void> {
+        await this.objectLoader.import(moduleResourceStream);
+        for (const resource of Object.values(this.objectLoader.resources)) {
+            if (resource.isA(Util.IRI_MODULE)) {
+                this.registerModuleResource(resource);
+            }
+        }
     }
 
     /**
@@ -339,7 +256,7 @@ export class Loader {
      */
     getConfigConstructor(configResource: Resource): IComponentFactory {
         let allTypes : string[] = [];
-        let componentTypes: Resource[] = ((<any> configResource).types || []).reduce((types: Resource[], typeUri: Resource) => {
+        let componentTypes: Resource[] = configResource.properties.types.reduce((types: Resource[], typeUri: Resource) => {
             let componentResource: Resource = this._componentResources[typeUri.value];
             allTypes.push(typeUri.value);
             if (componentResource) {
@@ -351,18 +268,18 @@ export class Loader {
             }
             return types;
         }, []);
-        if (componentTypes.length !== 1 && !(<any> configResource).requireName && !(<any> configResource).requireElement) {
+        if (componentTypes.length !== 1 && !configResource.property.requireName && !configResource.property.requireElement) {
             throw new Error('Could not run config ' + configResource.value + ' because exactly one valid component type ' +
                 'was expected, while ' + componentTypes.length + ' were found in the defined types [' + allTypes + ']. ' +
                 'Alternatively, the requireName and requireElement must be provided.\nFound: '
                 + configResource.toString() + '\nAll available usable types: [\n'
                 + Object.keys(this._componentResources).join(',\n') + '\n]');
         }
-        let componentResource: any;
-        let moduleResource: any;
+        let componentResource: Resource;
+        let moduleResource: Resource;
         if (componentTypes.length) {
             componentResource = componentTypes[0];
-            moduleResource = componentResource.module;
+            moduleResource = componentResource.property.module;
             if (!moduleResource) {
                 throw new Error('No module was found for the component ' + componentResource.value);
             }
@@ -389,7 +306,7 @@ export class Loader {
         }
 
         // Before instantiating, first check if the resource is a variable
-        if (configResource.hasType(Util.PREFIXES['om'] + 'Variable')) {
+        if (configResource.isA(Util.IRI_VARIABLE)) {
             if (settings.serializations) {
                 if (settings.asFunction) {
                     return Promise.resolve(`getVariableValue('${configResource.value}')`);
@@ -420,44 +337,46 @@ export class Loader {
      * @param componentResource The component
      * @private
      */
-    _inheritParameterValues(configResource: Resource, componentResource: any) {
+    _inheritParameterValues(configResource: Resource, componentResource: Resource) {
         // Inherit parameter values from passed instances of the given types
-        if (componentResource.hasParameter) {
-            componentResource.hasParameter.forEach((parameter: any) => {
+        if (componentResource.property.parameters) {
+            componentResource.properties.parameters.forEach((parameter: Resource) => {
                 // Collect all owl:Restriction's
-                let restrictions: Resource[] = (parameter.classes || []).reduce((acc: Resource[], clazz: any) => {
-                    if (clazz.types.reduce((acc: boolean, type: Resource) => acc || type.value === Util.PREFIXES['owl'] + 'Restriction', false)) {
+                let restrictions: Resource[] = parameter.properties.inheritValues.reduce((acc: Resource[], clazz: Resource) => {
+                    if (clazz.properties.types.reduce((acc: boolean, type: Resource) => acc || type.value === Util.PREFIXES['owl'] + 'Restriction', false)) {
                         acc.push(clazz);
                     }
                     return acc;
                 }, []);
 
-                restrictions.forEach((restriction: any) => {
-                    if (restriction.allValuesFrom) {
-                        if (!restriction.onProperty) {
+                restrictions.forEach((restriction: Resource) => {
+                    if (restriction.property.from) {
+                        if (!restriction.property.onParameter) {
                             throw new Error('Parameters that inherit values must refer to a property: ' + NodeUtil.inspect(parameter));
                         }
 
-                        restriction.allValuesFrom.forEach((componentType: Resource) => {
-                            if (componentType.termType !== 'NamedNode') {
+                        restriction.properties.from.forEach((componentType: Resource) => {
+                            if (componentType.type !== 'NamedNode') {
                                 throw new Error('Parameter inheritance values must refer to component type identifiers, not literals: ' + NodeUtil.inspect(componentType));
                             }
 
                             let typeInstances: Resource[] = this._runTypeConfigs[componentType.value];
                             if (typeInstances) {
-                                typeInstances.forEach((instance: any) => {
-                                    restriction.onProperty.forEach((parentParameter: Resource) => {
+                                typeInstances.forEach((instance: Resource) => {
+                                    restriction.properties.onParameter.forEach((parentParameter: Resource) => {
                                         // TODO: this might be a bug in the JSON-LD parser
                                         /*if (parentParameter.termType !== 'NamedNode') {
                                          throw new Error('Parameters that inherit values must refer to sub properties as URI\'s: ' + JSON.stringify(parentParameter));
                                          }*/
-                                        if (instance[parentParameter.value]) {
-                                            // Copy the parameter
-                                            (<any> configResource)[parentParameter.value] = instance[parentParameter.value];
+                                        if (instance.property[parentParameter.value]) {
+                                            // Copy the parameters
+                                            for (const value of instance.properties[parentParameter.value]) {
+                                                configResource.properties[parentParameter.value].push(value);
+                                            }
 
                                             // Also add the parameter to the parameter type list
-                                            if (componentResource.hasParameter.indexOf(parentParameter) < 0) {
-                                                componentResource.hasParameter.push(parentParameter);
+                                            if (componentResource.properties.parameters.indexOf(parentParameter) < 0) {
+                                                componentResource.properties.parameters.push(parentParameter);
                                             }
                                         }
                                     });
@@ -482,7 +401,7 @@ export class Loader {
 
         // Component parameter inheritance
         for (let componentResource of _.values(this._componentResources)) {
-            this._inheritParameters(componentResource, (<any> componentResource).classes);
+            this._inheritParameters(componentResource, componentResource.properties.inheritValues);
             this._inheritConstructorParameters(componentResource);
         }
 
@@ -506,29 +425,15 @@ export class Loader {
      * @param configResourceStream A triple stream containing at least the given config.
      * @returns {Promise<T>} A promise resolving to the component constructor.
      */
-    getConfigConstructorFromStream(configResourceUri: string, configResourceStream: RDF.Stream & Readable): Promise<IComponentFactory> {
+    async getConfigConstructorFromStream(configResourceUri: string, configResourceStream: RDF.Stream & Readable): Promise<IComponentFactory> {
         this._checkFinalizeRegistration();
-        return new Promise((resolve, reject) => {
-            let loader: RdfClassLoader = this._newConfigLoader();
-            configResourceStream
-                .on('error', reject)
-                .pipe(loader)
-                .on('finish', () => {
-                    let configResource: Resource = loader.resources[configResourceUri];
-                    if (!configResource) {
-                        throw new Error('Could not find a component config with URI '
-                            + configResourceUri + ' in the triple stream.');
-                    }
-                    let constructor: IComponentFactory;
-                    try {
-                        constructor = this.getConfigConstructor(configResource);
-                    } catch (e) {
-                        reject(e);
-                        return;
-                    }
-                    resolve(constructor);
-                });
-        });
+        await this.objectLoader.import(configResourceStream);
+
+        let configResource: Resource = this.objectLoader.resources[configResourceUri];
+        if (!configResource) {
+            throw new Error('Could not find a component config with URI ' + configResourceUri + ' in the triple stream.');
+        }
+        return this.getConfigConstructor(configResource);
     }
 
     /**
@@ -538,29 +443,15 @@ export class Loader {
      * @param settings The settings for creating the instance.
      * @returns {Promise<T>} A promise resolving to the run instance.
      */
-    instantiateFromStream(configResourceUri: string, configResourceStream: RDF.Stream & Readable, settings?: ICreationSettings): Promise<any> {
+    async instantiateFromStream(configResourceUri: string, configResourceStream: RDF.Stream & Readable, settings?: ICreationSettings): Promise<any> {
         this._checkFinalizeRegistration();
-        return new Promise((resolve, reject) => {
-            let loader: RdfClassLoader = this._newConfigLoader();
-            configResourceStream
-                .on('error', reject)
-                .pipe(loader)
-                .on('finish', () => {
-                    let configResource: Resource = loader.resources[configResourceUri];
-                    if (!configResource) {
-                        reject(new Error('Could not find a component config with URI '
-                            + configResourceUri + ' in the triple stream.'));
-                    }
-                    let instance: any;
-                    try {
-                        instance = this.instantiate(configResource, settings);
-                    } catch (e) {
-                        reject(e);
-                        return;
-                    }
-                    resolve(instance);
-                });
-        });
+        await this.objectLoader.import(configResourceStream);
+
+        let configResource: Resource = this.objectLoader.resources[configResourceUri];
+        if (!configResource) {
+            throw new Error('Could not find a component config with URI ' + configResourceUri + ' in the triple stream.');
+        }
+        return this.instantiate(configResource, settings);
     }
 
     /**
@@ -626,16 +517,16 @@ export class Loader {
         if (!componentResource) {
             throw new Error('Could not find a component for URI ' + componentUri);
         }
-        let moduleResource: any = (<any> componentResource).module;
+        let moduleResource: Resource = componentResource.property.module;
         if (!moduleResource) {
             throw new Error('No module was found for the component ' + componentResource.value);
         }
-        let transformedParams: {[id: string]: Resource[]} = {};
+        const configResource = this.objectLoader.createCompactedResource({});
         Object.keys(params).forEach((key: string) => {
-            transformedParams[key] = [ Resource.newString(params[key]) ];
+            configResource.property[key] = this.objectLoader.createCompactedResource(`"${params[key]}"`);
         });
         let constructor: ComponentFactory = new ComponentFactory(moduleResource, componentResource,
-            new Resource(null, transformedParams), this.overrideRequireNames);
+          configResource, this.overrideRequireNames, this);
         return constructor.create(settings);
     }
 

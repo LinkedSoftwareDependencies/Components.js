@@ -1,8 +1,10 @@
 {
   "@context": {
-    "@vocab": "unknown://",
     "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
     "xsd": "http://www.w3.org/2001/XMLSchema#",
+    "types": {
+      "@id": "rdf:type"
+    },
 
     "oo": "https://linkedsoftwaredependencies.org/vocabularies/object-oriented#",
     "Module": {
@@ -48,6 +50,9 @@
     },
     "defaultScopedValue": {
       "@id": "oo:defaultScopedValue"
+    },
+    "fixed": {
+      "@id": "oo:hasFixedValue"
     },
     "arguments": {
       "@id": "oo:arguments",

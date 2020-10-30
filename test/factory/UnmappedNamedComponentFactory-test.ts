@@ -1,223 +1,160 @@
-import { Resource } from '../../lib/rdf/Resource';
+import { RdfObjectLoader, Resource } from 'rdf-object';
 import { UnmappedNamedComponentFactory } from '../../lib/factory/UnmappedNamedComponentFactory';
+import { Loader } from '../../lib/Loader';
 
-const fs = require("fs");
 const N3 = require('n3');
 
-// Component definition for an N3 Parser
-let n3ParserComponent = new Resource('http://example.org/n3#Parser', {
-  requireElement: Resource.newString('Parser'),
-  hasParameter: [
-    new Resource('http://example.org/n3#format'),
-    new Resource('http://example.org/n3#blankNodePrefix'),
-    new Resource('http://example.org/n3#lexer'),
-    new Resource('http://example.org/n3#explicitQuantifiers')
-  ]
-});
-
-// Component definition for an N3 Lexer
-let n3LexerComponent = new Resource('http://example.org/n3#Lexer', {
-  requireElement: Resource.newString('Lexer'),
-  hasParameter: [
-    new Resource('http://example.org/n3#lineMode'),
-    new Resource('http://example.org/n3#n3'),
-    new Resource('http://example.org/n3#comments')
-  ]
-});
-
-// Component definition for an N3 Util
-let n3UtilComponent = new Resource('http://example.org/n3#Util', {
-  requireElement: Resource.newString('Util')
-});
-
-// Component definition for an N3 Dummy
-let n3DummyComponent = new Resource('http://example.org/n3#Dummy', {
-  requireElement: Resource.newString('Dummy'),
-  hasParameter: [
-    new Resource('http://example.org/n3#dummyParam')
-  ]
-});
-
-// Component definition for an N3 Dummy with default param values
-let n3DummyComponentDefaults = new Resource('http://example.org/n3#Dummy', {
-  requireElement: Resource.newString('Dummy'),
-  hasParameter: [
-    new Resource('http://example.org/n3#dummyParam1', {
-      defaults: [
-        Resource.newString('a'),
-        Resource.newString('b')
-      ]
-    }),
-    new Resource('http://example.org/n3#dummyParam2', {
-      unique: true,
-      defaults: [
-        Resource.newString('a')
-      ]
-    })
-  ]
-});
-
-// Component definition for an N3 Dummy with default scoped param values
-let n3DummyComponentDefaultsScoped: any = new Resource('http://example.org/n3#Dummy', {
-  requireElement: Resource.newString('Dummy'),
-  hasParameter: [
-    new Resource('http://example.org/n3#dummyParam1', {
-      defaultScoped: [
-        {
-          scope: [],
-          scopedValue: [
-            Resource.newString('a'),
-            Resource.newString('b')
-          ]
-        }
-      ]
-    }),
-    new Resource('http://example.org/n3#dummyParam2', {
-      unique: true,
-      defaults: [
-        Resource.newString('a')
-      ]
-    })
-  ]
-});
-n3DummyComponentDefaultsScoped.hasParameter[0].defaultScoped[0].scope.push(n3DummyComponentDefaultsScoped);
-
-// Component definition for an N3 Dummy with a lazy parameter
-let n3DummyComponentLazy = new Resource('http://example.org/n3#DummyLazy', {
-    requireElement: Resource.newString('Dummy'),
-    hasParameter: [
-        new Resource('http://example.org/n3#dummyParam', {
-          lazy: Resource.newBoolean(true)
-        }),
-    ]
-});
-
-
-// Component definition for an N3 Dummy with fixed param values
-let n3DummyComponentFixed = new Resource('http://example.org/n3#Dummy', {
-  requireElement: Resource.newString('Dummy'),
-  hasParameter: [
-    new Resource('http://example.org/n3#dummyParam1', {
-      fixed: [
-        Resource.newString('a'),
-        Resource.newString('b')
-      ]
-    }),
-    new Resource('http://example.org/n3#dummyParam2', {
-      unique: true,
-      fixed: Resource.newString('a')
-    })
-  ]
-});
-
-// Module definition for N3
-let n3Module = new Resource('http://example.org/n3', {
-  requireName: Resource.newString('n3'),
-  hasComponent: [
-    n3ParserComponent,
-    n3LexerComponent,
-    n3UtilComponent,
-    n3DummyComponent,
-    n3DummyComponentDefaults,
-    n3DummyComponentFixed,
-    n3DummyComponentLazy
-  ]
-});
-
 describe('UnmappedNamedComponentFactory', function () {
-
-  describe('#makeUnnamedDefinitionConstructor', function () {
-    it('should create a valid definition constructor', function () {
-      let constructor = UnmappedNamedComponentFactory.makeUnnamedDefinitionConstructor(n3Module, n3LexerComponent);
-      expect(constructor).toBeTruthy();
-      expect(constructor).toBeInstanceOf(Function);
-      expect(constructor({})).toBeInstanceOf(Resource);
-    });
-
-    it('should create a resource with undefined arguments when constructed with no arguments', function () {
-      let instance: any = UnmappedNamedComponentFactory.makeUnnamedDefinitionConstructor(n3Module, n3LexerComponent)({});
-      expect(instance).toBeInstanceOf(Resource);
-      expect(instance).toHaveProperty('value', 'http://example.org/n3#Lexer');
-      expect(instance).toHaveProperty('termType', 'NamedNode');
-      expect(instance).toHaveProperty('requireName', Resource.newString('n3'));
-      expect(instance).toHaveProperty('requireElement', Resource.newString('Lexer'));
-      expect(instance).toHaveProperty('arguments');
-      expect(instance.arguments.list).toEqual([
-        new Resource('_:param_0', {
-          fields: [
-            { k: Resource.newString('http://example.org/n3#lineMode'), v: undefined },
-            { k: Resource.newString('http://example.org/n3#n3'), v: undefined },
-            { k: Resource.newString('http://example.org/n3#comments'), v: undefined }
-          ]
-        })
-      ]);
-    });
-
-    it('should create a resource with defined arguments when constructed with arguments', function () {
-      let instance: any = UnmappedNamedComponentFactory.makeUnnamedDefinitionConstructor(n3Module, n3LexerComponent)({
-        'http://example.org/n3#lineMode': Resource.newBoolean(true),
-        'http://example.org/n3#n3': Resource.newBoolean(true),
-        'http://example.org/n3#comments': Resource.newBoolean(true)
-      });
-      expect(instance).toBeInstanceOf(Resource);
-      expect(instance).toHaveProperty('value', 'http://example.org/n3#Lexer');
-      expect(instance).toHaveProperty('termType', 'NamedNode');
-      expect(instance).toHaveProperty('requireName', Resource.newString('n3'));
-      expect(instance).toHaveProperty('requireElement', Resource.newString('Lexer'));
-      expect(instance).toHaveProperty('arguments');
-      expect(instance.arguments.list).toEqual([
-        new Resource('_:param_0', {
-          fields: [
-            { k: Resource.newString('http://example.org/n3#lineMode'), v: Resource.newBoolean(true) },
-            { k: Resource.newString('http://example.org/n3#n3'), v: Resource.newBoolean(true) },
-            { k: Resource.newString('http://example.org/n3#comments'), v: Resource.newBoolean(true) }
-          ]
-        })
-      ]);
-    });
+  let loader: Loader;
+  let objectLoader: RdfObjectLoader;
+  beforeEach(() => {
+    loader = new Loader();
+    // Create resources via object loader, so we can use CURIEs
+    objectLoader = loader.objectLoader;
   });
 
   describe('for an N3 Lexer', function () {
-    let constructor: UnmappedNamedComponentFactory;
+    let module: Resource;
+    let n3LexerComponent: Resource;
     beforeEach(function () {
-      constructor = new UnmappedNamedComponentFactory(n3Module, n3LexerComponent, {
-        'http://example.org/n3#lineMode': Resource.newBoolean(true),
-        'http://example.org/n3#n3': Resource.newBoolean(true),
-        'http://example.org/n3#comments': Resource.newBoolean(true)
-      }, true);
+      n3LexerComponent = objectLoader.createCompactedResource({
+        '@id': 'http://example.org/n3#Lexer',
+        requireElement: '"Lexer"',
+        parameters: [
+          { '@id': 'http://example.org/n3#lineMode', unique: '"true"' },
+          { '@id': 'http://example.org/n3#n3', unique: '"true"' },
+          { '@id': 'http://example.org/n3#comments', unique: '"true"' }
+        ]
+      });
+      module = objectLoader.createCompactedResource({
+        '@id': 'http://example.org/n3',
+        requireName: '"n3"',
+        components: [
+          n3LexerComponent,
+        ]
+      });
     });
 
-    it('should be valid', function () {
-      expect(constructor).toBeTruthy();
+    describe('for a constructor with arguments', function () {
+      let constructor: UnmappedNamedComponentFactory;
+      beforeEach(function () {
+        constructor = new UnmappedNamedComponentFactory(module, n3LexerComponent, objectLoader.createCompactedResource({
+          'http://example.org/n3#lineMode': objectLoader.createCompactedResource('"true"'),
+          'http://example.org/n3#n3': objectLoader.createCompactedResource('"true"'),
+          'http://example.org/n3#comments': objectLoader.createCompactedResource('"true"')
+        }), true, {}, loader);
+      });
+
+      it('should be valid', function () {
+        expect(constructor).toBeTruthy();
+      });
+
+      it('should create valid arguments', async () => {
+        const args = await constructor.makeArguments();
+        expect(args).toEqual([{
+          'http://example.org/n3#lineMode': 'true',
+          'http://example.org/n3#n3': 'true',
+          'http://example.org/n3#comments': 'true'
+        }]);
+      });
+
+      it('should make a valid instance', async () => {
+        const instance = await constructor.create();
+        expect(instance).toBeTruthy();
+        expect(instance).toBeInstanceOf(N3.Lexer);
+      });
     });
 
-    it('should create valid arguments', async() => {
-      const args = await constructor.makeArguments();
-      expect(args).toEqual([{
-        'http://example.org/n3#lineMode': 'true',
-        'http://example.org/n3#n3': 'true',
-        'http://example.org/n3#comments': 'true'
-      }]);
-    });
+    describe('#makeUnnamedDefinitionConstructor', function () {
+      it('should create a valid definition constructor', function () {
+        let constructor = UnmappedNamedComponentFactory.makeUnnamedDefinitionConstructor(module, n3LexerComponent, objectLoader);
+        expect(constructor).toBeTruthy();
+        expect(constructor).toBeInstanceOf(Function);
+        expect(constructor(objectLoader.createCompactedResource({}))).toBeInstanceOf(Resource);
+      });
 
-    it('should make a valid instance', async() => {
-      const instance = await constructor.create();
-      expect(instance).toBeTruthy();
-      expect(instance).toBeInstanceOf(N3.Lexer);
+      it('should create a resource with undefined arguments when constructed with no arguments', function () {
+        let instance: Resource = UnmappedNamedComponentFactory.makeUnnamedDefinitionConstructor(module, n3LexerComponent, objectLoader)(objectLoader.createCompactedResource({}));
+        expect(instance).toBeInstanceOf(Resource);
+        expect(instance).toHaveProperty('type', 'BlankNode');
+        expect(instance.property).toHaveProperty('requireName', objectLoader.createCompactedResource('"n3"'));
+        expect(instance.property).toHaveProperty('requireElement', objectLoader.createCompactedResource('"Lexer"'));
+        expect(instance.property).toHaveProperty('arguments');
+        expect(instance.property.arguments.list.length).toEqual(1);
+        expect(instance.property.arguments.list[0].properties.fields.length).toEqual(3);
+        expect(instance.property.arguments.list[0].properties.fields[0].property.key.value).toEqual('http://example.org/n3#lineMode');
+        expect(instance.property.arguments.list[0].properties.fields[0].property.value).toBeUndefined();
+        expect(instance.property.arguments.list[0].properties.fields[1].property.key.value).toEqual('http://example.org/n3#n3');
+        expect(instance.property.arguments.list[0].properties.fields[1].property.value).toBeUndefined();
+        expect(instance.property.arguments.list[0].properties.fields[2].property.key.value).toEqual('http://example.org/n3#comments');
+        expect(instance.property.arguments.list[0].properties.fields[2].property.value).toBeUndefined();
+      });
+
+      it('should create a resource with defined arguments when constructed with arguments', function () {
+        let instance: Resource = UnmappedNamedComponentFactory.makeUnnamedDefinitionConstructor(module, n3LexerComponent, objectLoader)(objectLoader.createCompactedResource({
+          'http://example.org/n3#lineMode': objectLoader.createCompactedResource('"true"'),
+          'http://example.org/n3#n3': objectLoader.createCompactedResource('"true"'),
+          'http://example.org/n3#comments': objectLoader.createCompactedResource('"true"')
+        }));
+        expect(instance).toBeInstanceOf(Resource);
+        expect(instance).toHaveProperty('type', 'BlankNode');
+        expect(instance.property).toHaveProperty('requireName', objectLoader.createCompactedResource('"n3"'));
+        expect(instance.property).toHaveProperty('requireElement', objectLoader.createCompactedResource('"Lexer"'));
+        expect(instance.property).toHaveProperty('arguments');
+
+        expect(instance.property.arguments.list.length).toEqual(1);
+        expect(instance.property.arguments.list[0].properties.fields.length).toEqual(3);
+        expect(instance.property.arguments.list[0].properties.fields[0].property.key.value).toEqual('http://example.org/n3#lineMode');
+        expect(instance.property.arguments.list[0].properties.fields[0].property.value.value).toEqual('true');
+        expect(instance.property.arguments.list[0].properties.fields[1].property.key.value).toEqual('http://example.org/n3#n3');
+        expect(instance.property.arguments.list[0].properties.fields[1].property.value.value).toEqual('true');
+        expect(instance.property.arguments.list[0].properties.fields[2].property.key.value).toEqual('http://example.org/n3#comments');
+        expect(instance.property.arguments.list[0].properties.fields[2].property.value.value).toEqual('true');
+      });
     });
   });
 
   describe('for an N3 Parser', function () {
+    let module: Resource;
+    let n3LexerComponent: Resource;
+    let n3ParserComponent: Resource;
     let constructor: UnmappedNamedComponentFactory;
     beforeEach(function () {
-      constructor = new UnmappedNamedComponentFactory(n3Module, n3ParserComponent, {
-        'http://example.org/n3#format': Resource.newString('application/trig'),
-        'http://example.org/n3#lexer': UnmappedNamedComponentFactory.makeUnnamedDefinitionConstructor(n3Module, n3LexerComponent)({
-          'http://example.org/n3#lineMode': Resource.newBoolean(true),
-          'http://example.org/n3#n3': Resource.newBoolean(true),
-          'http://example.org/n3#comments': Resource.newBoolean(true)
-        }),
-      }, true);
+      n3LexerComponent = objectLoader.createCompactedResource({
+        '@id': 'http://example.org/n3#Lexer',
+        requireElement: '"Lexer"',
+        parameters: [
+          { '@id': 'http://example.org/n3#lineMode', unique: '"true"' },
+          { '@id': 'http://example.org/n3#n3', unique: '"true"' },
+          { '@id': 'http://example.org/n3#comments', unique: '"true"' }
+        ]
+      });
+      n3ParserComponent = objectLoader.createCompactedResource({
+        '@id': 'http://example.org/n3#Parser',
+        requireElement: '"Parser"',
+        parameters: [
+          { '@id': 'http://example.org/n3#format', unique: '"true"' },
+          { '@id': 'http://example.org/n3#blankNodePrefix', unique: '"true"' },
+          { '@id': 'http://example.org/n3#lexer', unique: '"true"' },
+          { '@id': 'http://example.org/n3#explicitQuantifiers', unique: '"true"' }
+        ]
+      });
+      module = objectLoader.createCompactedResource({
+        '@id': 'http://example.org/n3',
+        requireName: '"n3"',
+        components: [
+          n3LexerComponent,
+          n3ParserComponent,
+        ]
+      });
+      constructor = new UnmappedNamedComponentFactory(module, n3ParserComponent, objectLoader.createCompactedResource({
+        'http://example.org/n3#format': objectLoader.createCompactedResource('"application/trig"'),
+        'http://example.org/n3#lexer': UnmappedNamedComponentFactory.makeUnnamedDefinitionConstructor(module, n3LexerComponent, objectLoader)(objectLoader.createCompactedResource({
+          'http://example.org/n3#lineMode': objectLoader.createCompactedResource('"true"'),
+          'http://example.org/n3#n3': objectLoader.createCompactedResource('"true"'),
+          'http://example.org/n3#comments': objectLoader.createCompactedResource('"true"')
+        })),
+      }), true, {}, loader);
     });
 
     it('should be valid', function () {
@@ -239,9 +176,22 @@ describe('UnmappedNamedComponentFactory', function () {
   });
 
   describe('for an N3 Util', function () {
+    let n3UtilComponent: Resource;
+    let module: Resource;
     let constructor: UnmappedNamedComponentFactory;
     beforeEach(function () {
-      constructor = new UnmappedNamedComponentFactory(n3Module, n3UtilComponent, {}, false);
+      n3UtilComponent = objectLoader.createCompactedResource({
+        '@id': 'http://example.org/n3#Util',
+        requireElement: '"Util"'
+      });
+      module = objectLoader.createCompactedResource({
+        '@id': 'http://example.org/n3',
+        requireName: '"n3"',
+        components: [
+          n3UtilComponent,
+        ]
+      });
+      constructor = new UnmappedNamedComponentFactory(module, n3UtilComponent, objectLoader.createCompactedResource({}), false, {}, loader);
     });
 
     it('should be valid', function () {
@@ -261,11 +211,27 @@ describe('UnmappedNamedComponentFactory', function () {
   });
 
   describe('for an N3 Dummy', function () {
+    let n3DummyComponent: Resource;
+    let module: Resource;
     let constructor: UnmappedNamedComponentFactory;
     beforeEach(function () {
-      constructor = new UnmappedNamedComponentFactory(n3Module, n3DummyComponent, {
-        'http://example.org/n3#dummyParam': Resource.newBoolean(true)
-      }, true);
+      n3DummyComponent = objectLoader.createCompactedResource({
+        '@id': 'http://example.org/n3#Dummy',
+        requireElement: '"Dummy"',
+        parameters: [
+          { '@id': 'http://example.org/n3#dummyParam', unique: '"true"' }
+        ]
+      });
+      module = objectLoader.createCompactedResource({
+        '@id': 'http://example.org/n3',
+        requireName: '"n3"',
+        components: [
+          n3DummyComponent,
+        ]
+      });
+      constructor = new UnmappedNamedComponentFactory(module, n3DummyComponent, objectLoader.createCompactedResource({
+        'http://example.org/n3#dummyParam': objectLoader.createCompactedResource('"true"')
+      }), true, {}, loader);
     });
 
     it('should be valid', function () {
@@ -286,9 +252,38 @@ describe('UnmappedNamedComponentFactory', function () {
   });
 
   describe('for an N3 Dummy with default values', function () {
+    let n3DummyComponentDefaults: Resource;
+    let module: Resource;
     let constructor: UnmappedNamedComponentFactory;
     beforeEach(function () {
-      constructor = new UnmappedNamedComponentFactory(n3Module, n3DummyComponentDefaults, {}, true);
+      n3DummyComponentDefaults = objectLoader.createCompactedResource({
+        '@id': 'http://example.org/n3#Dummy',
+        requireElement: '"Dummy"',
+        parameters: [
+          {
+            '@id': 'http://example.org/n3#dummyParam1',
+            default: [
+              '"a"',
+              '"b"'
+            ]
+          },
+          {
+            '@id': 'http://example.org/n3#dummyParam2',
+            unique: '"true"',
+            default: [
+              '"a"'
+            ]
+          },
+        ],
+      });
+      module = objectLoader.createCompactedResource({
+        '@id': 'http://example.org/n3',
+        requireName: '"n3"',
+        components: [
+          n3DummyComponentDefaults,
+        ]
+      });
+      constructor = new UnmappedNamedComponentFactory(module, n3DummyComponentDefaults, objectLoader.createCompactedResource({}), true, {}, loader);
     });
 
     it('should be valid', function () {
@@ -299,7 +294,7 @@ describe('UnmappedNamedComponentFactory', function () {
       const args = await constructor.makeArguments();
       expect(args).toEqual([{
         'http://example.org/n3#dummyParam1': [ 'a', 'b' ],
-        'http://example.org/n3#dummyParam2': [ 'a' ],
+        'http://example.org/n3#dummyParam2': 'a',
       }]);
     });
 
@@ -310,12 +305,41 @@ describe('UnmappedNamedComponentFactory', function () {
   });
 
   describe('for an N3 Dummy with overridden default values', function () {
+    let n3DummyComponentDefaults: Resource;
+    let module: Resource;
     let constructor: UnmappedNamedComponentFactory;
     beforeEach(function () {
-      constructor = new UnmappedNamedComponentFactory(n3Module, n3DummyComponentDefaults, {
-        'http://example.org/n3#dummyParam1': Resource.newBoolean(true),
-        'http://example.org/n3#dummyParam2': Resource.newBoolean(false)
-      }, true);
+      n3DummyComponentDefaults = objectLoader.createCompactedResource({
+        '@id': 'http://example.org/n3#Dummy',
+        requireElement: '"Dummy"',
+        parameters: [
+          {
+            '@id': 'http://example.org/n3#dummyParam1',
+            default: [
+              '"a"',
+              '"b"'
+            ]
+          },
+          {
+            '@id': 'http://example.org/n3#dummyParam2',
+            unique: '"true"',
+            default: [
+              '"a"'
+            ]
+          },
+        ],
+      });
+      module = objectLoader.createCompactedResource({
+        '@id': 'http://example.org/n3',
+        requireName: '"n3"',
+        components: [
+          n3DummyComponentDefaults,
+        ]
+      });
+      constructor = new UnmappedNamedComponentFactory(module, n3DummyComponentDefaults, objectLoader.createCompactedResource({
+        'http://example.org/n3#dummyParam1': objectLoader.createCompactedResource('"true"'),
+        'http://example.org/n3#dummyParam2': objectLoader.createCompactedResource('"false"')
+      }), true, {}, loader);
     });
 
     it('should be valid', function () {
@@ -325,7 +349,7 @@ describe('UnmappedNamedComponentFactory', function () {
     it('should create valid arguments', async() => {
       const args = await constructor.makeArguments();
       expect(args).toEqual([{
-        'http://example.org/n3#dummyParam1': 'true',
+        'http://example.org/n3#dummyParam1': [ 'true' ],
         'http://example.org/n3#dummyParam2': 'false',
       }]);
     });
@@ -337,112 +361,213 @@ describe('UnmappedNamedComponentFactory', function () {
   });
 
   describe('for an N3 Dummy with default scoped values', function () {
+    let n3DummyComponentDefaultsScoped: Resource;
+    let module: Resource;
     let constructor: UnmappedNamedComponentFactory;
     beforeEach(function () {
-      constructor = new UnmappedNamedComponentFactory(n3Module, n3DummyComponentDefaultsScoped, {}, true);
+      n3DummyComponentDefaultsScoped = objectLoader.createCompactedResource({
+        '@id': 'http://example.org/n3#Dummy',
+        requireElement: '"Dummy"',
+        parameters: [
+          {
+            '@id': 'http://example.org/n3#dummyParam1',
+            defaultScoped: [
+              {
+                defaultScope: 'http://example.org/n3#Dummy',
+                defaultScopedValue: [
+                  '"a"',
+                  '"b"'
+                ]
+              }
+            ]
+          },
+          {
+            '@id': 'http://example.org/n3#dummyParam2',
+            unique: '"true"',
+            default: [
+              '"a"'
+            ]
+          }
+        ]
+      });
+      module = objectLoader.createCompactedResource({
+        '@id': 'http://example.org/n3',
+        requireName: '"n3"',
+        components: [
+          n3DummyComponentDefaultsScoped,
+        ]
+      });
+      n3DummyComponentDefaultsScoped.properties.parameters[0].properties.defaultScoped[0].properties.scope.push(n3DummyComponentDefaultsScoped);
     });
 
-    it('should be valid', function () {
-      expect(constructor).toBeTruthy();
+    describe('without overrides', function () {
+      beforeEach(() => {
+        constructor = new UnmappedNamedComponentFactory(module, n3DummyComponentDefaultsScoped, objectLoader.createCompactedResource({}), true, {}, loader);
+      });
+
+      it('should be valid', function () {
+        expect(constructor).toBeTruthy();
+      });
+
+      it('should create valid arguments', async() => {
+        const args = await constructor.makeArguments();
+        expect(args).toEqual([{
+          'http://example.org/n3#dummyParam1': [ 'a', 'b' ],
+          'http://example.org/n3#dummyParam2': 'a',
+        }]);
+      });
+
+      it('should fail to make a valid instance', function () {
+        return expect(constructor.create()).rejects
+          .toThrow(new Error('Failed to get module element Dummy from module n3'));
+      });
     });
 
-    it('should create valid arguments', async() => {
-      const args = await constructor.makeArguments();
-      expect(args).toEqual([{
-        'http://example.org/n3#dummyParam1': [ 'a', 'b' ],
-        'http://example.org/n3#dummyParam2': [ 'a' ],
-      }]);
-    });
+    describe('with overrides', function () {
+      beforeEach(() => {
+        constructor = new UnmappedNamedComponentFactory(module, n3DummyComponentDefaultsScoped, objectLoader.createCompactedResource({
+          'http://example.org/n3#dummyParam1': objectLoader.createCompactedResource('"true"'),
+          'http://example.org/n3#dummyParam2': objectLoader.createCompactedResource('"false"')
+        }), true, {}, loader);
+      });
 
-    it('should fail to make a valid instance', function () {
-      return expect(constructor.create()).rejects
-        .toThrow(new Error('Failed to get module element Dummy from module n3'));
-    });
-  });
+      it('should be valid', function () {
+        expect(constructor).toBeTruthy();
+      });
 
-  describe('for an N3 Dummy with overridden default scoped values', function () {
-    let constructor: UnmappedNamedComponentFactory;
-    beforeEach(function () {
-      constructor = new UnmappedNamedComponentFactory(n3Module, n3DummyComponentDefaultsScoped, {
-        'http://example.org/n3#dummyParam1': Resource.newBoolean(true),
-        'http://example.org/n3#dummyParam2': Resource.newBoolean(false)
-      }, true);
-    });
+      it('should create valid arguments', async() => {
+        const args = await constructor.makeArguments();
+        expect(args).toEqual([{
+          'http://example.org/n3#dummyParam1': [ 'true' ],
+          'http://example.org/n3#dummyParam2': 'false',
+        }]);
+      });
 
-    it('should be valid', function () {
-      expect(constructor).toBeTruthy();
-    });
-
-    it('should create valid arguments', async() => {
-      const args = await constructor.makeArguments();
-      expect(args).toEqual([{
-        'http://example.org/n3#dummyParam1': 'true',
-        'http://example.org/n3#dummyParam2': 'false',
-      }]);
-    });
-
-    it('should fail to make a valid instance', function () {
-      return expect(constructor.create()).rejects
-        .toThrow(new Error('Failed to get module element Dummy from module n3'));
+      it('should fail to make a valid instance', function () {
+        return expect(constructor.create()).rejects
+          .toThrow(new Error('Failed to get module element Dummy from module n3'));
+      });
     });
   });
 
   describe('for an N3 Dummy with fixed values', function () {
+    let n3DummyComponentFixed: Resource;
+    let module: Resource;
     let constructor: UnmappedNamedComponentFactory;
     beforeEach(function () {
-      constructor = new UnmappedNamedComponentFactory(n3Module, n3DummyComponentFixed, {}, true);
+      n3DummyComponentFixed = objectLoader.createCompactedResource({
+        '@id': 'http://example.org/n3#Dummy',
+        requireElement: '"Dummy"',
+        parameters: [
+          {
+            '@id': 'http://example.org/n3#dummyParam1',
+            fixed: [
+              '"a"',
+              '"b"'
+            ]
+          },
+          {
+            '@id': 'http://example.org/n3#dummyParam2',
+            unique: '"true"',
+            fixed: '"a"'
+          }
+        ]
+      });
+      module = objectLoader.createCompactedResource({
+        '@id': 'http://example.org/n3',
+        requireName: '"n3"',
+        components: [
+          n3DummyComponentFixed,
+        ]
+      });
     });
 
-    it('should be valid', function () {
-      expect(constructor).toBeTruthy();
+    describe('without additional values', () => {
+      beforeEach(() => {
+        constructor = new UnmappedNamedComponentFactory(module, n3DummyComponentFixed, objectLoader.createCompactedResource({}), true, {}, loader);
+      });
+
+      it('should be valid', function () {
+        expect(constructor).toBeTruthy();
+      });
+
+      it('should create valid arguments', async() => {
+        const args = await constructor.makeArguments();
+        expect(args).toEqual([{
+          'http://example.org/n3#dummyParam1': [ 'a', 'b' ],
+          'http://example.org/n3#dummyParam2': 'a',
+        }]);
+      });
+
+      it('should fail to make a valid instance', function () {
+        return expect(constructor.create()).rejects
+          .toThrow(new Error('Failed to get module element Dummy from module n3'));
+      });
     });
 
-    it('should create valid arguments', async() => {
-      const args = await constructor.makeArguments();
-      expect(args).toEqual([{
-        'http://example.org/n3#dummyParam1': [ 'a', 'b' ],
-        'http://example.org/n3#dummyParam2': 'a',
-      }]);
+    describe('with additional values', () => {
+      beforeEach(() => {
+        constructor = new UnmappedNamedComponentFactory(module, n3DummyComponentFixed, objectLoader.createCompactedResource({
+          'http://example.org/n3#dummyParam1': [ objectLoader.createCompactedResource('"true"') ]
+        }), true, {}, loader);
+      });
+
+      it('should be valid', function () {
+        expect(constructor).toBeTruthy();
+      });
+
+      it('should create valid arguments', async() => {
+        const args = await constructor.makeArguments();
+        expect(args).toEqual([{
+          'http://example.org/n3#dummyParam1': [ 'true', 'a', 'b' ],
+          'http://example.org/n3#dummyParam2': 'a',
+        }]);
+      });
+
+      it('should fail to make a valid instance', function () {
+        return expect(constructor.create()).rejects
+          .toThrow(new Error('Failed to get module element Dummy from module n3'));
+      });
     });
 
-    it('should fail to make a valid instance', function () {
-      return expect(constructor.create()).rejects
-        .toThrow(new Error('Failed to get module element Dummy from module n3'));
-    });
-  });
-
-  describe('for an N3 Dummy with fixed and additional values', function () {
-    let constructor: UnmappedNamedComponentFactory;
-    beforeEach(function () {
-      constructor = new UnmappedNamedComponentFactory(n3Module, n3DummyComponentFixed, {
-        'http://example.org/n3#dummyParam1': [ Resource.newBoolean(true) ]
-      }, true);
-    });
-
-    it('should be valid', function () {
-      expect(constructor).toBeTruthy();
-    });
-
-    it('should create valid arguments', async() => {
-      const args = await constructor.makeArguments();
-      expect(args).toEqual([{
-        'http://example.org/n3#dummyParam1': [ 'true', 'a', 'b' ],
-        'http://example.org/n3#dummyParam2': 'a',
-      }]);
-    });
-
-    it('should fail to make a valid instance', function () {
-      return expect(constructor.create()).rejects
-        .toThrow(new Error('Failed to get module element Dummy from module n3'));
+    describe('with additional value to a fixed, unique value', () => {
+      it('should throw an error', function () {
+        expect(async() => {
+          await new UnmappedNamedComponentFactory(module, n3DummyComponentFixed, objectLoader.createCompactedResource({
+            'http://example.org/n3#dummyParam1': [ objectLoader.createCompactedResource('"true"') ],
+            'http://example.org/n3#dummyParam2': [ objectLoader.createCompactedResource('"true"') ]
+          }), true, {}, loader)
+        }).rejects.toThrow(Error);
+      });
     });
   });
 
   describe('for an N3 Dummy with a lazy parameter', function () {
+    let n3DummyComponentLazy: Resource;
+    let module: Resource;
     let constructor: UnmappedNamedComponentFactory;
     beforeEach(function () {
-      constructor = new UnmappedNamedComponentFactory(n3Module, n3DummyComponentLazy, {
-        'http://example.org/n3#dummyParam': Resource.newBoolean(true)
-      }, true);
+      n3DummyComponentLazy = objectLoader.createCompactedResource({
+        '@id': 'http://example.org/n3#DummyLazy',
+        requireElement: '"Dummy"',
+        parameters: [
+          {
+            '@id': 'http://example.org/n3#dummyParam',
+            lazy: '"true"',
+            unique: '"true"'
+          },
+        ]
+      });
+      module = objectLoader.createCompactedResource({
+        '@id': 'http://example.org/n3',
+        requireName: '"n3"',
+        components: [
+          n3DummyComponentLazy,
+        ]
+      });
+      constructor = new UnmappedNamedComponentFactory(module, n3DummyComponentLazy, objectLoader.createCompactedResource({
+        'http://example.org/n3#dummyParam': objectLoader.createCompactedResource('"true"')
+      }), true, {}, loader);
     });
 
     it('should be valid', function () {
@@ -452,18 +577,6 @@ describe('UnmappedNamedComponentFactory', function () {
     it('should create valid arguments', async() => {
       const args = await constructor.makeArguments();
       expect(await args[0]['http://example.org/n3#dummyParam']()).toEqual('true');
-    });
-  });
-
-  describe('for an N3 Dummy with fixed and additional values, adding to a fixed, unique value', function () {
-
-    it('should throw an error', function () {
-      expect(async() => {
-        await new UnmappedNamedComponentFactory(n3Module, n3DummyComponentFixed, {
-          'http://example.org/n3#dummyParam1': [ Resource.newBoolean(true) ],
-          'http://example.org/n3#dummyParam2': [ Resource.newBoolean(true) ]
-        }, true)
-      }).rejects.toThrow(Error);
     });
   });
 

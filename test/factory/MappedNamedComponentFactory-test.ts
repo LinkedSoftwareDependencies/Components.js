@@ -1,390 +1,195 @@
-import { Resource } from '../../lib/rdf/Resource';
+import { Resource, RdfObjectLoader } from 'rdf-object';
 import Util = require('../../lib/Util');
 import { MappedNamedComponentFactory } from '../../lib/factory/MappedNamedComponentFactory';
+import { Loader } from '../../lib/Loader';
 
 // TODO: improve these imports
 const N3 = require('n3');
 const Hello = require("../../__mocks__/helloworld").Hello;
 
-// Component definition for an N3 Parser
-let n3ParserComponent = new Resource('http://example.org/n3#Parser', {
-  requireElement: Resource.newString('Parser'),
-  types: [ new Resource(Util.PREFIXES['oo'] + 'Class') ],
-  hasParameter: [
-    new Resource('http://example.org/n3#format'),
-    new Resource('http://example.org/n3#blankNodePrefix'),
-    new Resource('http://example.org/n3#lexer'),
-    new Resource('http://example.org/n3#explicitQuantifiers')
-  ],
-  constructorArguments: new Resource(null, {
-    list: [
-      new Resource("_:param_parser_0", {
-        fields: [
-          { k: new Resource('"format"'), v: new Resource('http://example.org/n3#format') },
-          { k: new Resource('"blankNodePrefix"'), v: new Resource('http://example.org/n3#blankNodePrefix') },
-          { k: new Resource('"lexer"'), v: new Resource('http://example.org/n3#lexer') },
-          { k: new Resource('"explicitQuantifiers"'), v: new Resource('http://example.org/n3#explicitQuantifiers') }
-        ]
-      })
-    ]
-  })
-});
-
-// Component definition for an N3 Lexer
-let n3LexerComponent = new Resource('http://example.org/n3#Lexer', {
-  requireElement: Resource.newString('Lexer'),
-  types: [ new Resource(Util.PREFIXES['oo'] + 'Class') ],
-  hasParameter: [
-    new Resource('http://example.org/n3#lineMode'),
-    new Resource('http://example.org/n3#n3'),
-    new Resource('http://example.org/n3#comments')
-  ],
-  constructorArguments: new Resource(null, {
-    list: [
-      new Resource("_:param_parser_0", {
-        fields: [
-          { k: new Resource('"lineMode"'), v: new Resource('http://example.org/n3#lineMode') },
-          { k: new Resource('"n3"'), v: new Resource('http://example.org/n3#n3') },
-          { k: new Resource('"comments"'), v: new Resource('http://example.org/n3#comments') }
-        ]
-      })
-    ]
-  })
-});
-
-// Component definition for an N3 Util
-let n3UtilComponent = new Resource('http://example.org/n3#Util', {
-  requireElement: Resource.newString('Util'),
-  types: [ new Resource(Util.PREFIXES['oo'] + 'ComponentInstance') ],
-});
-
-// Component definition for an N3 Dummy
-let n3DummyComponent = new Resource('http://example.org/n3#Dummy', {
-  requireElement: Resource.newString('Dummy'),
-  types: [ new Resource(Util.PREFIXES['oo'] + 'Class') ],
-  hasParameter: [
-    new Resource('http://example.org/n3#dummyParam')
-  ],
-  constructorArguments: new Resource(null, {
-    list: [
-      new Resource("_:param_parser_0", {
-        fields: [
-          { k: new Resource('"dummyParam"'), v: new Resource('http://example.org/n3#dummyParam') }
-        ]
-      })
-    ]
-  })
-});
-
-// Module definition for N3
-let n3Module = new Resource('http://example.org/n3', {
-  requireName: Resource.newString('n3'),
-  hasComponent: [
-    n3ParserComponent,
-    n3LexerComponent,
-    n3UtilComponent,
-    n3DummyComponent
-  ]
-});
-
-// Component definition for Hello World
-let helloWorldComponent1 = new Resource('http://example.org/HelloWorldModule#SayHelloComponent1', {
-  requireElement: Resource.newString('Hello'),
-  types: [ new Resource(Util.PREFIXES['oo'] + 'Class') ],
-  hasParameter: [
-    new Resource('http://example.org/HelloWorldModule#dummyParam')
-  ],
-  constructorArguments: new Resource(null, {
-    list: [
-      new Resource("_:param_parser_0", {
-        fields: [
-          { k: new Resource('"dummyParam"'), v: new Resource('http://example.org/HelloWorldModule#dummyParam') }
-        ]
-      })
-    ]
-  })
-});
-
-// Component definition for Hello World
-let helloWorldComponent2 = new Resource('http://example.org/HelloWorldModule#SayHelloComponent2', {
-  requireElement: Resource.newString('Hello'),
-  types: [ new Resource(Util.PREFIXES['oo'] + 'Class') ],
-  hasParameter: [
-    new Resource('http://example.org/HelloWorldModule#dummyParam'),
-    new Resource('http://example.org/HelloWorldModule#instanceParam')
-  ],
-  constructorArguments: new Resource(null, {
-    list: [
-      new Resource("_:param_hello_0", {
-        fields: [
-          { k: new Resource('"dummyParam"'), v: new Resource('http://example.org/HelloWorldModule#dummyParam') },
-          { k: new Resource('"instanceParam"'), v: new Resource('http://example.org/HelloWorldModule#instanceParam') }
-        ]
-      })
-    ]
-  })
-});
-
-// Component definition for Hello World
-let helloWorldComponent3 = new Resource('http://example.org/HelloWorldModule#SayHelloComponent3', {
-  requireElement: Resource.newString('Hello'),
-  types: [ new Resource(Util.PREFIXES['oo'] + 'Class') ],
-  hasParameter: [
-    new Resource('http://example.org/HelloWorldModule#dummyParam'),
-    new Resource('http://example.org/HelloWorldModule#instanceParam'),
-    new Resource('http://example.org/HelloWorldModule#idParam')
-  ],
-  constructorArguments: new Resource(null, {
-    list: [
-      new Resource("_:param_hello_0", {
-        fields: [
-          { k: new Resource('"dummyParam"'), v: new Resource('http://example.org/HelloWorldModule#dummyParam') },
-          { k: new Resource('"instanceParam"'), v: new Resource('http://example.org/HelloWorldModule#instanceParam') },
-          { k: new Resource('"idParam"'), v: new Resource(Util.PREFIXES['rdf'] + 'subject') }
-        ]
-      })
-    ]
-  })
-});
-
-// Component definition for Hello World with array parameters
-let helloWorldComponent4 = new Resource('http://example.org/HelloWorldModule#SayHelloComponent3', {
-  requireElement: Resource.newString('Hello'),
-  types: [ new Resource(Util.PREFIXES['oo'] + 'Class') ],
-  hasParameter: [
-    new Resource('http://example.org/HelloWorldModule#dummyParam'),
-    new Resource('http://example.org/HelloWorldModule#instanceParam'),
-    new Resource('http://example.org/HelloWorldModule#idParam')
-  ],
-  constructorArguments: new Resource(null, {
-    list: [
-      new Resource("_:param_hello_0", {
-        elements: {
-          list: [
-            new Resource('http://example.org/HelloWorldModule#dummyParam'),
-            new Resource('http://example.org/HelloWorldModule#instanceParam')
-          ]
-        }
-      })
-    ]
-  })
-});
-
-// Component definition for Hello World with default values
-let defaultedParam1 = new Resource('http://example.org/n3#dummyParam1', {
-  defaults: [
-    Resource.newString('a'),
-    Resource.newString('b')
-  ]
-});
-let defaultedParam2 = new Resource('http://example.org/n3#dummyParam2', {
-  unique: true,
-  defaults: [
-    Resource.newString('a')
-  ]
-});
-let helloWorldComponent5 = new Resource('http://example.org/HelloWorldModule#SayHelloComponent4', {
-  requireElement: Resource.newString('Hello'),
-  types: [ new Resource(Util.PREFIXES['oo'] + 'Class') ],
-  hasParameter: [ defaultedParam1, defaultedParam2, ],
-  constructorArguments: new Resource(null, {
-    list: [
-      new Resource("_:param_parser_0", {
-        fields: [
-          { k: new Resource('"dummyParam1"'), v: defaultedParam1 },
-          { k: new Resource('"dummyParam2"'), v: defaultedParam2 }
-        ]
-      })
-    ]
-  })
-});
-
-// Component definition for Hello World with default scoped values
-let defaultScopedParam1 = new Resource('http://example.org/n3#dummyParam1', {
-  defaultScoped: [
-    {
-      scope: [],
-      scopedValue: [
-        Resource.newString('a'),
-        Resource.newString('b')
-      ]
-    }
-  ]
-});
-let defaultScopedParam2 = new Resource('http://example.org/n3#dummyParam2', {
-  unique: true,
-  defaultScoped: [
-    {
-      scope: [],
-      scopedValue: [
-        Resource.newString('a')
-      ]
-    }
-  ]
-});
-let helloWorldComponent6: any = new Resource('http://example.org/HelloWorldModule#SayHelloComponent5', {
-  requireElement: Resource.newString('Hello'),
-  types: [ new Resource(Util.PREFIXES['oo'] + 'Class') ],
-  hasParameter: [ defaultScopedParam1, defaultScopedParam2, ],
-  constructorArguments: new Resource(null, {
-    list: [
-      new Resource("_:param_parser_0", {
-        fields: [
-          { k: new Resource('"dummyParam1"'), v: defaultScopedParam1 },
-          { k: new Resource('"dummyParam2"'), v: defaultScopedParam2 }
-        ]
-      })
-    ]
-  })
-});
-helloWorldComponent6.hasParameter.forEach((param: any) => param.defaultScoped[0].scope.push(helloWorldComponent6));
-
-// Component definition for Hello World with array parameters
-let helloWorldComponent7 = new Resource('http://example.org/HelloWorldModule#SayHelloComponent6', {
-    requireElement: Resource.newString('Hello'),
-    types: [ new Resource(Util.PREFIXES['oo'] + 'Class') ],
-    hasParameter: [
-        new Resource('http://example.org/HelloWorldModule#requiredParam', { required: true })
-    ],
-    constructorArguments: new Resource(null, {
-        list: [
-            new Resource("_:param_hello_0", {
-                elements: {
-                    list: [
-                        new Resource('http://example.org/HelloWorldModule#requiredParam')
-                    ]
-                }
-            })
-        ]
-    })
-});
-
-// Component definition for Hello World with lazy parameters
-let helloWorldComponent8 = new Resource('http://example.org/HelloWorldModule#SayHelloComponent8', {
-    requireElement: Resource.newString('Hello'),
-    types: [ new Resource(Util.PREFIXES['oo'] + 'Class') ],
-    hasParameter: [
-        new Resource('http://example.org/HelloWorldModule#dummyParamLazy', { lazy: Resource.newBoolean(true) }),
-        new Resource('http://example.org/HelloWorldModule#instanceParamLazy', { lazy: Resource.newBoolean(true) }),
-        new Resource('http://example.org/HelloWorldModule#idParamLazy', { lazy: Resource.newBoolean(true) })
-    ],
-    constructorArguments: new Resource(null, {
-        list: [
-            new Resource("_:param_hello_0_lazy", {
-                fields: [
-                    { k: new Resource('"dummyParamLazy"'), v: new Resource('http://example.org/HelloWorldModule#dummyParamLazy', { lazy: Resource.newBoolean(true) }) },
-                    { k: new Resource('"instanceParamLazy"'), v: new Resource('http://example.org/HelloWorldModule#instanceParamLazy', { lazy: Resource.newBoolean(true) }) },
-                    { k: new Resource('"idParamLazy"'), v: new Resource(Util.PREFIXES['rdf'] + 'subject') }
-                ]
-            })
-        ]
-    })
-});
-
-// Module definition for Hello World
-let helloWorldModule = new Resource('http://example.org/HelloWorldModule', {
-  requireName: Resource.newString('helloworld'),
-  hasComponent: [
-    helloWorldComponent1,
-    helloWorldComponent2,
-    helloWorldComponent3,
-    helloWorldComponent4,
-    helloWorldComponent5,
-    helloWorldComponent6,
-    helloWorldComponent7,
-    helloWorldComponent8
-  ]
-});
-
 describe('MappedNamedComponentFactory', function () {
+  let loader: Loader;
+  let objectLoader: RdfObjectLoader;
 
-  describe('#makeUnnamedDefinitionConstructor', function () {
-    it('should create a valid definition constructor', function () {
-      let constructor = MappedNamedComponentFactory.makeUnnamedDefinitionConstructor(n3Module, n3LexerComponent);
-      expect(constructor).toBeTruthy();
-      expect(constructor).toBeInstanceOf(Function);
-      expect(constructor({})).toBeInstanceOf(Resource);
-    });
-
-    it('should create a resource with undefined arguments when constructed with no arguments', function () {
-      let instance: any = MappedNamedComponentFactory.makeUnnamedDefinitionConstructor(n3Module, n3LexerComponent)({});
-      expect(instance).toBeInstanceOf(Resource);
-      expect(instance).toHaveProperty('termType', 'NamedNode');
-      expect(instance).toHaveProperty('termType', 'NamedNode');
-      expect(instance).toHaveProperty('requireName', Resource.newString('n3'));
-      expect(instance).toHaveProperty('requireElement', Resource.newString('Lexer'));
-      expect(instance).toHaveProperty('arguments');
-      expect(instance.arguments.list).toEqual([
-        new Resource(null, {
-          fields: [
-            { k: Resource.newString('lineMode'), v: undefined },
-            { k: Resource.newString('n3'), v: undefined },
-            { k: Resource.newString('comments'), v: undefined }
-          ]
-        })
-      ]);
-    });
-
-    it('should create a resource with defined arguments when constructed with arguments', function () {
-      let instance: any = MappedNamedComponentFactory.makeUnnamedDefinitionConstructor(n3Module, n3LexerComponent)({
-        'http://example.org/n3#lineMode': Resource.newBoolean(true),
-        'http://example.org/n3#n3': Resource.newBoolean(true),
-        'http://example.org/n3#comments': Resource.newBoolean(true)
-      });
-      expect(instance).toBeInstanceOf(Resource);
-      expect(instance).toHaveProperty('termType', 'NamedNode');
-      expect(instance).toHaveProperty('requireName', Resource.newString('n3'));
-      expect(instance).toHaveProperty('requireElement', Resource.newString('Lexer'));
-      expect(instance).toHaveProperty('arguments');
-      expect(instance.arguments.list).toEqual([
-        new Resource(null, {
-          fields: [
-            { k: Resource.newString('lineMode'), v: Resource.newBoolean(true) },
-            { k: Resource.newString('n3'), v: Resource.newBoolean(true) },
-            { k: Resource.newString('comments'), v: Resource.newBoolean(true) }
-          ]
-        })
-      ]);
-    });
+  beforeEach(() => {
+    loader = new Loader();
+    // Create resources via object loader, so we can use CURIEs
+    objectLoader = loader.objectLoader;
   });
 
   describe('for an N3 Lexer', function () {
-    let constructor: MappedNamedComponentFactory;
+    let n3LexerComponent: Resource;
+    let module: Resource;
     beforeEach(function () {
-      constructor = new MappedNamedComponentFactory(n3Module, n3LexerComponent, {
-        'http://example.org/n3#lineMode': Resource.newBoolean(true),
-        'http://example.org/n3#n3': Resource.newBoolean(true),
-        'http://example.org/n3#comments': Resource.newBoolean(true)
-      }, true);
+      n3LexerComponent = objectLoader.createCompactedResource({
+        '@id': 'http://example.org/n3#Lexer',
+        requireElement: objectLoader.createCompactedResource('"Lexer"'),
+        types: [ objectLoader.createCompactedResource(Util.PREFIXES['oo'] + 'Class') ],
+        parameters: [
+          objectLoader.createCompactedResource({ '@id': 'http://example.org/n3#lineMode', unique: '"true"' }),
+          objectLoader.createCompactedResource({ '@id': 'http://example.org/n3#comments', unique: '"true"' }),
+          objectLoader.createCompactedResource({ '@id': 'http://example.org/n3#n3', unique: '"true"' })
+        ],
+        constructorArguments: objectLoader.createCompactedResource({
+          list: [
+            objectLoader.createCompactedResource({
+              fields: [
+                { key: objectLoader.createCompactedResource('"lineMode"'), value: objectLoader.createCompactedResource('http://example.org/n3#lineMode') },
+                { key: objectLoader.createCompactedResource('"n3"'), value: objectLoader.createCompactedResource('http://example.org/n3#n3') },
+                { key: objectLoader.createCompactedResource('"comments"'), value: objectLoader.createCompactedResource('http://example.org/n3#comments') }
+              ]
+            })
+          ]
+        })
+      });
+      module = objectLoader.createCompactedResource({
+        '@id': 'http://example.org/n3',
+        requireName: '"n3"',
+        components: [
+          n3LexerComponent,
+        ]
+      });
     });
 
-    it('should be valid', function () {
-      expect(constructor).toBeTruthy();
+    describe('for a constructor', function () {
+      let constructor: MappedNamedComponentFactory;
+      beforeEach(() => {
+        constructor = new MappedNamedComponentFactory(module, n3LexerComponent, objectLoader.createCompactedResource({
+          'http://example.org/n3#lineMode': objectLoader.createCompactedResource('"true"'),
+          'http://example.org/n3#n3': objectLoader.createCompactedResource('"true"'),
+          'http://example.org/n3#comments': objectLoader.createCompactedResource('"true"')
+        }), true, {}, loader);
+      });
+
+      it('should be valid', function () {
+        expect(constructor).toBeTruthy();
+      });
+
+      it('should create valid arguments', async () => {
+        const args = await constructor.makeArguments();
+        expect(args).toEqual([{comments: 'true', lineMode: 'true', n3: 'true'}]);
+      });
+
+      it('should make a valid instance', async () => {
+        const instance = await constructor.create();
+        expect(instance).toBeTruthy();
+        expect(instance).toBeInstanceOf(N3.Lexer);
+      });
     });
 
-    it('should create valid arguments', async() => {
-      const args = await constructor.makeArguments();
-      expect(args).toEqual([ { comments: 'true', lineMode: 'true', n3: 'true' } ]);
-    });
+    describe('#makeUnnamedDefinitionConstructor', function () {
+      it('should create a valid definition constructor', function () {
+        let constructor = MappedNamedComponentFactory.makeUnnamedDefinitionConstructor(module, n3LexerComponent, objectLoader);
+        expect(constructor).toBeTruthy();
+        expect(constructor).toBeInstanceOf(Function);
+        expect(constructor(objectLoader.createCompactedResource({}))).toBeInstanceOf(Resource);
+      });
 
-    it('should make a valid instance', async() => {
-      const instance = await constructor.create();
-      expect(instance).toBeTruthy();
-      expect(instance).toBeInstanceOf(N3.Lexer);
+      it('should create a resource with undefined arguments when constructed with no arguments', function () {
+        let instance: any = MappedNamedComponentFactory.makeUnnamedDefinitionConstructor(module, n3LexerComponent, objectLoader)(objectLoader.createCompactedResource({}));
+        expect(instance).toBeInstanceOf(Resource);
+        expect(instance).toHaveProperty('type', 'BlankNode');
+        expect(instance.property).toHaveProperty('requireName', objectLoader.createCompactedResource('"n3"'));
+        expect(instance.property).toHaveProperty('requireElement', objectLoader.createCompactedResource('"Lexer"'));
+        expect(instance.property).toHaveProperty('arguments');
+        expect(instance.property.arguments.list.length).toEqual(1);
+        expect(instance.property.arguments.list[0].properties.fields.length).toEqual(3);
+        expect(instance.property.arguments.list[0].properties.fields[0].property.key.value).toEqual('lineMode');
+        expect(instance.property.arguments.list[0].properties.fields[0].property.value).toBeUndefined();
+        expect(instance.property.arguments.list[0].properties.fields[1].property.key.value).toEqual('n3');
+        expect(instance.property.arguments.list[0].properties.fields[1].property.value).toBeUndefined();
+        expect(instance.property.arguments.list[0].properties.fields[2].property.key.value).toEqual('comments');
+        expect(instance.property.arguments.list[0].properties.fields[2].property.value).toBeUndefined();
+      });
+
+      it('should create a resource with defined arguments when constructed with arguments', function () {
+        let instance: any = MappedNamedComponentFactory.makeUnnamedDefinitionConstructor(module, n3LexerComponent, objectLoader)(objectLoader.createCompactedResource({
+          'http://example.org/n3#lineMode': objectLoader.createCompactedResource('"true"'),
+          'http://example.org/n3#n3': objectLoader.createCompactedResource('"true"'),
+          'http://example.org/n3#comments': objectLoader.createCompactedResource('"true"')
+        }));
+        expect(instance).toBeInstanceOf(Resource);
+        expect(instance).toHaveProperty('type', 'BlankNode');
+        expect(instance.property).toHaveProperty('requireName', objectLoader.createCompactedResource('"n3"'));
+        expect(instance.property).toHaveProperty('requireElement', objectLoader.createCompactedResource('"Lexer"'));
+        expect(instance.property).toHaveProperty('arguments');
+        expect(instance.property.arguments.list.length).toEqual(1);
+        expect(instance.property.arguments.list[0].properties.fields.length).toEqual(3);
+        expect(instance.property.arguments.list[0].properties.fields[0].property.key.value).toEqual('lineMode');
+        expect(instance.property.arguments.list[0].properties.fields[0].property.value.value).toEqual('true');
+        expect(instance.property.arguments.list[0].properties.fields[1].property.key.value).toEqual('n3');
+        expect(instance.property.arguments.list[0].properties.fields[1].property.value.value).toEqual('true');
+        expect(instance.property.arguments.list[0].properties.fields[2].property.key.value).toEqual('comments');
+        expect(instance.property.arguments.list[0].properties.fields[2].property.value.value).toEqual('true');
+      });
     });
   });
 
   describe('for an N3 Parser', function () {
+    let n3LexerComponent: Resource;
+    let n3ParserComponent: Resource;
+    let module: Resource;
     let constructor: MappedNamedComponentFactory;
     beforeEach(function () {
-      constructor = new MappedNamedComponentFactory(n3Module, n3ParserComponent, {
-        'http://example.org/n3#format': Resource.newString('application/trig'),
-        'http://example.org/n3#lexer': MappedNamedComponentFactory.makeUnnamedDefinitionConstructor(n3Module, n3LexerComponent)({
-          'http://example.org/n3#lineMode': Resource.newBoolean(true),
-          'http://example.org/n3#n3': Resource.newBoolean(true),
-          'http://example.org/n3#comments': Resource.newBoolean(true)
-        }),
-      }, true);
+      n3LexerComponent = objectLoader.createCompactedResource({
+        '@id': 'http://example.org/n3#Lexer',
+        requireElement: objectLoader.createCompactedResource('"Lexer"'),
+        types: [ objectLoader.createCompactedResource(Util.PREFIXES['oo'] + 'Class') ],
+        parameters: [
+          objectLoader.createCompactedResource({ '@id': 'http://example.org/n3#lineMode', unique: '"true"' }),
+          objectLoader.createCompactedResource({ '@id': 'http://example.org/n3#n3', unique: '"true"' }),
+          objectLoader.createCompactedResource({ '@id': 'http://example.org/n3#comments', unique: '"true"' })
+        ],
+        constructorArguments: objectLoader.createCompactedResource({
+          list: [
+            objectLoader.createCompactedResource({
+              fields: [
+                { key: objectLoader.createCompactedResource('"lineMode"'), value: objectLoader.createCompactedResource('http://example.org/n3#lineMode') },
+                { key: objectLoader.createCompactedResource('"n3"'), value: objectLoader.createCompactedResource('http://example.org/n3#n3') },
+                { key: objectLoader.createCompactedResource('"comments"'), value: objectLoader.createCompactedResource('http://example.org/n3#comments') }
+              ]
+            })
+          ]
+        })
+      });
+      n3ParserComponent = objectLoader.createCompactedResource({
+        '@id': 'http://example.org/n3#Parser',
+        requireElement: objectLoader.createCompactedResource('"Parser"'),
+        types: [ objectLoader.createCompactedResource(Util.PREFIXES['oo'] + 'Class') ],
+        parameters: [
+          objectLoader.createCompactedResource({ '@id': 'http://example.org/n3#format', unique: '"true"' }),
+          objectLoader.createCompactedResource({ '@id': 'http://example.org/n3#blankNodePrefix', unique: '"true"' }),
+          objectLoader.createCompactedResource({ '@id': 'http://example.org/n3#lexer', unique: '"true"' }),
+          objectLoader.createCompactedResource({ '@id': 'http://example.org/n3#explicitQuantifiers', unique: '"true"' })
+        ],
+        constructorArguments: objectLoader.createCompactedResource({
+          list: [
+            objectLoader.createCompactedResource({
+              fields: [
+                { key: objectLoader.createCompactedResource('"format"'), value: objectLoader.createCompactedResource('http://example.org/n3#format') },
+                { key: objectLoader.createCompactedResource('"blankNodePrefix"'), value: objectLoader.createCompactedResource('http://example.org/n3#blankNodePrefix') },
+                { key: objectLoader.createCompactedResource('"lexer"'), value: objectLoader.createCompactedResource('http://example.org/n3#lexer') },
+                { key: objectLoader.createCompactedResource('"explicitQuantifiers"'), value: objectLoader.createCompactedResource('http://example.org/n3#explicitQuantifiers') }
+              ]
+            })
+          ]
+        })
+      });
+      module = objectLoader.createCompactedResource({
+        '@id': 'http://example.org/n3',
+        requireName: '"n3"',
+        components: [
+          n3ParserComponent,
+        ]
+      });
+      constructor = new MappedNamedComponentFactory(module, n3ParserComponent, objectLoader.createCompactedResource({
+        'http://example.org/n3#format': '"application/trig"',
+        'http://example.org/n3#lexer': MappedNamedComponentFactory.makeUnnamedDefinitionConstructor(module, n3LexerComponent, objectLoader)(objectLoader.createCompactedResource({
+          'http://example.org/n3#lineMode': objectLoader.createCompactedResource('"true"'),
+          'http://example.org/n3#n3': objectLoader.createCompactedResource('"true"'),
+          'http://example.org/n3#comments': objectLoader.createCompactedResource('"true"')
+        })),
+      }), true, {}, loader);
     });
 
     it('should be valid', function () {
@@ -406,9 +211,23 @@ describe('MappedNamedComponentFactory', function () {
   });
 
   describe('for an N3 Util', function () {
+    let n3UtilComponent: Resource;
+    let module: Resource;
     let constructor: MappedNamedComponentFactory;
     beforeEach(function () {
-      constructor = new MappedNamedComponentFactory(n3Module, n3UtilComponent, {}, false);
+      n3UtilComponent = objectLoader.createCompactedResource({
+        '@id': 'http://example.org/n3#Util',
+        requireElement: objectLoader.createCompactedResource('"Util"'),
+        types: [ objectLoader.createCompactedResource(Util.PREFIXES['oo'] + 'ComponentInstance') ],
+      });
+      module = objectLoader.createCompactedResource({
+        '@id': 'http://example.org/n3',
+        requireName: '"n3"',
+        components: [
+          n3UtilComponent,
+        ]
+      });
+      constructor = new MappedNamedComponentFactory(module, n3UtilComponent, objectLoader.createCompactedResource({}), false, {}, loader);
     });
 
     it('should be valid', function () {
@@ -428,11 +247,37 @@ describe('MappedNamedComponentFactory', function () {
   });
 
   describe('for an N3 Dummy', function () {
+    let n3DummyComponent: Resource;
+    let module: Resource;
     let constructor: MappedNamedComponentFactory;
     beforeEach(function () {
-      constructor = new MappedNamedComponentFactory(n3Module, n3DummyComponent, {
-        'http://example.org/n3#dummyParam': Resource.newBoolean(true)
-      }, true);
+      n3DummyComponent = objectLoader.createCompactedResource({
+        '@id': 'http://example.org/n3#Dummy',
+        requireElement: objectLoader.createCompactedResource('"Dummy"'),
+        types: [ objectLoader.createCompactedResource(Util.PREFIXES['oo'] + 'Class') ],
+        parameters: [
+          objectLoader.createCompactedResource({ '@id': 'http://example.org/n3#dummyParam', unique: '"true"' })
+        ],
+        constructorArguments: objectLoader.createCompactedResource({
+          list: [
+            objectLoader.createCompactedResource({
+              fields: [
+                { key: objectLoader.createCompactedResource('"dummyParam"'), value: objectLoader.createCompactedResource('http://example.org/n3#dummyParam') }
+              ]
+            })
+          ]
+        })
+      });
+      module = objectLoader.createCompactedResource({
+        '@id': 'http://example.org/n3',
+        requireName: '"n3"',
+        components: [
+          n3DummyComponent,
+        ]
+      });
+      constructor = new MappedNamedComponentFactory(module, n3DummyComponent, objectLoader.createCompactedResource({
+        'http://example.org/n3#dummyParam': objectLoader.createCompactedResource('"true"')
+      }), true, {}, loader);
     });
 
     it('should be valid', function () {
@@ -452,13 +297,61 @@ describe('MappedNamedComponentFactory', function () {
   });
 
   describe('for a hello world component', function () {
+    let helloWorldComponent1: Resource;
+    let helloWorldComponent2: Resource;
+    let module: Resource;
     let constructor: MappedNamedComponentFactory;
     beforeEach(function () {
-      constructor = new MappedNamedComponentFactory(helloWorldModule, helloWorldComponent2, {
-        'http://example.org/HelloWorldModule#dummyParam': Resource.newBoolean(true),
+      // Component definition for Hello World
+      helloWorldComponent1 = objectLoader.createCompactedResource({
+        '@id': 'http://example.org/HelloWorldModule#SayHelloComponent1',
+        requireElement: objectLoader.createCompactedResource('"Hello"'),
+        types: [ objectLoader.createCompactedResource(Util.PREFIXES['oo'] + 'Class') ],
+        parameters: [
+          objectLoader.createCompactedResource({ '@id': 'http://example.org/HelloWorldModule#dummyParam', unique: '"true"' })
+        ],
+        constructorArguments: objectLoader.createCompactedResource({
+          list: [
+            objectLoader.createCompactedResource({
+              fields: [
+                { key: objectLoader.createCompactedResource('"dummyParam"'), value: objectLoader.createCompactedResource('http://example.org/HelloWorldModule#dummyParam') }
+              ]
+            })
+          ]
+        })
+      });
+      helloWorldComponent2 = objectLoader.createCompactedResource({
+        '@id': 'http://example.org/HelloWorldModule#SayHelloComponent2',
+        requireElement: objectLoader.createCompactedResource('"Hello"'),
+        types: [ objectLoader.createCompactedResource(Util.PREFIXES['oo'] + 'Class') ],
+        parameters: [
+          objectLoader.createCompactedResource({ '@id': 'http://example.org/HelloWorldModule#dummyParam', unique: '"true"' }),
+          objectLoader.createCompactedResource({ '@id': 'http://example.org/HelloWorldModule#instanceParam', unique: '"true"' })
+        ],
+        constructorArguments: objectLoader.createCompactedResource({
+          list: [
+            objectLoader.createCompactedResource({
+              fields: [
+                { key: objectLoader.createCompactedResource('"dummyParam"'), value: objectLoader.createCompactedResource('http://example.org/HelloWorldModule#dummyParam') },
+                { key: objectLoader.createCompactedResource('"instanceParam"'), value: objectLoader.createCompactedResource('http://example.org/HelloWorldModule#instanceParam') }
+              ]
+            })
+          ]
+        })
+      });
+      module = objectLoader.createCompactedResource({
+        '@id': 'http://example.org/helloworld',
+        requireName: '"helloworld"',
+        components: [
+          helloWorldComponent1,
+          helloWorldComponent2,
+        ]
+      });
+      constructor = new MappedNamedComponentFactory(module, helloWorldComponent2, objectLoader.createCompactedResource({
+        'http://example.org/HelloWorldModule#dummyParam': objectLoader.createCompactedResource('"true"'),
         'http://example.org/HelloWorldModule#instanceParam': MappedNamedComponentFactory
-          .makeUnnamedDefinitionConstructor(helloWorldModule, helloWorldComponent1)({})
-      }, true);
+          .makeUnnamedDefinitionConstructor(module, helloWorldComponent1, objectLoader)(objectLoader.createCompactedResource({}))
+      }), true, {}, loader);
     });
 
     it('should be valid', function () {
@@ -481,11 +374,40 @@ describe('MappedNamedComponentFactory', function () {
   });
 
   describe('for a hello world component with id param', function () {
+    let helloWorldComponent3: Resource;
+    let module: Resource;
     let constructor: MappedNamedComponentFactory;
     beforeEach(function () {
-      constructor = new MappedNamedComponentFactory(helloWorldModule, helloWorldComponent3, {
-        value: 'http://example.org/myHelloComponent'
-      }, true);
+      helloWorldComponent3 = objectLoader.createCompactedResource({
+        '@id': 'http://example.org/HelloWorldModule#SayHelloComponent3',
+        requireElement: '"Hello"',
+        types: [ objectLoader.createCompactedResource(Util.PREFIXES['oo'] + 'Class') ],
+        parameters: [
+          objectLoader.createCompactedResource({ '@id': 'http://example.org/HelloWorldModule#dummyParam', unique: '"true"' }),
+          objectLoader.createCompactedResource({ '@id': 'http://example.org/HelloWorldModule#instanceParam', unique: '"true"' }),
+        ],
+        constructorArguments: objectLoader.createCompactedResource({
+          list: [
+            objectLoader.createCompactedResource({
+              fields: [
+                { key: objectLoader.createCompactedResource('"dummyParam"'), value: objectLoader.createCompactedResource('http://example.org/HelloWorldModule#dummyParam') },
+                { key: objectLoader.createCompactedResource('"instanceParam"'), value: objectLoader.createCompactedResource('http://example.org/HelloWorldModule#instanceParam') },
+                { key: objectLoader.createCompactedResource('"idParam"'), value: objectLoader.createCompactedResource(Util.PREFIXES['rdf'] + 'subject') }
+              ]
+            })
+          ]
+        })
+      });
+      module = objectLoader.createCompactedResource({
+        '@id': 'http://example.org/helloworld',
+        requireName: '"helloworld"',
+        components: [
+          helloWorldComponent3,
+        ]
+      });
+      constructor = new MappedNamedComponentFactory(module, helloWorldComponent3, objectLoader.createCompactedResource({
+        '@id': 'http://example.org/myHelloComponent'
+      }), true, {}, loader);
     });
 
     it('should be valid', function () {
@@ -507,12 +429,43 @@ describe('MappedNamedComponentFactory', function () {
   });
 
   describe('for a hello world component with array params', function () {
+    let helloWorldComponent4: Resource;
+    let module: Resource;
     let constructor: MappedNamedComponentFactory;
     beforeEach(function () {
-      constructor = new MappedNamedComponentFactory(helloWorldModule, helloWorldComponent4, {
-        'http://example.org/HelloWorldModule#dummyParam': Resource.newBoolean(true),
-        'http://example.org/HelloWorldModule#instanceParam': Resource.newBoolean(false),
-      }, true);
+      helloWorldComponent4 = objectLoader.createCompactedResource({
+        '@id': 'http://example.org/HelloWorldModule#SayHelloComponent3',
+        requireElement: '"Hello"',
+        types: [ objectLoader.createCompactedResource(Util.PREFIXES['oo'] + 'Class') ],
+        parameters: [
+          objectLoader.createCompactedResource({ '@id': 'http://example.org/HelloWorldModule#dummyParam' }),
+          objectLoader.createCompactedResource({ '@id': 'http://example.org/HelloWorldModule#instanceParam' }),
+          objectLoader.createCompactedResource({ '@id': 'http://example.org/HelloWorldModule#idParam' })
+        ],
+        constructorArguments: objectLoader.createCompactedResource({
+          list: [
+            objectLoader.createCompactedResource({
+              elements: {
+                list: [
+                  objectLoader.createCompactedResource('http://example.org/HelloWorldModule#dummyParam'),
+                  objectLoader.createCompactedResource('http://example.org/HelloWorldModule#instanceParam')
+                ]
+              }
+            })
+          ]
+        })
+      });
+      module = objectLoader.createCompactedResource({
+        '@id': 'http://example.org/helloworld',
+        requireName: '"helloworld"',
+        components: [
+          helloWorldComponent4,
+        ]
+      });
+      constructor = new MappedNamedComponentFactory(module, helloWorldComponent4, objectLoader.createCompactedResource({
+        'http://example.org/HelloWorldModule#dummyParam': objectLoader.createCompactedResource('"true"'),
+        'http://example.org/HelloWorldModule#instanceParam': objectLoader.createCompactedResource('"false"'),
+      }), true, {}, loader);
     });
 
     it('should be valid', function () {
@@ -526,7 +479,7 @@ describe('MappedNamedComponentFactory', function () {
       ]]);
     });
 
-    it('should ake a valid instance', async() => {
+    it('should make a valid instance', async() => {
       const instance = await constructor.create();
       expect(instance).toBeTruthy();
       expect(instance).toBeInstanceOf(Hello);
@@ -534,159 +487,283 @@ describe('MappedNamedComponentFactory', function () {
   });
 
   describe('for a hello world component with default values', function () {
+    let helloWorldComponent5: Resource;
+    let module: Resource;
     let constructor: MappedNamedComponentFactory;
     beforeEach(function () {
-      constructor = new MappedNamedComponentFactory(helloWorldModule, helloWorldComponent5, {}, true);
+      let defaultedParam1 = objectLoader.createCompactedResource({
+        '@id': 'http://example.org/n3#dummyParam1',
+        default: [
+          '"a"',
+          '"b"'
+        ]
+      });
+      let defaultedParam2 = objectLoader.createCompactedResource({
+        '@id': 'http://example.org/n3#dummyParam2',
+        unique: true,
+        default: [
+          '"a"'
+        ]
+      });
+      helloWorldComponent5 = objectLoader.createCompactedResource({
+        '@id': 'http://example.org/HelloWorldModule#SayHelloComponent4',
+        requireElement: '"Hello"',
+        types: [ objectLoader.createCompactedResource(Util.PREFIXES['oo'] + 'Class') ],
+        parameters: [ defaultedParam1, defaultedParam2, ],
+        constructorArguments: objectLoader.createCompactedResource({
+          list: [
+            objectLoader.createCompactedResource({
+              fields: [
+                { key: objectLoader.createCompactedResource('"dummyParam1"'), value: defaultedParam1 },
+                { key: objectLoader.createCompactedResource('"dummyParam2"'), value: defaultedParam2 }
+              ]
+            })
+          ]
+        })
+      });
+      module = objectLoader.createCompactedResource({
+        '@id': 'http://example.org/helloworld',
+        requireName: '"helloworld"',
+        components: [
+          helloWorldComponent5,
+        ]
+      });
     });
 
-    it('should be valid', function () {
-      expect(constructor).toBeTruthy();
+    describe('without overridden default values', function () {
+      beforeEach(() => {
+        constructor = new MappedNamedComponentFactory(module, helloWorldComponent5, objectLoader.createCompactedResource({}), true, {}, loader);
+      });
+
+      it('should be valid', function () {
+        expect(constructor).toBeTruthy();
+      });
+
+      it('should create valid arguments', async () => {
+        const args = await constructor.makeArguments();
+        expect(args).toEqual([{
+          'dummyParam1': ['a', 'b'],
+          'dummyParam2': [ 'a' ],
+        }]);
+      });
+
+      it('should make a valid instance', async () => {
+        const instance = await constructor.create();
+        expect(instance).toBeTruthy();
+        expect(instance).toBeInstanceOf(Hello);
+      });
     });
 
-    it('should create valid arguments', async() => {
-      const args = await constructor.makeArguments();
-      expect(args).toEqual([{
-        'dummyParam1': [ 'a', 'b' ],
-        'dummyParam2': [ 'a' ],
-      }]);
-    });
+    describe('with overridden default values', function () {
+      beforeEach(() => {
+        constructor = new MappedNamedComponentFactory(module, helloWorldComponent5, objectLoader.createCompactedResource({
+          'http://example.org/n3#dummyParam1': objectLoader.createCompactedResource('"true"'),
+          'http://example.org/n3#dummyParam2': objectLoader.createCompactedResource('"false"')
+        }), true, {}, loader);
+      });
 
-    it('should make a valid instance', async() => {
-      const instance = await constructor.create();
-      expect(instance).toBeTruthy();
-      expect(instance).toBeInstanceOf(Hello);
-    });
-  });
+      it('should be valid', function () {
+        expect(constructor).toBeTruthy();
+      });
 
-  describe('for a hello world component with overridden default values', function () {
-    let constructor: MappedNamedComponentFactory;
-    beforeEach(function () {
-      constructor = new MappedNamedComponentFactory(helloWorldModule, helloWorldComponent5, {
-        'http://example.org/n3#dummyParam1': Resource.newBoolean(true),
-        'http://example.org/n3#dummyParam2': Resource.newBoolean(false)
-      }, true);
-    });
+      it('should create valid arguments', async() => {
+        const args = await constructor.makeArguments();
+        expect(args).toEqual([{
+          'dummyParam1': [ 'true' ],
+          'dummyParam2': [ 'false' ],
+        }]);
+      });
 
-    it('should be valid', function () {
-      expect(constructor).toBeTruthy();
-    });
-
-    it('should create valid arguments', async() => {
-      const args = await constructor.makeArguments();
-      expect(args).toEqual([{
-        'dummyParam1': 'true',
-        'dummyParam2': 'false',
-      }]);
-    });
-
-    it('should make a valid instance', async() => {
-      const instance = await constructor.create();
-      expect(instance).toBeTruthy();
-      expect(instance).toBeInstanceOf(Hello);
+      it('should make a valid instance', async() => {
+        const instance = await constructor.create();
+        expect(instance).toBeTruthy();
+        expect(instance).toBeInstanceOf(Hello);
+      });
     });
   });
 
   describe('for a hello world component with default scoped values', function () {
+    let helloWorldComponent6: Resource;
+    let module: Resource;
     let constructor: MappedNamedComponentFactory;
     beforeEach(function () {
-      constructor = new MappedNamedComponentFactory(helloWorldModule, helloWorldComponent6, new Resource(null, { types: [ helloWorldComponent6 ] }), true);
+      let defaultScopedParam1 = objectLoader.createCompactedResource({
+        '@id': 'http://example.org/n3#dummyParam1',
+        defaultScoped: [
+          {
+            defaultScope: [],
+            defaultScopedValue: [
+              '"a"',
+              '"b"'
+            ]
+          }
+        ]
+      });
+      let defaultScopedParam2 = objectLoader.createCompactedResource({
+        '@id': 'http://example.org/n3#dummyParam2',
+        unique: true,
+        defaultScoped: [
+          {
+            defaultScope: [],
+            defaultScopedValue: [
+              '"a"',
+            ]
+          }
+        ]
+      });
+      helloWorldComponent6 = objectLoader.createCompactedResource({
+        '@id': 'http://example.org/HelloWorldModule#SayHelloComponent5',
+        requireElement: '"Hello"',
+        types: [ objectLoader.createCompactedResource(Util.PREFIXES['oo'] + 'Class') ],
+        parameters: [ defaultScopedParam1, defaultScopedParam2, ],
+        constructorArguments: objectLoader.createCompactedResource({
+          list: [
+            objectLoader.createCompactedResource({
+              fields: [
+                { key: objectLoader.createCompactedResource('"dummyParam1"'), value: defaultScopedParam1 },
+                { key: objectLoader.createCompactedResource('"dummyParam2"'), value: defaultScopedParam2 }
+              ]
+            })
+          ]
+        })
+      });
+      helloWorldComponent6.properties.parameters.forEach((param: Resource) => param.properties.defaultScoped[0].properties.defaultScope.push(helloWorldComponent6));
+      module = objectLoader.createCompactedResource({
+        '@id': 'http://example.org/helloworld',
+        requireName: '"helloworld"',
+        components: [
+          helloWorldComponent6,
+        ]
+      });
     });
 
-    it('should be valid', function () {
-      expect(constructor).toBeTruthy();
+    describe('without overridden default scoped values', () => {
+      beforeEach(() => {
+        constructor = new MappedNamedComponentFactory(module, helloWorldComponent6, objectLoader.createCompactedResource({ types: [ helloWorldComponent6 ] }), true, {}, loader);
+      });
+
+      it('should be valid', function () {
+        expect(constructor).toBeTruthy();
+      });
+
+      it('should create valid arguments', async() => {
+        const args = await constructor.makeArguments();
+        expect(args).toEqual([{
+          'dummyParam1': [ 'a', 'b' ],
+          'dummyParam2': [ 'a' ],
+        }]);
+      });
+
+      it('should make a valid instance', async() => {
+        const instance = await constructor.create();
+        expect(instance).toBeTruthy();
+        expect(instance).toBeInstanceOf(Hello);
+      });
     });
 
-    it('should create valid arguments', async() => {
-      const args = await constructor.makeArguments();
-      expect(args).toEqual([{
-        'dummyParam1': [ 'a', 'b' ],
-        'dummyParam2': [ 'a' ],
-      }]);
+    describe('with overridden default scoped values', () => {
+      beforeEach(() => {
+        constructor = new MappedNamedComponentFactory(module, helloWorldComponent6, objectLoader.createCompactedResource({
+          'http://example.org/n3#dummyParam1': objectLoader.createCompactedResource('"true"'),
+          'http://example.org/n3#dummyParam2': objectLoader.createCompactedResource('"false"')
+        }), true, {}, loader);
+      });
+
+      it('should be valid', function () {
+        expect(constructor).toBeTruthy();
+      });
+
+      it('should create valid arguments', async() => {
+        const args = await constructor.makeArguments();
+        expect(args).toEqual([{
+          'dummyParam1': [ 'true' ],
+          'dummyParam2': [ 'false' ],
+        }]);
+      });
+
+      it('should make a valid instance', async() => {
+        const instance = await constructor.create();
+        expect(instance).toBeTruthy();
+        expect(instance).toBeInstanceOf(Hello);
+      });
     });
 
-    it('should make a valid instance', async() => {
-      const instance = await constructor.create();
-      expect(instance).toBeTruthy();
-      expect(instance).toBeInstanceOf(Hello);
-    });
-  });
+    describe('with non-applicable default scoped values', () => {
+      beforeEach(() => {
+        constructor = new MappedNamedComponentFactory(module, helloWorldComponent6, objectLoader.createCompactedResource({ types: [ 'http://example.org/HelloWorldModule#SayHelloComponent5' ] }), true, {}, loader);
+      });
 
-  describe('for a hello world component with overridden default scoped values', function () {
-    let constructor: MappedNamedComponentFactory;
-    beforeEach(function () {
-      constructor = new MappedNamedComponentFactory(helloWorldModule, helloWorldComponent6, {
-        'http://example.org/n3#dummyParam1': Resource.newBoolean(true),
-        'http://example.org/n3#dummyParam2': Resource.newBoolean(false)
-      }, true);
-    });
+      it('should be valid', function () {
+        expect(constructor).toBeTruthy();
+      });
 
-    it('should be valid', function () {
-      expect(constructor).toBeTruthy();
-    });
+      it('should create valid arguments', async() => {
+        const args = await constructor.makeArguments();
+        expect(args).toEqual([{
+          'dummyParam1': [ 'a', 'b' ],
+          'dummyParam2': [ 'a' ],
+        }]);
+      });
 
-    it('should create valid arguments', async() => {
-      const args = await constructor.makeArguments();
-      expect(args).toEqual([{
-        'dummyParam1': 'true',
-        'dummyParam2': 'false',
-      }]);
-    });
-
-    it('should make a valid instance', async() => {
-      const instance = await constructor.create();
-      expect(instance).toBeTruthy();
-      expect(instance).toBeInstanceOf(Hello);
-    });
-  });
-
-  describe('for a hello world component with non-applicable default scoped values', function () {
-    let constructor: MappedNamedComponentFactory;
-    beforeEach(function () {
-      constructor = new MappedNamedComponentFactory(helloWorldModule, helloWorldComponent6, new Resource(null, { types: [ helloWorldComponent5 ] }), true);
-    });
-
-    it('should be valid', function () {
-      expect(constructor).toBeTruthy();
-    });
-
-    it('should create valid arguments', async() => {
-      const args = await constructor.makeArguments();
-      expect(args).toEqual([{}]);
-    });
-
-    it('should make a valid instance', async() => {
-      const instance = await constructor.create();
-      expect(instance).toBeTruthy();
-      expect(instance).toBeInstanceOf(Hello);
+      it('should make a valid instance', async() => {
+        const instance = await constructor.create();
+        expect(instance).toBeTruthy();
+        expect(instance).toBeInstanceOf(Hello);
+      });
     });
   });
 
     describe('for a hello world component with a missing required parameter', function () {
+      let helloWorldComponent7: Resource;
+      let module: Resource;
         let constructor: MappedNamedComponentFactory;
         beforeEach(function () {
-            constructor = new MappedNamedComponentFactory(helloWorldModule, helloWorldComponent7, {}, true);
+          helloWorldComponent7 = objectLoader.createCompactedResource({
+            '@id': 'http://example.org/HelloWorldModule#SayHelloComponent6',
+            requireElement: '"Hello"',
+            types: [objectLoader.createCompactedResource(Util.PREFIXES['oo'] + 'Class')],
+            parameters: [
+              objectLoader.createCompactedResource({
+                '@id': 'http://example.org/HelloWorldModule#requiredParam',
+                required: true,
+              })
+            ],
+            constructorArguments: objectLoader.createCompactedResource({
+              list: [
+                objectLoader.createCompactedResource({
+                  elements: {
+                    list: [
+                      objectLoader.createCompactedResource('http://example.org/HelloWorldModule#requiredParam')
+                    ]
+                  }
+                })
+              ]
+            })
+          });
+          module = objectLoader.createCompactedResource({
+            '@id': 'http://example.org/helloworld',
+            requireName: '"helloworld"',
+            components: [
+              helloWorldComponent7,
+            ]
+          });
+        });
+
+      describe('without a valid required parameter', () => {
+        it('should fail on construction', function () {
+          expect(() => new MappedNamedComponentFactory(module, helloWorldComponent7, objectLoader.createCompactedResource({}), true, {}, loader)).toThrow();
+        });
+      });
+
+      describe('with a valid required parameter', () => {
+        beforeEach(function () {
+          constructor = new MappedNamedComponentFactory(module, helloWorldComponent7, objectLoader.createCompactedResource({
+            'http://example.org/HelloWorldModule#requiredParam': objectLoader.createCompactedResource('"true"'),
+          }), true, {}, loader);
         });
 
         it('should be valid', function () {
-            expect(constructor).toBeTruthy();
-        });
-
-        it('should not make a valid instance', async() => {
-            await expect(constructor.create()).rejects
-              .toThrow(new Error('Parameter array elements must have values, but found: { v: undefined }'));
-        });
-    });
-
-    describe('for a hello world component with a valid required parameter', function () {
-        let constructor: MappedNamedComponentFactory;
-        beforeEach(function () {
-            constructor = new MappedNamedComponentFactory(helloWorldModule, helloWorldComponent7, {
-                'http://example.org/HelloWorldModule#requiredParam': Resource.newBoolean(true),
-            }, true);
-        });
-
-        it('should be valid', function () {
-            expect(constructor).toBeTruthy();
+          expect(constructor).toBeTruthy();
         });
 
         it('should create valid arguments', async() => {
@@ -701,14 +778,45 @@ describe('MappedNamedComponentFactory', function () {
           expect(instance).toBeTruthy();
           expect(instance).toBeInstanceOf(Hello);
         });
+      });
     });
 
     describe('for a hello world component with lazy parameters', function () {
+      let helloWorldComponent8: Resource;
+      let module: Resource;
         let constructor: MappedNamedComponentFactory;
         beforeEach(function () {
-            constructor = new MappedNamedComponentFactory(helloWorldModule, helloWorldComponent8, {
-                'http://example.org/HelloWorldModule#dummyParamLazy': Resource.newBoolean(true),
-            }, true);
+          helloWorldComponent8 = objectLoader.createCompactedResource({
+            '@id': 'http://example.org/HelloWorldModule#SayHelloComponent8',
+            requireElement: '"Hello"',
+            types: [ objectLoader.createCompactedResource(Util.PREFIXES['oo'] + 'Class') ],
+            parameters: [
+              objectLoader.createCompactedResource({ '@id': 'http://example.org/HelloWorldModule#dummyParamLazy', lazy: objectLoader.createCompactedResource('"true"') }),
+              objectLoader.createCompactedResource({ '@id': 'http://example.org/HelloWorldModule#instanceParamLazy', lazy: objectLoader.createCompactedResource('"true"') }),
+              objectLoader.createCompactedResource({ '@id': 'http://example.org/HelloWorldModule#idParamLazy', lazy: objectLoader.createCompactedResource('"true"') })
+            ],
+            constructorArguments: objectLoader.createCompactedResource({
+              list: [
+                objectLoader.createCompactedResource({
+                  fields: [
+                    { key: objectLoader.createCompactedResource('"dummyParamLazy"'), value: objectLoader.createCompactedResource({ '@id': 'http://example.org/HelloWorldModule#dummyParamLazy', lazy: objectLoader.createCompactedResource('"true"') }) },
+                    { key: objectLoader.createCompactedResource('"instanceParamLazy"'), value: objectLoader.createCompactedResource({ '@id': 'http://example.org/HelloWorldModule#instanceParamLazy', lazy: objectLoader.createCompactedResource('"true"') }) },
+                    { key: objectLoader.createCompactedResource('"idParamLazy"'), value: objectLoader.createCompactedResource(Util.PREFIXES['rdf'] + 'subject') }
+                  ]
+                })
+              ]
+            })
+          });
+          module = objectLoader.createCompactedResource({
+            '@id': 'http://example.org/helloworld',
+            requireName: '"helloworld"',
+            components: [
+              helloWorldComponent8,
+            ]
+          });
+            constructor = new MappedNamedComponentFactory(module, helloWorldComponent8, objectLoader.createCompactedResource({
+                'http://example.org/HelloWorldModule#dummyParamLazy': objectLoader.createCompactedResource('"true"'),
+            }), true, {}, loader);
         });
 
         it('should be valid', function () {
@@ -717,7 +825,7 @@ describe('MappedNamedComponentFactory', function () {
 
         it('should create valid arguments', async() => {
           const args = await constructor.makeArguments();
-          expect(await args[0]['dummyParamLazy']()).toEqual('true');
+          expect(await args[0]['dummyParamLazy'][0]()).toEqual('true');
         });
 
         it('should make a valid instance', async() => {
@@ -728,15 +836,42 @@ describe('MappedNamedComponentFactory', function () {
     });
 
   describe('for a hello world component with variables', function () {
+    let helloWorldComponent: Resource;
+    let module: Resource;
     let constructor: MappedNamedComponentFactory;
     beforeEach(function () {
-      const variable: any = new Resource('ex:var');
-      variable.types = [new Resource(Util.PREFIXES['om'] + 'Variable')];
-      constructor = new MappedNamedComponentFactory(helloWorldModule, helloWorldComponent2, {
+      helloWorldComponent = objectLoader.createCompactedResource({
+        '@id': 'http://example.org/HelloWorldModule#SayHelloComponent2',
+        requireElement: objectLoader.createCompactedResource('"Hello"'),
+        types: [ objectLoader.createCompactedResource(Util.PREFIXES['oo'] + 'Class') ],
+        parameters: [
+          objectLoader.createCompactedResource('http://example.org/HelloWorldModule#dummyParam'),
+          objectLoader.createCompactedResource('http://example.org/HelloWorldModule#instanceParam')
+        ],
+        constructorArguments: objectLoader.createCompactedResource({
+          list: [
+            objectLoader.createCompactedResource({
+              fields: [
+                { key: objectLoader.createCompactedResource('"dummyParam"'), value: objectLoader.createCompactedResource('http://example.org/HelloWorldModule#dummyParam') },
+                { key: objectLoader.createCompactedResource('"instanceParam"'), value: objectLoader.createCompactedResource('http://example.org/HelloWorldModule#instanceParam') }
+              ]
+            })
+          ]
+        })
+      });
+      module = objectLoader.createCompactedResource({
+        '@id': 'http://example.org/helloworld',
+        requireName: '"helloworld"',
+        components: [
+          helloWorldComponent,
+        ]
+      });
+
+      const variable: Resource = objectLoader.createCompactedResource('ex:var');
+      variable.properties.types.push(objectLoader.createCompactedResource(Util.PREFIXES['om'] + 'Variable'));
+      constructor = new MappedNamedComponentFactory(module, helloWorldComponent, objectLoader.createCompactedResource({
         'http://example.org/HelloWorldModule#dummyParam': variable,
-        'http://example.org/HelloWorldModule#instanceParam': MappedNamedComponentFactory
-            .makeUnnamedDefinitionConstructor(helloWorldModule, helloWorldComponent1)({})
-      }, true);
+      }), true, {}, loader);
     });
 
     it('should be valid', function () {
@@ -750,14 +885,13 @@ describe('MappedNamedComponentFactory', function () {
         },
       });
       expect(args).toEqual([{
-        'dummyParam': 3000,
-        'instanceParam': new Hello()
+        'dummyParam': [ 3000 ],
       }]);
     });
 
     it('should throw when a variable remains undefined', async() => {
       await expect(constructor.makeArguments({
-        variables: {},
+        variables: objectLoader.createCompactedResource({}),
       })).rejects.toThrow(new Error('Undefined variable: ex:var'));
     });
 
@@ -773,7 +907,7 @@ describe('MappedNamedComponentFactory', function () {
       });
       expect(instance).toBeTruthy();
       expect(instance).toBeInstanceOf(Hello);
-      expect(instance._params.dummyParam).toEqual(3000);
+      expect(instance._params.dummyParam).toEqual([ 3000 ]);
     });
   });
 

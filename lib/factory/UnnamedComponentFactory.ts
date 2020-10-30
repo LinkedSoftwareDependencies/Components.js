@@ -1,22 +1,23 @@
-import {Resource} from "../rdf/Resource";
+import { Resource } from "rdf-object";
 import {IComponentFactory, ICreationSettings} from "./IComponentFactory";
 import {Loader} from "../Loader";
 import * as Path from "path";
 import NodeUtil = require('util');
 import Util = require("../Util");
+import Dict = NodeJS.Dict;
 
 /**
  * Factory for component definitions with explicit arguments.
  */
 export class UnnamedComponentFactory implements IComponentFactory {
 
-    _componentDefinition: any;
+    _componentDefinition: Resource;
     _constructable: boolean;
-    _overrideRequireNames: {[id: string]: string};
+    _overrideRequireNames: Dict<string>;
     _componentRunner: Loader;
 
-    constructor(componentDefinition: Resource, constructable: boolean, overrideRequireNames?: {[id: string]: string},
-                componentRunner?: Loader) {
+    constructor(componentDefinition: Resource, constructable: boolean, overrideRequireNames: {[id: string]: string},
+                componentRunner: Loader) {
         this._componentDefinition = componentDefinition;
         this._constructable = constructable;
         this._overrideRequireNames = overrideRequireNames || {};
@@ -28,35 +29,47 @@ export class UnnamedComponentFactory implements IComponentFactory {
         this._validateParam(this._componentDefinition, 'requireNoConstructor', 'Literal', true);
     }
 
-    _validateParam(resource: any, field: string, type: string, optional?: boolean) {
-        if (!resource[field]) {
+    _validateParam(resource: Resource, field: string, type: string, optional?: boolean) {
+        if (!resource.property[field]) {
             if (!optional) {
                 throw new Error('Expected ' + field + ' to exist in ' + NodeUtil.inspect(resource));
             } else {
                 return;
             }
         }
-        if (resource[field].termType !== type) {
+        if (resource.property[field].type !== type) {
             throw new Error('Expected ' + field + ' in ' + NodeUtil.inspect(resource) + ' to be of type ' + type);
         }
     }
 
-    static getArgumentValue(value: any, componentRunner: Loader, settings?: ICreationSettings): Promise<any> {
+    static getArgumentValue(value: Resource | Resource[], componentRunner: Loader, settings?: ICreationSettings): Promise<any> {
         settings = settings || {};
         return new Promise((resolve, reject) => {
-            if (value.fields) {
+            if (value instanceof Array) {
+                // Unwrap unique values out of the array
+                if (value[0].property.unique && value[0].property.unique.value === 'true') {
+                    return UnnamedComponentFactory.getArgumentValue(value[0], componentRunner, settings)
+                      .then(resolve).catch(reject);
+                }
+                // Otherwise, keep the array form
+                return Promise.all(value.map(
+                  (element) => UnnamedComponentFactory.getArgumentValue(element, componentRunner, settings)))
+                  .then(resolve).catch(reject);
+            } else if (value.property.fields || value.property.hasFields) { // hasFields is a hack for making UnmappedNamedComponentFactory work
                 // The parameter is an object
-                return Promise.all(value.fields.map((entry: any) => {
-                    if (!entry.k) {
+                return Promise.all(value.properties.fields.map((entry: Resource) => {
+                    if (!entry.property.key) {
                         return reject(new Error('Parameter object entries must have keys, but found: ' + NodeUtil.inspect(entry)));
                     }
-                    if (entry.k.termType !== 'Literal') {
-                        return reject(new Error('Parameter object keys must be literals, but found type ' + entry.k.termType
-                            + ' for ' + entry.k.value + ' while constructing: ' + NodeUtil.inspect(value)));
+                    if (entry.property.key.type !== 'Literal') {
+                        return reject(new Error('Parameter object keys must be literals, but found type ' + entry.property.key.type
+                            + ' for ' + entry.property.key.value + ' while constructing: ' + NodeUtil.inspect(value)));
                     }
-                    if (entry.v) {
-                        return UnnamedComponentFactory.getArgumentValue(entry.v, componentRunner, settings)
-                            .then((v) => { return { k: entry.k.value, v: v }});
+                    if (entry.property.value) {
+                        return UnnamedComponentFactory.getArgumentValue(entry.properties.value, componentRunner, settings)
+                            .then((v) => {
+                                return { key: entry.property.key.value, value: v };
+                            });
                     } else {
                         // TODO: only throw an error if the parameter is required
                         //return Promise.reject(new Error('Parameter object entries must have values, but found: ' + JSON.stringify(entry, null, '  ')));
@@ -66,21 +79,20 @@ export class UnnamedComponentFactory implements IComponentFactory {
                     return entries.reduce((data: any, entry: any) => {
                         if (entry) {
                             if (settings.serializations) {
-                                entry.k = '\'' + entry.k + '\'';
+                                entry.key = '\'' + entry.key + '\'';
                             }
-                            data[entry.k] = entry.v;
+                            data[entry.key] = entry.value;
                         }
                         return data;
                     }, {});
                 }).then(resolve).catch(reject);
-            } else if (value.elements) {
+            } else if (value.property.elements) {
                 // The parameter is a dynamic array
-                return Promise.all(value.elements.map((entry: any) => {
-                    if (!entry.v) {
+                return Promise.all(value.properties.elements.map((entry: Resource) => {
+                    if (!entry.property.value) {
                         return Promise.reject(new Error('Parameter array elements must have values, but found: ' + NodeUtil.inspect(entry)));
-                    }
-                    if (entry.v) {
-                        return UnnamedComponentFactory.getArgumentValue(entry.v, componentRunner, settings);
+                    } else {
+                        return UnnamedComponentFactory.getArgumentValue(entry.property.value, componentRunner, settings);
                     }
                 })).then((elements: any[]) => {
                     var ret: any[] = [];
@@ -93,32 +105,30 @@ export class UnnamedComponentFactory implements IComponentFactory {
                     });
                     resolve(ret);
                 }).catch(reject);
-            } else if (value instanceof Array) {
-                return Promise.all(value.map(
-                    (element) => UnnamedComponentFactory.getArgumentValue(element, componentRunner, settings)))
-                    .then(resolve).catch(reject);
-            } else if (value.termType === 'NamedNode' || value.termType === 'BlankNode') {
-                if (value.v) {
-                    return resolve(UnnamedComponentFactory.getArgumentValue(value.v, componentRunner, settings));
+            } else if (value.type === 'NamedNode' || value.type === 'BlankNode') {
+                if (value.property.value) {
+                    return resolve(UnnamedComponentFactory.getArgumentValue(value.properties.value, componentRunner, settings));
                 }
                 if (settings.shallow) {
                     return resolve({});
                 }
-                if (value.lazy && value.lazy.value === 'true') {
+                if (value.property.lazy && value.property.lazy.value === 'true') {
                     return resolve(() => componentRunner.instantiate(value, settings));
                 } else {
                     return componentRunner.instantiate(value, settings).catch(reject).then(resolve);
                 }
-            } else if (value.termType === 'Literal') {
-                const rawValue: any = value.value;
-                if (value.lazy && value.lazy.value === 'true') {
+            } else if (value.type === 'Literal') {
+                // valueRaw can be set in Util.captureType
+                // TODO: improve this, so that the hacked valueRaw is not needed
+                const rawValue: any = 'valueRaw' in value.term ? (<any> value.term).valueRaw : value.value;
+                if (value.property.lazy && value.property.lazy.value === 'true') {
                     if (settings.serializations && typeof value.value === 'string') {
                         return resolve('new function() { return Promise.resolve(\'' + rawValue + '\'); }');
                     } else {
                         return resolve(() => Promise.resolve(rawValue));
                     }
                 } else {
-                    if (settings.serializations && typeof value.value === 'string') {
+                    if (settings.serializations && typeof rawValue === 'string') {
                         return resolve('\'' + rawValue + '\'');
                     } else {
                         return resolve(rawValue);
@@ -134,7 +144,7 @@ export class UnnamedComponentFactory implements IComponentFactory {
      * @returns New instantiations of the provided arguments.
      */
     makeArguments(settings?: ICreationSettings): Promise<any[]> {
-        return this._componentDefinition.arguments ? Promise.all(this._componentDefinition.arguments.list
+        return this._componentDefinition.property.arguments ? Promise.all(this._componentDefinition.property.arguments.list
             .map((resource: Resource) => resource ? UnnamedComponentFactory.getArgumentValue(resource, this._componentRunner, settings) : undefined)) : Promise.resolve([]);
     }
 
@@ -174,12 +184,12 @@ export class UnnamedComponentFactory implements IComponentFactory {
         settings = settings || {};
         const serialize: boolean = !!settings.serializations;
         return new Promise(async (resolve, reject) => {
-            let requireName: string = this._componentDefinition.requireName.value;
+            let requireName: string = this._componentDefinition.property.requireName.value;
             requireName = this._overrideRequireNames[requireName] || requireName;
             let object: any = null;
             let resultingRequirePath = null;
             try {
-                object = this._requireCurrentRunningModuleIfCurrent(this._componentDefinition.requireName.value);
+                object = this._requireCurrentRunningModuleIfCurrent(this._componentDefinition.property.requireName.value);
                 if (!object) {
                     throw new Error('Component is not the main module');
                 } else if (serialize) {
@@ -209,23 +219,23 @@ export class UnnamedComponentFactory implements IComponentFactory {
             var serialization = serialize ? 'require(\'' + resultingRequirePath.replace(/\\/g, '/') + '\')' : null;
 
             var subObject;
-            if (this._componentDefinition.requireElement) {
-                let requireElementPath = this._componentDefinition.requireElement.value.split('.');
-                if (serialize) serialization += '.' + this._componentDefinition.requireElement.value;
+            if (this._componentDefinition.property.requireElement) {
+                let requireElementPath = this._componentDefinition.property.requireElement.value.split('.');
+                if (serialize) serialization += '.' + this._componentDefinition.property.requireElement.value;
                 try {
                     subObject = requireElementPath.reduce((object: any, requireElement: string) => object[requireElement], object);
                 } catch (e) {
-                    return reject(new Error('Failed to get module element ' + this._componentDefinition.requireElement.value + ' from module ' + requireName));
+                    return reject(new Error('Failed to get module element ' + this._componentDefinition.property.requireElement.value + ' from module ' + requireName));
                 }
             }
             else {
                 subObject = object;
             }
             if (!subObject) {
-                return reject(new Error('Failed to get module element ' + this._componentDefinition.requireElement.value + ' from module ' + requireName));
+                return reject(new Error('Failed to get module element ' + this._componentDefinition.property.requireElement.value + ' from module ' + requireName));
             }
             object = subObject;
-            if (!this._componentDefinition.requireNoConstructor || this._componentDefinition.requireNoConstructor.value !== 'true') {
+            if (!this._componentDefinition.property.requireNoConstructor || this._componentDefinition.property.requireNoConstructor.value !== 'true') {
                 if (this._constructable) {
                     if (!(object instanceof Function)) {
                         return reject(new Error('ConstructableComponent is not a function: ' + NodeUtil.inspect(object)

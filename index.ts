@@ -1,6 +1,4 @@
 export * from './lib/Loader';
-export * from './lib/rdf/Resource';
-export * from './lib/rdf/RdfClassLoader';
 export * from './lib/rdf/RdfParser';
 export * from './lib/factory/UnnamedComponentFactory';
 export * from './lib/factory/UnmappedNamedComponentFactory';

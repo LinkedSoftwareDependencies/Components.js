@@ -1,87 +1,49 @@
-import { Resource } from '../../lib/rdf/Resource';
 import { UnnamedComponentFactory } from '../../lib/factory/UnnamedComponentFactory';
 import { Loader } from '../../lib/Loader';
+import { RdfObjectLoader, Resource } from 'rdf-object';
+import * as fs from 'fs';
 
 const Hello = require("../../__mocks__/helloworld").HelloNested.Deeper.Hello;
 const N3 = require('n3');
 
-// Component definition for an N3 Lexer
-let n3LexerComponent = new Resource('http://example.org/n3#Lexer', {
-  requireName: Resource.newString('n3'),
-  requireElement: Resource.newString('Lexer'),
-  arguments: new Resource(null, {
-    list: [
-      new Resource("_:param_lexer_0", {
-        fields: [ { k: new Resource('"comments"'), v: new Resource('"true"') } ]
-      })
-    ]
-  })
-});
-
-// Component definition for an N3 Parser
-let n3ParserComponent = new Resource('http://example.org/n3#Parser', {
-  requireName: Resource.newString('n3'),
-  requireElement: Resource.newString('Parser'),
-  arguments: new Resource(null, {
-    list: [
-      new Resource("_:param_parser_0", {
-        fields: [
-          { k: new Resource('"format"'), v: new Resource('"application/trig"') },
-          { k: new Resource('"lexer"') , v: n3LexerComponent }
-        ]
-      })
-    ]
-  })
-});
-
-// Component definition for an N3 Parser
-let nestedHelloWorldComponent = new Resource('http://example.org/n3#Parser', {
-  requireName: Resource.newString('helloworld'),
-  requireElement: Resource.newString('HelloNested.Deeper.Hello'),
-  arguments: new Resource(null, {
-    list: []
-  })
-});
-
-// Component definition for an N3 Lexer with an array argument
-let n3LexerComponentArray = new Resource('http://example.org/n3#Lexer', {
-  requireName: Resource.newString('n3'),
-  requireElement: Resource.newString('Lexer'),
-  arguments: new Resource(null, {
-    list: [
-      new Resource("_:param_lexer_0", {
-        elements: [ { v: new Resource('"A"') }, { v: new Resource('"B"') }, { v: new Resource('"C"') } ]
-      })
-    ]
-  })
-});
-
-// Component definition for an N3 Lexer without constructor
-let n3LexerComponentNoConstructor = new Resource('http://example.org/n3#Lexer', {
-  requireName: Resource.newString('n3'),
-  requireElement: Resource.newString('Lexer'),
-  requireNoConstructor: Resource.newBoolean(true),
-});
-
 describe('UnnamedComponentFactory', function () {
 
-  describe('#getArgumentValue', function () {
-    it('should create valid literals', async() => {
-      expect(await UnnamedComponentFactory.getArgumentValue(new Resource('"application/trig"'), new Loader()))
-        .toEqual('application/trig');
-    });
-
-    it('should create valid instances', async() => {
-      const ret = await UnnamedComponentFactory.getArgumentValue(n3LexerComponent, new Loader());
-      expect(ret).toBeTruthy();
-      expect(ret).toBeInstanceOf(N3.Lexer);
-    });
+  let objectLoader: RdfObjectLoader;
+  beforeEach(() => {
+    // Create resources via object loader, so we can use CURIEs
+    objectLoader = new RdfObjectLoader({ context: JSON.parse(fs.readFileSync(__dirname + '/../../components/context.jsonld', 'utf8')) });
   });
 
   describe('for an N3 Lexer', function () {
+    let n3LexerComponent: Resource;
     let constructor: UnnamedComponentFactory;
     beforeEach(function () {
-      constructor = new UnnamedComponentFactory(n3LexerComponent, true);
+      n3LexerComponent = objectLoader.createCompactedResource({
+        '@id': 'http://example.org/n3#Lexer',
+        requireName: '"n3"',
+        requireElement: '"Lexer"',
+        arguments: {
+          list: [
+            {
+              fields: [ { key: '"comments"', value: '"true"' } ]
+            }
+          ]
+        }
+      });
+      constructor = new UnnamedComponentFactory(n3LexerComponent, true, {}, new Loader());
+    });
+
+    describe('#getArgumentValue', function () {
+      it('should create valid literals', async() => {
+        expect(await UnnamedComponentFactory.getArgumentValue(objectLoader.createCompactedResource('"application/trig"'), new Loader()))
+          .toEqual('application/trig');
+      });
+
+      it('should create valid instances', async() => {
+        const ret = await UnnamedComponentFactory.getArgumentValue(n3LexerComponent, new Loader());
+        expect(ret).toBeTruthy();
+        expect(ret).toBeInstanceOf(N3.Lexer);
+      });
     });
 
     it('should be valid', function () {
@@ -90,7 +52,7 @@ describe('UnnamedComponentFactory', function () {
 
     it('should create valid arguments', async() => {
       const args = await constructor.makeArguments();
-      expect(args).toEqual([ { comments: 'true' } ]);
+      expect(args).toEqual([ { comments: [ 'true' ] } ]);
     });
 
     it('should make a valid instance', async() => {
@@ -101,9 +63,22 @@ describe('UnnamedComponentFactory', function () {
   });
 
   describe('for an N3 Lexer with array arguments', function () {
+    let n3LexerComponentArray: Resource;
     let constructor: UnnamedComponentFactory;
     beforeEach(function () {
-      constructor = new UnnamedComponentFactory(n3LexerComponentArray, true);
+      n3LexerComponentArray = objectLoader.createCompactedResource({
+        '@id': 'http://example.org/n3#LexerArray',
+        requireName: '"n3"',
+        requireElement: '"Lexer"',
+        arguments: {
+          list: [
+            {
+              elements: [ { value: '"A"' }, { value: '"B"' }, { value: '"C"' } ]
+            }
+          ]
+        }
+      });
+      constructor = new UnnamedComponentFactory(n3LexerComponentArray, true, {}, new Loader());
     });
 
     it('should be valid', function () {
@@ -123,9 +98,38 @@ describe('UnnamedComponentFactory', function () {
   });
 
   describe('for an N3 Parser', function () {
+    let n3LexerComponent: Resource;
+    let n3ParserComponent: Resource;
     let constructor: UnnamedComponentFactory;
     beforeEach(function () {
-      constructor = new UnnamedComponentFactory(n3ParserComponent, true);
+      n3LexerComponent = objectLoader.createCompactedResource({
+        '@id': 'http://example.org/n3#Lexer',
+        requireName: '"n3"',
+        requireElement: '"Lexer"',
+        arguments: {
+          list: [
+            {
+              fields: [ { key: '"comments"', value: '"true"' } ]
+            }
+          ]
+        }
+      });
+      n3ParserComponent = objectLoader.createCompactedResource({
+        '@id': 'http://example.org/n3#Parser',
+        requireName: '"n3"',
+        requireElement: '"Parser"',
+        arguments: {
+          list: [
+            {
+              fields: [
+                { key: '"format"', value: '"application/trig"' },
+                { key: '"lexer"', value: n3LexerComponent },
+              ]
+            }
+          ]
+        }
+      });
+      constructor = new UnnamedComponentFactory(n3ParserComponent, true, {}, new Loader());
     });
 
     it('should be valid', function () {
@@ -135,9 +139,9 @@ describe('UnnamedComponentFactory', function () {
     it('should create valid arguments', async() => {
       const args = await constructor.makeArguments();
       expect(args.length).toEqual(1);
-      expect(args[0].format).toEqual('application/trig');
+      expect(args[0].format).toEqual([ 'application/trig' ]);
       expect(args[0].lexer).toBeTruthy();
-      expect(args[0].lexer).toBeInstanceOf(N3.Lexer);
+      expect(args[0].lexer[0]).toBeInstanceOf(N3.Lexer);
     });
 
     it('should make a valid instance', async() => {
@@ -148,9 +152,18 @@ describe('UnnamedComponentFactory', function () {
   });
 
   describe('for a nested HelloWorld component', function () {
+    let nestedHelloWorldComponent: Resource;
     let constructor: UnnamedComponentFactory;
     beforeEach(function () {
-      constructor = new UnnamedComponentFactory(nestedHelloWorldComponent, true);
+      nestedHelloWorldComponent = objectLoader.createCompactedResource({
+        '@id': 'http://example.org/helloWorldNested',
+        requireName: '"helloworld"',
+        requireElement: '"HelloNested.Deeper.Hello"',
+        arguments: {
+          list: []
+        }
+      });
+      constructor = new UnnamedComponentFactory(nestedHelloWorldComponent, true, {}, new Loader());
     });
 
     it('should be valid', function () {
@@ -170,9 +183,16 @@ describe('UnnamedComponentFactory', function () {
   });
 
   describe('for an N3 Lexer without constructor', function () {
+    let n3LexerComponentNoConstructor: Resource;
     let constructor: UnnamedComponentFactory;
     beforeEach(function () {
-      constructor = new UnnamedComponentFactory(n3LexerComponentNoConstructor, true);
+      n3LexerComponentNoConstructor = objectLoader.createCompactedResource({
+        '@id': 'http://example.org/n3#LexerNoConstructor',
+        requireName: '"n3"',
+        requireElement: '"Lexer"',
+        requireNoConstructor: '"true"'
+      });
+      constructor = new UnnamedComponentFactory(n3LexerComponentNoConstructor, true, {}, new Loader());
     });
 
     it('should be valid', function () {
