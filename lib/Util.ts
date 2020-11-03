@@ -390,26 +390,21 @@ class Util {
      * @param scanGlobal If global modules should also be scanned next to local modules.
      * @return A promise resolving to a mapping of module URI to component file name
      */
-    static getAvailableModuleComponentPaths(scanGlobal: boolean): Promise<{[id: string]: string}> {
-        return new Promise((resolve, reject) => {
-            let globalPath: string = scanGlobal ? globalModules : null;
-            let paths: string[] = Util.getMainModulePaths();
-            if (paths) {
-                return Promise.all([globalPath ? Util.getModuleComponentPaths(globalPath) : {}].concat(paths.map(Util.getModuleComponentPaths)))
-                    .then((paths: [{[id: string]: string}, {[id: string]: string}]) => {
-                        // Local paths can overwrite global paths
-                        resolve(paths.reduce((paths, currentPaths) => {
-                            for (const [key, value] of Object.entries(currentPaths)) {
-                                paths[key] = value;
-                            }
-                            return paths;
-                        }, {}));
-                    })
-                    .catch(reject);
-            } else {
-                reject(null);
-            }
-        });
+    public static async getAvailableModuleComponentPaths(scanGlobal: boolean): Promise<{[id: string]: string}> {
+        let globalPath: string = scanGlobal ? globalModules : null;
+        let paths: string[] = Util.getMainModulePaths();
+        if (paths) {
+            // Local paths can overwrite global paths
+            const subPaths: {[id: string]: string}[] = await Promise.all([globalPath ? Util.getModuleComponentPaths(globalPath) : {}].concat(paths.map(Util.getModuleComponentPaths)));
+            return subPaths.reduce((p, currentPaths) => {
+                for (const [key, value] of Object.entries(currentPaths)) {
+                    p[key] = value;
+                }
+                return p;
+            }, {});
+        } else {
+            throw new Error('No paths were provided');
+        }
     }
 
     /**
@@ -449,26 +444,21 @@ class Util {
      * @param scanGlobal If global modules should also be scanned next to local modules.
      * @return A promise resolving to a mapping of context URL to parsed context contents
      */
-    static getAvailableContexts(scanGlobal: boolean): Promise<{[id: string]: any}> {
-        return new Promise((resolve, reject) => {
-            let globalPath: string = scanGlobal ? globalModules : null;
-            let paths: string[] = Util.getMainModulePaths();
-            if (paths) {
-                return Promise.all([globalPath ? Util.getContextPaths(globalPath) : {}].concat(paths.map(Util.getContextPaths)))
-                    .then((paths: [{[id: string]: any}, {[id: string]: any}]) => {
-                        // Local paths can overwrite global paths
-                        resolve(paths.reduce((paths, currentPaths) => {
-                            for (const [key, value] of Object.entries(currentPaths)) {
-                                paths[key] = value;
-                            }
-                            return paths;
-                        }, {}));
-                    })
-                    .catch(reject);
-            } else {
-                reject(null);
-            }
-        });
+    public static async getAvailableContexts(scanGlobal: boolean): Promise<{[id: string]: any}> {
+        let globalPath: string = scanGlobal ? globalModules : null;
+        let paths: string[] = Util.getMainModulePaths();
+        if (paths) {
+            // Local paths can overwrite global paths
+            const subPaths: {[id: string]: string}[] = await Promise.all([globalPath ? Util.getContextPaths(globalPath) : {}].concat(paths.map(Util.getContextPaths)));
+            return subPaths.reduce((p, currentPaths) => {
+                for (const [key, value] of Object.entries(currentPaths)) {
+                    p[key] = value;
+                }
+                return p;
+            }, {});
+        } else {
+            throw new Error('No paths were provided');
+        }
     }
 
     /**
@@ -512,26 +502,21 @@ class Util {
      * @param scanGlobal If global modules should also be scanned next to local modules.
      * @return A promise resolving to a mapping of an import prefix URL to an import prefix path
      */
-    static getAvailableImportPaths(scanGlobal: boolean): Promise<{[id: string]: string}> {
-        return new Promise((resolve, reject) => {
-            let globalPath: string = scanGlobal ? globalModules : null;
-            let paths: string[] = Util.getMainModulePaths();
-            if (paths) {
-                return Promise.all([globalPath ? Util.getImportPaths(globalPath) : {}].concat(paths.map(Util.getImportPaths)))
-                    .then((paths: [{[id: string]: string}, {[id: string]: string}]) => {
-                        // Local paths can overwrite global paths
-                        resolve(paths.reduce((paths, currentPaths) => {
-                            for (const [key, value] of Object.entries(currentPaths)) {
-                                paths[key] = value;
-                            }
-                            return paths;
-                        }, {}));
-                    })
-                    .catch(reject);
-            } else {
-                reject(null);
-            }
-        });
+    public static async getAvailableImportPaths(scanGlobal: boolean): Promise<{[id: string]: string}> {
+        let globalPath: string = scanGlobal ? globalModules : null;
+        let paths: string[] = Util.getMainModulePaths();
+        if (paths) {
+            // Local paths can overwrite global paths
+            const subPaths: {[id: string]: string}[] = await Promise.all([globalPath ? Util.getImportPaths(globalPath) : {}].concat(paths.map(Util.getImportPaths)));
+            return subPaths.reduce((p, currentPaths) => {
+                for (const [key, value] of Object.entries(currentPaths)) {
+                    p[key] = value;
+                }
+                return p;
+            }, {});
+        } else {
+            throw new Error('No paths were provided');
+        }
     }
 
     /**

@@ -42,110 +42,104 @@ export class UnnamedComponentFactory implements IComponentFactory {
         }
     }
 
-    static getArgumentValue(value: Resource | Resource[], componentRunner: Loader, settings?: ICreationSettings): Promise<any> {
+    public static async getArgumentValue(value: Resource | Resource[], componentRunner: Loader, settings?: ICreationSettings): Promise<any> {
         settings = settings || {};
-        return new Promise((resolve, reject) => {
-            if (value instanceof Array) {
-                // Unwrap unique values out of the array
-                if (value[0].property.unique && value[0].property.unique.value === 'true') {
-                    return UnnamedComponentFactory.getArgumentValue(value[0], componentRunner, settings)
-                      .then(resolve).catch(reject);
+        if (value instanceof Array) {
+            // Unwrap unique values out of the array
+            if (value[0].property.unique && value[0].property.unique.value === 'true') {
+                return UnnamedComponentFactory.getArgumentValue(value[0], componentRunner, settings);
+            }
+            // Otherwise, keep the array form
+            return await Promise.all(value.map((element) => UnnamedComponentFactory.getArgumentValue(element, componentRunner, settings)));
+        } else if (value.property.fields || value.property.hasFields) { // hasFields is a hack for making UnmappedNamedComponentFactory work
+            // The parameter is an object
+            const entries = await Promise.all(value.properties.fields.map(async (entry: Resource) => {
+                if (!entry.property.key) {
+                    throw new Error('Parameter object entries must have keys, but found: ' + NodeUtil.inspect(entry));
                 }
-                // Otherwise, keep the array form
-                return Promise.all(value.map(
-                  (element) => UnnamedComponentFactory.getArgumentValue(element, componentRunner, settings)))
-                  .then(resolve).catch(reject);
-            } else if (value.property.fields || value.property.hasFields) { // hasFields is a hack for making UnmappedNamedComponentFactory work
-                // The parameter is an object
-                return Promise.all(value.properties.fields.map((entry: Resource) => {
-                    if (!entry.property.key) {
-                        return reject(new Error('Parameter object entries must have keys, but found: ' + NodeUtil.inspect(entry)));
-                    }
-                    if (entry.property.key.type !== 'Literal') {
-                        return reject(new Error('Parameter object keys must be literals, but found type ' + entry.property.key.type
-                            + ' for ' + entry.property.key.value + ' while constructing: ' + NodeUtil.inspect(value)));
-                    }
-                    if (entry.property.value) {
-                        return UnnamedComponentFactory.getArgumentValue(entry.properties.value, componentRunner, settings)
-                            .then((v) => {
-                                return { key: entry.property.key.value, value: v };
-                            });
-                    } else {
-                        // TODO: only throw an error if the parameter is required
-                        //return Promise.reject(new Error('Parameter object entries must have values, but found: ' + JSON.stringify(entry, null, '  ')));
-                        return Promise.resolve(null);
-                    }
-                })).then((entries) => {
-                    return entries.reduce((data: any, entry: any) => {
-                        if (entry) {
-                            if (settings.serializations) {
-                                entry.key = '\'' + entry.key + '\'';
-                            }
-                            data[entry.key] = entry.value;
-                        }
-                        return data;
-                    }, {});
-                }).then(resolve).catch(reject);
-            } else if (value.property.elements) {
-                // The parameter is a dynamic array
-                return Promise.all(value.properties.elements.map((entry: Resource) => {
-                    if (!entry.property.value) {
-                        return Promise.reject(new Error('Parameter array elements must have values, but found: ' + NodeUtil.inspect(entry)));
-                    } else {
-                        return UnnamedComponentFactory.getArgumentValue(entry.property.value, componentRunner, settings);
-                    }
-                })).then((elements: any[]) => {
-                    var ret: any[] = [];
-                    elements.forEach((element) => {
-                        if (element instanceof Array) {
-                            ret = ret.concat(element);
-                        } else {
-                            ret.push(element);
-                        }
-                    });
-                    resolve(ret);
-                }).catch(reject);
-            } else if (value.type === 'NamedNode' || value.type === 'BlankNode') {
-                if (value.property.value) {
-                    return resolve(UnnamedComponentFactory.getArgumentValue(value.properties.value, componentRunner, settings));
+                if (entry.property.key.type !== 'Literal') {
+                    throw new Error('Parameter object keys must be literals, but found type ' + entry.property.key.type
+                      + ' for ' + entry.property.key.value + ' while constructing: ' + NodeUtil.inspect(value));
                 }
-                if (settings.shallow) {
-                    return resolve({});
-                }
-                if (value.property.lazy && value.property.lazy.value === 'true') {
-                    return resolve(() => componentRunner.instantiate(value, settings));
+                if (entry.property.value) {
+                    const v = await UnnamedComponentFactory.getArgumentValue(entry.properties.value, componentRunner, settings)
+                    return { key: entry.property.key.value, value: v };
                 } else {
-                    return componentRunner.instantiate(value, settings).catch(reject).then(resolve);
+                    // TODO: only throw an error if the parameter is required
+                    //return Promise.reject(new Error('Parameter object entries must have values, but found: ' + JSON.stringify(entry, null, '  ')));
+                    return null;
                 }
-            } else if (value.type === 'Literal') {
-                // valueRaw can be set in Util.captureType
-                // TODO: improve this, so that the hacked valueRaw is not needed
-                const rawValue: any = 'valueRaw' in value.term ? (<any> value.term).valueRaw : value.value;
-                if (value.property.lazy && value.property.lazy.value === 'true') {
-                    if (settings.serializations && typeof value.value === 'string') {
-                        return resolve('new function() { return Promise.resolve(\'' + rawValue + '\'); }');
-                    } else {
-                        return resolve(() => Promise.resolve(rawValue));
+            }));
+            return entries.reduce((data: any, entry: any) => {
+                if (entry) {
+                    if (settings.serializations) {
+                        entry.key = '\'' + entry.key + '\'';
                     }
+                    data[entry.key] = entry.value;
+                }
+                return data;
+            }, {});
+        } else if (value.property.elements) {
+            // The parameter is a dynamic array
+            const elements = await Promise.all(value.properties.elements.map(async (entry: Resource) => {
+                if (!entry.property.value) {
+                    throw new Error('Parameter array elements must have values, but found: ' + NodeUtil.inspect(entry));
                 } else {
-                    if (settings.serializations && typeof rawValue === 'string') {
-                        return resolve('\'' + rawValue + '\'');
-                    } else {
-                        return resolve(rawValue);
-                    }
+                    return await UnnamedComponentFactory.getArgumentValue(entry.property.value, componentRunner, settings);
+                }
+            }));
+            var ret: any[] = [];
+            elements.forEach((element) => {
+                if (element instanceof Array) {
+                    ret = ret.concat(element);
+                } else {
+                    ret.push(element);
+                }
+            });
+            return ret;
+        } else if (value.type === 'NamedNode' || value.type === 'BlankNode') {
+            if (value.property.value) {
+                return await UnnamedComponentFactory.getArgumentValue(value.properties.value, componentRunner, settings);
+            }
+            if (settings.shallow) {
+                return {};
+            }
+            if (value.property.lazy && value.property.lazy.value === 'true') {
+                return () => componentRunner.instantiate(value, settings);
+            } else {
+                return await componentRunner.instantiate(value, settings);
+            }
+        } else if (value.type === 'Literal') {
+            // valueRaw can be set in Util.captureType
+            // TODO: improve this, so that the hacked valueRaw is not needed
+            const rawValue: any = 'valueRaw' in value.term ? (<any> value.term).valueRaw : value.value;
+            if (value.property.lazy && value.property.lazy.value === 'true') {
+                if (settings.serializations && typeof value.value === 'string') {
+                    return 'new function() { return Promise.resolve(\'' + rawValue + '\'); }';
+                } else {
+                    return () => Promise.resolve(rawValue);
+                }
+            } else {
+                if (settings.serializations && typeof rawValue === 'string') {
+                    return '\'' + rawValue + '\'';
+                } else {
+                    return rawValue;
                 }
             }
-            return reject(new Error('An invalid argument value was found:' + NodeUtil.inspect(value)));
-        });
+        }
+        throw new Error('An invalid argument value was found:' + NodeUtil.inspect(value));
     }
 
     /**
      * @param settings The settings for creating the instance.
      * @returns New instantiations of the provided arguments.
      */
-    makeArguments(settings?: ICreationSettings): Promise<any[]> {
-        return this._componentDefinition.property.arguments ? Promise.all(this._componentDefinition.property.arguments.list
-            .map((resource: Resource) => resource ? UnnamedComponentFactory.getArgumentValue(resource, this._componentRunner, settings) : undefined)) : Promise.resolve([]);
+    public async makeArguments(settings?: ICreationSettings): Promise<any[]> {
+        if (this._componentDefinition.property.arguments) {
+            return await Promise.all(this._componentDefinition.property.arguments.list
+              .map((resource: Resource) => resource ? UnnamedComponentFactory.getArgumentValue(resource, this._componentRunner, settings) : undefined));
+        }
+        return [];
     }
 
     /**
@@ -180,86 +174,76 @@ export class UnnamedComponentFactory implements IComponentFactory {
      * @param settings The settings for creating the instance.
      * @returns A new instance of the component.
      */
-    create(settings?: ICreationSettings): Promise<any> {
+    public async create(settings?: ICreationSettings): Promise<any> {
         settings = settings || {};
         const serialize: boolean = !!settings.serializations;
-        return new Promise(async (resolve, reject) => {
-            let requireName: string = this._componentDefinition.property.requireName.value;
-            requireName = this._overrideRequireNames[requireName] || requireName;
-            let object: any = null;
-            let resultingRequirePath = null;
+        let requireName: string = this._componentDefinition.property.requireName.value;
+        requireName = this._overrideRequireNames[requireName] || requireName;
+        let object: any = null;
+        let resultingRequirePath = null;
+        try {
+            object = this._requireCurrentRunningModuleIfCurrent(this._componentDefinition.property.requireName.value);
+            if (!object) {
+                throw new Error('Component is not the main module');
+            } else if (serialize) {
+                resultingRequirePath = '.' + Path.sep
+                  + Path.relative(Util.getMainModulePath(), this._getCurrentRunningModuleMain());
+            }
+        } catch (e) {
             try {
-                object = this._requireCurrentRunningModuleIfCurrent(this._componentDefinition.property.requireName.value);
-                if (!object) {
-                    throw new Error('Component is not the main module');
-                } else if (serialize) {
-                    resultingRequirePath = '.' + Path.sep
-                      + Path.relative(Util.getMainModulePath(), this._getCurrentRunningModuleMain());
-                }
+                // Always require relative from main module, because Components.js will in most cases just be dependency.
+                object = require.main.require(requireName.charAt(0) === '.'
+                  ? Path.join(process.cwd(), requireName)
+                  : requireName);
+                if (serialize) resultingRequirePath = requireName;
             } catch (e) {
-                try {
-                    // Always require relative from main module, because Components.js will in most cases just be dependency.
-                    object = require.main.require(requireName.charAt(0) === '.'
-                      ? Path.join(process.cwd(), requireName)
-                      : requireName);
-                    if (serialize) resultingRequirePath = requireName;
-                } catch (e) {
-                    if (this._componentRunner._properties.scanGlobal) {
-                        try {
-                            object = require('requireg')(requireName);
-                        } catch (e) {
-                            return reject(e);
-                        }
-                    } else {
-                        return reject(e);
-                    }
-              }
-            }
-
-            var serialization = serialize ? 'require(\'' + resultingRequirePath.replace(/\\/g, '/') + '\')' : null;
-
-            var subObject;
-            if (this._componentDefinition.property.requireElement) {
-                let requireElementPath = this._componentDefinition.property.requireElement.value.split('.');
-                if (serialize) serialization += '.' + this._componentDefinition.property.requireElement.value;
-                try {
-                    subObject = requireElementPath.reduce((object: any, requireElement: string) => object[requireElement], object);
-                } catch (e) {
-                    return reject(new Error('Failed to get module element ' + this._componentDefinition.property.requireElement.value + ' from module ' + requireName));
+                if (this._componentRunner._properties.scanGlobal) {
+                    object = require('requireg')(requireName);
+                } else {
+                    throw e;
                 }
             }
-            else {
-                subObject = object;
+        }
+
+        var serialization = serialize ? 'require(\'' + resultingRequirePath.replace(/\\/g, '/') + '\')' : null;
+
+        var subObject;
+        if (this._componentDefinition.property.requireElement) {
+            let requireElementPath = this._componentDefinition.property.requireElement.value.split('.');
+            if (serialize) serialization += '.' + this._componentDefinition.property.requireElement.value;
+            try {
+                subObject = requireElementPath.reduce((object: any, requireElement: string) => object[requireElement], object);
+            } catch (e) {
+                throw new Error('Failed to get module element ' + this._componentDefinition.property.requireElement.value + ' from module ' + requireName);
             }
-            if (!subObject) {
-                return reject(new Error('Failed to get module element ' + this._componentDefinition.property.requireElement.value + ' from module ' + requireName));
-            }
-            object = subObject;
-            if (!this._componentDefinition.property.requireNoConstructor || this._componentDefinition.property.requireNoConstructor.value !== 'true') {
-                if (this._constructable) {
-                    if (!(object instanceof Function)) {
-                        return reject(new Error('ConstructableComponent is not a function: ' + NodeUtil.inspect(object)
-                          + "\n" + NodeUtil.inspect(this._componentDefinition)));
-                    }
-                    try {
-                        const args: any[] = await this.makeArguments(settings);
-                        if (serialize) {
-                            serialization = 'new (' + serialization + ')(' + args.map((arg) => JSON.stringify(arg, null, '  ').replace(/(^|[^\\])"/g, '$1')).join(',') + ')';
-                        } else {
-                            object = new (Function.prototype.bind.apply(object, [{}].concat(args)));
-                        }
-                    } catch (e) {
-                        reject(e);
-                    }
+        }
+        else {
+            subObject = object;
+        }
+        if (!subObject) {
+            throw new Error('Failed to get module element ' + this._componentDefinition.property.requireElement.value + ' from module ' + requireName);
+        }
+        object = subObject;
+        if (!this._componentDefinition.property.requireNoConstructor || this._componentDefinition.property.requireNoConstructor.value !== 'true') {
+            if (this._constructable) {
+                if (!(object instanceof Function)) {
+                    throw new Error('ConstructableComponent is not a function: ' + NodeUtil.inspect(object)
+                      + "\n" + NodeUtil.inspect(this._componentDefinition));
+                }
+                const args: any[] = await this.makeArguments(settings);
+                if (serialize) {
+                    serialization = 'new (' + serialization + ')(' + args.map((arg) => JSON.stringify(arg, null, '  ').replace(/(^|[^\\])"/g, '$1')).join(',') + ')';
+                } else {
+                    object = new (Function.prototype.bind.apply(object, [{}].concat(args)));
                 }
             }
-            if (serialize) {
-                const serializationVariableName = Util.uriToVariableName(this._componentDefinition.value);
-                serialization = 'const ' + serializationVariableName + ' = ' + serialization + ';';
-                settings.serializations.push(serialization);
-                serialization = serializationVariableName;
-            }
-            serialize ? resolve(serialization) : resolve(object);
-        });
+        }
+        if (serialize) {
+            const serializationVariableName = Util.uriToVariableName(this._componentDefinition.value);
+            serialization = 'const ' + serializationVariableName + ' = ' + serialization + ';';
+            settings.serializations.push(serialization);
+            serialization = serializationVariableName;
+        }
+        return serialize ? serialization : object;
     }
 }

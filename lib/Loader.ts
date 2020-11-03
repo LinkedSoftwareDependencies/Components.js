@@ -44,26 +44,20 @@ export class Loader {
         if (!('absolutizeRelativePaths' in this._properties)) {
             this._properties.absolutizeRelativePaths = true;
         }
+    }
+
+    public async _getContexts(): Promise<{[id: string]: any}> {
         if (!this._properties.contexts) {
-            this._properties.contexts = <{[id: string]: any}> <any> Util.getAvailableContexts(this._properties.scanGlobal);
+            this._properties.contexts = await Util.getAvailableContexts(this._properties.scanGlobal);
         }
+        return this._properties.contexts;
+    }
+
+    public async _getImportPaths(): Promise<{[id: string]: string}> {
         if (!this._properties.importPaths) {
-            this._properties.importPaths = <{[id: string]: string}> <any> Util.getAvailableImportPaths(this._properties.scanGlobal);
+            this._properties.importPaths = await Util.getAvailableImportPaths(this._properties.scanGlobal);
         }
-    }
-
-    _getContexts(): Promise<{[id: string]: any}> {
-        return Promise.resolve(this._properties.contexts).then((contexts) => {
-            this._properties.contexts = contexts;
-            return contexts;
-        })
-    }
-
-    _getImportPaths(): Promise<{[id: string]: string}> {
-        return Promise.resolve(this._properties.importPaths).then((configPrefixes) => {
-            this._properties.importPaths = configPrefixes;
-            return configPrefixes;
-        })
+        return this._properties.importPaths;
     }
 
     /**
@@ -217,20 +211,17 @@ export class Loader {
      * @param fromPath The path to base relative paths on. This will typically be __dirname.
      * @returns {Promise<T>} A promise that resolves once loading has finished.
      */
-    registerModuleResourcesUrl(moduleResourceUrl: string, fromPath?: string): Promise<void> {
-        return Promise.all([this._getContexts(), this._getImportPaths()])
-            .then(([contexts, importPaths]: {[id: string]: string}[]) => {
-                return Util.getContentsFromUrlOrPath(moduleResourceUrl, fromPath)
-                    .then((data: Readable) => this.registerModuleResourcesStream(
-                new RdfParser().parse(data, {
-                    fromPath: fromPath,
-                    path: moduleResourceUrl,
-                    contexts,
-                    importPaths,
-                    ignoreImports: false,
-                    absolutizeRelativePaths: this._properties.absolutizeRelativePaths,
-                })));
-            });
+    public async registerModuleResourcesUrl(moduleResourceUrl: string, fromPath?: string): Promise<void> {
+        const [contexts, importPaths] = await Promise.all([this._getContexts(), this._getImportPaths()]);
+        const data = await Util.getContentsFromUrlOrPath(moduleResourceUrl, fromPath);
+        return this.registerModuleResourcesStream(new RdfParser().parse(data, {
+            fromPath: fromPath,
+            path: moduleResourceUrl,
+            contexts,
+            importPaths,
+            ignoreImports: false,
+            absolutizeRelativePaths: this._properties.absolutizeRelativePaths,
+        }));
     }
 
     /**
@@ -239,13 +230,10 @@ export class Loader {
      * This will ensure that component configs referring to components as types of these modules are recognized.
      * @returns {Promise<T>} A promise that resolves once loading has finished.
      */
-    registerAvailableModuleResources(): Promise<void> {
-        return Util.getAvailableModuleComponentPaths(this._properties.scanGlobal)
-            .catch((e) => e)
-            .then((data: {[id: string]: string}) => {
-                return Promise.all(Object.values(data).map((moduleResourceUrl: string) => this.registerModuleResourcesUrl(moduleResourceUrl)))
-                    .then(() => null);
-            });
+    public async registerAvailableModuleResources(): Promise<void> {
+        const data = Util.getAvailableModuleComponentPaths(this._properties.scanGlobal);
+        await Promise.all(Object.values(data)
+          .map((moduleResourceUrl: string) => this.registerModuleResourcesUrl(moduleResourceUrl)));
     }
 
     /**
@@ -295,29 +283,29 @@ export class Loader {
      * @param settings The settings for creating the instance.
      * @returns {any} The run instance.
      */
-    instantiate(configResource: Resource, settings?: ICreationSettings): Promise<any> {
+    public async instantiate(configResource: Resource, settings?: ICreationSettings): Promise<any> {
         settings = settings || {};
         // Check if this resource is required as argument in its own chain,
         // if so, return a dummy value, to avoid infinite recursion.
         const resourceBlacklist = settings.resourceBlacklist || {};
         if (resourceBlacklist[configResource.value]) {
-            return Promise.resolve({});
+            return {};
         }
 
         // Before instantiating, first check if the resource is a variable
         if (configResource.isA(Util.IRI_VARIABLE)) {
             if (settings.serializations) {
                 if (settings.asFunction) {
-                    return Promise.resolve(`getVariableValue('${configResource.value}')`);
+                    return `getVariableValue('${configResource.value}')`;
                 } else {
-                    return Promise.reject(new Error('Detected a variable during config compilation: ' + configResource.value + '. Variables are not supported, but require the -f flag to expose the compiled config as function.'));
+                    throw new Error('Detected a variable during config compilation: ' + configResource.value + '. Variables are not supported, but require the -f flag to expose the compiled config as function.');
                 }
             } else {
                 const value = settings.variables ? settings.variables[configResource.value] : undefined;
                 if (value === undefined) {
-                    return Promise.reject(new Error('Undefined variable: ' + configResource.value));
+                    throw new Error('Undefined variable: ' + configResource.value);
                 }
-                return Promise.resolve(value);
+                return value;
             }
         }
 
@@ -327,7 +315,7 @@ export class Loader {
             this._instances[configResource.value] = this.getConfigConstructor(configResource).create(
               { resourceBlacklist: subBlackList, ...settings });
         }
-        return Promise.resolve(this._instances[configResource.value]);
+        return this._instances[configResource.value];
     }
 
     /**
@@ -461,21 +449,18 @@ export class Loader {
      *                 Default is the current running directory.
      * @returns {Promise<T>} A promise resolving to the run instance.
      */
-    getConfigConstructorFromUrl(configResourceUri: string, configResourceUrl: string, fromPath?: string): Promise<IComponentFactory> {
+    public async getConfigConstructorFromUrl(configResourceUri: string, configResourceUrl: string, fromPath?: string): Promise<IComponentFactory> {
         this._checkFinalizeRegistration();
-        return Promise.all([this._getContexts(), this._getImportPaths()])
-            .then(([contexts, importPaths]: {[id: string]: string}[]) => {
-                return Util.getContentsFromUrlOrPath(configResourceUrl, fromPath)
-                    .then((data: Readable) => this.getConfigConstructorFromStream(configResourceUri,
-                      new RdfParser().parse(data, {
-                          fromPath: fromPath,
-                          path: configResourceUrl,
-                          contexts,
-                          importPaths,
-                          ignoreImports: false,
-                          absolutizeRelativePaths: this._properties.absolutizeRelativePaths,
-                      })));
-            });
+        const [contexts, importPaths] = await Promise.all([this._getContexts(), this._getImportPaths()])
+        const data = await Util.getContentsFromUrlOrPath(configResourceUrl, fromPath);
+        return this.getConfigConstructorFromStream(configResourceUri, new RdfParser().parse(data, {
+            fromPath: fromPath,
+            path: configResourceUrl,
+            contexts,
+            importPaths,
+            ignoreImports: false,
+            absolutizeRelativePaths: this._properties.absolutizeRelativePaths,
+        }));
     }
 
     /**
@@ -487,20 +472,17 @@ export class Loader {
      * @param settings The settings for creating the instance.
      * @returns {Promise<T>} A promise resolving to the run instance.
      */
-    instantiateFromUrl(configResourceUri: string, configResourceUrl: string, fromPath?: string, settings?: ICreationSettings): Promise<any> {
-        return Promise.all([this._getContexts(), this._getImportPaths()])
-            .then(([contexts, importPaths]: {[id: string]: string}[]) => {
-                return Util.getContentsFromUrlOrPath(configResourceUrl, fromPath)
-                    .then((data: Readable) => this.instantiateFromStream(configResourceUri,
-                      new RdfParser().parse(data, {
-                          fromPath: fromPath,
-                          path: configResourceUrl,
-                          contexts,
-                          importPaths,
-                          ignoreImports: false,
-                          absolutizeRelativePaths: this._properties.absolutizeRelativePaths,
-                      }), settings));
-            });
+    public async instantiateFromUrl(configResourceUri: string, configResourceUrl: string, fromPath?: string, settings?: ICreationSettings): Promise<any> {
+        const [contexts, importPaths] = await Promise.all([this._getContexts(), this._getImportPaths()]);
+        const data = await Util.getContentsFromUrlOrPath(configResourceUrl, fromPath);
+        return this.instantiateFromStream(configResourceUri, new RdfParser().parse(data, {
+            fromPath: fromPath,
+            path: configResourceUrl,
+            contexts,
+            importPaths,
+            ignoreImports: false,
+            absolutizeRelativePaths: this._properties.absolutizeRelativePaths,
+        }), settings);
     }
 
     /**
