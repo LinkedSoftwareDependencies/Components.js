@@ -4,6 +4,7 @@ import rdfParser, { ParseOptions } from 'rdf-parse';
 import { RdfStreamIncluder } from './RdfStreamIncluder';
 import * as Path from 'path';
 import Util = require('../Util');
+import { PrefetchedDocumentLoader } from './PrefetchedDocumentLoader';
 
 /**
  * Parses a data stream to a triple stream.
@@ -17,14 +18,8 @@ export class RdfParser {
         options.baseIRI = 'file://' + options.baseIRI;
       }
     }
-    // TODO: pass context to avoid looking it up via HTTP every time
-    /*
-    {
-        'https://linkedsoftwaredependencies.org/bundles/npm/componentsjs/^3.0.0/components/context.jsonld':
-            fs.readFileSync(__dirname + '/../../components/context.jsonld', 'utf8')
-    }
-     */
-    // TODO: somehow enable strictValues in jsonld parser
+    (<any> options)['@comunica/actor-rdf-parse-jsonld:documentLoader'] = new PrefetchedDocumentLoader(options.contexts);
+    (<any> options)['@comunica/actor-rdf-parse-jsonld:strictValues'] = true;
     const quadStream = rdfParser.parse(textStream, options);
     const includedQuadStream = quadStream.pipe(new RdfStreamIncluder(options));
     textStream.on('error', (error) => includedQuadStream.emit('error', Util.addFilePathToError(error, options.path || options.baseIRI, options.path ? options.baseIRI : null)));
@@ -46,11 +41,11 @@ export type RdfParserOptions = ParseOptions & {
    * The path to base relative paths on.
    * Used for error reporting.
    */
-  fromPath: string;
+  fromPath?: string;
   /**
    * The cached JSON-LD contexts
    */
-  contexts?: {[id: string]: string}
+  contexts?: {[id: string]: any}
   /**
    * The cached import paths.
    */

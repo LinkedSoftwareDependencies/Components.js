@@ -46,14 +46,14 @@ export class Loader {
             this._properties.absolutizeRelativePaths = true;
         }
         if (!this._properties.contexts) {
-            this._properties.contexts = <{[id: string]: string}> <any> Util.getAvailableContexts(this._properties.scanGlobal);
+            this._properties.contexts = <{[id: string]: any}> <any> Util.getAvailableContexts(this._properties.scanGlobal);
         }
         if (!this._properties.importPaths) {
             this._properties.importPaths = <{[id: string]: string}> <any> Util.getAvailableImportPaths(this._properties.scanGlobal);
         }
     }
 
-    _getContexts(): Promise<{[id: string]: string}> {
+    _getContexts(): Promise<{[id: string]: any}> {
         return Promise.resolve(this._properties.contexts).then((contexts) => {
             this._properties.contexts = contexts;
             return contexts;
@@ -535,7 +535,7 @@ export class Loader {
 export interface LoaderProperties {
     scanGlobal?: boolean;
     absolutizeRelativePaths?: boolean;
-    contexts?: {[id: string]: string};
+    contexts?: {[id: string]: any};
     importPaths?: {[id: string]: string};
     mainModulePath?: string;
 }

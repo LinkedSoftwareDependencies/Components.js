@@ -9,9 +9,8 @@ import NodeUtil = require('util');
 import { Resource } from "rdf-object";
 import { DataFactory } from 'rdf-data-factory';
 import * as RDF from 'rdf-js';
-import { RdfObjectLoader } from 'rdf-object/index';
+import { RdfObjectLoader } from 'rdf-object';
 
-const jsonld: any = require("jsonld");
 const globalModules: string = require('global-modules');
 const stat = NodeUtil.promisify(fs.stat);
 const readdir = NodeUtil.promisify(fs.readdir);
@@ -417,11 +416,11 @@ class Util {
      * This checks all available node modules and checks their package.json
      * for `lsd:contexts`.
      * @param path The path to search from.
-     * @return A promise resolving to a mapping of context URL to context contents
+     * @return A promise resolving to a mapping of context URL to parsed context contents
      */
-    static getContextPaths(path: string): Promise<{[id: string]: string}> {
+    static getContextPaths(path: string): Promise<{[id: string]: any}> {
         return new Promise((resolve, reject) => {
-            let data: {[id: string]: string} = {};
+            let data: {[id: string]: any} = {};
             Util.getAvailableNodeModules(path, (modulePath) => {
                 if (!modulePath) {
                     return resolve(data);
@@ -433,22 +432,7 @@ class Util {
                         _.forOwn(contexts, (value: string, key: string) => {
                             if (!(key in data)) {
                                 let filePath: string = Path.join(modulePath, value);
-                                data[key] = fs.readFileSync(filePath, 'utf8');
-
-                                // Crash when context is invalid JSON
-                                try {
-                                    let context: any = JSON.parse(data[key]);
-                                    jsonld.compact({}, context, (e: any) => {
-                                        if (e) {
-                                            // Resolving remote contexts may fail because local document overriding is
-                                            // not in effect yet, as we are still collecting the available contexts.
-                                            if (e.details.cause.details.code !== 'loading remote context failed')
-                                                reject(new Error('Error while parsing context \'' + key + '\' in ' + filePath + ': ' + e.details.cause.message));
-                                        }
-                                    });
-                                } catch (e) {
-                                    reject(new Error('Error while parsing context \'' + key + '\' in ' + filePath + ': ' + e));
-                                }
+                                data[key] = JSON.parse(fs.readFileSync(filePath, 'utf8'));
                             }
                         });
                     }
@@ -462,18 +446,18 @@ class Util {
      * This checks all available node modules and checks their package.json
      * for `lsd:contexts`.
      * @param scanGlobal If global modules should also be scanned next to local modules.
-     * @return A promise resolving to a mapping of context URL to context contents
+     * @return A promise resolving to a mapping of context URL to parsed context contents
      */
-    static getAvailableContexts(scanGlobal: boolean): Promise<{[id: string]: string}> {
+    static getAvailableContexts(scanGlobal: boolean): Promise<{[id: string]: any}> {
         return new Promise((resolve, reject) => {
             let globalPath: string = scanGlobal ? globalModules : null;
             let paths: string[] = Util.getMainModulePaths();
             if (paths) {
                 return Promise.all([globalPath ? Util.getContextPaths(globalPath) : {}].concat(paths.map(Util.getContextPaths)))
-                    .then((paths: [{[id: string]: string}, {[id: string]: string}]) => {
+                    .then((paths: [{[id: string]: any}, {[id: string]: any}]) => {
                         // Local paths can overwrite global paths
                         resolve(paths.reduce((paths, currentPaths) => {
-                            _.forOwn(currentPaths, (v: string, k: string) => paths[k] = v);
+                            _.forOwn(currentPaths, (v: any, k: string) => paths[k] = v);
                             return paths;
                         }, {}));
                     })
