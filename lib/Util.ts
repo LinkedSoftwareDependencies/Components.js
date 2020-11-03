@@ -4,7 +4,6 @@ import https = require("https");
 import fs = require("fs");
 import Path = require("path");
 import url = require("url");
-import _ = require("lodash");
 import NodeUtil = require('util');
 import { Resource } from "rdf-object";
 import { DataFactory } from 'rdf-data-factory';
@@ -400,7 +399,9 @@ class Util {
                     .then((paths: [{[id: string]: string}, {[id: string]: string}]) => {
                         // Local paths can overwrite global paths
                         resolve(paths.reduce((paths, currentPaths) => {
-                            _.forOwn(currentPaths, (v: string, k: string) => paths[k] = v);
+                            for (const [key, value] of Object.entries(currentPaths)) {
+                                paths[key] = value;
+                            }
                             return paths;
                         }, {}));
                     })
@@ -429,12 +430,12 @@ class Util {
                 if (pckg) {
                     let contexts: {[key: string]: string} = pckg['lsd:contexts'];
                     if (contexts) {
-                        _.forOwn(contexts, (value: string, key: string) => {
+                        for (const [key, value] of Object.entries(contexts)) {
                             if (!(key in data)) {
                                 let filePath: string = Path.join(modulePath, value);
                                 data[key] = JSON.parse(fs.readFileSync(filePath, 'utf8'));
                             }
-                        });
+                        }
                     }
                 }
             });
@@ -457,7 +458,9 @@ class Util {
                     .then((paths: [{[id: string]: any}, {[id: string]: any}]) => {
                         // Local paths can overwrite global paths
                         resolve(paths.reduce((paths, currentPaths) => {
-                            _.forOwn(currentPaths, (v: any, k: string) => paths[k] = v);
+                            for (const [key, value] of Object.entries(currentPaths)) {
+                                paths[key] = value;
+                            }
                             return paths;
                         }, {}));
                     })
@@ -486,7 +489,7 @@ class Util {
                 if (pckg) {
                     let contexts: {[key: string]: string} = pckg['lsd:importPaths'];
                     if (contexts) {
-                        _.forOwn(contexts, (value: string, key: string) => {
+                        for (const [key, value] of Object.entries(contexts)) {
                             if (!(key in data)) {
                                 data[key] = Path.join(modulePath, value);
 
@@ -495,7 +498,7 @@ class Util {
                                     reject(new Error('Error while parsing import path \'' + key + '\' in ' + modulePath + ': ' + data[key] + ' does not exist.'));
                                 }
                             }
-                        });
+                        }
                     }
                 }
             });
@@ -518,7 +521,9 @@ class Util {
                     .then((paths: [{[id: string]: string}, {[id: string]: string}]) => {
                         // Local paths can overwrite global paths
                         resolve(paths.reduce((paths, currentPaths) => {
-                            _.forOwn(currentPaths, (v: string, k: string) => paths[k] = v);
+                            for (const [key, value] of Object.entries(currentPaths)) {
+                                paths[key] = value;
+                            }
                             return paths;
                         }, {}));
                     })

@@ -9,7 +9,6 @@ import { RdfObjectLoader } from 'rdf-object/index';
 
 // TODO: improve these imports
 const N3 = require('n3');
-const _ = require('lodash');
 
 describe('ComponentFactory', function () {
   let loader: Loader;

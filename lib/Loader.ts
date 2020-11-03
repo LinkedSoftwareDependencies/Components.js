@@ -1,7 +1,6 @@
 import { Readable } from "stream";
 import { RdfObjectLoader, Resource } from "rdf-object";
 import {ComponentFactory} from "./factory/ComponentFactory";
-import _ = require("lodash");
 import Util = require("./Util");
 import {IComponentFactory, ICreationSettings} from "./factory/IComponentFactory";
 import NodeUtil = require('util');
@@ -244,7 +243,7 @@ export class Loader {
         return Util.getAvailableModuleComponentPaths(this._properties.scanGlobal)
             .catch((e) => e)
             .then((data: {[id: string]: string}) => {
-                return Promise.all(_.values(data).map((moduleResourceUrl: string) => this.registerModuleResourcesUrl(moduleResourceUrl)))
+                return Promise.all(Object.values(data).map((moduleResourceUrl: string) => this.registerModuleResourcesUrl(moduleResourceUrl)))
                     .then(() => null);
             });
     }
@@ -323,10 +322,10 @@ export class Loader {
         }
 
         if (!this._instances[configResource.value]) {
-            let subBlackList: {[id: string]: boolean} = _.clone(resourceBlacklist || {});
+            let subBlackList: {[id: string]: boolean} = { ...resourceBlacklist };
             subBlackList[configResource.value] = true;
             this._instances[configResource.value] = this.getConfigConstructor(configResource).create(
-                _.defaults({ resourceBlacklist: subBlackList }, settings));
+              { resourceBlacklist: subBlackList, ...settings });
         }
         return Promise.resolve(this._instances[configResource.value]);
     }
@@ -400,7 +399,7 @@ export class Loader {
         }
 
         // Component parameter inheritance
-        for (let componentResource of _.values(this._componentResources)) {
+        for (let componentResource of Object.values(this._componentResources)) {
             this._inheritParameters(componentResource, componentResource.properties.inheritValues);
             this._inheritConstructorParameters(componentResource);
         }
