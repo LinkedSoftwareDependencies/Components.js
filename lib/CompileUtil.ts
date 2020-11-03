@@ -12,7 +12,7 @@ import { RdfParser } from './rdf/RdfParser';
  * @param {boolean} asFunction If the exported instance should be exposed as a function, which accepts an optional hash of variables.
  * @return {Promise<string>} A string resolving to the JavaScript contents.
  */
-export async function compileConfig(properties: LoaderProperties, configPath: string, configStreamRaw: NodeJS.ReadableStream,
+export async function compileConfig(properties: LoaderProperties & { mainModulePath: string }, configPath: string, configStreamRaw: NodeJS.ReadableStream,
                                     configResourceUri: string, exportVariableName?: string, asFunction?: boolean): Promise<string> {
   // Load modules and config
   const loader = new Loader(properties);

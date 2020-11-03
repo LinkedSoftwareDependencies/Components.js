@@ -24,7 +24,7 @@ export class RdfStreamIncluder extends PassThrough {
         this.parserOptions = parserOptions;
     }
 
-    push(data: RDF.Quad, encoding?: string): boolean {
+    push(data: RDF.Quad | null, encoding?: string): boolean {
         if (data) {
             if (!this.parserOptions.ignoreImports && data.predicate.value === Util.PREFIXES['owl'] + 'imports') {
                 this.runningImporters++;
@@ -56,6 +56,7 @@ export class RdfStreamIncluder extends PassThrough {
         else if (!--this.runningImporters) {
             super.push(null);
         }
+        return true;
     }
 
     _absolutize(term: RDF.Term): RDF.Term {
@@ -65,7 +66,11 @@ export class RdfStreamIncluder extends PassThrough {
         // Make relative paths absolute
         var match = RdfStreamIncluder.RELATIVE_PATH_MATCHER.exec(term.value);
         if (match) {
-            return DF.namedNode('"file:///' + Path.join(this.parserOptions.baseIRI, match[1]) + '"' + Util.PREFIXES['xsd'] + 'string');
+            if (!this.parserOptions.baseIRI) {
+                this.emit('error', new Error('Tried to absolutize relative paths with an undefined baseIRI'));
+            } else {
+                return DF.namedNode('"file:///' + Path.join(this.parserOptions.baseIRI, match[1]) + '"' + Util.PREFIXES['xsd'] + 'string');
+            }
         }
         return term;
     }

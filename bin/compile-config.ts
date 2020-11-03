@@ -47,7 +47,7 @@ if (args.p) {
     mainModulePath = process.cwd();
 }
 
-let exportVariableName: string = null;
+let exportVariableName: string | undefined;
 if (args.e) {
     exportVariableName = args.e;
 }

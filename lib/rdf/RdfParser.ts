@@ -18,12 +18,12 @@ export class RdfParser {
         options.baseIRI = 'file://' + options.baseIRI;
       }
     }
-    (<any> options)['@comunica/actor-rdf-parse-jsonld:documentLoader'] = new PrefetchedDocumentLoader(options.contexts);
+    (<any> options)['@comunica/actor-rdf-parse-jsonld:documentLoader'] = new PrefetchedDocumentLoader(options.contexts || {});
     (<any> options)['@comunica/actor-rdf-parse-jsonld:strictValues'] = true;
     const quadStream = rdfParser.parse(textStream, options);
     const includedQuadStream = quadStream.pipe(new RdfStreamIncluder(options));
-    textStream.on('error', (error) => includedQuadStream.emit('error', Util.addFilePathToError(error, options.path || options.baseIRI, options.path ? options.baseIRI : null)));
-    quadStream.on('error', (error) => includedQuadStream.emit('error', Util.addFilePathToError(error, options.path || options.baseIRI, options.path ? options.baseIRI : null)));
+    textStream.on('error', (error) => includedQuadStream.emit('error', Util.addFilePathToError(error, <string> (options.path || options.baseIRI), options.path ? options.baseIRI : undefined)));
+    quadStream.on('error', (error) => includedQuadStream.emit('error', Util.addFilePathToError(error, <string> (options.path || options.baseIRI), options.path ? options.baseIRI : undefined)));
     return includedQuadStream;
   }
 }

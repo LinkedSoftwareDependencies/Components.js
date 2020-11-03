@@ -69,7 +69,7 @@ export class MappedNamedComponentFactory extends UnnamedComponentFactory {
                     return data;
                 }, [])
                     .map((entryResource: Resource) => {
-                        let k: Resource;
+                        let k: Resource | undefined;
                         let v: Resource;
                         if (resource.property.key) {
                             if (resource.property.key.type === 'NamedNode' && resource.property.key.value === Util.PREFIXES['rdf'] + 'subject') {
@@ -103,7 +103,7 @@ export class MappedNamedComponentFactory extends UnnamedComponentFactory {
                                 v = entryResource.properties[resource.property.value.value][0];
                             }
                         }
-                        if (resource.property.key) {
+                        if (k) {
                             const ret = objectLoader.getOrMakeResource(Util.DF.blankNode());
                             ret.property.key = k;
                             v.property.unique = objectLoader.createCompactedResource('"true"');
@@ -134,7 +134,7 @@ export class MappedNamedComponentFactory extends UnnamedComponentFactory {
                 if (element.type !== 'NamedNode' && !element.property.value) {
                     throw new Error('Parameter array elements must be URI\'s, but found: ' + NodeUtil.inspect(element));
                 }
-                for (const value of MappedNamedComponentFactory.mapValue(resourceScope, element, params, resource.property.value && resource.property.value.type === 'Literal', objectLoader)) {
+                for (const value of MappedNamedComponentFactory.mapValue(resourceScope, element, params, false, objectLoader)) {
                     ret.properties.value.push(value);
                 }
             }
@@ -168,7 +168,9 @@ export class MappedNamedComponentFactory extends UnnamedComponentFactory {
             const resource = objectLoader.createCompactedResource({});
             resource.property.requireName = moduleDefinition.property.requireName || componentDefinition.property.requireName;
             resource.property.requireElement = componentDefinition.property.requireElement;
-            resource.properties.arguments = componentDefinition.property.constructorArguments ? MappedNamedComponentFactory.map(params, componentDefinition.property.constructorArguments, params, objectLoader) : null;
+            if (componentDefinition.property.constructorArguments) {
+                resource.properties.arguments = MappedNamedComponentFactory.map(params, componentDefinition.property.constructorArguments, params, objectLoader);
+            }
             return resource;
         });
     }

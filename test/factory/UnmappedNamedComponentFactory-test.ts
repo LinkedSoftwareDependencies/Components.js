@@ -80,14 +80,14 @@ describe('UnmappedNamedComponentFactory', function () {
         expect(instance.property).toHaveProperty('requireName', objectLoader.createCompactedResource('"n3"'));
         expect(instance.property).toHaveProperty('requireElement', objectLoader.createCompactedResource('"Lexer"'));
         expect(instance.property).toHaveProperty('arguments');
-        expect(instance.property.arguments.list.length).toEqual(1);
-        expect(instance.property.arguments.list[0].properties.fields.length).toEqual(3);
-        expect(instance.property.arguments.list[0].properties.fields[0].property.key.value).toEqual('http://example.org/n3#lineMode');
-        expect(instance.property.arguments.list[0].properties.fields[0].property.value).toBeUndefined();
-        expect(instance.property.arguments.list[0].properties.fields[1].property.key.value).toEqual('http://example.org/n3#n3');
-        expect(instance.property.arguments.list[0].properties.fields[1].property.value).toBeUndefined();
-        expect(instance.property.arguments.list[0].properties.fields[2].property.key.value).toEqual('http://example.org/n3#comments');
-        expect(instance.property.arguments.list[0].properties.fields[2].property.value).toBeUndefined();
+        expect(instance.property.arguments.list!.length).toEqual(1);
+        expect(instance.property.arguments.list![0].properties.fields.length).toEqual(3);
+        expect(instance.property.arguments.list![0].properties.fields[0].property.key.value).toEqual('http://example.org/n3#lineMode');
+        expect(instance.property.arguments.list![0].properties.fields[0].property.value).toBeUndefined();
+        expect(instance.property.arguments.list![0].properties.fields[1].property.key.value).toEqual('http://example.org/n3#n3');
+        expect(instance.property.arguments.list![0].properties.fields[1].property.value).toBeUndefined();
+        expect(instance.property.arguments.list![0].properties.fields[2].property.key.value).toEqual('http://example.org/n3#comments');
+        expect(instance.property.arguments.list![0].properties.fields[2].property.value).toBeUndefined();
       });
 
       it('should create a resource with defined arguments when constructed with arguments', function () {
@@ -102,14 +102,14 @@ describe('UnmappedNamedComponentFactory', function () {
         expect(instance.property).toHaveProperty('requireElement', objectLoader.createCompactedResource('"Lexer"'));
         expect(instance.property).toHaveProperty('arguments');
 
-        expect(instance.property.arguments.list.length).toEqual(1);
-        expect(instance.property.arguments.list[0].properties.fields.length).toEqual(3);
-        expect(instance.property.arguments.list[0].properties.fields[0].property.key.value).toEqual('http://example.org/n3#lineMode');
-        expect(instance.property.arguments.list[0].properties.fields[0].property.value.value).toEqual('true');
-        expect(instance.property.arguments.list[0].properties.fields[1].property.key.value).toEqual('http://example.org/n3#n3');
-        expect(instance.property.arguments.list[0].properties.fields[1].property.value.value).toEqual('true');
-        expect(instance.property.arguments.list[0].properties.fields[2].property.key.value).toEqual('http://example.org/n3#comments');
-        expect(instance.property.arguments.list[0].properties.fields[2].property.value.value).toEqual('true');
+        expect(instance.property.arguments.list!.length).toEqual(1);
+        expect(instance.property.arguments.list![0].properties.fields.length).toEqual(3);
+        expect(instance.property.arguments.list![0].properties.fields[0].property.key.value).toEqual('http://example.org/n3#lineMode');
+        expect(instance.property.arguments.list![0].properties.fields[0].property.value.value).toEqual('true');
+        expect(instance.property.arguments.list![0].properties.fields[1].property.key.value).toEqual('http://example.org/n3#n3');
+        expect(instance.property.arguments.list![0].properties.fields[1].property.value.value).toEqual('true');
+        expect(instance.property.arguments.list![0].properties.fields[2].property.key.value).toEqual('http://example.org/n3#comments');
+        expect(instance.property.arguments.list![0].properties.fields[2].property.value.value).toEqual('true');
       });
     });
   });

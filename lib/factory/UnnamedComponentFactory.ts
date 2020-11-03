@@ -5,6 +5,7 @@ import * as Path from "path";
 import NodeUtil = require('util');
 import Util = require("../Util");
 import Dict = NodeJS.Dict;
+import Module = NodeJS.Module;
 
 /**
  * Factory for component definitions with explicit arguments.
@@ -42,8 +43,7 @@ export class UnnamedComponentFactory implements IComponentFactory {
         }
     }
 
-    public static async getArgumentValue(value: Resource | Resource[], componentRunner: Loader, settings?: ICreationSettings): Promise<any> {
-        settings = settings || {};
+    public static async getArgumentValue(value: Resource | Resource[], componentRunner: Loader, settings: ICreationSettings = {}): Promise<any> {
         if (value instanceof Array) {
             // Unwrap unique values out of the array
             if (value[0].property.unique && value[0].property.unique.value === 'true') {
@@ -136,6 +136,9 @@ export class UnnamedComponentFactory implements IComponentFactory {
      */
     public async makeArguments(settings?: ICreationSettings): Promise<any[]> {
         if (this._componentDefinition.property.arguments) {
+            if (!this._componentDefinition.property.arguments.list) {
+                throw new Error(`Detected invalid arguments for component "${this._componentDefinition.value}": arguments are not an RDF list.`);
+            }
             return await Promise.all(this._componentDefinition.property.arguments.list
               .map((resource: Resource) => resource ? UnnamedComponentFactory.getArgumentValue(resource, this._componentRunner, settings) : undefined));
         }
@@ -176,26 +179,26 @@ export class UnnamedComponentFactory implements IComponentFactory {
      */
     public async create(settings?: ICreationSettings): Promise<any> {
         settings = settings || {};
-        const serialize: boolean = !!settings.serializations;
+        const serializations: string[] | undefined = settings.serializations;
         let requireName: string = this._componentDefinition.property.requireName.value;
         requireName = this._overrideRequireNames[requireName] || requireName;
         let object: any = null;
-        let resultingRequirePath = null;
+        let resultingRequirePath: string | undefined;
         try {
             object = this._requireCurrentRunningModuleIfCurrent(this._componentDefinition.property.requireName.value);
             if (!object) {
                 throw new Error('Component is not the main module');
-            } else if (serialize) {
+            } else if (serializations) {
                 resultingRequirePath = '.' + Path.sep
                   + Path.relative(Util.getMainModulePath(), this._getCurrentRunningModuleMain());
             }
         } catch (e) {
+            if (serializations) resultingRequirePath = requireName;
             try {
                 // Always require relative from main module, because Components.js will in most cases just be dependency.
-                object = require.main.require(requireName.charAt(0) === '.'
+                object = (<Module> require.main).require(requireName.charAt(0) === '.'
                   ? Path.join(process.cwd(), requireName)
                   : requireName);
-                if (serialize) resultingRequirePath = requireName;
             } catch (e) {
                 if (this._componentRunner._properties.scanGlobal) {
                     object = require('requireg')(requireName);
@@ -205,12 +208,12 @@ export class UnnamedComponentFactory implements IComponentFactory {
             }
         }
 
-        var serialization = serialize ? 'require(\'' + resultingRequirePath.replace(/\\/g, '/') + '\')' : null;
+        var serialization = serializations ? 'require(\'' + (<string> resultingRequirePath).replace(/\\/g, '/') + '\')' : null;
 
         var subObject;
         if (this._componentDefinition.property.requireElement) {
             let requireElementPath = this._componentDefinition.property.requireElement.value.split('.');
-            if (serialize) serialization += '.' + this._componentDefinition.property.requireElement.value;
+            if (serializations) serialization += '.' + this._componentDefinition.property.requireElement.value;
             try {
                 subObject = requireElementPath.reduce((object: any, requireElement: string) => object[requireElement], object);
             } catch (e) {
@@ -231,19 +234,19 @@ export class UnnamedComponentFactory implements IComponentFactory {
                       + "\n" + NodeUtil.inspect(this._componentDefinition));
                 }
                 const args: any[] = await this.makeArguments(settings);
-                if (serialize) {
+                if (serializations) {
                     serialization = 'new (' + serialization + ')(' + args.map((arg) => JSON.stringify(arg, null, '  ').replace(/(^|[^\\])"/g, '$1')).join(',') + ')';
                 } else {
-                    object = new (Function.prototype.bind.apply(object, [{}].concat(args)));
+                    object = new (Function.prototype.bind.apply(object, <[any, ...any]> [{}].concat(args)));
                 }
             }
         }
-        if (serialize) {
+        if (serializations) {
             const serializationVariableName = Util.uriToVariableName(this._componentDefinition.value);
             serialization = 'const ' + serializationVariableName + ' = ' + serialization + ';';
-            settings.serializations.push(serialization);
+            serializations.push(serialization);
             serialization = serializationVariableName;
         }
-        return serialize ? serialization : object;
+        return serializations ? serialization : object;
     }
 }

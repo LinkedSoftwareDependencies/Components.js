@@ -9,6 +9,7 @@ import { Resource } from "rdf-object";
 import { DataFactory } from 'rdf-data-factory';
 import * as RDF from 'rdf-js';
 import { RdfObjectLoader } from 'rdf-object';
+import Module = NodeJS.Module;
 
 const globalModules: string = require('global-modules');
 const stat = NodeUtil.promisify(fs.stat);
@@ -26,8 +27,8 @@ class Util {
         'owl': 'http://www.w3.org/2002/07/owl#'
     };
     public static NODE_MODULES_PACKAGE_CONTENTS: {[id: string]: string} = {};
-    private static MAIN_MODULE_PATH: string = null;
-    private static MAIN_MODULE_PATHS: string[] = null;
+    private static MAIN_MODULE_PATH: string | undefined;
+    private static MAIN_MODULE_PATHS: string[] | undefined;
 
     public static readonly DF: DataFactory = new DataFactory<RDF.Quad>();
     public static readonly IRI_ABSTRACT_CLASS: RDF.NamedNode = Util.DF.namedNode(Util.PREFIXES['oo'] + 'AbstractClass');
@@ -214,8 +215,8 @@ class Util {
                     }
                     break;
             }
-            return value;
         }
+        return value;
 
         function incorrectType() {
             throw new Error(value.value + ' is not of type ' + param.property.range.value + ' for parameter ' + param.value);
@@ -238,7 +239,7 @@ class Util {
     }
 
     static initDefaultMainModulePath() {
-        for (let nodeModulesPath of require.main.paths) {
+        for (let nodeModulesPath of (<Module> require.main).paths) {
             let path = nodeModulesPath.replace(/node_modules$/, 'package.json');
             try {
                 require(path);
@@ -255,6 +256,9 @@ class Util {
         if (Util.MAIN_MODULE_PATH)
             return Util.MAIN_MODULE_PATH;
         Util.initDefaultMainModulePath();
+        if (!Util.MAIN_MODULE_PATH) {
+            throw new Error('Main node module path could not be found.');
+        }
         return Util.MAIN_MODULE_PATH;
     }
 
@@ -274,6 +278,9 @@ class Util {
         if (Util.MAIN_MODULE_PATHS)
             return Util.MAIN_MODULE_PATHS;
         Util.initDefaultMainModulePath();
+        if (!Util.MAIN_MODULE_PATHS) {
+            throw new Error('List of main node module paths could not be found.');
+        }
         return Util.MAIN_MODULE_PATHS;
     }
 
@@ -283,7 +290,7 @@ class Util {
      * @param cb A callback for each absolute path.
      * @param ignorePaths The paths that should be ignored.
      */
-    static getAvailableNodeModules(path: string, cb: (path: string) => any, ignorePaths?: {[key: string]: boolean}) {
+    static getAvailableNodeModules(path: string, cb: (path: string | null) => any, ignorePaths: {[key: string]: boolean} = {}) {
         if (Util.cachedAvailableNodeModules[path]) {
             Promise.resolve(Util.cachedAvailableNodeModules[path]).then((paths) => {
                 paths.forEach(cb);
@@ -292,7 +299,6 @@ class Util {
         } else {
             Util.cachedAvailableNodeModules[path] = new Promise<string[]>((resolve, reject) => {
                 const paths: string[] = [];
-                if (!ignorePaths) ignorePaths = {};
                 recurse(path, (p) => { paths.push(p), cb(p); }).then(() => {
                     resolve(paths);
                     cb(null);
@@ -391,7 +397,7 @@ class Util {
      * @return A promise resolving to a mapping of module URI to component file name
      */
     public static async getAvailableModuleComponentPaths(scanGlobal: boolean): Promise<{[id: string]: string}> {
-        let globalPath: string = scanGlobal ? globalModules : null;
+        let globalPath: string | undefined = scanGlobal ? globalModules : undefined;
         let paths: string[] = Util.getMainModulePaths();
         if (paths) {
             // Local paths can overwrite global paths
@@ -445,7 +451,7 @@ class Util {
      * @return A promise resolving to a mapping of context URL to parsed context contents
      */
     public static async getAvailableContexts(scanGlobal: boolean): Promise<{[id: string]: any}> {
-        let globalPath: string = scanGlobal ? globalModules : null;
+        let globalPath: string | undefined = scanGlobal ? globalModules : undefined;
         let paths: string[] = Util.getMainModulePaths();
         if (paths) {
             // Local paths can overwrite global paths
@@ -503,7 +509,7 @@ class Util {
      * @return A promise resolving to a mapping of an import prefix URL to an import prefix path
      */
     public static async getAvailableImportPaths(scanGlobal: boolean): Promise<{[id: string]: string}> {
-        let globalPath: string = scanGlobal ? globalModules : null;
+        let globalPath: string | undefined = scanGlobal ? globalModules : undefined;
         let paths: string[] = Util.getMainModulePaths();
         if (paths) {
             // Local paths can overwrite global paths

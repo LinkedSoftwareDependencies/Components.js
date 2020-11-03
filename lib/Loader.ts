@@ -48,14 +48,14 @@ export class Loader {
 
     public async _getContexts(): Promise<{[id: string]: any}> {
         if (!this._properties.contexts) {
-            this._properties.contexts = await Util.getAvailableContexts(this._properties.scanGlobal);
+            this._properties.contexts = await Util.getAvailableContexts(Boolean(this._properties.scanGlobal));
         }
         return this._properties.contexts;
     }
 
     public async _getImportPaths(): Promise<{[id: string]: string}> {
         if (!this._properties.importPaths) {
-            this._properties.importPaths = await Util.getAvailableImportPaths(this._properties.scanGlobal);
+            this._properties.importPaths = await Util.getAvailableImportPaths(Boolean(this._properties.scanGlobal));
         }
         return this._properties.importPaths;
     }
@@ -133,6 +133,9 @@ export class Loader {
      */
     _inheritConstructorParameters(componentResource: Resource) {
         if (componentResource.property.constructorArguments) {
+            if (!componentResource.property.constructorArguments.list) {
+                throw new Error(`Detected invalid constructor arguments for component "${componentResource.value}": arguments are not an RDF list.`);
+            }
             componentResource.property.constructorArguments.list.forEach((object: Resource) => {
                 if (object.property.inheritValues) {
                     this._inheritObjectFields(object, object.properties.inheritValues);
@@ -231,7 +234,7 @@ export class Loader {
      * @returns {Promise<T>} A promise that resolves once loading has finished.
      */
     public async registerAvailableModuleResources(): Promise<void> {
-        const data = Util.getAvailableModuleComponentPaths(this._properties.scanGlobal);
+        const data = Util.getAvailableModuleComponentPaths(Boolean(this._properties.scanGlobal));
         await Promise.all(Object.values(data)
           .map((moduleResourceUrl: string) => this.registerModuleResourcesUrl(moduleResourceUrl)));
     }
@@ -262,9 +265,9 @@ export class Loader {
                 + configResource.toString() + '\nAll available usable types: [\n'
                 + Object.keys(this._componentResources).join(',\n') + '\n]');
         }
-        let componentResource: Resource;
-        let moduleResource: Resource;
-        if (componentTypes.length) {
+        let componentResource: Resource | undefined;
+        let moduleResource: Resource | undefined;
+        if (componentTypes.length > 0) {
             componentResource = componentTypes[0];
             moduleResource = componentResource.property.module;
             if (!moduleResource) {
