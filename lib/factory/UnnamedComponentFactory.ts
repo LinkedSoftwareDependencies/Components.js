@@ -1,9 +1,9 @@
-import { Resource } from "rdf-object";
-import {IComponentFactory, ICreationSettings} from "./IComponentFactory";
-import {Loader} from "../Loader";
-import * as Path from "path";
+import * as Path from 'path';
 import NodeUtil = require('util');
-import Util = require("../Util");
+import type { Resource } from 'rdf-object';
+import { Loader } from '../Loader';
+import Util = require('../Util');
+import type { IComponentFactory, ICreationSettings } from './IComponentFactory';
 import Dict = NodeJS.Dict;
 import Module = NodeJS.Module;
 
@@ -11,242 +11,256 @@ import Module = NodeJS.Module;
  * Factory for component definitions with explicit arguments.
  */
 export class UnnamedComponentFactory implements IComponentFactory {
+  protected readonly componentDefinition: Resource;
+  protected readonly constructable: boolean;
+  protected readonly overrideRequireNames: Dict<string>;
+  protected readonly componentRunner: Loader;
 
-    _componentDefinition: Resource;
-    _constructable: boolean;
-    _overrideRequireNames: Dict<string>;
-    _componentRunner: Loader;
+  public constructor(
+    componentDefinition: Resource,
+    constructable: boolean,
+    overrideRequireNames: Record<string, string>,
+    componentRunner: Loader,
+  ) {
+    this.componentDefinition = componentDefinition;
+    this.constructable = constructable;
+    this.overrideRequireNames = overrideRequireNames || {};
+    this.componentRunner = componentRunner || new Loader();
 
-    constructor(componentDefinition: Resource, constructable: boolean, overrideRequireNames: {[id: string]: string},
-                componentRunner: Loader) {
-        this._componentDefinition = componentDefinition;
-        this._constructable = constructable;
-        this._overrideRequireNames = overrideRequireNames || {};
-        this._componentRunner = componentRunner || new Loader();
+    // Validate params
+    this.validateParam(this.componentDefinition, 'requireName', 'Literal');
+    this.validateParam(this.componentDefinition, 'requireElement', 'Literal', true);
+    this.validateParam(this.componentDefinition, 'requireNoConstructor', 'Literal', true);
+  }
 
-        // Validate params
-        this._validateParam(this._componentDefinition, 'requireName', 'Literal');
-        this._validateParam(this._componentDefinition, 'requireElement', 'Literal', true);
-        this._validateParam(this._componentDefinition, 'requireNoConstructor', 'Literal', true);
+  public validateParam(resource: Resource, field: string, type: string, optional?: boolean): void {
+    if (!resource.property[field]) {
+      if (!optional) {
+        throw new Error(`Expected ${field} to exist in ${NodeUtil.inspect(resource)}`);
+      } else {
+        return;
+      }
+    }
+    if (resource.property[field].type !== type) {
+      throw new Error(`Expected ${field} in ${NodeUtil.inspect(resource)} to be of type ${type}`);
+    }
+  }
+
+  public static async getArgumentValue(
+    value: Resource | Resource[],
+    componentRunner: Loader,
+    settings: ICreationSettings = {},
+  ): Promise<any> {
+    if (Array.isArray(value)) {
+      // Unwrap unique values out of the array
+      if (value[0].property.unique && value[0].property.unique.value === 'true') {
+        return UnnamedComponentFactory.getArgumentValue(value[0], componentRunner, settings);
+      }
+      // Otherwise, keep the array form
+      return await Promise.all(value
+        .map(element => UnnamedComponentFactory.getArgumentValue(element, componentRunner, settings)));
+    }
+    // HasFields is a hack for making UnmappedNamedComponentFactory work
+    if (value.property.fields || value.property.hasFields) {
+      // The parameter is an object
+      const entries = await Promise.all(value.properties.fields.map(async(entry: Resource) => {
+        if (!entry.property.key) {
+          throw new Error(`Parameter object entries must have keys, but found: ${NodeUtil.inspect(entry)}`);
+        }
+        if (entry.property.key.type !== 'Literal') {
+          throw new Error(`Parameter object keys must be literals, but found type ${entry.property.key.type} for ${entry.property.key.value} while constructing: ${NodeUtil.inspect(value)}`);
+        }
+        if (entry.property.value) {
+          const subValue = await UnnamedComponentFactory
+            .getArgumentValue(entry.properties.value, componentRunner, settings);
+          return { key: entry.property.key.value, value: subValue };
+        }
+        // TODO: only throw an error if the parameter is required
+        // return Promise.reject(
+        // new Error('Parameter object entries must have values, but found: ' + JSON.stringify(entry, null, '  ')));
+        return null;
+      }));
+      return entries.reduce((data: any, entry: any) => {
+        if (entry) {
+          if (settings.serializations) {
+            entry.key = `'${entry.key}'`;
+          }
+          data[entry.key] = entry.value;
+        }
+        return data;
+      }, {});
+    }
+    if (value.property.elements) {
+      // The parameter is a dynamic array
+      const elements = await Promise.all(value.properties.elements.map(async(entry: Resource) => {
+        if (!entry.property.value) {
+          throw new Error(`Parameter array elements must have values, but found: ${NodeUtil.inspect(entry)}`);
+        } else {
+          return await UnnamedComponentFactory.getArgumentValue(entry.property.value, componentRunner, settings);
+        }
+      }));
+      let ret: any[] = [];
+      elements.forEach(element => {
+        if (Array.isArray(element)) {
+          ret = ret.concat(element);
+        } else {
+          ret.push(element);
+        }
+      });
+      return ret;
+    }
+    if (value.type === 'NamedNode' || value.type === 'BlankNode') {
+      if (value.property.value) {
+        return await UnnamedComponentFactory.getArgumentValue(value.properties.value, componentRunner, settings);
+      }
+      if (settings.shallow) {
+        return {};
+      }
+      if (value.property.lazy && value.property.lazy.value === 'true') {
+        return () => componentRunner.instantiate(value, settings);
+      }
+      return await componentRunner.instantiate(value, settings);
+    }
+    if (value.type === 'Literal') {
+      // ValueRaw can be set in Util.captureType
+      // TODO: improve this, so that the hacked valueRaw is not needed
+      const rawValue: any = 'valueRaw' in value.term ? (<any> value.term).valueRaw : value.value;
+      if (value.property.lazy && value.property.lazy.value === 'true') {
+        if (settings.serializations && typeof value.value === 'string') {
+          return `new function() { return Promise.resolve('${rawValue}'); }`;
+        }
+        return () => Promise.resolve(rawValue);
+      }
+      if (settings.serializations && typeof rawValue === 'string') {
+        return `'${rawValue}'`;
+      }
+      return rawValue;
+    }
+    throw new Error(`An invalid argument value was found:${NodeUtil.inspect(value)}`);
+  }
+
+  /**
+   * @param settings The settings for creating the instance.
+   * @returns New instantiations of the provided arguments.
+   */
+  public async makeArguments(settings?: ICreationSettings): Promise<any[]> {
+    if (this.componentDefinition.property.arguments) {
+      if (!this.componentDefinition.property.arguments.list) {
+        throw new Error(`Detected invalid arguments for component "${this.componentDefinition.value}": arguments are not an RDF list.`);
+      }
+      return await Promise.all(this.componentDefinition.property.arguments.list
+        .map((resource: Resource) => resource ?
+          UnnamedComponentFactory.getArgumentValue(resource, this.componentRunner, settings) :
+          undefined));
+    }
+    return [];
+  }
+
+  /**
+   * Require a package if the module that was invoked has the given module name.
+   * This is done by looking for the nearest package.json.
+   * @param requireName The module name that should be required.
+   * @returns {any} The require() result
+   */
+  public requireCurrentRunningModuleIfCurrent(requireName: string): void {
+    const path: string = Util.getMainModulePath();
+    const pckg: any = Util.getPackageJson(Path.join(path, 'package.json'));
+    if (pckg) {
+      if (requireName === pckg.name) {
+        const mainPath: string = Path.join(path, pckg.main);
+        return require(mainPath);
+      }
+    }
+  }
+
+  /**
+   * @return {string} The index module path of the current running module.
+   * @private
+   */
+  protected _getCurrentRunningModuleMain(): string {
+    const path: string = Util.getMainModulePath();
+    const pckg: any = Util.getPackageJson(Path.join(path, 'package.json'));
+    return Path.join(path, pckg.main);
+  }
+
+  /**
+   * @param settings The settings for creating the instance.
+   * @returns A new instance of the component.
+   */
+  public async create(settings?: ICreationSettings): Promise<any> {
+    settings = settings || {};
+    const serializations: string[] | undefined = settings.serializations;
+    let requireName: string = this.componentDefinition.property.requireName.value;
+    requireName = this.overrideRequireNames[requireName] || requireName;
+    let object: any = null;
+    let resultingRequirePath: string | undefined;
+    try {
+      object = this.requireCurrentRunningModuleIfCurrent(this.componentDefinition.property.requireName.value);
+      if (!object) {
+        throw new Error('Component is not the main module');
+      } else if (serializations) {
+        resultingRequirePath = `.${Path.sep
+        }${Path.relative(Util.getMainModulePath(), this._getCurrentRunningModuleMain())}`;
+      }
+    } catch {
+      if (serializations) {
+        resultingRequirePath = requireName;
+      }
+      try {
+        // Always require relative from main module, because Components.js will in most cases just be dependency.
+        object = (<Module> require.main).require(requireName.startsWith('.') ?
+          Path.join(process.cwd(), requireName) :
+          requireName);
+      } catch (error: unknown) {
+        if (this.componentRunner.properties.scanGlobal) {
+          object = require('requireg')(requireName);
+        } else {
+          throw error;
+        }
+      }
     }
 
-    _validateParam(resource: Resource, field: string, type: string, optional?: boolean) {
-        if (!resource.property[field]) {
-            if (!optional) {
-                throw new Error('Expected ' + field + ' to exist in ' + NodeUtil.inspect(resource));
-            } else {
-                return;
-            }
-        }
-        if (resource.property[field].type !== type) {
-            throw new Error('Expected ' + field + ' in ' + NodeUtil.inspect(resource) + ' to be of type ' + type);
-        }
+    let serialization = serializations ? `require('${(<string> resultingRequirePath).replace(/\\/gu, '/')}')` : null;
+
+    let subObject;
+    if (this.componentDefinition.property.requireElement) {
+      const requireElementPath = this.componentDefinition.property.requireElement.value.split('.');
+      if (serializations) {
+        serialization += `.${this.componentDefinition.property.requireElement.value}`;
+      }
+      try {
+        subObject = requireElementPath.reduce((acc: any, requireElement: string) => acc[requireElement], object);
+      } catch {
+        throw new Error(`Failed to get module element ${this.componentDefinition.property.requireElement.value} from module ${requireName}`);
+      }
+    } else {
+      subObject = object;
     }
-
-    public static async getArgumentValue(value: Resource | Resource[], componentRunner: Loader, settings: ICreationSettings = {}): Promise<any> {
-        if (value instanceof Array) {
-            // Unwrap unique values out of the array
-            if (value[0].property.unique && value[0].property.unique.value === 'true') {
-                return UnnamedComponentFactory.getArgumentValue(value[0], componentRunner, settings);
-            }
-            // Otherwise, keep the array form
-            return await Promise.all(value.map((element) => UnnamedComponentFactory.getArgumentValue(element, componentRunner, settings)));
-        } else if (value.property.fields || value.property.hasFields) { // hasFields is a hack for making UnmappedNamedComponentFactory work
-            // The parameter is an object
-            const entries = await Promise.all(value.properties.fields.map(async (entry: Resource) => {
-                if (!entry.property.key) {
-                    throw new Error('Parameter object entries must have keys, but found: ' + NodeUtil.inspect(entry));
-                }
-                if (entry.property.key.type !== 'Literal') {
-                    throw new Error('Parameter object keys must be literals, but found type ' + entry.property.key.type
-                      + ' for ' + entry.property.key.value + ' while constructing: ' + NodeUtil.inspect(value));
-                }
-                if (entry.property.value) {
-                    const v = await UnnamedComponentFactory.getArgumentValue(entry.properties.value, componentRunner, settings)
-                    return { key: entry.property.key.value, value: v };
-                } else {
-                    // TODO: only throw an error if the parameter is required
-                    //return Promise.reject(new Error('Parameter object entries must have values, but found: ' + JSON.stringify(entry, null, '  ')));
-                    return null;
-                }
-            }));
-            return entries.reduce((data: any, entry: any) => {
-                if (entry) {
-                    if (settings.serializations) {
-                        entry.key = '\'' + entry.key + '\'';
-                    }
-                    data[entry.key] = entry.value;
-                }
-                return data;
-            }, {});
-        } else if (value.property.elements) {
-            // The parameter is a dynamic array
-            const elements = await Promise.all(value.properties.elements.map(async (entry: Resource) => {
-                if (!entry.property.value) {
-                    throw new Error('Parameter array elements must have values, but found: ' + NodeUtil.inspect(entry));
-                } else {
-                    return await UnnamedComponentFactory.getArgumentValue(entry.property.value, componentRunner, settings);
-                }
-            }));
-            var ret: any[] = [];
-            elements.forEach((element) => {
-                if (element instanceof Array) {
-                    ret = ret.concat(element);
-                } else {
-                    ret.push(element);
-                }
-            });
-            return ret;
-        } else if (value.type === 'NamedNode' || value.type === 'BlankNode') {
-            if (value.property.value) {
-                return await UnnamedComponentFactory.getArgumentValue(value.properties.value, componentRunner, settings);
-            }
-            if (settings.shallow) {
-                return {};
-            }
-            if (value.property.lazy && value.property.lazy.value === 'true') {
-                return () => componentRunner.instantiate(value, settings);
-            } else {
-                return await componentRunner.instantiate(value, settings);
-            }
-        } else if (value.type === 'Literal') {
-            // valueRaw can be set in Util.captureType
-            // TODO: improve this, so that the hacked valueRaw is not needed
-            const rawValue: any = 'valueRaw' in value.term ? (<any> value.term).valueRaw : value.value;
-            if (value.property.lazy && value.property.lazy.value === 'true') {
-                if (settings.serializations && typeof value.value === 'string') {
-                    return 'new function() { return Promise.resolve(\'' + rawValue + '\'); }';
-                } else {
-                    return () => Promise.resolve(rawValue);
-                }
-            } else {
-                if (settings.serializations && typeof rawValue === 'string') {
-                    return '\'' + rawValue + '\'';
-                } else {
-                    return rawValue;
-                }
-            }
-        }
-        throw new Error('An invalid argument value was found:' + NodeUtil.inspect(value));
+    if (!subObject) {
+      throw new Error(`Failed to get module element ${this.componentDefinition.property.requireElement.value} from module ${requireName}`);
     }
-
-    /**
-     * @param settings The settings for creating the instance.
-     * @returns New instantiations of the provided arguments.
-     */
-    public async makeArguments(settings?: ICreationSettings): Promise<any[]> {
-        if (this._componentDefinition.property.arguments) {
-            if (!this._componentDefinition.property.arguments.list) {
-                throw new Error(`Detected invalid arguments for component "${this._componentDefinition.value}": arguments are not an RDF list.`);
-            }
-            return await Promise.all(this._componentDefinition.property.arguments.list
-              .map((resource: Resource) => resource ? UnnamedComponentFactory.getArgumentValue(resource, this._componentRunner, settings) : undefined));
+    object = subObject;
+    if (!this.componentDefinition.property.requireNoConstructor ||
+      this.componentDefinition.property.requireNoConstructor.value !== 'true') {
+      if (this.constructable) {
+        if (!(object instanceof Function)) {
+          throw new Error(`ConstructableComponent is not a function: ${NodeUtil.inspect(object)
+          }\n${NodeUtil.inspect(this.componentDefinition)}`);
         }
-        return [];
-    }
-
-    /**
-     * Require a package if the module that was invoked has the given module name.
-     * This is done by looking for the nearest package.json.
-     * @param requireName The module name that should be required.
-     * @returns {any} The require() result
-     * @private
-     */
-    _requireCurrentRunningModuleIfCurrent(requireName: string) {
-        let path: string = Util.getMainModulePath();
-        let pckg: any = Util.getPackageJson(Path.join(path, 'package.json'));
-        if (pckg) {
-            if (requireName === pckg.name) {
-                let mainPath: string = Path.join(path, pckg.main);
-                return require(mainPath);
-            }
-        }
-    }
-
-    /**
-     * @return {string} The index module path of the current running module.
-     * @private
-     */
-    _getCurrentRunningModuleMain(): string {
-        let path: string = Util.getMainModulePath();
-        let pckg: any = Util.getPackageJson(Path.join(path, 'package.json'));
-        return Path.join(path, pckg.main);
-    }
-
-    /**
-     * @param settings The settings for creating the instance.
-     * @returns A new instance of the component.
-     */
-    public async create(settings?: ICreationSettings): Promise<any> {
-        settings = settings || {};
-        const serializations: string[] | undefined = settings.serializations;
-        let requireName: string = this._componentDefinition.property.requireName.value;
-        requireName = this._overrideRequireNames[requireName] || requireName;
-        let object: any = null;
-        let resultingRequirePath: string | undefined;
-        try {
-            object = this._requireCurrentRunningModuleIfCurrent(this._componentDefinition.property.requireName.value);
-            if (!object) {
-                throw new Error('Component is not the main module');
-            } else if (serializations) {
-                resultingRequirePath = '.' + Path.sep
-                  + Path.relative(Util.getMainModulePath(), this._getCurrentRunningModuleMain());
-            }
-        } catch (e) {
-            if (serializations) resultingRequirePath = requireName;
-            try {
-                // Always require relative from main module, because Components.js will in most cases just be dependency.
-                object = (<Module> require.main).require(requireName.charAt(0) === '.'
-                  ? Path.join(process.cwd(), requireName)
-                  : requireName);
-            } catch (e) {
-                if (this._componentRunner._properties.scanGlobal) {
-                    object = require('requireg')(requireName);
-                } else {
-                    throw e;
-                }
-            }
-        }
-
-        var serialization = serializations ? 'require(\'' + (<string> resultingRequirePath).replace(/\\/g, '/') + '\')' : null;
-
-        var subObject;
-        if (this._componentDefinition.property.requireElement) {
-            let requireElementPath = this._componentDefinition.property.requireElement.value.split('.');
-            if (serializations) serialization += '.' + this._componentDefinition.property.requireElement.value;
-            try {
-                subObject = requireElementPath.reduce((object: any, requireElement: string) => object[requireElement], object);
-            } catch (e) {
-                throw new Error('Failed to get module element ' + this._componentDefinition.property.requireElement.value + ' from module ' + requireName);
-            }
-        }
-        else {
-            subObject = object;
-        }
-        if (!subObject) {
-            throw new Error('Failed to get module element ' + this._componentDefinition.property.requireElement.value + ' from module ' + requireName);
-        }
-        object = subObject;
-        if (!this._componentDefinition.property.requireNoConstructor || this._componentDefinition.property.requireNoConstructor.value !== 'true') {
-            if (this._constructable) {
-                if (!(object instanceof Function)) {
-                    throw new Error('ConstructableComponent is not a function: ' + NodeUtil.inspect(object)
-                      + "\n" + NodeUtil.inspect(this._componentDefinition));
-                }
-                const args: any[] = await this.makeArguments(settings);
-                if (serializations) {
-                    serialization = 'new (' + serialization + ')(' + args.map((arg) => JSON.stringify(arg, null, '  ').replace(/(^|[^\\])"/g, '$1')).join(',') + ')';
-                } else {
-                    object = new (Function.prototype.bind.apply(object, <[any, ...any]> [{}].concat(args)));
-                }
-            }
-        }
+        const args: any[] = await this.makeArguments(settings);
         if (serializations) {
-            const serializationVariableName = Util.uriToVariableName(this._componentDefinition.value);
-            serialization = 'const ' + serializationVariableName + ' = ' + serialization + ';';
-            serializations.push(serialization);
-            serialization = serializationVariableName;
+          serialization = `new (${serialization})(${args.map(arg => JSON.stringify(arg, null, '  ').replace(/(^|[^\\])"/gu, '$1')).join(',')})`;
+        } else {
+          object = new (Function.prototype.bind.apply(object, <[any, ...any]> [{}].concat(args)))();
         }
-        return serializations ? serialization : object;
+      }
     }
+    if (serializations) {
+      const serializationVariableName = Util.uriToVariableName(this.componentDefinition.value);
+      serialization = `const ${serializationVariableName} = ${serialization};`;
+      serializations.push(serialization);
+      serialization = serializationVariableName;
+    }
+    return serializations ? serialization : object;
+  }
 }

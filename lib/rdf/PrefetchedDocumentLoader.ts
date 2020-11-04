@@ -1,16 +1,17 @@
-import { FetchDocumentLoader, IJsonLdContext } from 'jsonld-context-parser';
 import * as fs from 'fs';
+import type { IJsonLdContext } from 'jsonld-context-parser';
+import { FetchDocumentLoader } from 'jsonld-context-parser';
 
 export class PrefetchedDocumentLoader extends FetchDocumentLoader {
-
-  private static readonly DEFAULT_CONTEXTS: {[url: string]: any} = {
+  private static readonly DEFAULT_CONTEXTS: Record<string, any> = {
     'https://linkedsoftwaredependencies.org/bundles/npm/componentsjs/^3.0.0/components/context.jsonld':
-      JSON.parse(fs.readFileSync(__dirname + '/../../components/context.jsonld', 'utf8'))
+    // eslint-disable-next-line no-sync
+      JSON.parse(fs.readFileSync(`${__dirname}/../../components/context.jsonld`, 'utf8')),
   };
 
-  private readonly contexts: {[id: string]: any};
+  private readonly contexts: Record<string, any>;
 
-  public constructor(contexts: {[id: string]: any}) {
+  public constructor(contexts: Record<string, any>) {
     super();
     this.contexts = { ...contexts, ...PrefetchedDocumentLoader.DEFAULT_CONTEXTS };
   }
@@ -18,8 +19,7 @@ export class PrefetchedDocumentLoader extends FetchDocumentLoader {
   public async load(url: string): Promise<IJsonLdContext> {
     if (url in this.contexts) {
       return this.contexts[url];
-    } else {
-      return super.load(url);
     }
+    return super.load(url);
   }
 }

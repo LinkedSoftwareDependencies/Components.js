@@ -1,20 +1,28 @@
-import {UnnamedComponentFactory} from "./UnnamedComponentFactory";
-import { Resource } from "rdf-object";
-import {Loader} from "../Loader";
-import Util = require("../Util");
-import { RdfObjectLoader } from 'rdf-object/index';
+import type { Resource, RdfObjectLoader } from 'rdf-object';
+import type { Loader } from '../Loader';
+import Util = require('../Util');
+import { UnnamedComponentFactory } from './UnnamedComponentFactory';
 
 /**
  * Factory for component definitions with semantic arguments and without constructor mappings.
  */
 export class UnmappedNamedComponentFactory extends UnnamedComponentFactory {
+  public constructor(
+    moduleDefinition: Resource,
+    componentDefinition: Resource,
+    config: Resource,
+    constructable: boolean,
+    overrideRequireNames: Record<string, string>,
+    componentRunner: Loader,
+  ) {
+    super(UnmappedNamedComponentFactory.makeUnnamedDefinitionConstructor(
+      moduleDefinition,
+      componentDefinition,
+      componentRunner.objectLoader,
+    )(config), constructable, overrideRequireNames, componentRunner);
+  }
 
-    constructor(moduleDefinition: Resource, componentDefinition: Resource, config: Resource, constructable: boolean,
-                overrideRequireNames: {[id: string]: string}, componentRunner: Loader) {
-        super(UnmappedNamedComponentFactory.makeUnnamedDefinitionConstructor(moduleDefinition, componentDefinition, componentRunner.objectLoader)(config), constructable, overrideRequireNames, componentRunner);
-    }
-
-    /**
+  /**
      * Create an unnamed component definition resource constructor.
      * The component definition's parameters will be delegated to the component constructor.
      * @param moduleDefinition The module definition with parameter definitions.
@@ -24,31 +32,35 @@ export class UnmappedNamedComponentFactory extends UnnamedComponentFactory {
      *                                   like { 'http://example.org/param0': Resource.newString('abc') }
      *                                   and returns an unnamed component definition resource.
      */
-    static makeUnnamedDefinitionConstructor(moduleDefinition: Resource, componentDefinition: Resource, objectLoader: RdfObjectLoader): ((params: Resource) => Resource) {
-        return ((params: Resource) => {
-            const param0 = objectLoader.createCompactedResource({
-                // Hack to make UnnamedComponentFactory.getArgumentValue go into fields branch
-                hasFields: '"true"',
-            });
-            for (const fieldData of componentDefinition.properties.parameters) {
-                const field = objectLoader.createCompactedResource({});
-                field.property.key = objectLoader.createCompactedResource(`"${fieldData.term.value}"`);
-                for (const value of Util.applyParameterValues(componentDefinition, fieldData, params, objectLoader)) {
-                    field.properties.value.push(value);
-                }
-                param0.properties.fields.push(field);
-            }
+  public static makeUnnamedDefinitionConstructor(
+    moduleDefinition: Resource,
+    componentDefinition: Resource,
+    objectLoader: RdfObjectLoader,
+  ): ((params: Resource) => Resource) {
+    return (params: Resource) => {
+      const param0 = objectLoader.createCompactedResource({
+        // Hack to make UnnamedComponentFactory.getArgumentValue go into fields branch
+        hasFields: '"true"',
+      });
+      for (const fieldData of componentDefinition.properties.parameters) {
+        const field = objectLoader.createCompactedResource({});
+        field.property.key = objectLoader.createCompactedResource(`"${fieldData.term.value}"`);
+        for (const value of Util.applyParameterValues(componentDefinition, fieldData, params, objectLoader)) {
+          field.properties.value.push(value);
+        }
+        param0.properties.fields.push(field);
+      }
 
-            const args = objectLoader.createCompactedResource({});
-            args.list = [ param0 ];
+      const args = objectLoader.createCompactedResource({});
+      args.list = [ param0 ];
 
-            const constructor = objectLoader.createCompactedResource({});
-            constructor.property.requireName = moduleDefinition.property.requireName || componentDefinition.property.requireName;
-            constructor.property.requireElement = componentDefinition.property.requireElement;
-            constructor.property.arguments = args;
+      const constructor = objectLoader.createCompactedResource({});
+      constructor.property.requireName = moduleDefinition.property.requireName ||
+        componentDefinition.property.requireName;
+      constructor.property.requireElement = componentDefinition.property.requireElement;
+      constructor.property.arguments = args;
 
-            return constructor;
-        });
-    }
-
+      return constructor;
+    };
+  }
 }

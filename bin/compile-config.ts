@@ -1,17 +1,17 @@
 #!/usr/bin/env node
-// Compiles a configuration to a module (single file) that exports the instantiated instance, where all dependencies are injected.
+// Compiles a configuration to a module (single file) that exports the instantiated instance,
+// where all dependencies are injected.
 
-import { Readable, Stream } from "stream";
-
-import {ParsedArgs} from "minimist";
+import * as fs from 'fs';
+import * as Path from 'path';
+import type { Readable } from 'stream';
+import type { ParsedArgs } from 'minimist';
 import minimist = require('minimist');
-import * as fs from "fs";
-import * as Path from "path";
-import {compileConfig} from "../index"
+import { compileConfig } from '..';
 
 const args: ParsedArgs = minimist(process.argv.slice(2));
 if (args._.length !== 1 || args.h || args.help) {
-    console.error(`compile-config compiles a Components.js config file to a JavaScript module
+  process.stderr.write(`compile-config compiles a Components.js config file to a JavaScript module
 
 Usage:
   compile-config http://example.org/myInstance -c config.jsonld
@@ -24,8 +24,8 @@ Options:
   -e      The instance by config URI that will be exported, by default this is the provided instance URI.
   -f      If the exported instance should be exposed as a function, which accepts an optional hash of variables.
   --help  print this help message
-      `);
-    process.exit(1);
+`);
+  process.exit(1);
 }
 
 const configResourceUri: string = args._[0];
@@ -33,31 +33,34 @@ const configResourceUri: string = args._[0];
 let configStreamRaw: Readable;
 let configPath: string;
 if (args.c) {
-    configStreamRaw = fs.createReadStream(args.c, { encoding: 'utf8' });
-    configPath = args.c;
+  configStreamRaw = fs.createReadStream(args.c, { encoding: 'utf8' });
+  configPath = args.c;
 } else {
-    configStreamRaw = process.stdin;
-    configPath = '.';
+  configStreamRaw = process.stdin;
+  configPath = '.';
 }
 
-let mainModulePath: string;
-if (args.p) {
-    mainModulePath = Path.resolve(process.cwd(), args.p);
-} else {
-    mainModulePath = process.cwd();
-}
+const mainModulePath: string = args.p ? Path.resolve(process.cwd(), args.p) : process.cwd();
 
 let exportVariableName: string | undefined;
 if (args.e) {
-    exportVariableName = args.e;
+  exportVariableName = args.e;
 }
 
-const scanGlobal: boolean = !!args.g;
+const scanGlobal = !!args.g;
 
-const asFunction: boolean = !!args.f;
+const asFunction = !!args.f;
 
-compileConfig({ mainModulePath, scanGlobal }, configPath, configStreamRaw, configResourceUri,
-    exportVariableName, asFunction).then(console.log).catch((e) => {
-        console.error(e);
-        process.exit(1);
-      });
+compileConfig(
+  { mainModulePath, scanGlobal },
+  configPath,
+  configStreamRaw,
+  configResourceUri,
+  exportVariableName,
+  asFunction,
+)
+  .then((output: string) => process.stdout.write(`${output}\n`))
+  .catch(error => {
+    process.stderr.write(error);
+    process.exit(1);
+  });
