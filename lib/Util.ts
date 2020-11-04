@@ -79,6 +79,31 @@ export function getContentsFromUrlOrPath(path: string, fromPath?: string): Promi
 }
 
 /**
+ * Convert the given resource to a compact string.
+ * Mainly used for error reporting.
+ *
+ * Note that this will remove certain fields from the resource,
+ * so only use this when throwing an error that will stop the process.
+ *
+ * @param resource A resource.
+ */
+export function resourceToString(resource: Resource): string {
+  delete (<any> resource).predicates;
+  delete (<any> resource).propertiesUri;
+  delete (<any> resource).property;
+  return NodeUtil.inspect(resource, { colors: true, depth: 2 });
+}
+
+/**
+ * Convert the term value of the given resource to a compacted term based on the object loader's context.
+ * @param resource A resource.
+ * @param objectLoader An object loader.
+ */
+export function resourceIdToString(resource: Resource, objectLoader: RdfObjectLoader): string {
+  return objectLoader.contextResolved.compactIri(resource.value);
+}
+
+/**
  * Apply parameter values for the given parameter.
  * @param resourceScope The resource scope to map in.
  * @param param A parameter type.
@@ -97,11 +122,11 @@ export function applyParameterValues(
   if (value.length === 0 && param.property.defaultScoped) {
     param.properties.defaultScoped.forEach((scoped: Resource) => {
       if (!scoped.property.defaultScope) {
-        throw new Error(`Missing required oo:defaultScope value for a default scope.\n${NodeUtil.inspect(param)}`);
+        throw new Error(`Missing required oo:defaultScope value for a default scope.\n${resourceToString(param)}`);
       }
       scoped.properties.defaultScope.forEach((scope: Resource) => {
         if (!scoped.property.defaultScopedValue) {
-          throw new Error(`Missing required oo:defaultScopedValue value for a default scope.\n${NodeUtil.inspect(param)}`);
+          throw new Error(`Missing required oo:defaultScopedValue value for a default scope.\n${resourceToString(param)}`);
         }
         if (resourceScope.isA(scope.term)) {
           value = scoped.properties.defaultScopedValue;
@@ -114,7 +139,8 @@ export function applyParameterValues(
     value = param.properties.default;
   }
   if (value.length === 0 && param.property.required) {
-    throw new Error(`Parameter ${param.value} is required, but no value for it has been set in ${paramValueMapping.value}.\n${NodeUtil.inspect(paramValueMapping)}`);
+    throw new Error(`Parameter ${resourceIdToString(param, objectLoader)} is required, but no value for it has been set in ${resourceIdToString(paramValueMapping, objectLoader)}.
+${resourceToString(paramValueMapping)}`);
   }
 
   // Force-add fixed parameter values
@@ -122,14 +148,14 @@ export function applyParameterValues(
     // If the parameter value must be unique and a value has already been set, crash
     if (param.property.unique) {
       if (value.length > 0) {
-        throw new Error(`A parameter is unique, has a fixed value, but also has another defined value.\n${NodeUtil.inspect(param)}`);
+        throw new Error(`A parameter is unique, has a fixed value, but also has another defined value.\n${resourceToString(param)}`);
       } else {
         value = param.properties.fixed;
       }
     } else {
       // Otherwise, add to the value
       if (!Array.isArray(value)) {
-        throw new Error(`Values must be an array\n${NodeUtil.inspect(param)}`);
+        throw new Error(`Values must be an array\n${resourceToString(param)}`);
       }
       param.properties.fixed.forEach((fixed: Resource) => value.push(fixed));
     }
@@ -163,7 +189,7 @@ export function applyParameterValues(
 
   // If a param range is defined, apply the type and validate the range.
   if (param.property.range) {
-    value.forEach(subValue => captureType(subValue, param));
+    value.forEach(subValue => captureType(subValue, param, objectLoader));
   }
 
   // If the parameter is marked as lazy,
@@ -184,8 +210,9 @@ export function applyParameterValues(
  * Will be ignored if the value is not a literal or the type is not recognized.
  * @param value The value.
  * @param param The parameter.
+ * @param objectLoader The object loader.
  */
-export function captureType(value: Resource, param: Resource): Resource {
+export function captureType(value: Resource, param: Resource, objectLoader: RdfObjectLoader): Resource {
   if (value.type === 'Literal') {
     let parsed;
     switch (param.property.range.value) {
@@ -229,7 +256,7 @@ export function captureType(value: Resource, param: Resource): Resource {
   return value;
 
   function incorrectType(): void {
-    throw new Error(`${value.value} is not of type ${param.property.range.value} for parameter ${param.value}`);
+    throw new Error(`${value.value} is not of type ${param.property.range.value} for parameter ${resourceIdToString(param, objectLoader)}`);
   }
 }
 

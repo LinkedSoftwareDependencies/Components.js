@@ -11,20 +11,20 @@ export class ComponentFactory implements IComponentFactory {
   protected readonly componentDefinition: Resource | undefined;
   protected readonly config: Resource;
   protected readonly overrideRequireNames: Record<string, string>;
-  protected readonly componentRunner: Loader;
+  protected readonly loader: Loader;
 
   public constructor(
     moduleDefinition: Resource | undefined,
     componentDefinition: Resource | undefined,
     config: Resource,
     overrideRequireNames: Record<string, string>,
-    componentRunner: Loader,
+    loader: Loader,
   ) {
     this.moduleDefinition = moduleDefinition;
     this.componentDefinition = componentDefinition;
     this.config = config;
     this.overrideRequireNames = overrideRequireNames;
-    this.componentRunner = componentRunner;
+    this.loader = loader;
   }
 
   public _getComponentFactory(): IComponentFactory {
@@ -41,7 +41,7 @@ export class ComponentFactory implements IComponentFactory {
           this.config,
           constructable,
           this.overrideRequireNames,
-          this.componentRunner,
+          this.loader,
         );
       }
 
@@ -52,7 +52,7 @@ export class ComponentFactory implements IComponentFactory {
         this.config,
         constructable,
         this.overrideRequireNames,
-        this.componentRunner,
+        this.loader,
       );
     }
 
@@ -60,7 +60,7 @@ export class ComponentFactory implements IComponentFactory {
     return new (require('./UnnamedComponentFactory').UnnamedComponentFactory)(this.config,
       !this.config.isA(Util.DF.namedNode(`${Util.PREFIXES.oo}ComponentInstance`)),
       this.overrideRequireNames,
-      this.componentRunner);
+      this.loader);
   }
 
   public makeArguments(settings?: ICreationSettings): Promise<any[]> {

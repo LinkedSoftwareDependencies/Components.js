@@ -1,8 +1,8 @@
-import NodeUtil = require('util');
 import type { Resource } from 'rdf-object';
 import type { RdfObjectLoader } from 'rdf-object/lib/RdfObjectLoader';
 import type { Loader } from '../Loader';
 import Util = require('../Util');
+import { resourceIdToString, resourceToString } from '../Util';
 import { UnnamedComponentFactory } from './UnnamedComponentFactory';
 
 /**
@@ -15,14 +15,14 @@ export class MappedNamedComponentFactory extends UnnamedComponentFactory {
     config: Resource,
     constructable: boolean,
     overrideRequireNames: Record<string, string>,
-    componentRunner: Loader,
+    loader: Loader,
   ) {
     // TODO: check if constructorArguments param references are defined in parameters
     super(MappedNamedComponentFactory.makeUnnamedDefinitionConstructor(
       moduleDefinition,
       componentDefinition,
-      componentRunner.objectLoader,
-    )(config), constructable, overrideRequireNames, componentRunner);
+      loader.objectLoader,
+    )(config), constructable, overrideRequireNames, loader);
   }
 
   public static mapValue(
@@ -91,11 +91,11 @@ export class MappedNamedComponentFactory extends UnnamedComponentFactory {
         );
       }
       if (!resource.property.collectEntries) {
-        throw new Error(`If an object key is a URI, it must provide dynamic entries using the oo:collectEntries predicate: ${resource}`);
+        throw new Error(`If an object key is a URI, it must provide dynamic entries using the oo:collectEntries predicate: ${resourceToString(resource)}`);
       }
       return resource.properties.collectEntries.reduce((data: Resource[], entry: Resource) => {
         if (entry.type !== 'NamedNode') {
-          throw new Error(`Dynamic entry identifiers must be URI's: ${entry}`);
+          throw new Error(`Dynamic entry identifiers must be URI's: ${resourceToString(entry)}`);
         }
         Util.applyParameterValues(resourceScope, entry, params, objectLoader)
           .forEach((value: Resource) => data.push(value));
@@ -108,8 +108,7 @@ export class MappedNamedComponentFactory extends UnnamedComponentFactory {
             if (resource.property.key.type === 'NamedNode' && resource.property.key.value === `${Util.PREFIXES.rdf}subject`) {
               key = objectLoader.getOrMakeResource(Util.DF.literal(entryResource.value));
             } else if (entryResource.properties[resource.property.key.value].length !== 1) {
-              throw new Error(`Expected exactly one label definition for a dynamic entry ${
-                resource.property.key.value} in ${entryResource.value}\nFound:${entryResource.toString()}`);
+              throw new Error(`Expected exactly one label definition for a dynamic entry ${resourceIdToString(resource.property.key, objectLoader)} in ${resourceIdToString(entryResource, objectLoader)}\nFound:${resourceToString(entryResource)}`);
             } else {
               key = entryResource.properties[resource.property.key.value][0];
             }
@@ -124,8 +123,7 @@ export class MappedNamedComponentFactory extends UnnamedComponentFactory {
             // Nested mapping should reduce the parameter scope
             value = this.mapValue(resourceScope, resource.property.value, entryResource, false, objectLoader)[0];
           } else if (entryResource.properties[resource.property.value.value].length !== 1) {
-            throw new Error(`Expected exactly one value definition for a dynamic entry ${
-              resource.property.value.value} in ${entryResource.value}\nFound: ${entryResource.toString()}`);
+            throw new Error(`Expected exactly one value definition for a dynamic entry ${resourceIdToString(resource.property.value, objectLoader)} in ${resourceIdToString(entryResource, objectLoader)}\nFound: ${resourceToString(entryResource)}`);
           } else {
             value = entryResource.properties[resource.property.value.value][0];
           }
@@ -151,12 +149,12 @@ export class MappedNamedComponentFactory extends UnnamedComponentFactory {
     }
     if (resource.property.elements) {
       if (!resource.property.elements.list) {
-        throw new Error(`Parameter array elements musts be lists, but found: ${NodeUtil.inspect(resource.property.elements)}`);
+        throw new Error(`Parameter array elements musts be lists, but found: ${resourceToString(resource.property.elements)}`);
       }
       const ret = objectLoader.createCompactedResource({});
       for (const element of resource.property.elements.list) {
         if (element.type !== 'NamedNode' && !element.property.value) {
-          throw new Error(`Parameter array elements must be URI's, but found: ${NodeUtil.inspect(element)}`);
+          throw new Error(`Parameter array elements must be URI's, but found: ${resourceToString(element)}`);
         }
         for (const value of MappedNamedComponentFactory.mapValue(resourceScope, element, params, false, objectLoader)) {
           ret.properties.value.push(value);

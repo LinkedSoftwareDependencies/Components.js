@@ -8,6 +8,7 @@ import { ComponentFactory } from './factory/ComponentFactory';
 import type { IComponentFactory, ICreationSettings } from './factory/IComponentFactory';
 import { RdfParser } from './rdf/RdfParser';
 import Util = require('./Util');
+import { resourceIdToString, resourceToString } from './Util';
 
 /**
  * A loader class for component configs.
@@ -67,8 +68,7 @@ export class Loader {
    */
   public registerComponentResource(componentResource: Resource): void {
     if (this.registrationFinalized) {
-      throw new Error(`Tried registering a component ${componentResource.value
-      } after the loader has been finalized.`);
+      throw new Error(`Tried registering a component ${resourceIdToString(componentResource, this.objectLoader)} after the loader has been finalized.`);
     }
     this._requireValidComponent(componentResource);
     this.componentResources[componentResource.value] = componentResource;
@@ -93,9 +93,9 @@ export class Loader {
    */
   public _requireValidComponent(componentResource: Resource, referencingComponent?: Resource): void {
     if (!this._isValidComponent(componentResource)) {
-      throw new Error(`The referenced resource ${componentResource.value} is not a valid ` +
+      throw new Error(`The referenced resource ${resourceIdToString(componentResource, this.objectLoader)} is not a valid ` +
                 `component resource, either it is not defined or incorrectly referenced${
-                  referencingComponent ? ` by ${referencingComponent.value}.` : '.'}`);
+                  referencingComponent ? ` by ${resourceIdToString(referencingComponent, this.objectLoader)}.` : '.'}`);
     }
   }
 
@@ -129,7 +129,7 @@ export class Loader {
   public inheritConstructorParameters(componentResource: Resource): void {
     if (componentResource.property.constructorArguments) {
       if (!componentResource.property.constructorArguments.list) {
-        throw new Error(`Detected invalid constructor arguments for component "${componentResource.value}": arguments are not an RDF list.`);
+        throw new Error(`Detected invalid constructor arguments for component "${resourceIdToString(componentResource, this.objectLoader)}": arguments are not an RDF list.`);
       }
       componentResource.property.constructorArguments.list.forEach((object: Resource) => {
         if (object.property.inheritValues) {
@@ -154,8 +154,8 @@ export class Loader {
             }
           });
         } else if (!superObject.isA(Util.DF.namedNode(`${Util.PREFIXES.om}ObjectMapping`)) && !superObject.property.inheritValues && !superObject.property.onParameter) {
-          throw new Error(`The referenced constructor mappings object ${superObject.value
-          } from ${object.value} is not valid, i.e., it doesn't contain mapping fields ` +
+          throw new Error(`The referenced constructor mappings object ${resourceIdToString(superObject, this.objectLoader)
+          } from ${resourceIdToString(object, this.objectLoader)} is not valid, i.e., it doesn't contain mapping fields ` +
                         `, has the om:ObjectMapping type or has a superclass. ` +
                         `It possibly is incorrectly referenced or not defined at all.`);
         }
@@ -173,8 +173,7 @@ export class Loader {
    */
   public registerModuleResource(moduleResource: Resource): void {
     if (this.registrationFinalized) {
-      throw new Error(`Tried registering a module ${moduleResource.value
-      } after the loader has been finalized.`);
+      throw new Error(`Tried registering a module ${resourceIdToString(moduleResource, this.objectLoader)} after the loader has been finalized.`);
     }
     if (moduleResource.properties.components) {
       moduleResource.properties.components.forEach((component: Resource) => {
@@ -182,7 +181,7 @@ export class Loader {
         this.registerComponentResource(component);
       });
     } else if (!moduleResource.property.imports) {
-      throw new Error(`Tried to register the module ${moduleResource.value} that has no components.`);
+      throw new Error(`Tried to register the module ${resourceIdToString(moduleResource, this.objectLoader)} that has no components.`);
     }
   }
 
@@ -256,10 +255,10 @@ export class Loader {
     if (componentTypes.length !== 1 &&
       !configResource.property.requireName &&
       !configResource.property.requireElement) {
-      throw new Error(`Could not run config ${configResource.value} because exactly one valid component type ` +
+      throw new Error(`Could not run config ${resourceIdToString(configResource, this.objectLoader)} because exactly one valid component type ` +
                 `was expected, while ${componentTypes.length} were found in the defined types [${allTypes}]. ` +
                 `Alternatively, the requireName and requireElement must be provided.\nFound: ${
-                  configResource.toString()}\nAll available usable types: [\n${
+                  resourceToString(configResource)}\nAll available usable types: [\n${
                   Object.keys(this.componentResources).join(',\n')}\n]`);
     }
     let componentResource: Resource | undefined;
@@ -268,7 +267,7 @@ export class Loader {
       componentResource = componentTypes[0];
       moduleResource = componentResource.property.module;
       if (!moduleResource) {
-        throw new Error(`No module was found for the component ${componentResource.value}`);
+        throw new Error(`No module was found for the component ${resourceIdToString(componentResource, this.objectLoader)}`);
       }
 
       this.inheritParameterValues(configResource, componentResource);
@@ -298,11 +297,11 @@ export class Loader {
         if (settings.asFunction) {
           return `getVariableValue('${configResource.value}')`;
         }
-        throw new Error(`Detected a variable during config compilation: ${configResource.value}. Variables are not supported, but require the -f flag to expose the compiled config as function.`);
+        throw new Error(`Detected a variable during config compilation: ${resourceIdToString(configResource, this.objectLoader)}. Variables are not supported, but require the -f flag to expose the compiled config as function.`);
       } else {
         const value = settings.variables ? settings.variables[configResource.value] : undefined;
         if (value === undefined) {
-          throw new Error(`Undefined variable: ${configResource.value}`);
+          throw new Error(`Undefined variable: ${resourceIdToString(configResource, this.objectLoader)}`);
         }
         return value;
       }
@@ -340,12 +339,12 @@ export class Loader {
         restrictions.forEach((restriction: Resource) => {
           if (restriction.property.from) {
             if (!restriction.property.onParameter) {
-              throw new Error(`Parameters that inherit values must refer to a property: ${NodeUtil.inspect(parameter)}`);
+              throw new Error(`Parameters that inherit values must refer to a property: ${resourceToString(parameter)}`);
             }
 
             restriction.properties.from.forEach((componentType: Resource) => {
               if (componentType.type !== 'NamedNode') {
-                throw new Error(`Parameter inheritance values must refer to component type identifiers, not literals: ${NodeUtil.inspect(componentType)}`);
+                throw new Error(`Parameter inheritance values must refer to component type identifiers, not literals: ${resourceToString(componentType)}`);
               }
 
               const typeInstances: Resource[] = this.runTypeConfigs[componentType.value];
@@ -518,7 +517,7 @@ export class Loader {
     }
     const moduleResource: Resource = componentResource.property.module;
     if (!moduleResource) {
-      throw new Error(`No module was found for the component ${componentResource.value}`);
+      throw new Error(`No module was found for the component ${resourceIdToString(componentResource, this.objectLoader)}`);
     }
     const configResource = this.objectLoader.createCompactedResource({});
     Object.keys(params).forEach((key: string) => {

@@ -1,8 +1,7 @@
 import * as Path from 'path';
-import NodeUtil = require('util');
 import type { Resource } from 'rdf-object';
 import { Loader } from '../Loader';
-import Util = require('../Util');
+import * as Util from '../Util';
 import type { IComponentFactory, ICreationSettings } from './IComponentFactory';
 import Dict = NodeJS.Dict;
 import Module = NodeJS.Module;
@@ -14,18 +13,18 @@ export class UnnamedComponentFactory implements IComponentFactory {
   protected readonly componentDefinition: Resource;
   protected readonly constructable: boolean;
   protected readonly overrideRequireNames: Dict<string>;
-  protected readonly componentRunner: Loader;
+  protected readonly loader: Loader;
 
   public constructor(
     componentDefinition: Resource,
     constructable: boolean,
     overrideRequireNames: Record<string, string>,
-    componentRunner: Loader,
+    loader: Loader,
   ) {
     this.componentDefinition = componentDefinition;
     this.constructable = constructable;
     this.overrideRequireNames = overrideRequireNames || {};
-    this.componentRunner = componentRunner || new Loader();
+    this.loader = loader || new Loader();
 
     // Validate params
     this.validateParam(this.componentDefinition, 'requireName', 'Literal');
@@ -36,43 +35,43 @@ export class UnnamedComponentFactory implements IComponentFactory {
   public validateParam(resource: Resource, field: string, type: string, optional?: boolean): void {
     if (!resource.property[field]) {
       if (!optional) {
-        throw new Error(`Expected ${field} to exist in ${NodeUtil.inspect(resource)}`);
+        throw new Error(`Expected ${field} to exist in ${Util.resourceToString(resource)}`);
       } else {
         return;
       }
     }
     if (resource.property[field].type !== type) {
-      throw new Error(`Expected ${field} in ${NodeUtil.inspect(resource)} to be of type ${type}`);
+      throw new Error(`Expected ${field} in ${Util.resourceToString(resource)} to be of type ${type}`);
     }
   }
 
   public static async getArgumentValue(
     value: Resource | Resource[],
-    componentRunner: Loader,
+    loader: Loader,
     settings: ICreationSettings = {},
   ): Promise<any> {
     if (Array.isArray(value)) {
       // Unwrap unique values out of the array
       if (value[0].property.unique && value[0].property.unique.value === 'true') {
-        return UnnamedComponentFactory.getArgumentValue(value[0], componentRunner, settings);
+        return UnnamedComponentFactory.getArgumentValue(value[0], loader, settings);
       }
       // Otherwise, keep the array form
       return await Promise.all(value
-        .map(element => UnnamedComponentFactory.getArgumentValue(element, componentRunner, settings)));
+        .map(element => UnnamedComponentFactory.getArgumentValue(element, loader, settings)));
     }
     // HasFields is a hack for making UnmappedNamedComponentFactory work
     if (value.property.fields || value.property.hasFields) {
       // The parameter is an object
       const entries = await Promise.all(value.properties.fields.map(async(entry: Resource) => {
         if (!entry.property.key) {
-          throw new Error(`Parameter object entries must have keys, but found: ${NodeUtil.inspect(entry)}`);
+          throw new Error(`Parameter object entries must have keys, but found: ${Util.resourceToString(entry)}`);
         }
         if (entry.property.key.type !== 'Literal') {
-          throw new Error(`Parameter object keys must be literals, but found type ${entry.property.key.type} for ${entry.property.key.value} while constructing: ${NodeUtil.inspect(value)}`);
+          throw new Error(`Parameter object keys must be literals, but found type ${entry.property.key.type} for ${Util.resourceIdToString(entry.property.key, loader.objectLoader)} while constructing: ${Util.resourceToString(value)}`);
         }
         if (entry.property.value) {
           const subValue = await UnnamedComponentFactory
-            .getArgumentValue(entry.properties.value, componentRunner, settings);
+            .getArgumentValue(entry.properties.value, loader, settings);
           return { key: entry.property.key.value, value: subValue };
         }
         // TODO: only throw an error if the parameter is required
@@ -94,9 +93,9 @@ export class UnnamedComponentFactory implements IComponentFactory {
       // The parameter is a dynamic array
       const elements = await Promise.all(value.properties.elements.map(async(entry: Resource) => {
         if (!entry.property.value) {
-          throw new Error(`Parameter array elements must have values, but found: ${NodeUtil.inspect(entry)}`);
+          throw new Error(`Parameter array elements must have values, but found: ${Util.resourceToString(entry)}`);
         } else {
-          return await UnnamedComponentFactory.getArgumentValue(entry.property.value, componentRunner, settings);
+          return await UnnamedComponentFactory.getArgumentValue(entry.property.value, loader, settings);
         }
       }));
       let ret: any[] = [];
@@ -111,15 +110,15 @@ export class UnnamedComponentFactory implements IComponentFactory {
     }
     if (value.type === 'NamedNode' || value.type === 'BlankNode') {
       if (value.property.value) {
-        return await UnnamedComponentFactory.getArgumentValue(value.properties.value, componentRunner, settings);
+        return await UnnamedComponentFactory.getArgumentValue(value.properties.value, loader, settings);
       }
       if (settings.shallow) {
         return {};
       }
       if (value.property.lazy && value.property.lazy.value === 'true') {
-        return () => componentRunner.instantiate(value, settings);
+        return () => loader.instantiate(value, settings);
       }
-      return await componentRunner.instantiate(value, settings);
+      return await loader.instantiate(value, settings);
     }
     if (value.type === 'Literal') {
       // ValueRaw can be set in Util.captureType
@@ -136,7 +135,7 @@ export class UnnamedComponentFactory implements IComponentFactory {
       }
       return rawValue;
     }
-    throw new Error(`An invalid argument value was found:${NodeUtil.inspect(value)}`);
+    throw new Error(`An invalid argument value was found:${Util.resourceToString(value)}`);
   }
 
   /**
@@ -146,11 +145,11 @@ export class UnnamedComponentFactory implements IComponentFactory {
   public async makeArguments(settings?: ICreationSettings): Promise<any[]> {
     if (this.componentDefinition.property.arguments) {
       if (!this.componentDefinition.property.arguments.list) {
-        throw new Error(`Detected invalid arguments for component "${this.componentDefinition.value}": arguments are not an RDF list.`);
+        throw new Error(`Detected invalid arguments for component "${Util.resourceIdToString(this.componentDefinition, this.loader.objectLoader)}": arguments are not an RDF list.`);
       }
       return await Promise.all(this.componentDefinition.property.arguments.list
         .map((resource: Resource) => resource ?
-          UnnamedComponentFactory.getArgumentValue(resource, this.componentRunner, settings) :
+          UnnamedComponentFactory.getArgumentValue(resource, this.loader, settings) :
           undefined));
     }
     return [];
@@ -212,7 +211,7 @@ export class UnnamedComponentFactory implements IComponentFactory {
           Path.join(process.cwd(), requireName) :
           requireName);
       } catch (error: unknown) {
-        if (this.componentRunner.properties.scanGlobal) {
+        if (this.loader.properties.scanGlobal) {
           object = require('requireg')(requireName);
         } else {
           throw error;
@@ -231,21 +230,21 @@ export class UnnamedComponentFactory implements IComponentFactory {
       try {
         subObject = requireElementPath.reduce((acc: any, requireElement: string) => acc[requireElement], object);
       } catch {
-        throw new Error(`Failed to get module element ${this.componentDefinition.property.requireElement.value} from module ${requireName}`);
+        throw new Error(`Failed to get module element ${Util.resourceIdToString(this.componentDefinition.property.requireElement, this.loader.objectLoader)} from module ${requireName}`);
       }
     } else {
       subObject = object;
     }
     if (!subObject) {
-      throw new Error(`Failed to get module element ${this.componentDefinition.property.requireElement.value} from module ${requireName}`);
+      throw new Error(`Failed to get module element ${Util.resourceIdToString(this.componentDefinition.property.requireElement, this.loader.objectLoader)} from module ${requireName}`);
     }
     object = subObject;
     if (!this.componentDefinition.property.requireNoConstructor ||
       this.componentDefinition.property.requireNoConstructor.value !== 'true') {
       if (this.constructable) {
         if (!(object instanceof Function)) {
-          throw new Error(`ConstructableComponent is not a function: ${NodeUtil.inspect(object)
-          }\n${NodeUtil.inspect(this.componentDefinition)}`);
+          throw new Error(`ConstructableComponent is not a function: ${Util.resourceToString(object)
+          }\n${Util.resourceToString(this.componentDefinition)}`);
         }
         const args: any[] = await this.makeArguments(settings);
         if (serializations) {

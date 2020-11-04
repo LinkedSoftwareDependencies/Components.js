@@ -13,13 +13,13 @@ export class UnmappedNamedComponentFactory extends UnnamedComponentFactory {
     config: Resource,
     constructable: boolean,
     overrideRequireNames: Record<string, string>,
-    componentRunner: Loader,
+    loader: Loader,
   ) {
     super(UnmappedNamedComponentFactory.makeUnnamedDefinitionConstructor(
       moduleDefinition,
       componentDefinition,
-      componentRunner.objectLoader,
-    )(config), constructable, overrideRequireNames, componentRunner);
+      loader.objectLoader,
+    )(config), constructable, overrideRequireNames, loader);
   }
 
   /**
