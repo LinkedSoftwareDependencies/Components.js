@@ -228,7 +228,7 @@ export class Loader {
    * @returns {Promise<T>} A promise that resolves once loading has finished.
    */
   public async registerAvailableModuleResources(): Promise<void> {
-    const data = Util.getAvailableModuleComponentPaths(Boolean(this.properties.scanGlobal));
+    const data = await Util.getAvailableModuleComponentPaths(Boolean(this.properties.scanGlobal));
     await Promise.all(Object.values(data)
       .map((moduleResourceUrl: string) => this.registerModuleResourcesUrl(moduleResourceUrl)));
   }
