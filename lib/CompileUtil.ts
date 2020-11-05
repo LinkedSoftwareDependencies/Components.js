@@ -27,8 +27,8 @@ export async function compileConfig(
   await loader.registerAvailableModuleResources();
   const [ contexts, importPaths ] = await Promise.all([ loader.getContexts(), loader.getImportPaths() ]);
   const configStream = new RdfParser().parse(configStreamRaw, {
-    fromPath: configPath,
-    path: properties.mainModulePath,
+    fromPath: properties.mainModulePath,
+    path: configPath,
     contexts,
     importPaths,
     ignoreImports: false,

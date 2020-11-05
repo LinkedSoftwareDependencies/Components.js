@@ -61,6 +61,6 @@ compileConfig(
 )
   .then((output: string) => process.stdout.write(`${output}\n`))
   .catch(error => {
-    process.stderr.write(error);
+    process.stderr.write(`${error.stack}\n`);
     process.exit(1);
   });
