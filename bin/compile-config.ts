@@ -20,7 +20,6 @@ Usage:
 Options:
   -c      Path to a Components.js config file, if not provided, the config must be provided via stdin
   -p      The main module path, if not provided, this defaults to the working directory
-  -g      If global modules should be included as well next to local modules.
   -e      The instance by config URI that will be exported, by default this is the provided instance URI.
   -f      If the exported instance should be exposed as a function, which accepts an optional hash of variables.
   --help  print this help message
@@ -47,12 +46,10 @@ if (args.e) {
   exportVariableName = args.e;
 }
 
-const scanGlobal = !!args.g;
-
 const asFunction = !!args.f;
 
 compileConfig(
-  { mainModulePath, scanGlobal },
+  { mainModulePath },
   configPath,
   configStreamRaw,
   configResourceUri,

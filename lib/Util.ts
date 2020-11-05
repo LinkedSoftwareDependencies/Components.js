@@ -11,7 +11,6 @@ import { Resource } from 'rdf-object';
 import type { RdfObjectLoader } from 'rdf-object';
 import Module = NodeJS.Module;
 
-const globalModules: string = require('global-modules');
 const stat = NodeUtil.promisify(fs.stat);
 const readdir = NodeUtil.promisify(fs.readdir);
 const realpath = NodeUtil.promisify(fs.realpath);
@@ -446,18 +445,13 @@ export function getModuleComponentPaths(path: string): Promise<Record<string, st
  * Get all currently available component files paths.
  * This checks all available node modules and checks their package.json
  * for `lsd:module` and `lsd:components`.
- * @param scanGlobal If global modules should also be scanned next to local modules.
  * @return A promise resolving to a mapping of module URI to component file name
  */
-export async function getAvailableModuleComponentPaths(scanGlobal: boolean): Promise<Record<string, string>> {
-  const globalPath:
-  string | undefined = scanGlobal ? globalModules : undefined;
+export async function getAvailableModuleComponentPaths(): Promise<Record<string, string>> {
   const paths: string[] = getMainModulePaths();
   if (paths) {
     // Local paths can overwrite global paths
-    const subPaths: Record<string, string>[] = await Promise.all([
-      globalPath ? getModuleComponentPaths(globalPath) : {},
-    ].concat(paths.map(getModuleComponentPaths)));
+    const subPaths: Record<string, string>[] = await Promise.all(paths.map(getModuleComponentPaths));
     return subPaths.reduce((subPath, currentPaths) => {
       for (const [ key, value ] of Object.entries(currentPaths)) {
         subPath[key] = value;
@@ -502,17 +496,13 @@ export function getContextPaths(path: string): Promise<Record<string, any>> {
  * Get all currently available JSON-LD contexts.
  * This checks all available node modules and checks their package.json
  * for `lsd:contexts`.
- * @param scanGlobal If global modules should also be scanned next to local modules.
  * @return A promise resolving to a mapping of context URL to parsed context contents
  */
-export async function getAvailableContexts(scanGlobal: boolean): Promise<Record<string, any>> {
-  const globalPath: string | undefined = scanGlobal ? globalModules : undefined;
+export async function getAvailableContexts(): Promise<Record<string, any>> {
   const paths: string[] = getMainModulePaths();
   if (paths) {
     // Local paths can overwrite global paths
-    const subPaths: Record<string, string>[] = await Promise.all([
-      globalPath ? getContextPaths(globalPath) : {},
-    ].concat(paths.map(getContextPaths)));
+    const subPaths: Record<string, string>[] = await Promise.all(paths.map(getContextPaths));
     return subPaths.reduce((subPath, currentPaths) => {
       for (const [ key, value ] of Object.entries(currentPaths)) {
         subPath[key] = value;
@@ -561,17 +551,13 @@ export function getImportPaths(path: string): Promise<Record<string, string>> {
  * Get all currently import prefix paths.
  * This checks all available node modules and checks their package.json
  * for `lsd:importPaths`.
- * @param scanGlobal If global modules should also be scanned next to local modules.
  * @return A promise resolving to a mapping of an import prefix URL to an import prefix path
  */
-export async function getAvailableImportPaths(scanGlobal: boolean): Promise<Record<string, string>> {
-  const globalPath: string | undefined = scanGlobal ? globalModules : undefined;
+export async function getAvailableImportPaths(): Promise<Record<string, string>> {
   const paths: string[] = getMainModulePaths();
   if (paths) {
     // Local paths can overwrite global paths
-    const subPaths: Record<string, string>[] = await Promise.all([
-      globalPath ? getImportPaths(globalPath) : {},
-    ].concat(paths.map(getImportPaths)));
+    const subPaths: Record<string, string>[] = await Promise.all(paths.map(getImportPaths));
     return subPaths.reduce((subPath, currentPaths) => {
       for (const [ key, value ] of Object.entries(currentPaths)) {
         subPath[key] = value;

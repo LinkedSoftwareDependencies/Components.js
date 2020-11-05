@@ -49,14 +49,14 @@ export class Loader {
 
   public async getContexts(): Promise<Record<string, any>> {
     if (!this.properties.contexts) {
-      this.properties.contexts = await Util.getAvailableContexts(Boolean(this.properties.scanGlobal));
+      this.properties.contexts = await Util.getAvailableContexts();
     }
     return this.properties.contexts;
   }
 
   public async getImportPaths(): Promise<Record<string, string>> {
     if (!this.properties.importPaths) {
-      this.properties.importPaths = await Util.getAvailableImportPaths(Boolean(this.properties.scanGlobal));
+      this.properties.importPaths = await Util.getAvailableImportPaths();
     }
     return this.properties.importPaths;
   }
@@ -227,7 +227,7 @@ export class Loader {
    * @returns {Promise<T>} A promise that resolves once loading has finished.
    */
   public async registerAvailableModuleResources(): Promise<void> {
-    const data = await Util.getAvailableModuleComponentPaths(Boolean(this.properties.scanGlobal));
+    const data = await Util.getAvailableModuleComponentPaths();
     await Promise.all(Object.values(data)
       .map((moduleResourceUrl: string) => this.registerModuleResourcesUrl(moduleResourceUrl)));
   }
@@ -535,7 +535,6 @@ export class Loader {
 }
 
 export interface ILoaderProperties {
-  scanGlobal?: boolean;
   absolutizeRelativePaths?: boolean;
   contexts?: Record<string, any>;
   importPaths?: Record<string, string>;

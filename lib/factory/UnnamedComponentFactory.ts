@@ -205,18 +205,10 @@ export class UnnamedComponentFactory implements IComponentFactory {
       if (serializations) {
         resultingRequirePath = requireName;
       }
-      try {
-        // Always require relative from main module, because Components.js will in most cases just be dependency.
-        object = (<Module> require.main).require(requireName.startsWith('.') ?
-          Path.join(process.cwd(), requireName) :
-          requireName);
-      } catch (error: unknown) {
-        if (this.loader.properties.scanGlobal) {
-          object = require('requireg')(requireName);
-        } else {
-          throw error;
-        }
-      }
+      // Always require relative from main module, because Components.js will in most cases just be dependency.
+      object = (<Module>require.main).require(requireName.startsWith('.') ?
+        Path.join(process.cwd(), requireName) :
+        requireName);
     }
 
     let serialization = serializations ? `require('${(<string> resultingRequirePath).replace(/\\/gu, '/')}')` : null;
