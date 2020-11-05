@@ -4,7 +4,6 @@ import { MappedNamedComponentFactory } from '../../lib/factory/MappedNamedCompon
 import { Loader } from '../../lib/Loader';
 import * as Util from '../../lib/Util';
 
-// TODO: improve these imports
 const N3 = require('n3');
 const Hello = require('../../__mocks__/helloworld').Hello;
 
@@ -290,7 +289,7 @@ describe('MappedNamedComponentFactory', () => {
     it('should make a valid instance', async() => {
       const instance = await constructor.create();
       expect(instance).toBeTruthy();
-      expect(instance).toBeInstanceOf(Function); // Because N3Util is a function
+      expect(instance).toBe(N3.Util);
     });
   });
 

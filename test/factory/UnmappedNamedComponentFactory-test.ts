@@ -229,7 +229,7 @@ describe('UnmappedNamedComponentFactory', () => {
     it('should make a valid instance', async() => {
       const instance = await constructor.create();
       expect(instance).toBeTruthy();
-      expect(instance).toBeInstanceOf(Function); // Because N3Util is a function
+      expect(instance).toBe(N3.Util);
     });
   });
 

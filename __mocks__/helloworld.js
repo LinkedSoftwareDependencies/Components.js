@@ -15,4 +15,12 @@ class Hello {
 
 }
 
-module.exports = { Hello: Hello, HelloNested: { Deeper: { Hello: Hello } } };
+module.exports = {
+  Hello: Hello,
+  HelloNested: {
+    Deeper: {
+      Hello: Hello,
+    },
+  },
+  NoConstructor: new Hello(),
+};

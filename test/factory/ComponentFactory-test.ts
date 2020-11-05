@@ -6,7 +6,6 @@ import { UnnamedComponentFactory } from '../../lib/factory/UnnamedComponentFacto
 import { Loader } from '../../lib/Loader';
 import * as Util from '../../lib/Util';
 
-// TODO: improve these imports
 const N3 = require('n3');
 
 describe('ComponentFactory', () => {

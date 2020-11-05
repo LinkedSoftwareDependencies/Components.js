@@ -184,27 +184,32 @@ describe('UnnamedComponentFactory', () => {
     });
   });
 
-  describe('for an N3 Lexer without constructor', () => {
-    let n3LexerComponentNoConstructor: Resource;
+  describe('for a HelloWorld component without constructor', () => {
+    let component: Resource;
     let constructor: UnnamedComponentFactory;
     beforeEach(() => {
-      n3LexerComponentNoConstructor = objectLoader.createCompactedResource({
-        '@id': 'http://example.org/n3#LexerNoConstructor',
-        requireName: '"n3"',
-        requireElement: '"Lexer"',
+      component = objectLoader.createCompactedResource({
+        '@id': 'http://example.org/helloWorldNested',
+        requireName: '"helloworld"',
+        requireElement: '"NoConstructor"',
         requireNoConstructor: '"true"',
       });
-      constructor = new UnnamedComponentFactory(n3LexerComponentNoConstructor, true, {}, new Loader());
+      constructor = new UnnamedComponentFactory(component, true, {}, new Loader());
     });
 
     it('should be valid', () => {
       expect(constructor).toBeTruthy();
     });
 
+    it('should create valid arguments', async() => {
+      const args = await constructor.makeArguments();
+      expect(args).toEqual([]);
+    });
+
     it('should make a valid instance', async() => {
       const instance = await constructor.create();
       expect(instance).toBeTruthy();
-      expect(instance()).toBeInstanceOf(N3.Lexer);
+      expect(instance).toBeInstanceOf(Hello);
     });
   });
 });
