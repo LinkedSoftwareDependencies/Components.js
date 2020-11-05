@@ -572,6 +572,57 @@ describe('MappedNamedComponentFactory', () => {
     });
   });
 
+  describe('for a hello world component with root array params', () => {
+    let helloWorldComponent4: Resource;
+    let module: Resource;
+    let constructor: MappedNamedComponentFactory;
+    beforeEach(() => {
+      helloWorldComponent4 = objectLoader.createCompactedResource({
+        '@id': 'http://example.org/HelloWorldModule#SayHelloComponent3',
+        requireElement: '"Hello"',
+        types: [ objectLoader.createCompactedResource(`${Util.PREFIXES.oo}Class`) ],
+        parameters: [
+          objectLoader.createCompactedResource({ '@id': 'http://example.org/HelloWorldModule#dummyParam' }),
+          objectLoader.createCompactedResource({ '@id': 'http://example.org/HelloWorldModule#instanceParam' }),
+        ],
+        constructorArguments: objectLoader.createCompactedResource({
+          list: [
+            objectLoader.createCompactedResource('http://example.org/HelloWorldModule#dummyParam'),
+            objectLoader.createCompactedResource('http://example.org/HelloWorldModule#instanceParam'),
+          ],
+        }),
+      });
+      module = objectLoader.createCompactedResource({
+        '@id': 'http://example.org/helloworld',
+        requireName: '"helloworld"',
+        components: [
+          helloWorldComponent4,
+        ],
+      });
+      constructor = new MappedNamedComponentFactory(module, helloWorldComponent4, objectLoader.createCompactedResource({
+        'http://example.org/HelloWorldModule#dummyParam': objectLoader.createCompactedResource('"true"'),
+        'http://example.org/HelloWorldModule#instanceParam': objectLoader.createCompactedResource('"false"'),
+      }), true, {}, loader);
+    });
+
+    it('should be valid', () => {
+      expect(constructor).toBeTruthy();
+    });
+
+    it('should create valid arguments', async() => {
+      const args = await constructor.makeArguments();
+      expect(args).toEqual([
+        'true', 'false',
+      ]);
+    });
+
+    it('should make a valid instance', async() => {
+      const instance = await constructor.create();
+      expect(instance).toBeTruthy();
+      expect(instance).toBeInstanceOf(Hello);
+    });
+  });
+
   describe('for a hello world component with default values', () => {
     let helloWorldComponent5: Resource;
     let module: Resource;
