@@ -96,19 +96,19 @@ export class Loader {
    */
   public inheritParameters(componentResource: Resource, inheritValues?: Resource[]): void {
     if (inheritValues) {
-      inheritValues.forEach((component: Resource) => {
+      for (const component of inheritValues) {
         this._requireValidComponent(component, componentResource);
         if (this._isValidComponent(component)) {
           if (component.property.parameters) {
-            component.properties.parameters.forEach((parameter: Resource) => {
+            for (const parameter of component.properties.parameters) {
               if (!componentResource.properties.parameters.includes(parameter)) {
                 componentResource.properties.parameters.push(parameter);
               }
-            });
+            }
             this.inheritParameters(componentResource, component.properties.inheritValues);
           }
         }
-      });
+      }
     }
   }
 
@@ -121,11 +121,11 @@ export class Loader {
       if (!componentResource.property.constructorArguments.list) {
         throw new Error(`Detected invalid constructor arguments for component "${resourceIdToString(componentResource, this.objectLoader)}": arguments are not an RDF list.`);
       }
-      componentResource.property.constructorArguments.list.forEach((object: Resource) => {
+      for (const object of componentResource.property.constructorArguments.list) {
         if (object.property.inheritValues) {
           this.inheritObjectFields(object, object.properties.inheritValues);
         }
-      });
+      }
     }
   }
 
@@ -136,23 +136,23 @@ export class Loader {
    */
   public inheritObjectFields(object: Resource, inheritValues?: Resource[]): void {
     if (inheritValues) {
-      inheritValues.forEach((superObject: Resource) => {
+      for (const superObject of inheritValues) {
         if (superObject.property.fields) {
-          superObject.properties.fields.forEach((field: Resource) => {
+          for (const field of superObject.properties.fields) {
             if (!object.properties.fields.includes(field)) {
               object.properties.fields.push(field);
             }
-          });
+          }
         } else if (!superObject.isA(Util.DF.namedNode(`${Util.PREFIXES.om}ObjectMapping`)) && !superObject.property.inheritValues && !superObject.property.onParameter) {
           throw new Error(`The referenced constructor mappings object ${resourceIdToString(superObject, this.objectLoader)
           } from ${resourceIdToString(object, this.objectLoader)} is not valid, i.e., it doesn't contain mapping fields ` +
-                        `, has the om:ObjectMapping type or has a superclass. ` +
-                        `It possibly is incorrectly referenced or not defined at all.`);
+            `, has the om:ObjectMapping type or has a superclass. ` +
+            `It possibly is incorrectly referenced or not defined at all.`);
         }
         if (superObject.property.inheritValues) {
           this.inheritObjectFields(object, superObject.properties.inheritValues);
         }
-      });
+      }
     }
   }
 
@@ -165,11 +165,11 @@ export class Loader {
     if (this.registrationFinalized) {
       throw new Error(`Tried registering a module ${resourceIdToString(moduleResource, this.objectLoader)} after the loader has been finalized.`);
     }
-    if (moduleResource.properties.components) {
-      moduleResource.properties.components.forEach((component: Resource) => {
+    if (moduleResource.property.components) {
+      for (const component of moduleResource.properties.components) {
         component.property.module = moduleResource;
         this.registerComponentResource(component);
-      });
+      }
     } else if (!moduleResource.property.imports) {
       throw new Error(`Tried to register the module ${resourceIdToString(moduleResource, this.objectLoader)} that has no components.`);
     }
@@ -184,7 +184,7 @@ export class Loader {
   public async registerModuleResourcesStream(moduleResourceStream: RDF.Stream & Readable): Promise<void> {
     await this.objectLoader.import(moduleResourceStream);
     for (const resource of Object.values(this.objectLoader.resources)) {
-      if (resource.isA(Util.IRI_MODULE)) {
+      if (resource.isA(Util.IRI_MODULE) && !resource.term.equals(Util.IRI_MODULE)) {
         this.registerModuleResource(resource);
       }
     }
@@ -315,7 +315,7 @@ export class Loader {
   public inheritParameterValues(configResource: Resource, componentResource: Resource): void {
     // Inherit parameter values from passed instances of the given types
     if (componentResource.property.parameters) {
-      componentResource.properties.parameters.forEach((parameter: Resource) => {
+      for (const parameter of componentResource.properties.parameters) {
         // Collect all owl:Restriction's
         const restrictions: Resource[] = parameter.properties.inheritValues
           .reduce((acc: Resource[], clazz: Resource) => {
@@ -326,21 +326,21 @@ export class Loader {
             return acc;
           }, []);
 
-        restrictions.forEach((restriction: Resource) => {
+        for (const restriction of restrictions) {
           if (restriction.property.from) {
             if (!restriction.property.onParameter) {
               throw new Error(`Parameters that inherit values must refer to a property: ${resourceToString(parameter)}`);
             }
 
-            restriction.properties.from.forEach((componentType: Resource) => {
+            for (const componentType of restriction.properties.from) {
               if (componentType.type !== 'NamedNode') {
                 throw new Error(`Parameter inheritance values must refer to component type identifiers, not literals: ${resourceToString(componentType)}`);
               }
 
               const typeInstances: Resource[] = this.runTypeConfigs[componentType.value];
               if (typeInstances) {
-                typeInstances.forEach((instance: Resource) => {
-                  restriction.properties.onParameter.forEach((parentParameter: Resource) => {
+                for (const instance of typeInstances) {
+                  for (const parentParameter of restriction.properties.onParameter) {
                     // TODO: this might be a bug in the JSON-LD parser
                     // if (parentParameter.termType !== 'NamedNode') {
                     // throw new Error('Parameters that inherit values must refer to sub properties as URI\'s: '
@@ -357,13 +357,13 @@ export class Loader {
                         componentResource.properties.parameters.push(parentParameter);
                       }
                     }
-                  });
-                });
+                  }
+                }
               }
-            });
+            }
           }
-        });
-      });
+        }
+      }
     }
   }
 
@@ -513,9 +513,9 @@ export class Loader {
       throw new Error(`No module was found for the component ${resourceIdToString(componentResource, this.objectLoader)}`);
     }
     const configResource = this.objectLoader.createCompactedResource({});
-    Object.keys(params).forEach((key: string) => {
+    for (const key of Object.keys(params)) {
       configResource.property[key] = this.objectLoader.createCompactedResource(`"${params[key]}"`);
-    });
+    }
     const constructor: ComponentFactory = new ComponentFactory(
       moduleResource,
       componentResource,

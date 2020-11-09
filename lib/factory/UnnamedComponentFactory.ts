@@ -100,13 +100,13 @@ export class UnnamedComponentFactory implements IComponentFactory {
         }
       }));
       let ret: any[] = [];
-      elements.forEach(element => {
+      for (const element of elements) {
         if (Array.isArray(element)) {
           ret = ret.concat(element);
         } else {
           ret.push(element);
         }
-      });
+      }
       return ret;
     }
     if (value.type === 'NamedNode' || value.type === 'BlankNode') {

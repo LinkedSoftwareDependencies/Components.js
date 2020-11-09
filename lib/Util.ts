@@ -107,19 +107,19 @@ export function applyParameterValues(
   let value: Resource[] = paramValueMapping.properties[param.value];
   // Set default value if no value has been given
   if (value.length === 0 && param.property.defaultScoped) {
-    param.properties.defaultScoped.forEach((scoped: Resource) => {
+    for (const scoped of param.properties.defaultScoped) {
       if (!scoped.property.defaultScope) {
         throw new Error(`Missing required oo:defaultScope value for a default scope.\n${resourceToString(param)}`);
       }
-      scoped.properties.defaultScope.forEach((scope: Resource) => {
+      for (const scope of scoped.properties.defaultScope) {
         if (!scoped.property.defaultScopedValue) {
           throw new Error(`Missing required oo:defaultScopedValue value for a default scope.\n${resourceToString(param)}`);
         }
         if (resourceScope.isA(scope.term)) {
           value = scoped.properties.defaultScopedValue;
         }
-      });
-    });
+      }
+    }
   }
 
   if (value.length === 0 && param.property.default) {
@@ -144,7 +144,9 @@ ${resourceToString(paramValueMapping)}`);
       if (!Array.isArray(value)) {
         throw new Error(`Values must be an array\n${resourceToString(param)}`);
       }
-      param.properties.fixed.forEach((fixed: Resource) => value.push(fixed));
+      for (const fixed of param.properties.fixed) {
+        value.push(fixed);
+      }
     }
   }
 
@@ -167,24 +169,26 @@ ${resourceToString(paramValueMapping)}`);
       value = [ newValue ];
     }
 
-    value.forEach(subValue => {
+    for (const subValue of value) {
       if (subValue) {
         subValue.property.unique = param.property.unique;
       }
-    });
+    }
   }
 
   // If a param range is defined, apply the type and validate the range.
   if (param.property.range) {
-    value.forEach(subValue => captureType(subValue, param, objectLoader));
+    for (const subValue of value) {
+      captureType(subValue, param, objectLoader);
+    }
   }
 
   // If the parameter is marked as lazy,
   // make the value inherit this lazy tag so that it can be handled later.
   if (value && param.property.lazy) {
-    value.forEach(subValue => {
+    for (const subValue of value) {
       subValue.property.lazy = param.property.lazy;
-    });
+    }
   }
 
   return value;

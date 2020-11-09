@@ -97,8 +97,9 @@ export class MappedNamedComponentFactory extends UnnamedComponentFactory {
         if (entry.type !== 'NamedNode') {
           throw new Error(`Dynamic entry identifiers must be URI's: ${resourceToString(entry)}`);
         }
-        Util.applyParameterValues(resourceScope, entry, params, objectLoader)
-          .forEach((value: Resource) => data.push(value));
+        for (const value of Util.applyParameterValues(resourceScope, entry, params, objectLoader)) {
+          data.push(value);
+        }
         return data;
       }, [])
         .map((entryResource: Resource) => {
