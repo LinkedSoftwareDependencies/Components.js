@@ -151,7 +151,7 @@ ${resourceToString(paramValueMapping)}`);
   }
 
   // If the value is singular, and the value should be unique, transform the array to a single element
-  if (param.property.unique && param.property.unique.value === 'true') {
+  if (param.property.unique && param.property.unique.value === 'true' && value.length > 0) {
     value = [ value[0] ];
 
     // !!!Hack incoming!!!
@@ -159,20 +159,16 @@ ${resourceToString(paramValueMapping)}`);
     // This is needed because literals may occur different times in param values.
     // This ensures that the unique label is only applied to the current occurrence, instead of all occurrences.
     // TODO: improve this
-    if (value[0]) {
-      const newValue = new Resource({ term: value[0].term, context: objectLoader.contextResolved });
-      for (const key of Object.keys(value[0].properties)) {
-        for (const subValue of value[0].properties[key]) {
-          newValue.properties[key].push(subValue);
-        }
+    const newValue = new Resource({ term: value[0].term, context: objectLoader.contextResolved });
+    for (const key of Object.keys(value[0].properties)) {
+      for (const subValue of value[0].properties[key]) {
+        newValue.properties[key].push(subValue);
       }
-      value = [ newValue ];
     }
+    value = [ newValue ];
 
     for (const subValue of value) {
-      if (subValue) {
-        subValue.property.unique = param.property.unique;
-      }
+      subValue.property.unique = param.property.unique;
     }
   }
 

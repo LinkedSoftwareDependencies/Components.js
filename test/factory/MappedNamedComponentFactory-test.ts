@@ -1125,4 +1125,88 @@ describe('MappedNamedComponentFactory', () => {
       expect(instance._params.dummyParam).toEqual([ 3_000 ]);
     });
   });
+
+  describe('for a hello world component with empty constructor argument with @id', () => {
+    let helloWorldComponent: Resource;
+    let module: Resource;
+    let constructor: MappedNamedComponentFactory;
+    beforeEach(() => {
+      // Component definition for Hello World
+      helloWorldComponent = objectLoader.createCompactedResource({
+        '@id': 'http://example.org/HelloWorldModule#SayHelloComponent1',
+        requireElement: objectLoader.createCompactedResource('"Hello"'),
+        types: [ objectLoader.createCompactedResource(`${Util.PREFIXES.oo}Class`) ],
+        constructorArguments: objectLoader.createCompactedResource({
+          list: [
+            objectLoader.createCompactedResource({
+              '@id': 'ex:constructorArgs',
+              types: [ objectLoader.createCompactedResource(`${Util.PREFIXES.om}ObjectMapping`) ],
+            }),
+          ],
+        }),
+      });
+      module = objectLoader.createCompactedResource({
+        '@id': 'http://example.org/helloworld',
+        requireName: '"helloworld"',
+        components: [
+          helloWorldComponent,
+        ],
+      });
+      constructor = new MappedNamedComponentFactory(module, helloWorldComponent, objectLoader
+        .createCompactedResource({}), true, {}, loader);
+    });
+
+    it('should be valid', () => {
+      expect(constructor).toBeTruthy();
+    });
+
+    it('should create valid arguments', async() => {
+      const args = await constructor.makeArguments({ moduleState });
+      expect(args).toEqual([]);
+    });
+
+    it('should make a valid instance', async() => {
+      const instance = await constructor.create({ moduleState });
+      expect(instance).toBeTruthy();
+      expect(instance).toBeInstanceOf(Hello);
+    });
+  });
+
+  describe('for a hello world component with empty constructor argument without @id', () => {
+    let helloWorldComponent: Resource;
+    let module: Resource;
+    let constructor: MappedNamedComponentFactory;
+    beforeEach(() => {
+      // Component definition for Hello World
+      helloWorldComponent = objectLoader.createCompactedResource({
+        '@id': 'http://example.org/HelloWorldModule#SayHelloComponent1',
+        requireElement: objectLoader.createCompactedResource('"Hello"'),
+        types: [ objectLoader.createCompactedResource(`${Util.PREFIXES.oo}Class`) ],
+        constructorArguments: objectLoader.createCompactedResource({
+          list: [
+            objectLoader.createCompactedResource({
+              types: [ objectLoader.createCompactedResource(`${Util.PREFIXES.om}ObjectMapping`) ],
+            }),
+          ],
+        }),
+      });
+      module = objectLoader.createCompactedResource({
+        '@id': 'http://example.org/helloworld',
+        requireName: '"helloworld"',
+        components: [
+          helloWorldComponent,
+        ],
+      });
+      constructor = new MappedNamedComponentFactory(module, helloWorldComponent, objectLoader
+        .createCompactedResource({}), true, {}, loader);
+    });
+
+    it('should be valid', () => {
+      expect(constructor).toBeTruthy();
+    });
+
+    it('should error on creating arguments', async() => {
+      await expect(constructor.makeArguments({ moduleState })).rejects.toThrow();
+    });
+  });
 });

@@ -167,9 +167,12 @@ export class MappedNamedComponentFactory extends UnnamedComponentFactory {
       const ret = objectLoader.createCompactedResource({});
       ret.list = [];
       for (const argument of resource.list) {
-        ret.list.push(argument.property.fields || argument.property.elements ?
-          MappedNamedComponentFactory.map(resourceScope, argument, params, objectLoader)[0] :
-          MappedNamedComponentFactory.mapValue(resourceScope, argument, params, false, objectLoader)[0]);
+        const mapped = argument.property.fields || argument.property.elements ?
+          MappedNamedComponentFactory.map(resourceScope, argument, params, objectLoader) :
+          MappedNamedComponentFactory.mapValue(resourceScope, argument, params, false, objectLoader);
+        if (mapped.length > 0) {
+          ret.list.push(mapped[0]);
+        }
       }
       return [ ret ];
     }
