@@ -2,14 +2,23 @@ import type { RdfObjectLoader } from 'rdf-object';
 import { Resource } from 'rdf-object';
 import { UnmappedNamedComponentFactory } from '../../lib/factory/UnmappedNamedComponentFactory';
 import { Loader } from '../../lib/Loader';
+import type { IModuleState } from '../../lib/ModuleStateBuilder';
 
 const N3 = require('n3');
 
 describe('UnmappedNamedComponentFactory', () => {
   let loader: Loader;
   let objectLoader: RdfObjectLoader;
+  let moduleState: IModuleState;
   beforeEach(() => {
     loader = new Loader();
+    moduleState = <any> {
+      mainModulePath: `${__dirname}/..`,
+      importPaths: {
+        'http://example.org/': `${__dirname}/`,
+      },
+    };
+    (<any> loader).moduleState = moduleState;
     // Create resources via object loader, so we can use CURIEs
     objectLoader = loader.objectLoader;
   });
@@ -51,7 +60,7 @@ describe('UnmappedNamedComponentFactory', () => {
       });
 
       it('should create valid arguments', async() => {
-        const args = await constructor.makeArguments();
+        const args = await constructor.makeArguments({ moduleState });
         expect(args).toEqual([{
           'http://example.org/n3#lineMode': 'true',
           'http://example.org/n3#n3': 'true',
@@ -60,7 +69,7 @@ describe('UnmappedNamedComponentFactory', () => {
       });
 
       it('should make a valid instance', async() => {
-        const instance = await constructor.create();
+        const instance = await constructor.create({ moduleState });
         expect(instance).toBeTruthy();
         expect(instance).toBeInstanceOf(N3.Lexer);
       });
@@ -178,14 +187,14 @@ describe('UnmappedNamedComponentFactory', () => {
     });
 
     it('should create valid arguments', async() => {
-      const args = await constructor.makeArguments();
+      const args = await constructor.makeArguments({ moduleState });
       expect(args.length).toEqual(1);
       expect(args[0]['http://example.org/n3#format']).toEqual('application/trig');
       expect(args[0]['http://example.org/n3#lexer']).toBeInstanceOf(N3.Lexer);
     });
 
     it('should make a valid instance', async() => {
-      const instance = await constructor.create();
+      const instance = await constructor.create({ moduleState });
       expect(instance).toBeTruthy();
       expect(instance).toBeInstanceOf(N3.Parser);
     });
@@ -222,12 +231,12 @@ describe('UnmappedNamedComponentFactory', () => {
     });
 
     it('should create valid arguments', async() => {
-      const args = await constructor.makeArguments();
+      const args = await constructor.makeArguments({ moduleState });
       expect(args).toEqual([{}]);
     });
 
     it('should make a valid instance', async() => {
-      const instance = await constructor.create();
+      const instance = await constructor.create({ moduleState });
       expect(instance).toBeTruthy();
       expect(instance).toBe(N3.Util);
     });
@@ -262,13 +271,13 @@ describe('UnmappedNamedComponentFactory', () => {
     });
 
     it('should create valid arguments', async() => {
-      const args = await constructor.makeArguments();
+      const args = await constructor.makeArguments({ moduleState });
       expect(args).toEqual([{
         'http://example.org/n3#dummyParam': 'true',
       }]);
     });
 
-    it('should fail to make a valid instance', () => expect(constructor.create()).rejects
+    it('should fail to make a valid instance', () => expect(constructor.create({ moduleState })).rejects
       .toThrow(new Error('Failed to get module element Dummy from module n3')));
   });
 
@@ -319,14 +328,14 @@ describe('UnmappedNamedComponentFactory', () => {
     });
 
     it('should create valid arguments', async() => {
-      const args = await constructor.makeArguments();
+      const args = await constructor.makeArguments({ moduleState });
       expect(args).toEqual([{
         'http://example.org/n3#dummyParam1': [ 'a', 'b' ],
         'http://example.org/n3#dummyParam2': 'a',
       }]);
     });
 
-    it('should fail to make a valid instance', () => expect(constructor.create()).rejects
+    it('should fail to make a valid instance', () => expect(constructor.create({ moduleState })).rejects
       .toThrow(new Error('Failed to get module element Dummy from module n3')));
   });
 
@@ -374,14 +383,14 @@ describe('UnmappedNamedComponentFactory', () => {
     });
 
     it('should create valid arguments', async() => {
-      const args = await constructor.makeArguments();
+      const args = await constructor.makeArguments({ moduleState });
       expect(args).toEqual([{
         'http://example.org/n3#dummyParam1': [ 'true' ],
         'http://example.org/n3#dummyParam2': 'false',
       }]);
     });
 
-    it('should fail to make a valid instance', () => expect(constructor.create()).rejects
+    it('should fail to make a valid instance', () => expect(constructor.create({ moduleState })).rejects
       .toThrow(new Error('Failed to get module element Dummy from module n3')));
   });
 
@@ -443,14 +452,14 @@ describe('UnmappedNamedComponentFactory', () => {
       });
 
       it('should create valid arguments', async() => {
-        const args = await constructor.makeArguments();
+        const args = await constructor.makeArguments({ moduleState });
         expect(args).toEqual([{
           'http://example.org/n3#dummyParam1': [ 'a', 'b' ],
           'http://example.org/n3#dummyParam2': 'a',
         }]);
       });
 
-      it('should fail to make a valid instance', () => expect(constructor.create()).rejects
+      it('should fail to make a valid instance', () => expect(constructor.create({ moduleState })).rejects
         .toThrow(new Error('Failed to get module element Dummy from module n3')));
     });
 
@@ -468,14 +477,14 @@ describe('UnmappedNamedComponentFactory', () => {
       });
 
       it('should create valid arguments', async() => {
-        const args = await constructor.makeArguments();
+        const args = await constructor.makeArguments({ moduleState });
         expect(args).toEqual([{
           'http://example.org/n3#dummyParam1': [ 'true' ],
           'http://example.org/n3#dummyParam2': 'false',
         }]);
       });
 
-      it('should fail to make a valid instance', () => expect(constructor.create()).rejects
+      it('should fail to make a valid instance', () => expect(constructor.create({ moduleState })).rejects
         .toThrow(new Error('Failed to get module element Dummy from module n3')));
     });
   });
@@ -529,14 +538,14 @@ describe('UnmappedNamedComponentFactory', () => {
       });
 
       it('should create valid arguments', async() => {
-        const args = await constructor.makeArguments();
+        const args = await constructor.makeArguments({ moduleState });
         expect(args).toEqual([{
           'http://example.org/n3#dummyParam1': [ 'a', 'b' ],
           'http://example.org/n3#dummyParam2': 'a',
         }]);
       });
 
-      it('should fail to make a valid instance', () => expect(constructor.create()).rejects
+      it('should fail to make a valid instance', () => expect(constructor.create({ moduleState })).rejects
         .toThrow(new Error('Failed to get module element Dummy from module n3')));
     });
 
@@ -553,14 +562,14 @@ describe('UnmappedNamedComponentFactory', () => {
       });
 
       it('should create valid arguments', async() => {
-        const args = await constructor.makeArguments();
+        const args = await constructor.makeArguments({ moduleState });
         expect(args).toEqual([{
           'http://example.org/n3#dummyParam1': [ 'true', 'a', 'b' ],
           'http://example.org/n3#dummyParam2': 'a',
         }]);
       });
 
-      it('should fail to make a valid instance', () => expect(constructor.create()).rejects
+      it('should fail to make a valid instance', () => expect(constructor.create({ moduleState })).rejects
         .toThrow(new Error('Failed to get module element Dummy from module n3')));
     });
 
@@ -611,7 +620,7 @@ describe('UnmappedNamedComponentFactory', () => {
     });
 
     it('should create valid arguments', async() => {
-      const args = await constructor.makeArguments();
+      const args = await constructor.makeArguments({ moduleState });
       expect(await args[0]['http://example.org/n3#dummyParam']()).toEqual('true');
     });
   });

@@ -12,8 +12,14 @@ const Hello = require('../__mocks__/helloworld').Hello;
 describe('Loader', () => {
   let loader: Loader;
   let objectLoader: RdfObjectLoader;
-  beforeEach(() => {
-    loader = new Loader({ importPaths: { 'http://example.org/': `${__dirname}/` }});
+  beforeEach(async() => {
+    loader = new Loader();
+    (<any> loader).moduleState = {
+      mainModulePath: __dirname,
+      importPaths: {
+        'http://example.org/': `${__dirname}/`,
+      },
+    };
     // Create resources via object loader, so we can use CURIEs
     objectLoader = loader.objectLoader;
   });

@@ -4,6 +4,7 @@ import { MappedNamedComponentFactory } from '../../lib/factory/MappedNamedCompon
 import { UnmappedNamedComponentFactory } from '../../lib/factory/UnmappedNamedComponentFactory';
 import { UnnamedComponentFactory } from '../../lib/factory/UnnamedComponentFactory';
 import { Loader } from '../../lib/Loader';
+import type { IModuleState } from '../../lib/ModuleStateBuilder';
 import * as Util from '../../lib/Util';
 
 const N3 = require('n3');
@@ -11,8 +12,16 @@ const N3 = require('n3');
 describe('ComponentFactory', () => {
   let loader: Loader;
   let objectLoader: RdfObjectLoader;
+  let moduleState: IModuleState;
   beforeEach(() => {
     loader = new Loader();
+    moduleState = <any> {
+      mainModulePath: `${__dirname}/..`,
+      importPaths: {
+        'http://example.org/': `${__dirname}/`,
+      },
+    };
+    (<any> loader).moduleState = moduleState;
     // Create resources via object loader, so we can use CURIEs
     objectLoader = loader.objectLoader;
   });
@@ -74,7 +83,7 @@ describe('ComponentFactory', () => {
       });
 
       it('should make a valid instance', async() => {
-        const instance = await constructor.create();
+        const instance = await constructor.create({ moduleState });
         expect(instance).toBeTruthy();
         expect(instance).toBeInstanceOf(N3.Lexer);
       });
@@ -107,7 +116,7 @@ describe('ComponentFactory', () => {
       });
 
       it('should make a valid instance', async() => {
-        const instance = await constructor.create();
+        const instance = await constructor.create({ moduleState });
         expect(instance).toBeTruthy();
         expect(instance).toBeInstanceOf(N3.Lexer);
       });
@@ -170,7 +179,7 @@ describe('ComponentFactory', () => {
     });
 
     it('should make a valid instance', async() => {
-      const instance = await constructor.create();
+      const instance = await constructor.create({ moduleState });
       expect(instance).toBeTruthy();
       expect(instance).toBeInstanceOf(N3.Lexer);
     });

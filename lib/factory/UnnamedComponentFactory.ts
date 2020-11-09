@@ -1,8 +1,9 @@
 import * as Path from 'path';
 import type { Resource } from 'rdf-object';
 import { Loader } from '../Loader';
+import type { IModuleState } from '../ModuleStateBuilder';
 import * as Util from '../Util';
-import type { IComponentFactory, ICreationSettings } from './IComponentFactory';
+import type { IComponentFactory, ICreationSettings, ICreationSettingsInner } from './IComponentFactory';
 import Dict = NodeJS.Dict;
 import Module = NodeJS.Module;
 
@@ -48,7 +49,7 @@ export class UnnamedComponentFactory implements IComponentFactory {
   public static async getArgumentValue(
     value: Resource | Resource[],
     loader: Loader,
-    settings: ICreationSettings = {},
+    settings: ICreationSettings,
   ): Promise<any> {
     if (Array.isArray(value)) {
       // Unwrap unique values out of the array
@@ -142,7 +143,7 @@ export class UnnamedComponentFactory implements IComponentFactory {
    * @param settings The settings for creating the instance.
    * @returns New instantiations of the provided arguments.
    */
-  public async makeArguments(settings?: ICreationSettings): Promise<any[]> {
+  public async makeArguments(settings: ICreationSettingsInner): Promise<any[]> {
     if (this.componentDefinition.property.arguments) {
       if (!this.componentDefinition.property.arguments.list) {
         throw new Error(`Detected invalid arguments for component "${Util.resourceIdToString(this.componentDefinition, this.loader.objectLoader)}": arguments are not an RDF list.`);
@@ -158,48 +159,50 @@ export class UnnamedComponentFactory implements IComponentFactory {
   /**
    * Require a package if the module that was invoked has the given module name.
    * This is done by looking for the nearest package.json.
+   * @param moduleState The module state.
    * @param requireName The module name that should be required.
    * @returns {any} The require() result
    */
-  public requireCurrentRunningModuleIfCurrent(requireName: string): void {
-    const path: string = Util.getMainModulePath();
-    const pckg: any = Util.getPackageJson(Path.join(path, 'package.json'));
+  public requireCurrentRunningModuleIfCurrent(moduleState: IModuleState, requireName: string): void {
+    const pckg = moduleState.packageJsons[moduleState.mainModulePath];
     if (pckg) {
       if (requireName === pckg.name) {
-        const mainPath: string = Path.join(path, pckg.main);
+        const mainPath: string = Path.join(moduleState.mainModulePath, pckg.main);
         return require(mainPath);
       }
     }
   }
 
   /**
+   * @param moduleState The module state.
    * @return {string} The index module path of the current running module.
    * @private
    */
-  protected _getCurrentRunningModuleMain(): string {
-    const path: string = Util.getMainModulePath();
-    const pckg: any = Util.getPackageJson(Path.join(path, 'package.json'));
-    return Path.join(path, pckg.main);
+  protected _getCurrentRunningModuleMain(moduleState: IModuleState): string {
+    const pckg = moduleState.packageJsons[moduleState.mainModulePath];
+    return Path.join(moduleState.mainModulePath, pckg.main);
   }
 
   /**
    * @param settings The settings for creating the instance.
    * @returns A new instance of the component.
    */
-  public async create(settings?: ICreationSettings): Promise<any> {
-    settings = settings || {};
+  public async create(settings: ICreationSettingsInner): Promise<any> {
     const serializations: string[] | undefined = settings.serializations;
     let requireName: string = this.componentDefinition.property.requireName.value;
     requireName = this.overrideRequireNames[requireName] || requireName;
     let object: any = null;
     let resultingRequirePath: string | undefined;
     try {
-      object = this.requireCurrentRunningModuleIfCurrent(this.componentDefinition.property.requireName.value);
+      object = this.requireCurrentRunningModuleIfCurrent(
+        settings.moduleState,
+        this.componentDefinition.property.requireName.value,
+      );
       if (!object) {
         throw new Error('Component is not the main module');
       } else if (serializations) {
         resultingRequirePath = `.${Path.sep
-        }${Path.relative(Util.getMainModulePath(), this._getCurrentRunningModuleMain())}`;
+        }${Path.relative(settings.moduleState.mainModulePath, this._getCurrentRunningModuleMain(settings.moduleState))}`;
       }
     } catch {
       if (serializations) {

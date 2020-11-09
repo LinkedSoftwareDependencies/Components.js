@@ -3,13 +3,24 @@ import type { Resource } from 'rdf-object';
 import { RdfObjectLoader } from 'rdf-object';
 import { UnnamedComponentFactory } from '../../lib/factory/UnnamedComponentFactory';
 import { Loader } from '../../lib/Loader';
+import type { IModuleState } from '../../lib/ModuleStateBuilder';
 
 const N3 = require('n3');
 const Hello = require('../../__mocks__/helloworld').HelloNested.Deeper.Hello;
 
 describe('UnnamedComponentFactory', () => {
+  let loader: Loader;
   let objectLoader: RdfObjectLoader;
+  let moduleState: IModuleState;
   beforeEach(() => {
+    loader = new Loader();
+    moduleState = <any> {
+      mainModulePath: `${__dirname}/..`,
+      importPaths: {
+        'http://example.org/': `${__dirname}/`,
+      },
+    };
+    (<any> loader).moduleState = moduleState;
     // Create resources via object loader, so we can use CURIEs
     objectLoader = new RdfObjectLoader({ context: JSON.parse(fs.readFileSync(`${__dirname}/../../components/context.jsonld`, 'utf8')) });
   });
@@ -30,19 +41,20 @@ describe('UnnamedComponentFactory', () => {
           ],
         },
       });
-      constructor = new UnnamedComponentFactory(n3LexerComponent, true, {}, new Loader());
+      constructor = new UnnamedComponentFactory(n3LexerComponent, true, {}, loader);
     });
 
     describe('#getArgumentValue', () => {
       it('should create valid literals', async() => {
         expect(await UnnamedComponentFactory.getArgumentValue(
           objectLoader.createCompactedResource('"application/trig"'),
-          new Loader(),
+          loader,
+          {},
         )).toEqual('application/trig');
       });
 
       it('should create valid instances', async() => {
-        const ret = await UnnamedComponentFactory.getArgumentValue(n3LexerComponent, new Loader());
+        const ret = await UnnamedComponentFactory.getArgumentValue(n3LexerComponent, loader, {});
         expect(ret).toBeTruthy();
         expect(ret).toBeInstanceOf(N3.Lexer);
       });
@@ -53,12 +65,12 @@ describe('UnnamedComponentFactory', () => {
     });
 
     it('should create valid arguments', async() => {
-      const args = await constructor.makeArguments();
+      const args = await constructor.makeArguments({ moduleState });
       expect(args).toEqual([{ comments: [ 'true' ]}]);
     });
 
     it('should make a valid instance', async() => {
-      const ret = await UnnamedComponentFactory.getArgumentValue(n3LexerComponent, new Loader());
+      const ret = await UnnamedComponentFactory.getArgumentValue(n3LexerComponent, loader, {});
       expect(ret).toBeTruthy();
       expect(ret).toBeInstanceOf(N3.Lexer);
     });
@@ -80,7 +92,7 @@ describe('UnnamedComponentFactory', () => {
           ],
         },
       });
-      constructor = new UnnamedComponentFactory(n3LexerComponentArray, true, {}, new Loader());
+      constructor = new UnnamedComponentFactory(n3LexerComponentArray, true, {}, loader);
     });
 
     it('should be valid', () => {
@@ -88,12 +100,12 @@ describe('UnnamedComponentFactory', () => {
     });
 
     it('should create valid arguments', async() => {
-      const args = await constructor.makeArguments();
+      const args = await constructor.makeArguments({ moduleState });
       expect(args).toEqual([[ 'A', 'B', 'C' ]]);
     });
 
     it('should make a valid instance', async() => {
-      const instance = await constructor.create();
+      const instance = await constructor.create({ moduleState });
       expect(instance).toBeTruthy();
       expect(instance).toBeInstanceOf(N3.Lexer);
     });
@@ -131,7 +143,7 @@ describe('UnnamedComponentFactory', () => {
           ],
         },
       });
-      constructor = new UnnamedComponentFactory(n3ParserComponent, true, {}, new Loader());
+      constructor = new UnnamedComponentFactory(n3ParserComponent, true, {}, loader);
     });
 
     it('should be valid', () => {
@@ -139,7 +151,7 @@ describe('UnnamedComponentFactory', () => {
     });
 
     it('should create valid arguments', async() => {
-      const args = await constructor.makeArguments();
+      const args = await constructor.makeArguments({ moduleState });
       expect(args.length).toEqual(1);
       expect(args[0].format).toEqual([ 'application/trig' ]);
       expect(args[0].lexer).toBeTruthy();
@@ -147,7 +159,7 @@ describe('UnnamedComponentFactory', () => {
     });
 
     it('should make a valid instance', async() => {
-      const instance = await constructor.create();
+      const instance = await constructor.create({ moduleState });
       expect(instance).toBeTruthy();
       expect(instance).toBeInstanceOf(N3.Parser);
     });
@@ -165,7 +177,7 @@ describe('UnnamedComponentFactory', () => {
           list: [],
         },
       });
-      constructor = new UnnamedComponentFactory(nestedHelloWorldComponent, true, {}, new Loader());
+      constructor = new UnnamedComponentFactory(nestedHelloWorldComponent, true, {}, loader);
     });
 
     it('should be valid', () => {
@@ -173,12 +185,12 @@ describe('UnnamedComponentFactory', () => {
     });
 
     it('should create valid arguments', async() => {
-      const args = await constructor.makeArguments();
+      const args = await constructor.makeArguments({ moduleState });
       expect(args).toEqual([]);
     });
 
     it('should make a valid instance', async() => {
-      const instance = await constructor.create();
+      const instance = await constructor.create({ moduleState });
       expect(instance).toBeTruthy();
       expect(instance).toBeInstanceOf(Hello);
     });
@@ -194,7 +206,7 @@ describe('UnnamedComponentFactory', () => {
         requireElement: '"NoConstructor"',
         requireNoConstructor: '"true"',
       });
-      constructor = new UnnamedComponentFactory(component, true, {}, new Loader());
+      constructor = new UnnamedComponentFactory(component, true, {}, loader);
     });
 
     it('should be valid', () => {
@@ -202,12 +214,12 @@ describe('UnnamedComponentFactory', () => {
     });
 
     it('should create valid arguments', async() => {
-      const args = await constructor.makeArguments();
+      const args = await constructor.makeArguments({ moduleState });
       expect(args).toEqual([]);
     });
 
     it('should make a valid instance', async() => {
-      const instance = await constructor.create();
+      const instance = await constructor.create({ moduleState });
       expect(instance).toBeTruthy();
       expect(instance).toBeInstanceOf(Hello);
     });

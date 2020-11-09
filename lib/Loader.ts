@@ -1,11 +1,12 @@
 import * as fs from 'fs';
 import type { Readable } from 'stream';
-import NodeUtil = require('util');
 import type * as RDF from 'rdf-js';
 import type { Resource } from 'rdf-object';
 import { RdfObjectLoader } from 'rdf-object';
 import { ComponentFactory } from './factory/ComponentFactory';
-import type { IComponentFactory, ICreationSettings } from './factory/IComponentFactory';
+import type { IComponentFactory, ICreationSettings, ICreationSettingsInner } from './factory/IComponentFactory';
+import type { IModuleState } from './ModuleStateBuilder';
+import { ModuleStateBuilder } from './ModuleStateBuilder';
 import { RdfParser } from './rdf/RdfParser';
 import Util = require('./Util');
 import { resourceIdToString, resourceToString } from './Util';
@@ -17,9 +18,9 @@ import { resourceIdToString, resourceToString } from './Util';
  * Components with the same URI will only be instantiated once.
  */
 export class Loader {
+  private readonly absolutizeRelativePaths: boolean;
+  private readonly mainModulePath?: string;
   public readonly objectLoader: RdfObjectLoader;
-
-  public readonly properties: ILoaderProperties;
 
   public componentResources: Record<string, Resource> = {};
   /**
@@ -28,37 +29,26 @@ export class Loader {
    */
   protected readonly overrideRequireNames: Record<string, string> = {};
 
+  protected moduleState: IModuleState | undefined;
   protected readonly runTypeConfigs: Record<string, Resource[]> = {};
   protected readonly instances: Record<string, any> = {};
   protected registrationFinalized = false;
 
-  public constructor(properties?: ILoaderProperties) {
-    this.properties = properties || {};
-
+  public constructor(options: ILoaderProperties = {}) {
     this.objectLoader = new RdfObjectLoader({
       context: JSON.parse(fs.readFileSync(`${__dirname}/../components/context.jsonld`, 'utf8')),
     });
-
-    if (this.properties.mainModulePath) {
-      Util.setMainModulePath(this.properties.mainModulePath);
-    }
-    if (!('absolutizeRelativePaths' in this.properties)) {
-      this.properties.absolutizeRelativePaths = true;
-    }
+    this.mainModulePath = options.mainModulePath;
+    this.absolutizeRelativePaths = 'absolutizeRelativePaths' in options ?
+      Boolean(options.absolutizeRelativePaths) :
+      true;
   }
 
-  public async getContexts(): Promise<Record<string, any>> {
-    if (!this.properties.contexts) {
-      this.properties.contexts = await Util.getAvailableContexts();
+  public async getModuleState(): Promise<IModuleState> {
+    if (!this.moduleState) {
+      this.moduleState = await new ModuleStateBuilder().buildModuleState(require, this.mainModulePath);
     }
-    return this.properties.contexts;
-  }
-
-  public async getImportPaths(): Promise<Record<string, string>> {
-    if (!this.properties.importPaths) {
-      this.properties.importPaths = await Util.getAvailableImportPaths();
-    }
-    return this.properties.importPaths;
+    return this.moduleState;
   }
 
   /**
@@ -208,15 +198,15 @@ export class Loader {
    * @returns {Promise<T>} A promise that resolves once loading has finished.
    */
   public async registerModuleResourcesUrl(moduleResourceUrl: string, fromPath?: string): Promise<void> {
-    const [ contexts, importPaths ] = await Promise.all([ this.getContexts(), this.getImportPaths() ]);
+    const state = await this.getModuleState();
     const data = await Util.getContentsFromUrlOrPath(moduleResourceUrl, fromPath);
     return this.registerModuleResourcesStream(new RdfParser().parse(data, {
       fromPath,
       path: moduleResourceUrl,
-      contexts,
-      importPaths,
+      contexts: state.contexts,
+      importPaths: state.importPaths,
       ignoreImports: false,
-      absolutizeRelativePaths: this.properties.absolutizeRelativePaths,
+      absolutizeRelativePaths: this.absolutizeRelativePaths,
     }));
   }
 
@@ -227,8 +217,8 @@ export class Loader {
    * @returns {Promise<T>} A promise that resolves once loading has finished.
    */
   public async registerAvailableModuleResources(): Promise<void> {
-    const data = await Util.getAvailableModuleComponentPaths();
-    await Promise.all(Object.values(data)
+    const state = await this.getModuleState();
+    await Promise.all(Object.values(state.componentModules)
       .map((moduleResourceUrl: string) => this.registerModuleResourcesUrl(moduleResourceUrl)));
   }
 
@@ -282,24 +272,24 @@ export class Loader {
    * @param settings The settings for creating the instance.
    * @returns {any} The run instance.
    */
-  public async instantiate(configResource: Resource, settings?: ICreationSettings): Promise<any> {
-    settings = settings || {};
+  public async instantiate(configResource: Resource, settings: ICreationSettings = {}): Promise<any> {
+    const settingsInner: ICreationSettingsInner = { ...settings, moduleState: await this.getModuleState() };
     // Check if this resource is required as argument in its own chain,
     // if so, return a dummy value, to avoid infinite recursion.
-    const resourceBlacklist = settings.resourceBlacklist || {};
+    const resourceBlacklist = settingsInner.resourceBlacklist || {};
     if (resourceBlacklist[configResource.value]) {
       return {};
     }
 
     // Before instantiating, first check if the resource is a variable
     if (configResource.isA(Util.IRI_VARIABLE)) {
-      if (settings.serializations) {
-        if (settings.asFunction) {
+      if (settingsInner.serializations) {
+        if (settingsInner.asFunction) {
           return `getVariableValue('${configResource.value}')`;
         }
         throw new Error(`Detected a variable during config compilation: ${resourceIdToString(configResource, this.objectLoader)}. Variables are not supported, but require the -f flag to expose the compiled config as function.`);
       } else {
-        const value = settings.variables ? settings.variables[configResource.value] : undefined;
+        const value = settingsInner.variables ? settingsInner.variables[configResource.value] : undefined;
         if (value === undefined) {
           throw new Error(`Undefined variable: ${resourceIdToString(configResource, this.objectLoader)}`);
         }
@@ -311,7 +301,7 @@ export class Loader {
       const subBlackList: Record<string, boolean> = { ...resourceBlacklist };
       subBlackList[configResource.value] = true;
       this.instances[configResource.value] = this.getConfigConstructor(configResource).create(
-        { resourceBlacklist: subBlackList, ...settings },
+        { resourceBlacklist: subBlackList, ...settingsInner },
       );
     }
     return this.instances[configResource.value];
@@ -397,8 +387,6 @@ export class Loader {
     this.componentResources = Object.freeze(this.componentResources);
 
     this.registrationFinalized = true;
-
-    Util.NODE_MODULES_PACKAGE_CONTENTS = {};
   }
 
   public checkFinalizeRegistration(): void {
@@ -463,15 +451,15 @@ export class Loader {
     fromPath?: string,
   ): Promise<IComponentFactory> {
     this.checkFinalizeRegistration();
-    const [ contexts, importPaths ] = await Promise.all([ this.getContexts(), this.getImportPaths() ]);
+    const state = await this.getModuleState();
     const data = await Util.getContentsFromUrlOrPath(configResourceUrl, fromPath);
     return this.getConfigConstructorFromStream(configResourceUri, new RdfParser().parse(data, {
       fromPath,
       path: configResourceUrl,
-      contexts,
-      importPaths,
+      contexts: state.contexts,
+      importPaths: state.importPaths,
       ignoreImports: false,
-      absolutizeRelativePaths: this.properties.absolutizeRelativePaths,
+      absolutizeRelativePaths: this.absolutizeRelativePaths,
     }));
   }
 
@@ -490,15 +478,15 @@ export class Loader {
     fromPath?: string,
     settings?: ICreationSettings,
   ): Promise<any> {
-    const [ contexts, importPaths ] = await Promise.all([ this.getContexts(), this.getImportPaths() ]);
+    const state = await this.getModuleState();
     const data = await Util.getContentsFromUrlOrPath(configResourceUrl, fromPath);
     return this.instantiateFromStream(configResourceUri, new RdfParser().parse(data, {
       fromPath,
       path: configResourceUrl,
-      contexts,
-      importPaths,
+      contexts: state.contexts,
+      importPaths: state.importPaths,
       ignoreImports: false,
-      absolutizeRelativePaths: this.properties.absolutizeRelativePaths,
+      absolutizeRelativePaths: this.absolutizeRelativePaths,
     }), settings);
   }
 
@@ -509,7 +497,12 @@ export class Loader {
    * @param settings The settings for creating the instance.
    * @returns {any} The run instance.
    */
-  public instantiateManually(componentUri: string, params: Record<string, string>, settings?: ICreationSettings): any {
+  public async instantiateManually(
+    componentUri: string,
+    params: Record<string, string>,
+    settings: ICreationSettings = {},
+  ): Promise<any> {
+    const settingsInner: ICreationSettingsInner = { ...settings, moduleState: await this.getModuleState() };
     this.checkFinalizeRegistration();
     const componentResource: Resource = this.componentResources[componentUri];
     if (!componentResource) {
@@ -530,13 +523,11 @@ export class Loader {
       this.overrideRequireNames,
       this,
     );
-    return constructor.create(settings);
+    return constructor.create(settingsInner);
   }
 }
 
 export interface ILoaderProperties {
   absolutizeRelativePaths?: boolean;
-  contexts?: Record<string, any>;
-  importPaths?: Record<string, string>;
   mainModulePath?: string;
 }

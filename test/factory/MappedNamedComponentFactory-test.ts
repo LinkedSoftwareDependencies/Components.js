@@ -2,6 +2,7 @@ import type { RdfObjectLoader } from 'rdf-object';
 import { Resource } from 'rdf-object';
 import { MappedNamedComponentFactory } from '../../lib/factory/MappedNamedComponentFactory';
 import { Loader } from '../../lib/Loader';
+import type { IModuleState } from '../../lib/ModuleStateBuilder';
 import * as Util from '../../lib/Util';
 
 const N3 = require('n3');
@@ -10,9 +11,16 @@ const Hello = require('../../__mocks__/helloworld').Hello;
 describe('MappedNamedComponentFactory', () => {
   let loader: Loader;
   let objectLoader: RdfObjectLoader;
-
+  let moduleState: IModuleState;
   beforeEach(() => {
     loader = new Loader();
+    moduleState = <any> {
+      mainModulePath: `${__dirname}/..`,
+      importPaths: {
+        'http://example.org/': `${__dirname}/`,
+      },
+    };
+    (<any> loader).moduleState = moduleState;
     // Create resources via object loader, so we can use CURIEs
     objectLoader = loader.objectLoader;
   });
@@ -75,12 +83,12 @@ describe('MappedNamedComponentFactory', () => {
       });
 
       it('should create valid arguments', async() => {
-        const args = await constructor.makeArguments();
+        const args = await constructor.makeArguments({ moduleState });
         expect(args).toEqual([{ comments: 'true', lineMode: 'true', n3: 'true' }]);
       });
 
       it('should make a valid instance', async() => {
-        const instance = await constructor.create();
+        const instance = await constructor.create({ moduleState });
         expect(instance).toBeTruthy();
         expect(instance).toBeInstanceOf(N3.Lexer);
       });
@@ -237,14 +245,14 @@ describe('MappedNamedComponentFactory', () => {
     });
 
     it('should create valid arguments', async() => {
-      const args = await constructor.makeArguments();
+      const args = await constructor.makeArguments({ moduleState });
       expect(args[0].format).toEqual('application/trig');
       expect(args[0].lexer).toBeTruthy();
       expect(args[0].lexer).toBeInstanceOf(N3.Lexer);
     });
 
     it('should make a valid instance', async() => {
-      const instance = await constructor.create();
+      const instance = await constructor.create({ moduleState });
       expect(instance).toBeTruthy();
       expect(instance).toBeInstanceOf(N3.Parser);
     });
@@ -282,12 +290,12 @@ describe('MappedNamedComponentFactory', () => {
     });
 
     it('should create valid arguments', async() => {
-      const args = await constructor.makeArguments();
+      const args = await constructor.makeArguments({ moduleState });
       expect(args).toEqual([]);
     });
 
     it('should make a valid instance', async() => {
-      const instance = await constructor.create();
+      const instance = await constructor.create({ moduleState });
       expect(instance).toBeTruthy();
       expect(instance).toBe(N3.Util);
     });
@@ -335,14 +343,14 @@ describe('MappedNamedComponentFactory', () => {
     });
 
     it('should create valid arguments', async() => {
-      const args = await constructor.makeArguments();
+      const args = await constructor.makeArguments({ moduleState });
       expect(args).toEqual([{
         dummyParam: 'true',
       }]);
     });
 
     it('should fail to make a valid instance', async() => {
-      await expect(constructor.create()).rejects
+      await expect(constructor.create({ moduleState })).rejects
         .toThrow(new Error('Failed to get module element Dummy from module n3'));
     });
   });
@@ -429,7 +437,7 @@ describe('MappedNamedComponentFactory', () => {
     });
 
     it('should create valid arguments', async() => {
-      const args = await constructor.makeArguments();
+      const args = await constructor.makeArguments({ moduleState });
       expect(args).toEqual([{
         dummyParam: 'true',
         instanceParam: new Hello(),
@@ -437,7 +445,7 @@ describe('MappedNamedComponentFactory', () => {
     });
 
     it('should make a valid instance', async() => {
-      const instance = await constructor.create();
+      const instance = await constructor.create({ moduleState });
       expect(instance).toBeTruthy();
       expect(instance).toBeInstanceOf(Hello);
     });
@@ -500,14 +508,14 @@ describe('MappedNamedComponentFactory', () => {
     });
 
     it('should create valid arguments', async() => {
-      const args = await constructor.makeArguments();
+      const args = await constructor.makeArguments({ moduleState });
       expect(args).toEqual([{
         idParam: 'http://example.org/myHelloComponent',
       }]);
     });
 
     it('should make a valid instance', async() => {
-      const instance = await constructor.create();
+      const instance = await constructor.create({ moduleState });
       expect(instance).toBeTruthy();
       expect(instance).toBeInstanceOf(Hello);
     });
@@ -558,14 +566,14 @@ describe('MappedNamedComponentFactory', () => {
     });
 
     it('should create valid arguments', async() => {
-      const args = await constructor.makeArguments();
+      const args = await constructor.makeArguments({ moduleState });
       expect(args).toEqual([[
         'true', 'false',
       ]]);
     });
 
     it('should make a valid instance', async() => {
-      const instance = await constructor.create();
+      const instance = await constructor.create({ moduleState });
       expect(instance).toBeTruthy();
       expect(instance).toBeInstanceOf(Hello);
     });
@@ -609,14 +617,14 @@ describe('MappedNamedComponentFactory', () => {
     });
 
     it('should create valid arguments', async() => {
-      const args = await constructor.makeArguments();
+      const args = await constructor.makeArguments({ moduleState });
       expect(args).toEqual([
         'true', 'false',
       ]);
     });
 
     it('should make a valid instance', async() => {
-      const instance = await constructor.create();
+      const instance = await constructor.create({ moduleState });
       expect(instance).toBeTruthy();
       expect(instance).toBeInstanceOf(Hello);
     });
@@ -683,7 +691,7 @@ describe('MappedNamedComponentFactory', () => {
       });
 
       it('should create valid arguments', async() => {
-        const args = await constructor.makeArguments();
+        const args = await constructor.makeArguments({ moduleState });
         expect(args).toEqual([{
           dummyParam1: [ 'a', 'b' ],
           dummyParam2: [ 'a' ],
@@ -691,7 +699,7 @@ describe('MappedNamedComponentFactory', () => {
       });
 
       it('should make a valid instance', async() => {
-        const instance = await constructor.create();
+        const instance = await constructor.create({ moduleState });
         expect(instance).toBeTruthy();
         expect(instance).toBeInstanceOf(Hello);
       });
@@ -711,7 +719,7 @@ describe('MappedNamedComponentFactory', () => {
       });
 
       it('should create valid arguments', async() => {
-        const args = await constructor.makeArguments();
+        const args = await constructor.makeArguments({ moduleState });
         expect(args).toEqual([{
           dummyParam1: [ 'true' ],
           dummyParam2: [ 'false' ],
@@ -719,7 +727,7 @@ describe('MappedNamedComponentFactory', () => {
       });
 
       it('should make a valid instance', async() => {
-        const instance = await constructor.create();
+        const instance = await constructor.create({ moduleState });
         expect(instance).toBeTruthy();
         expect(instance).toBeInstanceOf(Hello);
       });
@@ -799,7 +807,7 @@ describe('MappedNamedComponentFactory', () => {
       });
 
       it('should create valid arguments', async() => {
-        const args = await constructor.makeArguments();
+        const args = await constructor.makeArguments({ moduleState });
         expect(args).toEqual([{
           dummyParam1: [ 'a', 'b' ],
           dummyParam2: [ 'a' ],
@@ -807,7 +815,7 @@ describe('MappedNamedComponentFactory', () => {
       });
 
       it('should make a valid instance', async() => {
-        const instance = await constructor.create();
+        const instance = await constructor.create({ moduleState });
         expect(instance).toBeTruthy();
         expect(instance).toBeInstanceOf(Hello);
       });
@@ -827,7 +835,7 @@ describe('MappedNamedComponentFactory', () => {
       });
 
       it('should create valid arguments', async() => {
-        const args = await constructor.makeArguments();
+        const args = await constructor.makeArguments({ moduleState });
         expect(args).toEqual([{
           dummyParam1: [ 'true' ],
           dummyParam2: [ 'false' ],
@@ -835,7 +843,7 @@ describe('MappedNamedComponentFactory', () => {
       });
 
       it('should make a valid instance', async() => {
-        const instance = await constructor.create();
+        const instance = await constructor.create({ moduleState });
         expect(instance).toBeTruthy();
         expect(instance).toBeInstanceOf(Hello);
       });
@@ -858,7 +866,7 @@ describe('MappedNamedComponentFactory', () => {
       });
 
       it('should create valid arguments', async() => {
-        const args = await constructor.makeArguments();
+        const args = await constructor.makeArguments({ moduleState });
         expect(args).toEqual([{
           dummyParam1: [ 'a', 'b' ],
           dummyParam2: [ 'a' ],
@@ -866,7 +874,7 @@ describe('MappedNamedComponentFactory', () => {
       });
 
       it('should make a valid instance', async() => {
-        const instance = await constructor.create();
+        const instance = await constructor.create({ moduleState });
         expect(instance).toBeTruthy();
         expect(instance).toBeInstanceOf(Hello);
       });
@@ -941,14 +949,14 @@ describe('MappedNamedComponentFactory', () => {
       });
 
       it('should create valid arguments', async() => {
-        const args = await constructor.makeArguments();
+        const args = await constructor.makeArguments({ moduleState });
         expect(args).toEqual([[
           'true',
         ]]);
       });
 
       it('should make a valid instance', async() => {
-        const instance = await constructor.create();
+        const instance = await constructor.create({ moduleState });
         expect(instance).toBeTruthy();
         expect(instance).toBeInstanceOf(Hello);
       });
@@ -1022,12 +1030,12 @@ describe('MappedNamedComponentFactory', () => {
     });
 
     it('should create valid arguments', async() => {
-      const args = await constructor.makeArguments();
+      const args = await constructor.makeArguments({ moduleState });
       expect(await args[0].dummyParamLazy[0]()).toEqual('true');
     });
 
     it('should make a valid instance', async() => {
-      const instance = await constructor.create();
+      const instance = await constructor.create({ moduleState });
       expect(instance).toBeTruthy();
       expect(instance).toBeInstanceOf(Hello);
     });
@@ -1084,6 +1092,7 @@ describe('MappedNamedComponentFactory', () => {
 
     it('should create valid arguments', async() => {
       const args = await constructor.makeArguments({
+        moduleState,
         variables: {
           'ex:var': 3_000,
         },
@@ -1095,16 +1104,18 @@ describe('MappedNamedComponentFactory', () => {
 
     it('should throw when a variable remains undefined', async() => {
       await expect(constructor.makeArguments({
+        moduleState,
         variables: objectLoader.createCompactedResource({}),
       })).rejects.toThrow(new Error('Undefined variable: ex:var'));
     });
 
     it('should throw when no variables are passed', async() => {
-      await expect(constructor.makeArguments()).rejects.toThrow(new Error('Undefined variable: ex:var'));
+      await expect(constructor.makeArguments({ moduleState })).rejects.toThrow(new Error('Undefined variable: ex:var'));
     });
 
     it('should make a valid instance', async() => {
       const instance = await constructor.create({
+        moduleState,
         variables: {
           'ex:var': 3_000,
         },

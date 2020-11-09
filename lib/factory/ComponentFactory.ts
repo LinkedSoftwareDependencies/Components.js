@@ -1,7 +1,7 @@
 import type { Resource } from 'rdf-object';
 import type { Loader } from '../Loader';
 import Util = require('../Util');
-import type { IComponentFactory, ICreationSettings } from './IComponentFactory';
+import type { IComponentFactory, ICreationSettingsInner } from './IComponentFactory';
 
 /**
  * Factory for component definitions of any type.
@@ -63,11 +63,11 @@ export class ComponentFactory implements IComponentFactory {
       this.loader);
   }
 
-  public makeArguments(settings?: ICreationSettings): Promise<any[]> {
+  public makeArguments(settings: ICreationSettingsInner): Promise<any[]> {
     return this._getComponentFactory().makeArguments(settings);
   }
 
-  public create(settings?: ICreationSettings): Promise<any> {
+  public create(settings: ICreationSettingsInner): Promise<any> {
     return this._getComponentFactory().create(settings);
   }
 }

@@ -11,5 +11,14 @@ module.exports = {
     rules: {
         'no-implicit-coercion': 'off',
         'no-sync': 'off',
-    }
+    },
+    overrides: [
+        {
+            // Specific rules for test files
+            files: ['**/test/**/*.ts'],
+            rules: {
+                '@typescript-eslint/require-array-sort-compare': 'off',
+            },
+        },
+    ]
 };
