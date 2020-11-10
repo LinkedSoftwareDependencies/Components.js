@@ -1,5 +1,6 @@
-import * as fs from 'fs/promises';
 import * as Path from 'path';
+// Import syntax only works in Node > 12
+const fs = require('fs').promises;
 
 /**
  * Collects the paths to all available modules and components.

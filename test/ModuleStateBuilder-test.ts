@@ -1,9 +1,18 @@
-import * as fs from 'fs/promises';
 import * as Path from 'path';
 import { mocked } from 'ts-jest/utils';
 import { ModuleStateBuilder } from '../lib/ModuleStateBuilder';
 
-jest.mock('fs/promises');
+// Import syntax only works in Node > 12
+const fs = require('fs').promises;
+
+jest.mock('fs', () => ({
+  promises: {
+    realpath: jest.fn(),
+    stat: jest.fn(),
+    readdir: jest.fn(),
+    readFile: jest.fn(),
+  },
+}));
 
 describe('ModuleStateBuilder', () => {
   let builder: ModuleStateBuilder;
