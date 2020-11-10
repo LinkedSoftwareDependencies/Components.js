@@ -3,8 +3,11 @@ import type { Readable } from 'stream';
 import type * as RDF from 'rdf-js';
 import type { Resource } from 'rdf-object';
 import { RdfObjectLoader } from 'rdf-object';
+import type { Logger } from 'winston';
+import { createLogger, format, transports } from 'winston';
 import { ComponentFactory } from './factory/ComponentFactory';
 import type { IComponentFactory, ICreationSettings, ICreationSettingsInner } from './factory/IComponentFactory';
+import type { LogLevel } from './LogLevel';
 import type { IModuleState } from './ModuleStateBuilder';
 import { ModuleStateBuilder } from './ModuleStateBuilder';
 import { RdfParser } from './rdf/RdfParser';
@@ -20,6 +23,7 @@ import { resourceIdToString, resourceToString } from './Util';
 export class Loader {
   private readonly absolutizeRelativePaths: boolean;
   private readonly mainModulePath?: string;
+  private readonly logger?: Logger;
   public readonly objectLoader: RdfObjectLoader;
 
   public componentResources: Record<string, Resource> = {};
@@ -42,11 +46,26 @@ export class Loader {
     this.absolutizeRelativePaths = 'absolutizeRelativePaths' in options ?
       Boolean(options.absolutizeRelativePaths) :
       true;
+    if (options.logLevel) {
+      this.logger = createLogger({
+        level: options.logLevel,
+        format: format.combine(
+          format.label({ label: 'Components.js' }),
+          format.colorize(),
+          format.timestamp(),
+          format.printf(({ level: levelInner, message, label: labelInner, timestamp }: Record<string, any>): string =>
+            `${timestamp} [${labelInner}] ${levelInner}: ${message}`),
+        ),
+        transports: [ new transports.Console() ],
+      });
+    }
   }
 
   public async getModuleState(): Promise<IModuleState> {
     if (!this.moduleState) {
+      this.log('info', `Initiating component discovery from ${this.mainModulePath || 'the current working directory'}`);
       this.moduleState = await new ModuleStateBuilder().buildModuleState(require, this.mainModulePath);
+      this.log('info', `Discovered ${Object.keys(this.moduleState.componentModules).length} component packages within ${this.moduleState.nodeModulePaths.length} packages`);
     }
     return this.moduleState;
   }
@@ -385,6 +404,7 @@ export class Loader {
 
     // Freeze component resources
     this.componentResources = Object.freeze(this.componentResources);
+    this.log('info', `Registered ${Object.keys(this.componentResources).length} components`);
 
     this.registrationFinalized = true;
   }
@@ -525,9 +545,22 @@ export class Loader {
     );
     return constructor.create(settingsInner);
   }
+
+  /**
+   * Log a message.
+   * @param level The level to log at.
+   * @param message The message to log.
+   * @param meta Optional metadata to include in the log message.
+   */
+  public log(level: LogLevel, message: string, meta?: any): void {
+    if (this.logger) {
+      this.logger.log(level, message, meta);
+    }
+  }
 }
 
 export interface ILoaderProperties {
   absolutizeRelativePaths?: boolean;
   mainModulePath?: string;
+  logLevel?: LogLevel;
 }
