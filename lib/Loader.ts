@@ -218,11 +218,6 @@ export class Loader {
   public async registerModuleResourcesStream(moduleResourceStream: RDF.Stream & Readable): Promise<void> {
     try {
       await this.objectLoader.import(moduleResourceStream);
-      for (const resource of Object.values(this.objectLoader.resources)) {
-        if (resource.isA(Util.IRI_MODULE) && !resource.term.equals(Util.IRI_MODULE)) {
-          this.registerModuleResource(resource);
-        }
-      }
     } catch (error: unknown) {
       throw this.generateErrorLog(error);
     }
@@ -425,6 +420,13 @@ export class Loader {
   public finalizeRegistration(): void {
     if (this.registrationFinalized) {
       throw new Error('Attempted to finalize and already finalized loader.');
+    }
+
+    // Register all object-loaded modules
+    for (const resource of Object.values(this.objectLoader.resources)) {
+      if (resource.isA(Util.IRI_MODULE) && !resource.term.equals(Util.IRI_MODULE)) {
+        this.registerModuleResource(resource);
+      }
     }
 
     // Component parameter inheritance

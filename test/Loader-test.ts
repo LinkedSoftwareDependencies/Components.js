@@ -102,6 +102,7 @@ describe('Loader', () => {
         moduleStream.push(quad(component3, `${Util.PREFIXES.oo}parameter`, 'http://example.org/myModule/params#param2'));
         moduleStream.push(null);
         await loader.registerModuleResourcesStream(moduleStream);
+        loader.finalizeRegistration();
       });
 
       it('module components to be registered', () => {
@@ -156,6 +157,7 @@ describe('Loader', () => {
     describe('with a file triple stream', () => {
       beforeEach(async() => {
         await loader.registerModuleResourcesStream(parse('module-hello-world.jsonld'));
+        loader.finalizeRegistration();
       });
 
       it('module components to be registered', () => {
@@ -215,6 +217,7 @@ describe('Loader', () => {
     describe('with a valid JSON file path', () => {
       beforeEach(async() => {
         await loader.registerModuleResourcesUrl('./assets/module-hello-world.jsonld', __dirname);
+        loader.finalizeRegistration();
       });
 
       it('module components to be registered', () => {
@@ -225,6 +228,7 @@ describe('Loader', () => {
     describe('with a valid ttl file path', () => {
       beforeEach(async() => {
         await loader.registerModuleResourcesUrl('assets/module-hello-world.ttl', __dirname);
+        loader.finalizeRegistration();
       });
 
       it('module components to be registered', () => {
@@ -244,6 +248,7 @@ describe('Loader', () => {
     describe('with import statements', () => {
       beforeEach(async() => {
         await loader.registerModuleResourcesUrl('assets/module-hello-world-imports.jsonld', __dirname);
+        loader.finalizeRegistration();
       });
 
       it('should import components', () => {
@@ -256,6 +261,7 @@ describe('Loader', () => {
   describe('constructing an component with constructor mappings', () => {
     beforeEach(async() => {
       await loader.registerModuleResourcesStream(parse('module-hello-world-mapping.jsonld'));
+      loader.finalizeRegistration();
     });
 
     it('should produce instances with correct parameter values for a first instantiation', async() => {
@@ -277,6 +283,7 @@ describe('Loader', () => {
     beforeEach(async() => {
       const moduleStream = parse('module-hello-world.jsonld');
       await loader.registerModuleResourcesStream(moduleStream);
+      loader.finalizeRegistration();
     });
 
     it('should produce instances with equal parameter values', async() => {
@@ -312,6 +319,7 @@ describe('Loader', () => {
     beforeEach(async() => {
       const moduleStream = parse('module-hello-world-inheritableparams.jsonld');
       await loader.registerModuleResourcesStream(moduleStream);
+      loader.finalizeRegistration();
     });
 
     it('should produce instances with inherited parameter values', async() => {
@@ -330,6 +338,7 @@ describe('Loader', () => {
   describe('constructing components from an abstract component', () => {
     beforeEach(async() => {
       await loader.registerModuleResourcesStream(parse('module-hello-world-subclass.jsonld'));
+      loader.finalizeRegistration();
     });
 
     it('a config stream with component instances with inherited parameters from the parent', async() => {
@@ -353,6 +362,7 @@ describe('Loader', () => {
     beforeEach(async() => {
       const moduleStream = parse('module-hello-world-subclassmapping.jsonld');
       await loader.registerModuleResourcesStream(moduleStream);
+      loader.finalizeRegistration();
     });
 
     it('a config stream with component instances with inherited parameters from the parent', async() => {
@@ -390,6 +400,7 @@ describe('Loader', () => {
     beforeEach(async() => {
       const moduleStream = parse('module-hello-world-inheritableparams-subclassmapping.jsonld');
       await loader.registerModuleResourcesStream(moduleStream);
+      loader.finalizeRegistration();
     });
 
     it('should produce instances with inherited parameter values', async() => {
@@ -409,6 +420,7 @@ describe('Loader', () => {
     beforeEach(async() => {
       const moduleStream = parse('module-hello-world-dynamicentries.jsonld');
       await loader.registerModuleResourcesStream(moduleStream);
+      loader.finalizeRegistration();
     });
 
     it('a first config stream with component instances', async() => {
@@ -435,6 +447,7 @@ describe('Loader', () => {
     beforeEach(async() => {
       const moduleStream = parse('module-hello-world-subclassmapping-dynamicentries.jsonld');
       await loader.registerModuleResourcesStream(moduleStream);
+      loader.finalizeRegistration();
     });
 
     it('a config stream with component instances with inherited parameters from the parent', async() => {
@@ -467,6 +480,7 @@ describe('Loader', () => {
     beforeEach(async() => {
       const moduleStream = parse('module-hello-world-inheritableparams-subclassmapping-dynamicentries.jsonld');
       await loader.registerModuleResourcesStream(moduleStream);
+      loader.finalizeRegistration();
     });
 
     it('should produce instances with inherited parameter values', async() => {
@@ -500,6 +514,7 @@ describe('Loader', () => {
     beforeEach(async() => {
       const moduleStream = parse('module-hello-world-inheritableparams-dynamicentries.jsonld');
       await loader.registerModuleResourcesStream(moduleStream);
+      loader.finalizeRegistration();
     });
 
     it('should produce instances with inherited parameter values', async() => {
@@ -577,6 +592,7 @@ describe('Loader', () => {
     beforeEach(async() => {
       const moduleStream = parse('module-hello-world-paramranges.jsonld');
       await loader.registerModuleResourcesStream(moduleStream);
+      loader.finalizeRegistration();
     });
 
     it('should produce instances with correct parameter values after an erroring instantiation', async() => {
@@ -598,6 +614,7 @@ describe('Loader', () => {
     beforeEach(async() => {
       const moduleStream = parse('module-hello-world-dynamicentries-nested.jsonld');
       await loader.registerModuleResourcesStream(moduleStream);
+      loader.finalizeRegistration();
     });
 
     it('a config stream with component instances with nested array mappings', async() => {
@@ -656,6 +673,7 @@ describe('Loader', () => {
     beforeEach(async() => {
       const moduleStream = parse('module-hello-world-lazy.jsonld');
       await loader.registerModuleResourcesStream(moduleStream);
+      loader.finalizeRegistration();
     });
 
     it('should produce instances with lazy parameter values', async() => {
