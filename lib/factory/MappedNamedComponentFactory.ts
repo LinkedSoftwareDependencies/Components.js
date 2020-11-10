@@ -43,7 +43,8 @@ export class MappedNamedComponentFactory extends UnnamedComponentFactory {
       valueOut = MappedNamedComponentFactory.map(resourceScope, valueIn, params, objectLoader);
     }
     if (rawValue) {
-      valueOut = [ objectLoader.createCompactedResource(`"${params.value}"`) ];
+      valueOut = [ objectLoader.createCompactedResource(`"${valueOut[0].value}"`) ];
+      valueOut[0].property.unique = objectLoader.createCompactedResource('"true"');
     }
     return valueOut;
   }
@@ -66,15 +67,15 @@ export class MappedNamedComponentFactory extends UnnamedComponentFactory {
     params: Resource,
     objectLoader: RdfObjectLoader,
   ): Resource[] {
-    if (resource.property.value) {
+    if (resource.property.value || resource.property.valueRawReference) {
       if (resource.property.key && resource.property.key.type === 'Literal' && !resource.property.collectEntries) {
         const ret = objectLoader.createCompactedResource({});
         ret.property.key = resource.property.key;
         for (const value of MappedNamedComponentFactory.mapValue(
           resourceScope,
-          resource.property.value,
+          resource.property.value || resource.property.valueRawReference,
           params,
-          resource.property.value.type === 'Literal',
+          Boolean(resource.property.valueRawReference),
           objectLoader,
         )) {
           ret.properties.value.push(value);
@@ -84,9 +85,9 @@ export class MappedNamedComponentFactory extends UnnamedComponentFactory {
       if (!resource.property.key && !resource.property.collectEntries) {
         return MappedNamedComponentFactory.mapValue(
           resourceScope,
-          resource.property.value,
+          resource.property.value || resource.property.valueRawReference,
           params,
-          resource.property.value.type === 'Literal',
+          Boolean(resource.property.valueRawReference),
           objectLoader,
         );
       }
@@ -154,10 +155,16 @@ export class MappedNamedComponentFactory extends UnnamedComponentFactory {
       }
       const ret = objectLoader.createCompactedResource({});
       for (const element of resource.property.elements.list) {
-        if (element.type !== 'NamedNode' && !element.property.value) {
+        if (element.type !== 'NamedNode' && !element.property.value && !element.property.valueRawReference) {
           throw new Error(`Parameter array elements must be URI's, but found: ${resourceToString(element)}`);
         }
-        for (const value of MappedNamedComponentFactory.mapValue(resourceScope, element, params, false, objectLoader)) {
+        for (const value of MappedNamedComponentFactory.mapValue(
+          resourceScope,
+          element,
+          params,
+          Boolean(element.property.valueRawReference),
+          objectLoader,
+        )) {
           ret.properties.value.push(value);
         }
       }

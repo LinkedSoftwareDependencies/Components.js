@@ -1209,4 +1209,65 @@ describe('MappedNamedComponentFactory', () => {
       await expect(constructor.makeArguments({ moduleState })).rejects.toThrow();
     });
   });
+
+  describe('for a hello world component with raw reference', () => {
+    let helloWorldComponent: Resource;
+    let module: Resource;
+    let constructor: MappedNamedComponentFactory;
+    beforeEach(() => {
+      // Component definition for Hello World
+      helloWorldComponent = objectLoader.createCompactedResource({
+        '@id': 'http://example.org/HelloWorldModule#SayHelloComponent1',
+        requireElement: objectLoader.createCompactedResource('"Hello"'),
+        types: [ objectLoader.createCompactedResource(`${Util.PREFIXES.oo}Class`) ],
+        parameters: [
+          objectLoader.createCompactedResource({
+            '@id': 'http://example.org/HelloWorldModule#dummyParam',
+            unique: '"true"',
+          }),
+        ],
+        constructorArguments: objectLoader.createCompactedResource({
+          list: [
+            objectLoader.createCompactedResource({
+              fields: [
+                {
+                  key: objectLoader.createCompactedResource('"dummyParam"'),
+                  valueRawReference: objectLoader
+                    .createCompactedResource('http://example.org/HelloWorldModule#dummyParam'),
+                },
+              ],
+            }),
+          ],
+        }),
+      });
+      module = objectLoader.createCompactedResource({
+        '@id': 'http://example.org/helloworld',
+        requireName: '"helloworld"',
+        components: [
+          helloWorldComponent,
+        ],
+      });
+      constructor = new MappedNamedComponentFactory(module, helloWorldComponent, objectLoader.createCompactedResource({
+        'http://example.org/HelloWorldModule#dummyParam': objectLoader
+          .createCompactedResource('http://example.org/value'),
+      }), true, {}, loader);
+    });
+
+    it('should be valid', () => {
+      expect(constructor).toBeTruthy();
+    });
+
+    it('should create valid arguments', async() => {
+      const args = await constructor.makeArguments({ moduleState });
+      expect(args).toEqual([{
+        dummyParam: 'http://example.org/value',
+      }]);
+    });
+
+    it('should make a valid instance', async() => {
+      const instance = await constructor.create({ moduleState });
+      expect(instance).toBeTruthy();
+      expect(instance).toBeInstanceOf(Hello);
+    });
+  });
 });
