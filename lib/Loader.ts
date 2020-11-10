@@ -23,6 +23,7 @@ import { resourceIdToString, resourceToString } from './Util';
 export class Loader {
   private readonly absolutizeRelativePaths: boolean;
   private readonly mainModulePath?: string;
+  private readonly dumpErrorState: boolean;
   private readonly logger?: Logger;
   public readonly objectLoader: RdfObjectLoader;
 
@@ -37,6 +38,7 @@ export class Loader {
   protected readonly runTypeConfigs: Record<string, Resource[]> = {};
   protected readonly instances: Record<string, any> = {};
   protected registrationFinalized = false;
+  protected generatedErrorLog = false;
 
   public constructor(options: ILoaderProperties = {}) {
     this.objectLoader = new RdfObjectLoader({
@@ -46,6 +48,7 @@ export class Loader {
     this.absolutizeRelativePaths = 'absolutizeRelativePaths' in options ?
       Boolean(options.absolutizeRelativePaths) :
       true;
+    this.dumpErrorState = Boolean(options.dumpErrorState);
     if (options.logLevel) {
       this.logger = createLogger({
         level: options.logLevel,
@@ -63,9 +66,13 @@ export class Loader {
 
   public async getModuleState(): Promise<IModuleState> {
     if (!this.moduleState) {
-      this.log('info', `Initiating component discovery from ${this.mainModulePath || 'the current working directory'}`);
-      this.moduleState = await new ModuleStateBuilder().buildModuleState(require, this.mainModulePath);
-      this.log('info', `Discovered ${Object.keys(this.moduleState.componentModules).length} component packages within ${this.moduleState.nodeModulePaths.length} packages`);
+      try {
+        this.log('info', `Initiating component discovery from ${this.mainModulePath || 'the current working directory'}`);
+        this.moduleState = await new ModuleStateBuilder().buildModuleState(require, this.mainModulePath);
+        this.log('info', `Discovered ${Object.keys(this.moduleState.componentModules).length} component packages within ${this.moduleState.nodeModulePaths.length} packages`);
+      } catch (error: unknown) {
+        throw this.generateErrorLog(error);
+      }
     }
     return this.moduleState;
   }
@@ -76,11 +83,15 @@ export class Loader {
    * @param componentResource A component resource.
    */
   public registerComponentResource(componentResource: Resource): void {
-    if (this.registrationFinalized) {
-      throw new Error(`Tried registering a component ${resourceIdToString(componentResource, this.objectLoader)} after the loader has been finalized.`);
+    try {
+      if (this.registrationFinalized) {
+        throw new Error(`Tried registering a component ${resourceIdToString(componentResource, this.objectLoader)} after the loader has been finalized.`);
+      }
+      this._requireValidComponent(componentResource);
+      this.componentResources[componentResource.value] = componentResource;
+    } catch (error: unknown) {
+      throw this.generateErrorLog(error);
     }
-    this._requireValidComponent(componentResource);
-    this.componentResources[componentResource.value] = componentResource;
   }
 
   /**
@@ -181,16 +192,20 @@ export class Loader {
    * @param moduleResource A module resource.
    */
   public registerModuleResource(moduleResource: Resource): void {
-    if (this.registrationFinalized) {
-      throw new Error(`Tried registering a module ${resourceIdToString(moduleResource, this.objectLoader)} after the loader has been finalized.`);
-    }
-    if (moduleResource.property.components) {
-      for (const component of moduleResource.properties.components) {
-        component.property.module = moduleResource;
-        this.registerComponentResource(component);
+    try {
+      if (this.registrationFinalized) {
+        throw new Error(`Tried registering a module ${resourceIdToString(moduleResource, this.objectLoader)} after the loader has been finalized.`);
       }
-    } else if (!moduleResource.property.imports) {
-      throw new Error(`Tried to register the module ${resourceIdToString(moduleResource, this.objectLoader)} that has no components.`);
+      if (moduleResource.property.components) {
+        for (const component of moduleResource.properties.components) {
+          component.property.module = moduleResource;
+          this.registerComponentResource(component);
+        }
+      } else if (!moduleResource.property.imports) {
+        throw new Error(`Tried to register the module ${resourceIdToString(moduleResource, this.objectLoader)} that has no components.`);
+      }
+    } catch (error: unknown) {
+      throw this.generateErrorLog(error);
     }
   }
 
@@ -201,11 +216,15 @@ export class Loader {
    * @returns {Promise<T>} A promise that resolves once loading has finished.
    */
   public async registerModuleResourcesStream(moduleResourceStream: RDF.Stream & Readable): Promise<void> {
-    await this.objectLoader.import(moduleResourceStream);
-    for (const resource of Object.values(this.objectLoader.resources)) {
-      if (resource.isA(Util.IRI_MODULE) && !resource.term.equals(Util.IRI_MODULE)) {
-        this.registerModuleResource(resource);
+    try {
+      await this.objectLoader.import(moduleResourceStream);
+      for (const resource of Object.values(this.objectLoader.resources)) {
+        if (resource.isA(Util.IRI_MODULE) && !resource.term.equals(Util.IRI_MODULE)) {
+          this.registerModuleResource(resource);
+        }
       }
+    } catch (error: unknown) {
+      throw this.generateErrorLog(error);
     }
   }
 
@@ -217,16 +236,20 @@ export class Loader {
    * @returns {Promise<T>} A promise that resolves once loading has finished.
    */
   public async registerModuleResourcesUrl(moduleResourceUrl: string, fromPath?: string): Promise<void> {
-    const state = await this.getModuleState();
-    const data = await Util.getContentsFromUrlOrPath(moduleResourceUrl, fromPath);
-    return this.registerModuleResourcesStream(new RdfParser().parse(data, {
-      fromPath,
-      path: moduleResourceUrl,
-      contexts: state.contexts,
-      importPaths: state.importPaths,
-      ignoreImports: false,
-      absolutizeRelativePaths: this.absolutizeRelativePaths,
-    }));
+    try {
+      const state = await this.getModuleState();
+      const data = await Util.getContentsFromUrlOrPath(moduleResourceUrl, fromPath);
+      return this.registerModuleResourcesStream(new RdfParser().parse(data, {
+        fromPath,
+        path: moduleResourceUrl,
+        contexts: state.contexts,
+        importPaths: state.importPaths,
+        ignoreImports: false,
+        absolutizeRelativePaths: this.absolutizeRelativePaths,
+      }));
+    } catch (error: unknown) {
+      throw this.generateErrorLog(error);
+    }
   }
 
   /**
@@ -247,42 +270,46 @@ export class Loader {
    * @returns The component factory.
    */
   public getConfigConstructor(configResource: Resource): IComponentFactory {
-    const allTypes: string[] = [];
-    const componentTypes: Resource[] = configResource.properties.types
-      .reduce((types: Resource[], typeUri: Resource) => {
-        const componentResource: Resource = this.componentResources[typeUri.value];
-        allTypes.push(typeUri.value);
-        if (componentResource) {
-          types.push(componentResource);
-          if (!this.runTypeConfigs[componentResource.value]) {
-            this.runTypeConfigs[componentResource.value] = [];
+    try {
+      const allTypes: string[] = [];
+      const componentTypes: Resource[] = configResource.properties.types
+        .reduce((types: Resource[], typeUri: Resource) => {
+          const componentResource: Resource = this.componentResources[typeUri.value];
+          allTypes.push(typeUri.value);
+          if (componentResource) {
+            types.push(componentResource);
+            if (!this.runTypeConfigs[componentResource.value]) {
+              this.runTypeConfigs[componentResource.value] = [];
+            }
+            this.runTypeConfigs[componentResource.value].push(configResource);
           }
-          this.runTypeConfigs[componentResource.value].push(configResource);
+          return types;
+        }, []);
+      if (componentTypes.length !== 1 &&
+        !configResource.property.requireName &&
+        !configResource.property.requireElement) {
+        throw new Error(`Could not run config ${resourceIdToString(configResource, this.objectLoader)} because exactly one valid component type ` +
+          `was expected, while ${componentTypes.length} were found in the defined types [${allTypes}]. ` +
+          `Alternatively, the requireName and requireElement must be provided.\nFound: ${
+            resourceToString(configResource)}\nAll available usable types: [\n${
+            Object.keys(this.componentResources).join(',\n')}\n]`);
+      }
+      let componentResource: Resource | undefined;
+      let moduleResource: Resource | undefined;
+      if (componentTypes.length > 0) {
+        componentResource = componentTypes[0];
+        moduleResource = componentResource.property.module;
+        if (!moduleResource) {
+          throw new Error(`No module was found for the component ${resourceIdToString(componentResource, this.objectLoader)}`);
         }
-        return types;
-      }, []);
-    if (componentTypes.length !== 1 &&
-      !configResource.property.requireName &&
-      !configResource.property.requireElement) {
-      throw new Error(`Could not run config ${resourceIdToString(configResource, this.objectLoader)} because exactly one valid component type ` +
-                `was expected, while ${componentTypes.length} were found in the defined types [${allTypes}]. ` +
-                `Alternatively, the requireName and requireElement must be provided.\nFound: ${
-                  resourceToString(configResource)}\nAll available usable types: [\n${
-                  Object.keys(this.componentResources).join(',\n')}\n]`);
-    }
-    let componentResource: Resource | undefined;
-    let moduleResource: Resource | undefined;
-    if (componentTypes.length > 0) {
-      componentResource = componentTypes[0];
-      moduleResource = componentResource.property.module;
-      if (!moduleResource) {
-        throw new Error(`No module was found for the component ${resourceIdToString(componentResource, this.objectLoader)}`);
+
+        this.inheritParameterValues(configResource, componentResource);
       }
 
-      this.inheritParameterValues(configResource, componentResource);
+      return new ComponentFactory(moduleResource, componentResource, configResource, this.overrideRequireNames, this);
+    } catch (error: unknown) {
+      throw this.generateErrorLog(error);
     }
-
-    return new ComponentFactory(moduleResource, componentResource, configResource, this.overrideRequireNames, this);
   }
 
   /**
@@ -292,38 +319,42 @@ export class Loader {
    * @returns {any} The run instance.
    */
   public async instantiate(configResource: Resource, settings: ICreationSettings = {}): Promise<any> {
-    const settingsInner: ICreationSettingsInner = { ...settings, moduleState: await this.getModuleState() };
-    // Check if this resource is required as argument in its own chain,
-    // if so, return a dummy value, to avoid infinite recursion.
-    const resourceBlacklist = settingsInner.resourceBlacklist || {};
-    if (resourceBlacklist[configResource.value]) {
-      return {};
-    }
-
-    // Before instantiating, first check if the resource is a variable
-    if (configResource.isA(Util.IRI_VARIABLE)) {
-      if (settingsInner.serializations) {
-        if (settingsInner.asFunction) {
-          return `getVariableValue('${configResource.value}')`;
-        }
-        throw new Error(`Detected a variable during config compilation: ${resourceIdToString(configResource, this.objectLoader)}. Variables are not supported, but require the -f flag to expose the compiled config as function.`);
-      } else {
-        const value = settingsInner.variables ? settingsInner.variables[configResource.value] : undefined;
-        if (value === undefined) {
-          throw new Error(`Undefined variable: ${resourceIdToString(configResource, this.objectLoader)}`);
-        }
-        return value;
+    try {
+      const settingsInner: ICreationSettingsInner = { ...settings, moduleState: await this.getModuleState() };
+      // Check if this resource is required as argument in its own chain,
+      // if so, return a dummy value, to avoid infinite recursion.
+      const resourceBlacklist = settingsInner.resourceBlacklist || {};
+      if (resourceBlacklist[configResource.value]) {
+        return {};
       }
-    }
 
-    if (!this.instances[configResource.value]) {
-      const subBlackList: Record<string, boolean> = { ...resourceBlacklist };
-      subBlackList[configResource.value] = true;
-      this.instances[configResource.value] = this.getConfigConstructor(configResource).create(
-        { resourceBlacklist: subBlackList, ...settingsInner },
-      );
+      // Before instantiating, first check if the resource is a variable
+      if (configResource.isA(Util.IRI_VARIABLE)) {
+        if (settingsInner.serializations) {
+          if (settingsInner.asFunction) {
+            return `getVariableValue('${configResource.value}')`;
+          }
+          throw new Error(`Detected a variable during config compilation: ${resourceIdToString(configResource, this.objectLoader)}. Variables are not supported, but require the -f flag to expose the compiled config as function.`);
+        } else {
+          const value = settingsInner.variables ? settingsInner.variables[configResource.value] : undefined;
+          if (value === undefined) {
+            throw new Error(`Undefined variable: ${resourceIdToString(configResource, this.objectLoader)}`);
+          }
+          return value;
+        }
+      }
+
+      if (!this.instances[configResource.value]) {
+        const subBlackList: Record<string, boolean> = { ...resourceBlacklist };
+        subBlackList[configResource.value] = true;
+        this.instances[configResource.value] = this.getConfigConstructor(configResource).create(
+          { resourceBlacklist: subBlackList, ...settingsInner },
+        );
+      }
+      return this.instances[configResource.value];
+    } catch (error: unknown) {
+      throw this.generateErrorLog(error);
     }
-    return this.instances[configResource.value];
   }
 
   /**
@@ -425,14 +456,18 @@ export class Loader {
     configResourceUri: string,
     configResourceStream: RDF.Stream & Readable,
   ): Promise<IComponentFactory> {
-    this.checkFinalizeRegistration();
-    await this.objectLoader.import(configResourceStream);
+    try {
+      this.checkFinalizeRegistration();
+      await this.objectLoader.import(configResourceStream);
 
-    const configResource: Resource = this.objectLoader.resources[configResourceUri];
-    if (!configResource) {
-      throw new Error(`Could not find a component config with URI ${configResourceUri} in the triple stream.`);
+      const configResource: Resource = this.objectLoader.resources[configResourceUri];
+      if (!configResource) {
+        throw new Error(`Could not find a component config with URI ${configResourceUri} in the triple stream.`);
+      }
+      return this.getConfigConstructor(configResource);
+    } catch (error: unknown) {
+      throw this.generateErrorLog(error);
     }
-    return this.getConfigConstructor(configResource);
   }
 
   /**
@@ -447,14 +482,18 @@ export class Loader {
     configResourceStream: RDF.Stream & Readable,
     settings?: ICreationSettings,
   ): Promise<any> {
-    this.checkFinalizeRegistration();
-    await this.objectLoader.import(configResourceStream);
+    try {
+      this.checkFinalizeRegistration();
+      await this.objectLoader.import(configResourceStream);
 
-    const configResource: Resource = this.objectLoader.resources[configResourceUri];
-    if (!configResource) {
-      throw new Error(`Could not find a component config with URI ${configResourceUri} in the triple stream.`);
+      const configResource: Resource = this.objectLoader.resources[configResourceUri];
+      if (!configResource) {
+        throw new Error(`Could not find a component config with URI ${configResourceUri} in the triple stream.`);
+      }
+      return this.instantiate(configResource, settings);
+    } catch (error: unknown) {
+      throw this.generateErrorLog(error);
     }
-    return this.instantiate(configResource, settings);
   }
 
   /**
@@ -470,17 +509,21 @@ export class Loader {
     configResourceUrl: string,
     fromPath?: string,
   ): Promise<IComponentFactory> {
-    this.checkFinalizeRegistration();
-    const state = await this.getModuleState();
-    const data = await Util.getContentsFromUrlOrPath(configResourceUrl, fromPath);
-    return this.getConfigConstructorFromStream(configResourceUri, new RdfParser().parse(data, {
-      fromPath,
-      path: configResourceUrl,
-      contexts: state.contexts,
-      importPaths: state.importPaths,
-      ignoreImports: false,
-      absolutizeRelativePaths: this.absolutizeRelativePaths,
-    }));
+    try {
+      this.checkFinalizeRegistration();
+      const state = await this.getModuleState();
+      const data = await Util.getContentsFromUrlOrPath(configResourceUrl, fromPath);
+      return this.getConfigConstructorFromStream(configResourceUri, new RdfParser().parse(data, {
+        fromPath,
+        path: configResourceUrl,
+        contexts: state.contexts,
+        importPaths: state.importPaths,
+        ignoreImports: false,
+        absolutizeRelativePaths: this.absolutizeRelativePaths,
+      }));
+    } catch (error: unknown) {
+      throw this.generateErrorLog(error);
+    }
   }
 
   /**
@@ -498,16 +541,20 @@ export class Loader {
     fromPath?: string,
     settings?: ICreationSettings,
   ): Promise<any> {
-    const state = await this.getModuleState();
-    const data = await Util.getContentsFromUrlOrPath(configResourceUrl, fromPath);
-    return this.instantiateFromStream(configResourceUri, new RdfParser().parse(data, {
-      fromPath,
-      path: configResourceUrl,
-      contexts: state.contexts,
-      importPaths: state.importPaths,
-      ignoreImports: false,
-      absolutizeRelativePaths: this.absolutizeRelativePaths,
-    }), settings);
+    try {
+      const state = await this.getModuleState();
+      const data = await Util.getContentsFromUrlOrPath(configResourceUrl, fromPath);
+      return this.instantiateFromStream(configResourceUri, new RdfParser().parse(data, {
+        fromPath,
+        path: configResourceUrl,
+        contexts: state.contexts,
+        importPaths: state.importPaths,
+        ignoreImports: false,
+        absolutizeRelativePaths: this.absolutizeRelativePaths,
+      }), settings);
+    } catch (error: unknown) {
+      throw this.generateErrorLog(error);
+    }
   }
 
   /**
@@ -522,28 +569,32 @@ export class Loader {
     params: Record<string, string>,
     settings: ICreationSettings = {},
   ): Promise<any> {
-    const settingsInner: ICreationSettingsInner = { ...settings, moduleState: await this.getModuleState() };
-    this.checkFinalizeRegistration();
-    const componentResource: Resource = this.componentResources[componentUri];
-    if (!componentResource) {
-      throw new Error(`Could not find a component for URI ${componentUri}`);
+    try {
+      const settingsInner: ICreationSettingsInner = { ...settings, moduleState: await this.getModuleState() };
+      this.checkFinalizeRegistration();
+      const componentResource: Resource = this.componentResources[componentUri];
+      if (!componentResource) {
+        throw new Error(`Could not find a component for URI ${componentUri}`);
+      }
+      const moduleResource: Resource = componentResource.property.module;
+      if (!moduleResource) {
+        throw new Error(`No module was found for the component ${resourceIdToString(componentResource, this.objectLoader)}`);
+      }
+      const configResource = this.objectLoader.createCompactedResource({});
+      for (const key of Object.keys(params)) {
+        configResource.property[key] = this.objectLoader.createCompactedResource(`"${params[key]}"`);
+      }
+      const constructor: ComponentFactory = new ComponentFactory(
+        moduleResource,
+        componentResource,
+        configResource,
+        this.overrideRequireNames,
+        this,
+      );
+      return constructor.create(settingsInner);
+    } catch (error: unknown) {
+      throw this.generateErrorLog(error);
     }
-    const moduleResource: Resource = componentResource.property.module;
-    if (!moduleResource) {
-      throw new Error(`No module was found for the component ${resourceIdToString(componentResource, this.objectLoader)}`);
-    }
-    const configResource = this.objectLoader.createCompactedResource({});
-    for (const key of Object.keys(params)) {
-      configResource.property[key] = this.objectLoader.createCompactedResource(`"${params[key]}"`);
-    }
-    const constructor: ComponentFactory = new ComponentFactory(
-      moduleResource,
-      componentResource,
-      configResource,
-      this.overrideRequireNames,
-      this,
-    );
-    return constructor.create(settingsInner);
   }
 
   /**
@@ -557,10 +608,32 @@ export class Loader {
       this.logger.log(level, message, meta);
     }
   }
+
+  public generateErrorLog(error: unknown): Error {
+    if (this.dumpErrorState && !this.generatedErrorLog) {
+      this.generatedErrorLog = true;
+      const contents = JSON.stringify({
+        mainModulePathIn: this.mainModulePath,
+        absolutizeRelativePaths: this.absolutizeRelativePaths,
+        components: Object.keys(this.componentResources),
+        moduleState: {
+          mainModulePath: this.moduleState?.mainModulePath,
+          componentModules: this.moduleState?.componentModules,
+          importPaths: this.moduleState?.importPaths,
+          nodeModuleImportPaths: this.moduleState?.nodeModuleImportPaths,
+          nodeModulePaths: this.moduleState?.nodeModulePaths,
+          contexts: this.moduleState?.contexts,
+        },
+      }, null, '  ');
+      fs.writeFileSync('componentsjs-error-state.json', contents, 'utf8');
+    }
+    return <Error> error;
+  }
 }
 
 export interface ILoaderProperties {
   absolutizeRelativePaths?: boolean;
   mainModulePath?: string;
+  dumpErrorState?: boolean;
   logLevel?: LogLevel;
 }
