@@ -204,6 +204,7 @@ export class MappedNamedComponentFactory extends UnnamedComponentFactory {
     // TODO: validate param types
     return (params: Resource) => {
       const resource = objectLoader.createCompactedResource({});
+      resource.property.originalInstance = params;
       resource.property.requireName = moduleDefinition.property.requireName || componentDefinition.property.requireName;
       resource.property.requireElement = componentDefinition.property.requireElement;
       if (componentDefinition.property.constructorArguments) {

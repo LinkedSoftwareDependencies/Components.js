@@ -250,7 +250,9 @@ export class UnnamedComponentFactory implements IComponentFactory {
       }
     }
     if (serializations) {
-      const serializationVariableName = Util.uriToVariableName(this.componentDefinition.value);
+      const serializationVariableName = Util.uriToVariableName(
+        (this.componentDefinition.property.originalInstance || this.componentDefinition).value,
+      );
       serialization = `const ${serializationVariableName} = ${serialization};`;
       serializations.push(serialization);
       serialization = serializationVariableName;
