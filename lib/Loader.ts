@@ -24,7 +24,7 @@ export class Loader {
   private readonly absolutizeRelativePaths: boolean;
   private readonly mainModulePath?: string;
   private readonly dumpErrorState: boolean;
-  private readonly logger?: Logger;
+  public readonly logger?: Logger;
   public readonly objectLoader: RdfObjectLoader;
 
   public componentResources: Record<string, Resource> = {};
@@ -241,6 +241,7 @@ export class Loader {
         importPaths: state.importPaths,
         ignoreImports: false,
         absolutizeRelativePaths: this.absolutizeRelativePaths,
+        logger: this.logger,
       }));
     } catch (error: unknown) {
       throw this.generateErrorLog(error);
@@ -522,6 +523,7 @@ export class Loader {
         importPaths: state.importPaths,
         ignoreImports: false,
         absolutizeRelativePaths: this.absolutizeRelativePaths,
+        logger: this.logger,
       }));
     } catch (error: unknown) {
       throw this.generateErrorLog(error);
@@ -553,6 +555,7 @@ export class Loader {
         importPaths: state.importPaths,
         ignoreImports: false,
         absolutizeRelativePaths: this.absolutizeRelativePaths,
+        logger: this.logger,
       }), settings);
     } catch (error: unknown) {
       throw this.generateErrorLog(error);

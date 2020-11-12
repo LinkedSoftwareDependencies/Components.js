@@ -3,8 +3,9 @@ import type { Readable } from 'stream';
 import { PassThrough } from 'stream';
 import { DataFactory } from 'rdf-data-factory';
 import type * as RDF from 'rdf-js';
-import { mapTerms } from 'rdf-terms';
+import { getNamedNodes, getTerms, mapTerms } from 'rdf-terms';
 import Util = require('../Util');
+import { isValidIri } from '../Util';
 import { RdfParser } from './RdfParser';
 import type { RdfParserOptions } from './RdfParser';
 
@@ -27,6 +28,7 @@ export class RdfStreamIncluder extends PassThrough {
 
   public push(quad: RDF.Quad | null, encoding?: string): boolean {
     if (quad) {
+      // Check for import link
       if (!this.parserOptions.ignoreImports && quad.predicate.value === `${Util.PREFIXES.owl}imports`) {
         this.runningImporters++;
         let relativeFilePath = quad.object.value;
@@ -51,9 +53,21 @@ export class RdfStreamIncluder extends PassThrough {
           }).catch((error: any) => this
             .emit('error', Util.addFilePathToError(error, relativeFilePath, this.parserOptions.baseIRI)));
       }
+
+      // Absolutize relative file paths
       if (this.parserOptions.absolutizeRelativePaths) {
         quad = mapTerms(quad, term => this._absolutize(term));
       }
+
+      // Validate IRIs
+      if (this.parserOptions.logger) {
+        for (const term of getNamedNodes(getTerms(quad))) {
+          if (!isValidIri(term.value)) {
+            this.parserOptions.logger.warn(`Detected potentially invalid IRI: '${term.value}'`);
+          }
+        }
+      }
+
       return super.push(quad);
     }
     if (!--this.runningImporters) {

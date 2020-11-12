@@ -8,7 +8,7 @@ describe('Util', () => {
     objectLoader = new Loader().objectLoader;
   });
 
-  describe('#captureType', () => {
+  describe('captureType', () => {
     it('should capture strings', () => {
       expect((<any> Util.captureType(objectLoader.createCompactedResource('"aaa"'), objectLoader.createCompactedResource({ range: `${Util.PREFIXES.xsd}string` }), objectLoader)).term.valueRaw)
         .toBeUndefined();
@@ -87,6 +87,33 @@ describe('Util', () => {
         .toEqual(1);
       expect((<any> Util.captureType(objectLoader.createCompactedResource('"256.36"'), objectLoader.createCompactedResource({ range: `${Util.PREFIXES.xsd}double` }), objectLoader)).term.valueRaw)
         .toEqual(256.36);
+    });
+  });
+
+  describe('isValidIri', () => {
+    it('should be false on an empty string', () => {
+      expect(Util.isValidIri('')).toBeFalsy();
+    });
+
+    it('should be false without colon', () => {
+      expect(Util.isValidIri('abc')).toBeFalsy();
+    });
+
+    it('should be false with one colon without //', () => {
+      expect(Util.isValidIri('a:a')).toBeFalsy();
+    });
+
+    it('should be false with one colon with further //', () => {
+      expect(Util.isValidIri('a:a//a')).toBeFalsy();
+    });
+
+    it('should be true with one colon followed by immediate //', () => {
+      expect(Util.isValidIri('a://a')).toBeTruthy();
+    });
+
+    it('should be true with more than one colon', () => {
+      expect(Util.isValidIri('a:a:a')).toBeTruthy();
+      expect(Util.isValidIri('a:a:a:a')).toBeTruthy();
     });
   });
 });

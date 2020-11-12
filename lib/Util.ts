@@ -266,3 +266,11 @@ export function addFilePathToError(error: Error, filePath: string, fromPath?: st
 export function uriToVariableName(uri: string): string {
   return uri.replace(/[#./:@\\^-]/gu, '_');
 }
+
+/**
+ * Check if the given IRI is valid.
+ * @param iri A potential IRI.
+ */
+export function isValidIri(iri: string): boolean {
+  return Boolean(/:((\/\/)|(.*:))/u.exec(iri));
+}

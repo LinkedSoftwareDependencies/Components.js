@@ -33,6 +33,7 @@ export async function compileConfig(
     importPaths: state.importPaths,
     ignoreImports: false,
     absolutizeRelativePaths: true,
+    logger: loader.logger,
   });
 
   // Serialize the config
