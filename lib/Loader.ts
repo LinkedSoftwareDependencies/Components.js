@@ -68,7 +68,7 @@ export class Loader {
     if (!this.moduleState) {
       try {
         this.log('info', `Initiating component discovery from ${this.mainModulePath || 'the current working directory'}`);
-        this.moduleState = await new ModuleStateBuilder().buildModuleState(require, this.mainModulePath);
+        this.moduleState = await new ModuleStateBuilder(this.logger).buildModuleState(require, this.mainModulePath);
         this.log('info', `Discovered ${Object.keys(this.moduleState.componentModules).length} component packages within ${this.moduleState.nodeModulePaths.length} packages`);
       } catch (error: unknown) {
         throw this.generateErrorLog(error);

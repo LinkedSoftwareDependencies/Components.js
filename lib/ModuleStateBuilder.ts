@@ -1,4 +1,8 @@
 import * as Path from 'path';
+import semverGt = require('semver/functions/gt');
+import semverMajor = require('semver/functions/major');
+import semverValid = require('semver/functions/valid');
+import type { Logger } from 'winston';
 // Import syntax only works in Node > 12
 const fs = require('fs').promises;
 
@@ -6,6 +10,12 @@ const fs = require('fs').promises;
  * Collects the paths to all available modules and components.
  */
 export class ModuleStateBuilder {
+  private readonly logger?: Logger;
+
+  public constructor(logger?: Logger) {
+    this.logger = logger;
+  }
+
   /**
    * Build the module state.
    * @param req The `require` instance.
@@ -136,6 +146,24 @@ export class ModuleStateBuilder {
     return packageJsons;
   }
 
+  protected shouldOverrideVersion(
+    version: string,
+    key: string,
+    componentVersions: Record<string, string>,
+    warningSuffix: string,
+  ): boolean {
+    if (key in componentVersions) {
+      if (semverMajor(version) !== semverMajor(componentVersions[key])) {
+        this.warn(`Detected multiple incompatible occurrences of '${key}'${warningSuffix}`);
+      }
+      if (semverGt(version, componentVersions[key])) {
+        return true;
+      }
+      return false;
+    }
+    return true;
+  }
+
   /**
    * Get all Components.js modules from the given package.json files.
    * @param packageJsons A hash of Node module path to package.json contents.
@@ -143,12 +171,21 @@ export class ModuleStateBuilder {
    */
   public async buildComponentModules(packageJsons: Record<string, any>): Promise<Record<string, string>> {
     const componentModules: Record<string, string> = {};
+    const componentVersions: Record<string, string> = {};
     for (const [ modulePath, pckg ] of Object.entries(packageJsons)) {
       const currentModuleUri: string = pckg['lsd:module'];
       const relativePath: string = pckg['lsd:components'];
-      if (currentModuleUri && relativePath) {
-        if (!(currentModuleUri in componentModules)) {
-          componentModules[currentModuleUri] = Path.join(modulePath, relativePath);
+      const version: string = pckg.version;
+      if (version && currentModuleUri && relativePath && semverValid(version)) {
+        const absolutePath = Path.join(modulePath, relativePath);
+        if (this.shouldOverrideVersion(
+          version,
+          currentModuleUri,
+          componentVersions,
+          `, in '${componentModules[currentModuleUri]}'@${componentVersions[currentModuleUri]} and '${absolutePath}'@${version}`,
+        )) {
+          componentModules[currentModuleUri] = absolutePath;
+          componentVersions[currentModuleUri] = version;
         }
       }
     }
@@ -162,14 +199,22 @@ export class ModuleStateBuilder {
    */
   public async buildComponentContexts(packageJsons: Record<string, any>): Promise<Record<string, string>> {
     const componentContexts: Record<string, string> = {};
+    const componentVersions: Record<string, string> = {};
     await Promise.all(Object.entries(packageJsons).map(async([ modulePath, pckg ]) => {
       const contexts: Record<string, string> = pckg['lsd:contexts'];
-      if (contexts) {
+      const version: string = pckg.version;
+      if (version && contexts && semverValid(version)) {
         for (const [ key, value ] of Object.entries(contexts)) {
           const filePath: string = Path.join(modulePath, value);
           const fileContents = JSON.parse(await fs.readFile(filePath, 'utf8'));
-          if (!(key in componentContexts)) {
+          if (this.shouldOverrideVersion(
+            version,
+            key,
+            componentVersions,
+            ` for version ${componentVersions[key]} and '${filePath}'@${version}`,
+          )) {
             componentContexts[key] = fileContents;
+            componentVersions[key] = version;
           }
         }
       }
@@ -184,12 +229,21 @@ export class ModuleStateBuilder {
    */
   public async buildComponentImportPaths(packageJsons: Record<string, any>): Promise<Record<string, string>> {
     const componentImportPaths: Record<string, string> = {};
+    const componentVersions: Record<string, string> = {};
     await Promise.all(Object.entries(packageJsons).map(async([ modulePath, pckg ]) => {
       const importPaths: Record<string, string> = pckg['lsd:importPaths'];
-      if (importPaths) {
+      const version: string = pckg.version;
+      if (version && importPaths && semverValid(version)) {
         for (const [ key, value ] of Object.entries(importPaths)) {
-          if (!(key in componentImportPaths)) {
-            componentImportPaths[key] = Path.join(modulePath, value);
+          const filePath = Path.join(modulePath, value);
+          if (this.shouldOverrideVersion(
+            version,
+            key,
+            componentVersions,
+            ` for version ${componentVersions[key]} and '${filePath}'@${version}`,
+          )) {
+            componentImportPaths[key] = filePath;
+            componentVersions[key] = version;
 
             // Crash when the context prefix target does not exist
             let stat;
@@ -206,6 +260,12 @@ export class ModuleStateBuilder {
       }
     }));
     return componentImportPaths;
+  }
+
+  protected warn(message: string): void {
+    if (this.logger) {
+      this.logger.warn(message);
+    }
   }
 }
 

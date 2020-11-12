@@ -119,6 +119,7 @@ describe('ModuleStateBuilder', () => {
         '/a/package.json': `
 {
   "name": "a",
+  "version": "1.0.0",
   "lsd:module": "https://linkedsoftwaredependencies.org/bundles/npm/a",
   "lsd:components": "components/components.jsonld",
   "lsd:contexts": {
@@ -133,6 +134,7 @@ describe('ModuleStateBuilder', () => {
         '/a/node_modules/b/package.json': `
 {
   "name": "b",
+  "version": "1.0.0",
   "lsd:module": "https://linkedsoftwaredependencies.org/bundles/npm/b",
   "lsd:components": "components/components.jsonld",
   "lsd:contexts": {
@@ -146,7 +148,8 @@ describe('ModuleStateBuilder', () => {
         '/a/node_modules/b/components/context.jsonld': `{ "name": "b" }`,
         '/a/node_modules/c/package.json': `
 {
-  "name": "c"
+  "name": "c",
+  "version": "1.0.0"
 }`,
       };
       expect(await builder.buildModuleState(req, '/a/b')).toEqual({
@@ -191,9 +194,11 @@ describe('ModuleStateBuilder', () => {
               'https://linkedsoftwaredependencies.org/bundles/npm/a/^1.0.0/config/': 'config/',
             },
             name: 'a',
+            version: '1.0.0',
           },
           '/a/node_modules/b': {
             name: 'b',
+            version: '1.0.0',
             'lsd:module': 'https://linkedsoftwaredependencies.org/bundles/npm/b',
             'lsd:components': 'components/components.jsonld',
             'lsd:contexts': {
@@ -207,6 +212,7 @@ describe('ModuleStateBuilder', () => {
           },
           '/a/node_modules/c': {
             name: 'c',
+            version: '1.0.0',
           },
         },
       });
@@ -494,17 +500,19 @@ describe('ModuleStateBuilder', () => {
       })).toEqual({});
     });
 
-    it('should handle a package with only lsd:module', async() => {
+    it('should not handle a package with only lsd:module', async() => {
       expect(await builder.buildComponentModules({
         a: {
+          version: '1.0.0',
           'lsd:module': 'ex:module',
         },
       })).toEqual({});
     });
 
-    it('should handle a package with only lsd:components', async() => {
+    it('should not handle a package with only lsd:components', async() => {
       expect(await builder.buildComponentModules({
         a: {
+          version: '1.0.0',
           'lsd:components': 'components/components.jsonld',
         },
       })).toEqual({});
@@ -513,6 +521,7 @@ describe('ModuleStateBuilder', () => {
     it('should handle a package with lsd:module and lsd:components', async() => {
       expect(await builder.buildComponentModules({
         a: {
+          version: '1.0.0',
           'lsd:module': 'ex:module',
           'lsd:components': 'components/components.jsonld',
         },
@@ -524,10 +533,12 @@ describe('ModuleStateBuilder', () => {
     it('should handle packages with lsd:module and lsd:components', async() => {
       expect(await builder.buildComponentModules({
         a: {
+          version: '1.0.0',
           'lsd:module': 'ex:module1',
           'lsd:components': 'components/components1.jsonld',
         },
         b: {
+          version: '1.0.0',
           'lsd:module': 'ex:module2',
           'lsd:components': 'components/components2.jsonld',
         },
@@ -537,19 +548,107 @@ describe('ModuleStateBuilder', () => {
       });
     });
 
-    it('should handle packages with the same lsd:module', async() => {
+    it('should resolve packages with the same lsd:module to the max version', async() => {
       expect(await builder.buildComponentModules({
         a: {
+          version: '1.1.0',
           'lsd:module': 'ex:module',
           'lsd:components': 'components/components.jsonld',
         },
         b: {
+          version: '1.0.0',
           'lsd:module': 'ex:module',
           'lsd:components': 'components/components.jsonld',
         },
       })).toEqual({
         'ex:module': 'a/components/components.jsonld',
       });
+      expect(await builder.buildComponentModules({
+        a: {
+          version: '1.0.0',
+          'lsd:module': 'ex:module',
+          'lsd:components': 'components/components.jsonld',
+        },
+        b: {
+          version: '1.0.1',
+          'lsd:module': 'ex:module',
+          'lsd:components': 'components/components.jsonld',
+        },
+      })).toEqual({
+        'ex:module': 'b/components/components.jsonld',
+      });
+    });
+
+    it('should resolve packages with the same lsd:module and one invalid version to the valid version', async() => {
+      expect(await builder.buildComponentModules({
+        a: {
+          version: '1.1.0',
+          'lsd:module': 'ex:module',
+          'lsd:components': 'components/components.jsonld',
+        },
+        b: {
+          version: 'invalid',
+          'lsd:module': 'ex:module',
+          'lsd:components': 'components/components.jsonld',
+        },
+      })).toEqual({
+        'ex:module': 'a/components/components.jsonld',
+      });
+      expect(await builder.buildComponentModules({
+        a: {
+          version: 'invalid',
+          'lsd:module': 'ex:module',
+          'lsd:components': 'components/components.jsonld',
+        },
+        b: {
+          version: '1.0.0',
+          'lsd:module': 'ex:module',
+          'lsd:components': 'components/components.jsonld',
+        },
+      })).toEqual({
+        'ex:module': 'b/components/components.jsonld',
+      });
+    });
+
+    it('should not warn on packages with the same lsd:module ' +
+      'with different major versions without a logger', async() => {
+      expect(await builder.buildComponentModules({
+        a: {
+          version: '2.0.0',
+          'lsd:module': 'ex:module',
+          'lsd:components': 'components/components.jsonld',
+        },
+        b: {
+          version: '1.0.0',
+          'lsd:module': 'ex:module',
+          'lsd:components': 'components/components.jsonld',
+        },
+      })).toEqual({
+        'ex:module': 'a/components/components.jsonld',
+      });
+    });
+
+    it('should warn on packages with the same lsd:module ' +
+      'with different major versions with a logger', async() => {
+      const logger = <any> {
+        warn: jest.fn(),
+      };
+      builder = new ModuleStateBuilder(logger);
+      expect(await builder.buildComponentModules({
+        a: {
+          version: '2.0.0',
+          'lsd:module': 'ex:module',
+          'lsd:components': 'components/components.jsonld',
+        },
+        b: {
+          version: '1.0.0',
+          'lsd:module': 'ex:module',
+          'lsd:components': 'components/components.jsonld',
+        },
+      })).toEqual({
+        'ex:module': 'a/components/components.jsonld',
+      });
+      expect(logger.warn).toHaveBeenNthCalledWith(1, `Detected multiple incompatible occurrences of 'ex:module', in 'a/components/components.jsonld'@2.0.0 and 'b/components/components.jsonld'@1.0.0`);
     });
   });
 
@@ -564,6 +663,7 @@ describe('ModuleStateBuilder', () => {
       };
       expect(await builder.buildComponentContexts({
         a: {
+          version: '1.0.0',
           'lsd:contexts': {
             'http://example.org/context.jsonld': 'components/context.jsonld',
           },
@@ -584,12 +684,14 @@ describe('ModuleStateBuilder', () => {
       };
       expect(await builder.buildComponentContexts({
         a: {
+          version: '1.0.0',
           'lsd:contexts': {
             'http://example.org/context1.jsonld': 'components/context1.jsonld',
             'http://example.org/context2.jsonld': 'components/context2.jsonld',
           },
         },
         b: {
+          version: '1.0.0',
           'lsd:contexts': {
             'http://example2.org/context1.jsonld': 'components/context1.jsonld',
             'http://example2.org/context2.jsonld': 'components/context2.jsonld',
@@ -618,11 +720,13 @@ describe('ModuleStateBuilder', () => {
       };
       expect(await builder.buildComponentContexts({
         a: {
+          version: '1.0.1',
           'lsd:contexts': {
             'http://example.org/context.jsonld': 'components/context.jsonld',
           },
         },
         b: {
+          version: '1.0.0',
           'lsd:contexts': {
             'http://example.org/context.jsonld': 'components/context.jsonld',
           },
@@ -632,6 +736,55 @@ describe('ModuleStateBuilder', () => {
           name1: 'a',
         },
       });
+      expect(await builder.buildComponentContexts({
+        a: {
+          version: '1.0.0',
+          'lsd:contexts': {
+            'http://example.org/context.jsonld': 'components/context.jsonld',
+          },
+        },
+        b: {
+          version: '1.1.0',
+          'lsd:contexts': {
+            'http://example.org/context.jsonld': 'components/context.jsonld',
+          },
+        },
+      })).toEqual({
+        'http://example.org/context.jsonld': {
+          name2: 'a',
+        },
+      });
+    });
+
+    it('should warn on packages with the same context IRI ' +
+      'with different major versions with a logger', async() => {
+      const logger = <any> {
+        warn: jest.fn(),
+      };
+      builder = new ModuleStateBuilder(logger);
+      fileContents = {
+        'a/components/context.jsonld': `{ "name1": "a" }`,
+        'b/components/context.jsonld': `{ "name2": "a" }`,
+      };
+      expect(await builder.buildComponentContexts({
+        a: {
+          version: '1.0.0',
+          'lsd:contexts': {
+            'http://example.org/context.jsonld': 'components/context.jsonld',
+          },
+        },
+        b: {
+          version: '2.0.0',
+          'lsd:contexts': {
+            'http://example.org/context.jsonld': 'components/context.jsonld',
+          },
+        },
+      })).toEqual({
+        'http://example.org/context.jsonld': {
+          name2: 'a',
+        },
+      });
+      expect(logger.warn).toHaveBeenNthCalledWith(1, `Detected multiple incompatible occurrences of 'http://example.org/context.jsonld' for version 1.0.0 and 'b/components/context.jsonld'@2.0.0`);
     });
   });
 
@@ -644,6 +797,7 @@ describe('ModuleStateBuilder', () => {
       files = [ 'a/components/' ];
       expect(await builder.buildComponentImportPaths({
         a: {
+          version: '1.0.0',
           'lsd:importPaths': {
             'http://example.org/components/': 'components/',
           },
@@ -662,12 +816,14 @@ describe('ModuleStateBuilder', () => {
       ];
       expect(await builder.buildComponentImportPaths({
         a: {
+          version: '1.0.0',
           'lsd:importPaths': {
             'http://example.org/components/': 'components/',
             'http://example.org/config/': 'config/',
           },
         },
         b: {
+          version: '1.0.0',
           'lsd:importPaths': {
             'http://example2.org/components/': 'components/',
             'http://example2.org/config/': 'config/',
@@ -684,6 +840,7 @@ describe('ModuleStateBuilder', () => {
     it('should error when a directory does not exist', async() => {
       await expect(builder.buildComponentImportPaths({
         a: {
+          version: '1.0.0',
           'lsd:importPaths': {
             'http://example.org/components/': 'components/',
           },
@@ -697,6 +854,7 @@ describe('ModuleStateBuilder', () => {
       ];
       await expect(builder.buildComponentImportPaths({
         a: {
+          version: '1.0.0',
           'lsd:importPaths': {
             'http://example.org/components/': 'components.file',
           },
@@ -705,14 +863,19 @@ describe('ModuleStateBuilder', () => {
     });
 
     it('should handle packages with the same import path', async() => {
-      files = [ 'a/components/' ];
+      files = [
+        'a/components/',
+        'b/components/',
+      ];
       expect(await builder.buildComponentImportPaths({
         a: {
+          version: '1.0.1',
           'lsd:importPaths': {
             'http://example.org/components/': 'components/',
           },
         },
         b: {
+          version: '1.0.0',
           'lsd:importPaths': {
             'http://example.org/components/': 'components/',
           },
@@ -720,6 +883,51 @@ describe('ModuleStateBuilder', () => {
       })).toEqual({
         'http://example.org/components/': 'a/components/',
       });
+      expect(await builder.buildComponentImportPaths({
+        a: {
+          version: '1.0.0',
+          'lsd:importPaths': {
+            'http://example.org/components/': 'components/',
+          },
+        },
+        b: {
+          version: '1.1.0',
+          'lsd:importPaths': {
+            'http://example.org/components/': 'components/',
+          },
+        },
+      })).toEqual({
+        'http://example.org/components/': 'b/components/',
+      });
+    });
+
+    it('should warn on packages with the same import path ' +
+      'with different major versions with a logger', async() => {
+      const logger = <any> {
+        warn: jest.fn(),
+      };
+      builder = new ModuleStateBuilder(logger);
+      files = [
+        'a/components/',
+        'b/components/',
+      ];
+      expect(await builder.buildComponentImportPaths({
+        a: {
+          version: '1.0.0',
+          'lsd:importPaths': {
+            'http://example.org/components/': 'components/',
+          },
+        },
+        b: {
+          version: '2.0.0',
+          'lsd:importPaths': {
+            'http://example.org/components/': 'components/',
+          },
+        },
+      })).toEqual({
+        'http://example.org/components/': 'b/components/',
+      });
+      expect(logger.warn).toHaveBeenNthCalledWith(1, `Detected multiple incompatible occurrences of 'http://example.org/components/' for version 1.0.0 and 'b/components/'@2.0.0`);
     });
   });
 });

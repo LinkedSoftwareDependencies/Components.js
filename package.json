@@ -36,6 +36,7 @@
     "@types/minimist": "^1.2.0",
     "@types/node": "^14.14.7",
     "@types/rdf-js": "*",
+    "@types/semver": "^7.3.4",
     "jsonld-context-parser": "^2.1.1",
     "minimist": "^1.2.0",
     "rdf-data-factory": "^1.0.4",
@@ -43,6 +44,7 @@
     "rdf-parse": "^1.6.0",
     "rdf-quad": "^1.5.0",
     "rdf-terms": "^1.6.2",
+    "semver": "^7.3.2",
     "winston": "^3.3.3"
   },
   "devDependencies": {
