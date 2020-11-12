@@ -13,9 +13,12 @@ import { RdfStreamIncluder } from './RdfStreamIncluder';
  */
 export class RdfParser {
   public parse(textStream: NodeJS.ReadableStream, options: RdfParserOptions): RDF.Stream & Readable {
+    options.path = Path.normalize(options.path);
+
     if (!options.fromPath) {
       options.fromPath = Path.dirname(options.path);
     }
+
     if (!options.baseIRI) {
       options.baseIRI = options.path;
       if (!options.baseIRI.includes(':')) {
@@ -62,6 +65,11 @@ export type RdfParserOptions = ParseOptions & {
    * The cached import paths.
    */
   importPaths?: Record<string, string>;
+  /**
+   * The path this file has been imported from.
+   * Undefined if this file is the root file.
+   */
+  importedFromPath?: string;
   /**
    * If relative paths 'file://' should be made absolute 'file:///'.
    */
