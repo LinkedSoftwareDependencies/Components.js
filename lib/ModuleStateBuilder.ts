@@ -108,13 +108,11 @@ export class ModuleStateBuilder {
             if (dependency.startsWith('@')) {
               // Iterate one level deeper when we find scoped Node modules
               const scopedModules: string[] = await fs.readdir(dependencyPath);
-              for (const scopedModule of scopedModules) {
-                await this.buildNodeModulePathsInner(
-                  Path.join(dependencyPath, scopedModule),
-                  nodeModulePaths,
-                  ignorePaths,
-                );
-              }
+              await Promise.all(scopedModules.map(async scopedModule => this.buildNodeModulePathsInner(
+                Path.join(dependencyPath, scopedModule),
+                nodeModulePaths,
+                ignorePaths,
+              )));
             } else {
               await this.buildNodeModulePathsInner(dependencyPath, nodeModulePaths, ignorePaths);
             }
