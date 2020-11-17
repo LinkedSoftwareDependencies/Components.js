@@ -110,9 +110,9 @@ export class Loader {
    * @returns {boolean} If the resource is a valid component.
    */
   public _isValidComponent(componentResource: Resource): boolean {
-    return componentResource.isA(Util.IRI_ABSTRACT_CLASS) ||
-            componentResource.isA(Util.IRI_CLASS) ||
-            componentResource.isA(Util.IRI_COMPONENT_INSTANCE);
+    return componentResource.isA('AbstractClass') ||
+            componentResource.isA('Class') ||
+            componentResource.isA('Instance');
   }
 
   /**
@@ -183,7 +183,9 @@ export class Loader {
               object.properties.fields.push(field);
             }
           }
-        } else if (!superObject.isA(Util.DF.namedNode(`${Util.PREFIXES.om}ObjectMapping`)) && !superObject.property.inheritValues && !superObject.property.onParameter) {
+        } else if (!superObject.isA('ObjectMapping') &&
+          !superObject.property.inheritValues &&
+          !superObject.property.onParameter) {
           throw new Error(`The referenced constructor mappings object ${resourceIdToString(superObject, this.objectLoader)
           } from ${resourceIdToString(object, this.objectLoader)} is not valid, i.e., it doesn't contain mapping fields ` +
             `, has the om:ObjectMapping type or has a superclass. ` +
@@ -282,7 +284,7 @@ export class Loader {
 
     // Register all object-loaded modules
     for (const resource of Object.values(this.objectLoader.resources)) {
-      if (resource.isA(Util.IRI_MODULE) && !resource.term.equals(Util.IRI_MODULE)) {
+      if (resource.isA('Module') && !resource.term.equals(Util.IRI_MODULE)) {
         this.registerModuleResource(resource);
       }
     }
@@ -408,7 +410,7 @@ export class Loader {
         config: configResource,
         overrideRequireNames: this.overrideRequireNames,
         instancePool,
-        constructable: !configResource.isA(Util.DF.namedNode(`${Util.PREFIXES.oo}ComponentInstance`)),
+        constructable: !configResource.isA('Instance'),
         moduleDefinition: moduleResource,
         componentDefinition: componentResource,
       }).create(settingsInner);

@@ -21,10 +21,6 @@ export const PREFIXES: Record<string, string> = {
 };
 
 export const DF: DataFactory = new DataFactory<RDF.Quad>();
-export const IRI_ABSTRACT_CLASS: RDF.NamedNode = DF.namedNode(`${PREFIXES.oo}AbstractClass`);
-export const IRI_CLASS: RDF.NamedNode = DF.namedNode(`${PREFIXES.oo}Class`);
-export const IRI_COMPONENT_INSTANCE: RDF.NamedNode = DF.namedNode(`${PREFIXES.oo}ComponentInstance`);
-export const IRI_VARIABLE: RDF.NamedNode = DF.namedNode(`${PREFIXES.om}Variable`);
 export const IRI_MODULE: RDF.NamedNode = DF.namedNode(`${PREFIXES.oo}Module`);
 
 /**

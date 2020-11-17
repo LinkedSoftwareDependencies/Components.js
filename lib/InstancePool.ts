@@ -121,7 +121,7 @@ export class InstancePool implements IInstancePool {
       config: configResource,
       overrideRequireNames: this.overrideRequireNames,
       instancePool: this,
-      constructable: !configResource.isA(Util.DF.namedNode(`${Util.PREFIXES.oo}ComponentInstance`)),
+      constructable: !configResource.isA('Instance'),
     };
 
     if (componentTypes.length > 0) {
@@ -159,7 +159,7 @@ export class InstancePool implements IInstancePool {
     }
 
     // Before instantiating, first check if the resource is a variable
-    if (configResource.isA(Util.IRI_VARIABLE)) {
+    if (configResource.isA('Variable')) {
       if (settingsInner.serializations) {
         if (settingsInner.asFunction) {
           return `getVariableValue('${configResource.value}')`;
