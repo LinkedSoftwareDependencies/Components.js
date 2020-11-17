@@ -1,6 +1,7 @@
 import type { RdfObjectLoader } from 'rdf-object';
 import { Resource } from 'rdf-object';
 import { UnmappedNamedComponentFactory } from '../../lib/factory/UnmappedNamedComponentFactory';
+import type { IInstancePool } from '../../lib/IInstancePool';
 import { Loader } from '../../lib/Loader';
 import type { IModuleState } from '../../lib/ModuleStateBuilder';
 
@@ -10,7 +11,8 @@ describe('UnmappedNamedComponentFactory', () => {
   let loader: Loader;
   let objectLoader: RdfObjectLoader;
   let moduleState: IModuleState;
-  beforeEach(() => {
+  let instancePool: IInstancePool;
+  beforeEach(async() => {
     loader = new Loader();
     moduleState = <any> {
       mainModulePath: `${__dirname}/..`,
@@ -19,9 +21,26 @@ describe('UnmappedNamedComponentFactory', () => {
       },
     };
     (<any> loader).moduleState = moduleState;
-    // Create resources via object loader, so we can use CURIEs
-    objectLoader = loader.objectLoader;
+    objectLoader = (<any> loader).objectLoader;
+    instancePool = await loader.getInstancePool();
   });
+
+  function makeConstructor(
+    moduleDefinition: Resource,
+    componentDefinition: Resource,
+    config: Resource,
+    constructable = true,
+  ) {
+    return new UnmappedNamedComponentFactory({
+      objectLoader,
+      moduleDefinition,
+      componentDefinition,
+      config,
+      constructable,
+      overrideRequireNames: {},
+      instancePool,
+    });
+  }
 
   describe('for an N3 Lexer', () => {
     let module: Resource;
@@ -48,11 +67,11 @@ describe('UnmappedNamedComponentFactory', () => {
     describe('for a constructor with arguments', () => {
       let constructor: UnmappedNamedComponentFactory;
       beforeEach(() => {
-        constructor = new UnmappedNamedComponentFactory(module, n3LexerComponent, objectLoader.createCompactedResource({
+        constructor = makeConstructor(module, n3LexerComponent, objectLoader.createCompactedResource({
           'http://example.org/n3#lineMode': objectLoader.createCompactedResource('"true"'),
           'http://example.org/n3#n3': objectLoader.createCompactedResource('"true"'),
           'http://example.org/n3#comments': objectLoader.createCompactedResource('"true"'),
-        }), true, {}, loader);
+        }));
       });
 
       it('should be valid', () => {
@@ -170,7 +189,7 @@ describe('UnmappedNamedComponentFactory', () => {
           n3ParserComponent,
         ],
       });
-      constructor = new UnmappedNamedComponentFactory(module, n3ParserComponent, objectLoader.createCompactedResource({
+      constructor = makeConstructor(module, n3ParserComponent, objectLoader.createCompactedResource({
         'http://example.org/n3#format': objectLoader.createCompactedResource('"application/trig"'),
         'http://example.org/n3#lexer': UnmappedNamedComponentFactory
           .makeUnnamedDefinitionConstructor(module, n3LexerComponent, objectLoader)(objectLoader
@@ -179,7 +198,7 @@ describe('UnmappedNamedComponentFactory', () => {
               'http://example.org/n3#n3': objectLoader.createCompactedResource('"true"'),
               'http://example.org/n3#comments': objectLoader.createCompactedResource('"true"'),
             })),
-      }), true, {}, loader);
+      }));
     });
 
     it('should be valid', () => {
@@ -216,14 +235,7 @@ describe('UnmappedNamedComponentFactory', () => {
           n3UtilComponent,
         ],
       });
-      constructor = new UnmappedNamedComponentFactory(
-        module,
-        n3UtilComponent,
-        objectLoader.createCompactedResource({}),
-        false,
-        {},
-        loader,
-      );
+      constructor = makeConstructor(module, n3UtilComponent, objectLoader.createCompactedResource({}), false);
     });
 
     it('should be valid', () => {
@@ -261,9 +273,9 @@ describe('UnmappedNamedComponentFactory', () => {
           n3DummyComponent,
         ],
       });
-      constructor = new UnmappedNamedComponentFactory(module, n3DummyComponent, objectLoader.createCompactedResource({
+      constructor = makeConstructor(module, n3DummyComponent, objectLoader.createCompactedResource({
         'http://example.org/n3#dummyParam': objectLoader.createCompactedResource('"true"'),
-      }), true, {}, loader);
+      }));
     });
 
     it('should be valid', () => {
@@ -313,14 +325,7 @@ describe('UnmappedNamedComponentFactory', () => {
           n3DummyComponentDefaults,
         ],
       });
-      constructor = new UnmappedNamedComponentFactory(
-        module,
-        n3DummyComponentDefaults,
-        objectLoader.createCompactedResource({}),
-        true,
-        {},
-        loader,
-      );
+      constructor = makeConstructor(module, n3DummyComponentDefaults, objectLoader.createCompactedResource({}));
     });
 
     it('should be valid', () => {
@@ -371,11 +376,10 @@ describe('UnmappedNamedComponentFactory', () => {
           n3DummyComponentDefaults,
         ],
       });
-      constructor = new UnmappedNamedComponentFactory(module, n3DummyComponentDefaults, objectLoader
-        .createCompactedResource({
-          'http://example.org/n3#dummyParam1': objectLoader.createCompactedResource('"true"'),
-          'http://example.org/n3#dummyParam2': objectLoader.createCompactedResource('"false"'),
-        }), true, {}, loader);
+      constructor = makeConstructor(module, n3DummyComponentDefaults, objectLoader.createCompactedResource({
+        'http://example.org/n3#dummyParam1': objectLoader.createCompactedResource('"true"'),
+        'http://example.org/n3#dummyParam2': objectLoader.createCompactedResource('"false"'),
+      }));
     });
 
     it('should be valid', () => {
@@ -437,14 +441,7 @@ describe('UnmappedNamedComponentFactory', () => {
 
     describe('without overrides', () => {
       beforeEach(() => {
-        constructor = new UnmappedNamedComponentFactory(
-          module,
-          n3DummyComponentDefaultsScoped,
-          objectLoader.createCompactedResource({}),
-          true,
-          {},
-          loader,
-        );
+        constructor = makeConstructor(module, n3DummyComponentDefaultsScoped, objectLoader.createCompactedResource({}));
       });
 
       it('should be valid', () => {
@@ -465,11 +462,10 @@ describe('UnmappedNamedComponentFactory', () => {
 
     describe('with overrides', () => {
       beforeEach(() => {
-        constructor = new UnmappedNamedComponentFactory(module, n3DummyComponentDefaultsScoped, objectLoader
-          .createCompactedResource({
-            'http://example.org/n3#dummyParam1': objectLoader.createCompactedResource('"true"'),
-            'http://example.org/n3#dummyParam2': objectLoader.createCompactedResource('"false"'),
-          }), true, {}, loader);
+        constructor = makeConstructor(module, n3DummyComponentDefaultsScoped, objectLoader.createCompactedResource({
+          'http://example.org/n3#dummyParam1': objectLoader.createCompactedResource('"true"'),
+          'http://example.org/n3#dummyParam2': objectLoader.createCompactedResource('"false"'),
+        }));
       });
 
       it('should be valid', () => {
@@ -523,14 +519,7 @@ describe('UnmappedNamedComponentFactory', () => {
 
     describe('without additional values', () => {
       beforeEach(() => {
-        constructor = new UnmappedNamedComponentFactory(
-          module,
-          n3DummyComponentFixed,
-          objectLoader.createCompactedResource({}),
-          true,
-          {},
-          loader,
-        );
+        constructor = makeConstructor(module, n3DummyComponentFixed, objectLoader.createCompactedResource({}));
       });
 
       it('should be valid', () => {
@@ -551,10 +540,9 @@ describe('UnmappedNamedComponentFactory', () => {
 
     describe('with additional values', () => {
       beforeEach(() => {
-        constructor = new UnmappedNamedComponentFactory(module, n3DummyComponentFixed, objectLoader
-          .createCompactedResource({
-            'http://example.org/n3#dummyParam1': [ objectLoader.createCompactedResource('"true"') ],
-          }), true, {}, loader);
+        constructor = makeConstructor(module, n3DummyComponentFixed, objectLoader.createCompactedResource({
+          'http://example.org/n3#dummyParam1': [ objectLoader.createCompactedResource('"true"') ],
+        }));
       });
 
       it('should be valid', () => {
@@ -576,11 +564,10 @@ describe('UnmappedNamedComponentFactory', () => {
     describe('with additional value to a fixed, unique value', () => {
       it('should throw an error', async() => {
         await expect(async() => {
-          new UnmappedNamedComponentFactory(module, n3DummyComponentFixed, objectLoader
-            .createCompactedResource({
-              'http://example.org/n3#dummyParam1': [ objectLoader.createCompactedResource('"true"') ],
-              'http://example.org/n3#dummyParam2': [ objectLoader.createCompactedResource('"true"') ],
-            }), true, {}, loader);
+          constructor = makeConstructor(module, n3DummyComponentFixed, objectLoader.createCompactedResource({
+            'http://example.org/n3#dummyParam1': [ objectLoader.createCompactedResource('"true"') ],
+            'http://example.org/n3#dummyParam2': [ objectLoader.createCompactedResource('"true"') ],
+          }));
         }).rejects.toThrow(Error);
       });
     });
@@ -609,10 +596,9 @@ describe('UnmappedNamedComponentFactory', () => {
           n3DummyComponentLazy,
         ],
       });
-      constructor = new UnmappedNamedComponentFactory(module, n3DummyComponentLazy, objectLoader
-        .createCompactedResource({
-          'http://example.org/n3#dummyParam': objectLoader.createCompactedResource('"true"'),
-        }), true, {}, loader);
+      constructor = makeConstructor(module, n3DummyComponentLazy, objectLoader.createCompactedResource({
+        'http://example.org/n3#dummyParam': objectLoader.createCompactedResource('"true"'),
+      }));
     });
 
     it('should be valid', () => {

@@ -1,8 +1,9 @@
 import * as Path from 'path';
-import type { Resource } from 'rdf-object';
-import { Loader } from '../Loader';
+import type { Resource, RdfObjectLoader } from 'rdf-object';
+import type { IInstancePool } from '../IInstancePool';
 import type { IModuleState } from '../ModuleStateBuilder';
 import * as Util from '../Util';
+import type { IComponentFactoryOptionsBase } from './ComponentFactoryOptions';
 import type { IComponentFactory, ICreationSettings, ICreationSettingsInner } from './IComponentFactory';
 import Dict = NodeJS.Dict;
 import Module = NodeJS.Module;
@@ -11,26 +12,23 @@ import Module = NodeJS.Module;
  * Factory for component definitions with explicit arguments.
  */
 export class UnnamedComponentFactory implements IComponentFactory {
-  protected readonly componentDefinition: Resource;
+  protected readonly objectLoader: RdfObjectLoader;
+  protected readonly config: Resource;
   protected readonly constructable: boolean;
   protected readonly overrideRequireNames: Dict<string>;
-  protected readonly loader: Loader;
+  protected readonly instancePool: IInstancePool;
 
-  public constructor(
-    componentDefinition: Resource,
-    constructable: boolean,
-    overrideRequireNames: Record<string, string>,
-    loader: Loader,
-  ) {
-    this.componentDefinition = componentDefinition;
-    this.constructable = constructable;
-    this.overrideRequireNames = overrideRequireNames || {};
-    this.loader = loader || new Loader();
+  public constructor(options: IComponentFactoryOptionsBase) {
+    this.objectLoader = options.objectLoader;
+    this.config = options.config;
+    this.constructable = options.constructable;
+    this.overrideRequireNames = options.overrideRequireNames;
+    this.instancePool = options.instancePool;
 
     // Validate params
-    this.validateParam(this.componentDefinition, 'requireName', 'Literal');
-    this.validateParam(this.componentDefinition, 'requireElement', 'Literal', true);
-    this.validateParam(this.componentDefinition, 'requireNoConstructor', 'Literal', true);
+    this.validateParam(this.config, 'requireName', 'Literal');
+    this.validateParam(this.config, 'requireElement', 'Literal', true);
+    this.validateParam(this.config, 'requireNoConstructor', 'Literal', true);
   }
 
   public validateParam(resource: Resource, field: string, type: string, optional?: boolean): void {
@@ -46,19 +44,15 @@ export class UnnamedComponentFactory implements IComponentFactory {
     }
   }
 
-  public static async getArgumentValue(
-    value: Resource | Resource[],
-    loader: Loader,
-    settings: ICreationSettings,
-  ): Promise<any> {
+  public async getArgumentValue(value: Resource | Resource[], settings: ICreationSettings): Promise<any> {
     if (Array.isArray(value)) {
       // Unwrap unique values out of the array
       if (value[0].property.unique && value[0].property.unique.value === 'true') {
-        return UnnamedComponentFactory.getArgumentValue(value[0], loader, settings);
+        return this.getArgumentValue(value[0], settings);
       }
       // Otherwise, keep the array form
       return await Promise.all(value
-        .map(element => UnnamedComponentFactory.getArgumentValue(element, loader, settings)));
+        .map(element => this.getArgumentValue(element, settings)));
     }
     // HasFields is a hack for making UnmappedNamedComponentFactory work
     if (value.property.fields || value.property.hasFields) {
@@ -68,11 +62,10 @@ export class UnnamedComponentFactory implements IComponentFactory {
           throw new Error(`Parameter object entries must have keys, but found: ${Util.resourceToString(entry)}`);
         }
         if (entry.property.key.type !== 'Literal') {
-          throw new Error(`Parameter object keys must be literals, but found type ${entry.property.key.type} for ${Util.resourceIdToString(entry.property.key, loader.objectLoader)} while constructing: ${Util.resourceToString(value)}`);
+          throw new Error(`Parameter object keys must be literals, but found type ${entry.property.key.type} for ${Util.resourceIdToString(entry.property.key, this.objectLoader)} while constructing: ${Util.resourceToString(value)}`);
         }
         if (entry.property.value) {
-          const subValue = await UnnamedComponentFactory
-            .getArgumentValue(entry.properties.value, loader, settings);
+          const subValue = await this.getArgumentValue(entry.properties.value, settings);
           return { key: entry.property.key.value, value: subValue };
         }
         // TODO: only throw an error if the parameter is required
@@ -96,7 +89,7 @@ export class UnnamedComponentFactory implements IComponentFactory {
         if (!entry.property.value) {
           throw new Error(`Parameter array elements must have values, but found: ${Util.resourceToString(entry)}`);
         } else {
-          return await UnnamedComponentFactory.getArgumentValue(entry.property.value, loader, settings);
+          return await this.getArgumentValue(entry.property.value, settings);
         }
       }));
       let ret: any[] = [];
@@ -111,15 +104,15 @@ export class UnnamedComponentFactory implements IComponentFactory {
     }
     if (value.type === 'NamedNode' || value.type === 'BlankNode') {
       if (value.property.value) {
-        return await UnnamedComponentFactory.getArgumentValue(value.properties.value, loader, settings);
+        return await this.getArgumentValue(value.properties.value, settings);
       }
       if (settings.shallow) {
         return {};
       }
       if (value.property.lazy && value.property.lazy.value === 'true') {
-        return () => loader.instantiate(value, settings);
+        return () => this.instancePool.instantiate(value, settings);
       }
-      return await loader.instantiate(value, settings);
+      return await this.instancePool.instantiate(value, settings);
     }
     if (value.type === 'Literal') {
       // ValueRaw can be set in Util.captureType
@@ -144,14 +137,12 @@ export class UnnamedComponentFactory implements IComponentFactory {
    * @returns New instantiations of the provided arguments.
    */
   public async makeArguments(settings: ICreationSettingsInner): Promise<any[]> {
-    if (this.componentDefinition.property.arguments) {
-      if (!this.componentDefinition.property.arguments.list) {
-        throw new Error(`Detected invalid arguments for component "${Util.resourceIdToString(this.componentDefinition, this.loader.objectLoader)}": arguments are not an RDF list.`);
+    if (this.config.property.arguments) {
+      if (!this.config.property.arguments.list) {
+        throw new Error(`Detected invalid arguments for component "${Util.resourceIdToString(this.config, this.objectLoader)}": arguments are not an RDF list.`);
       }
-      return await Promise.all(this.componentDefinition.property.arguments.list
-        .map((resource: Resource) => resource ?
-          UnnamedComponentFactory.getArgumentValue(resource, this.loader, settings) :
-          undefined));
+      return await Promise.all(this.config.property.arguments.list
+        .map((resource: Resource) => resource ? this.getArgumentValue(resource, settings) : undefined));
     }
     return [];
   }
@@ -189,14 +180,14 @@ export class UnnamedComponentFactory implements IComponentFactory {
    */
   public async create(settings: ICreationSettingsInner): Promise<any> {
     const serializations: string[] | undefined = settings.serializations;
-    let requireName: string = this.componentDefinition.property.requireName.value;
+    let requireName: string = this.config.property.requireName.value;
     requireName = this.overrideRequireNames[requireName] || requireName;
     let object: any = null;
     let resultingRequirePath: string | undefined;
     try {
       object = this.requireCurrentRunningModuleIfCurrent(
         settings.moduleState,
-        this.componentDefinition.property.requireName.value,
+        this.config.property.requireName.value,
       );
       if (!object) {
         throw new Error('Component is not the main module');
@@ -217,29 +208,29 @@ export class UnnamedComponentFactory implements IComponentFactory {
     let serialization = serializations ? `require('${(<string> resultingRequirePath).replace(/\\/gu, '/')}')` : null;
 
     let subObject;
-    if (this.componentDefinition.property.requireElement) {
-      const requireElementPath = this.componentDefinition.property.requireElement.value.split('.');
+    if (this.config.property.requireElement) {
+      const requireElementPath = this.config.property.requireElement.value.split('.');
       if (serializations) {
-        serialization += `.${this.componentDefinition.property.requireElement.value}`;
+        serialization += `.${this.config.property.requireElement.value}`;
       }
       try {
         subObject = requireElementPath.reduce((acc: any, requireElement: string) => acc[requireElement], object);
       } catch {
-        throw new Error(`Failed to get module element ${Util.resourceIdToString(this.componentDefinition.property.requireElement, this.loader.objectLoader)} from module ${requireName}`);
+        throw new Error(`Failed to get module element ${Util.resourceIdToString(this.config.property.requireElement, this.objectLoader)} from module ${requireName}`);
       }
     } else {
       subObject = object;
     }
     if (!subObject) {
-      throw new Error(`Failed to get module element ${Util.resourceIdToString(this.componentDefinition.property.requireElement, this.loader.objectLoader)} from module ${requireName}`);
+      throw new Error(`Failed to get module element ${Util.resourceIdToString(this.config.property.requireElement, this.objectLoader)} from module ${requireName}`);
     }
     object = subObject;
-    if (!this.componentDefinition.property.requireNoConstructor ||
-      this.componentDefinition.property.requireNoConstructor.value !== 'true') {
+    if (!this.config.property.requireNoConstructor ||
+      this.config.property.requireNoConstructor.value !== 'true') {
       if (this.constructable) {
         if (!(object instanceof Function)) {
           throw new Error(`ConstructableComponent is not a function: ${Util.resourceToString(object)
-          }\n${Util.resourceToString(this.componentDefinition)}`);
+          }\n${Util.resourceToString(this.config)}`);
         }
         const args: any[] = await this.makeArguments(settings);
         if (serializations) {
@@ -251,7 +242,7 @@ export class UnnamedComponentFactory implements IComponentFactory {
     }
     if (serializations) {
       const serializationVariableName = Util.uriToVariableName(
-        (this.componentDefinition.property.originalInstance || this.componentDefinition).value,
+        (this.config.property.originalInstance || this.config).value,
       );
       serialization = `const ${serializationVariableName} = ${serialization};`;
       serializations.push(serialization);

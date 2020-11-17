@@ -38,8 +38,9 @@ export async function compileConfig(
 
   // Serialize the config
   const moduleLines: string[] = [];
+  await loader.registerConfigStream(configStream);
   const serializationVariableName = await loader
-    .instantiateFromStream(configResourceUri, configStream, { serializations: moduleLines, asFunction });
+    .getComponentInstance(configResourceUri, { serializations: moduleLines, asFunction });
   let document: string = moduleLines.join('\n');
 
   // Override main variable name if needed

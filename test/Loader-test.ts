@@ -2,7 +2,9 @@ import * as fs from 'fs';
 import { Readable } from 'stream';
 import type * as RDF from 'rdf-js';
 import type { RdfObjectLoader, Resource } from 'rdf-object';
+import type { IInstancePool } from '../lib/IInstancePool';
 import { Loader } from '../lib/Loader';
+import type { IModuleState } from '../lib/ModuleStateBuilder';
 import { RdfParser } from '../lib/rdf/RdfParser';
 import * as Util from '../lib/Util';
 const quad = require('rdf-quad');
@@ -12,16 +14,19 @@ const Hello = require('../__mocks__/helloworld').Hello;
 describe('Loader', () => {
   let loader: Loader;
   let objectLoader: RdfObjectLoader;
+  let moduleState: IModuleState;
+  let instancePool: IInstancePool;
   beforeEach(async() => {
     loader = new Loader();
-    (<any> loader).moduleState = {
+    moduleState = <any> {
       mainModulePath: __dirname,
       importPaths: {
         'http://example.org/': `${__dirname}/`,
       },
     };
-    // Create resources via object loader, so we can use CURIEs
-    objectLoader = loader.objectLoader;
+    (<any> loader).moduleState = moduleState;
+    objectLoader = (<any> loader).objectLoader;
+    instancePool = await loader.getInstancePool();
   });
 
   describe('constructing an N3 Parser, unnamed', () => {
@@ -43,9 +48,9 @@ describe('Loader', () => {
       loader.registerComponentResource(component2);
       loader.registerComponentResource(component3);
 
-      expect(loader.componentResources).toHaveProperty([ 'ex:mycomponent1' ], component1);
-      expect(loader.componentResources).toHaveProperty([ 'ex:mycomponent2' ], component2);
-      expect(loader.componentResources).toHaveProperty([ 'ex:mycomponent3' ], component3);
+      expect((<any> instancePool).componentResources).toHaveProperty([ 'ex:mycomponent1' ], component1);
+      expect((<any> instancePool).componentResources).toHaveProperty([ 'ex:mycomponent2' ], component2);
+      expect((<any> instancePool).componentResources).toHaveProperty([ 'ex:mycomponent3' ], component3);
     });
 
     it('module components to be registered', () => {
@@ -72,9 +77,9 @@ describe('Loader', () => {
 
       loader.registerModuleResource(module);
 
-      expect(loader.componentResources).toHaveProperty([ 'ex:mycomponent1' ], component1);
-      expect(loader.componentResources).toHaveProperty([ 'ex:mycomponent2' ], component2);
-      expect(loader.componentResources).toHaveProperty([ 'ex:mycomponent3' ], component3);
+      expect((<any> instancePool).componentResources).toHaveProperty([ 'ex:mycomponent1' ], component1);
+      expect((<any> instancePool).componentResources).toHaveProperty([ 'ex:mycomponent2' ], component2);
+      expect((<any> instancePool).componentResources).toHaveProperty([ 'ex:mycomponent3' ], component3);
     });
 
     describe('with a manual triple stream', () => {
@@ -106,9 +111,9 @@ describe('Loader', () => {
       });
 
       it('module components to be registered', () => {
-        expect(loader.componentResources).toHaveProperty([ component1 ]);
-        expect(loader.componentResources).toHaveProperty([ component2 ]);
-        expect(loader.componentResources).toHaveProperty([ component3 ]);
+        expect((<any> instancePool).componentResources).toHaveProperty([ component1 ]);
+        expect((<any> instancePool).componentResources).toHaveProperty([ component2 ]);
+        expect((<any> instancePool).componentResources).toHaveProperty([ component3 ]);
       });
 
       it('a config resource', async() => {
@@ -118,7 +123,7 @@ describe('Loader', () => {
           'http://example.org/myModule/params#param2': '"DEF"',
           'http://example.org/myModule/params#param3': '"GHI"',
         });
-        const run = await loader.instantiate(configResource);
+        const run = await instancePool.instantiate(configResource, {});
         expect(run._params).toEqual({
           'http://example.org/myModule/params#param1': [ 'ABC' ],
           'http://example.org/myModule/params#param3': [ 'GHI' ],
@@ -133,8 +138,9 @@ describe('Loader', () => {
         configResourceStream.push(quad(config1, 'http://example.org/myModule/params#param2', '"DEF"'));
         configResourceStream.push(quad(config1, 'http://example.org/myModule/params#param3', '"GHI"'));
         configResourceStream.push(null);
+        await loader.registerConfigStream(configResourceStream);
 
-        const run = await loader.instantiateFromStream(config1, configResourceStream);
+        const run = await loader.getComponentInstance(config1);
         expect(run._params).toEqual({
           'http://example.org/myModule/params#param1': [ 'ABC' ],
           'http://example.org/myModule/params#param3': [ 'GHI' ],
@@ -146,7 +152,7 @@ describe('Loader', () => {
         params['http://example.org/myModule/params#param1'] = 'ABC';
         params['http://example.org/myModule/params#param2'] = 'DEF';
         params['http://example.org/myModule/params#param3'] = 'GHI';
-        const run = await loader.instantiateManually(component1, params);
+        const run = await loader.getComponentInstanceCustom(component1, params);
         expect(run._params).toEqual({
           'http://example.org/myModule/params#param1': [ 'ABC' ],
           'http://example.org/myModule/params#param3': [ 'GHI' ],
@@ -161,7 +167,8 @@ describe('Loader', () => {
       });
 
       it('module components to be registered', () => {
-        expect(loader.componentResources).toHaveProperty([ 'http://example.org/HelloWorldModule#SayHelloComponent' ]);
+        expect((<any> instancePool).componentResources)
+          .toHaveProperty([ 'http://example.org/HelloWorldModule#SayHelloComponent' ]);
       });
 
       it('a config resource', async() => {
@@ -171,7 +178,7 @@ describe('Loader', () => {
           'http://example.org/hello/say': '"HELLO"',
           'http://example.org/hello/bla': '"BLA"',
         });
-        const run = await loader.instantiate(configResource);
+        const run = await instancePool.instantiate(configResource, {});
         expect(run._params).toEqual({
           'http://example.org/hello/hello': [ 'WORLD' ],
           'http://example.org/hello/say': [ 'HELLO' ],
@@ -180,7 +187,8 @@ describe('Loader', () => {
 
       it('a config stream', async() => {
         const configResourceStream = parse('config-hello-world.jsonld');
-        const run = await loader.instantiateFromStream('http://example.org/myconfig', configResourceStream);
+        await loader.registerConfigStream(configResourceStream);
+        const run = await loader.getComponentInstance('http://example.org/myconfig');
         expect(run._params).toEqual({
           'http://example.org/hello/hello': [ 'WORLD' ],
           'http://example.org/hello/say': [ 'HI' ],
@@ -192,7 +200,8 @@ describe('Loader', () => {
         params['http://example.org/hello/hello'] = 'WORLD';
         params['http://example.org/hello/say'] = 'BONJOUR';
         params['http://example.org/hello/bla'] = 'BLA';
-        const run = await loader.instantiateManually('http://example.org/HelloWorldModule#SayHelloComponent', params);
+        const run = await loader
+          .getComponentInstanceCustom('http://example.org/HelloWorldModule#SayHelloComponent', params);
         expect(run._params).toEqual({
           'http://example.org/hello/hello': [ 'WORLD' ],
           'http://example.org/hello/say': [ 'BONJOUR' ],
@@ -221,7 +230,8 @@ describe('Loader', () => {
       });
 
       it('module components to be registered', () => {
-        expect(loader.componentResources).toHaveProperty([ 'http://example.org/HelloWorldModule#SayHelloComponent' ]);
+        expect((<any> instancePool).componentResources)
+          .toHaveProperty([ 'http://example.org/HelloWorldModule#SayHelloComponent' ]);
       });
     });
 
@@ -232,7 +242,8 @@ describe('Loader', () => {
       });
 
       it('module components to be registered', () => {
-        expect(loader.componentResources).toHaveProperty([ 'http://example.org/HelloWorldModuleSayHelloComponent' ]);
+        expect((<any> instancePool).componentResources)
+          .toHaveProperty([ 'http://example.org/HelloWorldModuleSayHelloComponent' ]);
       });
     });
 
@@ -252,8 +263,10 @@ describe('Loader', () => {
       });
 
       it('should import components', () => {
-        expect(loader.componentResources).toHaveProperty([ 'http://example.org/HelloWorldModule#SayHelloComponent1' ]);
-        expect(loader.componentResources).toHaveProperty([ 'http://example.org/HelloWorldModule#SayHelloComponent2' ]);
+        expect((<any> instancePool).componentResources)
+          .toHaveProperty([ 'http://example.org/HelloWorldModule#SayHelloComponent1' ]);
+        expect((<any> instancePool).componentResources)
+          .toHaveProperty([ 'http://example.org/HelloWorldModule#SayHelloComponent2' ]);
       });
     });
   });
@@ -266,7 +279,8 @@ describe('Loader', () => {
 
     it('should produce instances with correct parameter values for a first instantiation', async() => {
       const configResourceStream1 = parse('config-hello-world-mapping.jsonld');
-      const run1 = await loader.instantiateFromStream('http://example.org/myHelloWorld1', configResourceStream1);
+      await loader.registerConfigStream(configResourceStream1);
+      const run1 = await loader.getComponentInstance('http://example.org/myHelloWorld1');
       expect(run1._params).toEqual({
         something1: [ 'SOMETHING1', 'SOMETHING2' ],
       });
@@ -274,7 +288,8 @@ describe('Loader', () => {
 
     it('should produce instances with correct parameter values for a second instantiation', async() => {
       const configResourceStream2 = parse('config-hello-world-mapping.jsonld');
-      const run2 = await loader.instantiateFromStream('http://example.org/myHelloWorld2', configResourceStream2);
+      await loader.registerConfigStream(configResourceStream2);
+      const run2 = await loader.getComponentInstance('http://example.org/myHelloWorld2');
       expect(run2._params).toEqual([ 'SOMETHING3', 'SOMETHING4' ]);
     });
   });
@@ -288,7 +303,8 @@ describe('Loader', () => {
 
     it('should produce instances with equal parameter values', async() => {
       const configResourceStream = parse('config-hello-world-referenced.jsonld');
-      const run = await loader.instantiateFromStream('http://example.org/myHelloWorld1', configResourceStream);
+      await loader.registerConfigStream(configResourceStream);
+      const run = await loader.getComponentInstance('http://example.org/myHelloWorld1');
       expect(run._params).toEqual({
         'http://example.org/hello/hello': [ new Hello() ],
         'http://example.org/hello/say': [ new Hello() ],
@@ -298,7 +314,8 @@ describe('Loader', () => {
 
     it('should produce instances with different parameter values', async() => {
       const configResourceStream = parse('config-hello-world-unreferenced.jsonld');
-      const run = await loader.instantiateFromStream('http://example.org/myHelloWorld1', configResourceStream);
+      await loader.registerConfigStream(configResourceStream);
+      const run = await loader.getComponentInstance('http://example.org/myHelloWorld1');
       expect(run._params).toEqual({
         'http://example.org/hello/hello': [ new Hello() ],
         'http://example.org/hello/say': [ new Hello() ],
@@ -308,7 +325,8 @@ describe('Loader', () => {
 
     it('should produce invalid instances with itself as parameter value when self-referenced', async() => {
       const configResourceStream = parse('config-hello-world-selfreferenced.jsonld');
-      const run = await loader.instantiateFromStream('http://example.org/myHelloWorld1', configResourceStream);
+      await loader.registerConfigStream(configResourceStream);
+      const run = await loader.getComponentInstance('http://example.org/myHelloWorld1');
       expect(run._params).toEqual({
         'http://example.org/hello/hello': [{}],
       });
@@ -324,11 +342,12 @@ describe('Loader', () => {
 
     it('should produce instances with inherited parameter values', async() => {
       const configResourceStream = parse('config-hello-world-inheritableparams.jsonld');
-      const run1 = await loader.instantiateFromStream('http://example.org/myHelloWorld1', configResourceStream);
+      await loader.registerConfigStream(configResourceStream);
+      const run1 = await loader.getComponentInstance('http://example.org/myHelloWorld1');
       expect(run1._params).toEqual({
         'http://example.org/hello/something': [ 'SOMETHING' ],
       });
-      const run2 = await loader.instantiate(loader.objectLoader.resources['http://example.org/myHelloWorld2']);
+      const run2 = await instancePool.instantiate(objectLoader.resources['http://example.org/myHelloWorld2'], {});
       expect(run2._params).toEqual({
         'http://example.org/hello/something': [ 'SOMETHING' ],
       });
@@ -343,7 +362,8 @@ describe('Loader', () => {
 
     it('a config stream with component instances with inherited parameters from the parent', async() => {
       const configResourceStream = parse('config-hello-world-subclass.jsonld');
-      const run = await loader.instantiateFromStream('http://example.org/myHelloWorld1', configResourceStream);
+      await loader.registerConfigStream(configResourceStream);
+      const run = await loader.getComponentInstance('http://example.org/myHelloWorld1');
       expect(run._params).toEqual({
         'http://example.org/hello/something': [ 'SOMETHING1' ],
       });
@@ -351,7 +371,8 @@ describe('Loader', () => {
 
     it('a config stream with component instances with inherited parameters from the parent\'s parent', async() => {
       const configResourceStream = parse('config-hello-world-subclass.jsonld');
-      const run = await loader.instantiateFromStream('http://example.org/myHelloWorld2', configResourceStream);
+      await loader.registerConfigStream(configResourceStream);
+      const run = await loader.getComponentInstance('http://example.org/myHelloWorld2');
       expect(run._params).toEqual({
         'http://example.org/hello/something': [ 'SOMETHING2' ],
       });
@@ -367,7 +388,8 @@ describe('Loader', () => {
 
     it('a config stream with component instances with inherited parameters from the parent', async() => {
       const configResourceStream = parse('config-hello-world-subclassmapping.jsonld');
-      const run = await loader.instantiateFromStream('http://example.org/myHelloWorld1', configResourceStream);
+      await loader.registerConfigStream(configResourceStream);
+      const run = await loader.getComponentInstance('http://example.org/myHelloWorld1');
       expect(run._params).toEqual({
         something: [ 'SOMETHING' ],
         something1: [ 'SOMETHING1' ],
@@ -376,7 +398,8 @@ describe('Loader', () => {
 
     it('a config stream with component instances with inherited parameters from the parent\'s parent', async() => {
       const configResourceStream = parse('config-hello-world-subclassmapping.jsonld');
-      const run = await loader.instantiateFromStream('http://example.org/myHelloWorld2', configResourceStream);
+      await loader.registerConfigStream(configResourceStream);
+      const run = await loader.getComponentInstance('http://example.org/myHelloWorld2');
       expect(run._params).toEqual({
         something: [ 'SOMETHING' ],
         something1: [ 'SOMETHING1' ],
@@ -387,7 +410,8 @@ describe('Loader', () => {
     it('a config stream with component instances with inherited parameters from the parent\'s parent\'s parent',
       async() => {
         const configResourceStream = parse('config-hello-world-subclassmapping.jsonld');
-        const run = await loader.instantiateFromStream('http://example.org/myHelloWorld3', configResourceStream);
+        await loader.registerConfigStream(configResourceStream);
+        const run = await loader.getComponentInstance('http://example.org/myHelloWorld3');
         expect(run._params).toEqual({
           something: [ 'SOMETHING' ],
           something1: [ 'SOMETHING1' ],
@@ -405,11 +429,12 @@ describe('Loader', () => {
 
     it('should produce instances with inherited parameter values', async() => {
       const configResourceStream1 = parse('config-hello-world-inheritableparams.jsonld');
-      const run1 = await loader.instantiateFromStream('http://example.org/myHelloWorld1', configResourceStream1);
+      await loader.registerConfigStream(configResourceStream1);
+      const run1 = await loader.getComponentInstance('http://example.org/myHelloWorld1');
       expect(run1._params).toEqual({
         something: [ 'SOMETHING' ],
       });
-      const run2 = await loader.instantiate(loader.objectLoader.resources['http://example.org/myHelloWorld2']);
+      const run2 = await instancePool.instantiate(objectLoader.resources['http://example.org/myHelloWorld2'], {});
       expect(run2._params).toEqual({
         something: [ 'SOMETHING' ],
       });
@@ -425,7 +450,8 @@ describe('Loader', () => {
 
     it('a first config stream with component instances', async() => {
       const configResourceStream = parse('config-hello-world-dynamicentries.jsonld');
-      const run = await loader.instantiateFromStream('http://example.org/myHelloWorld1', configResourceStream);
+      await loader.registerConfigStream(configResourceStream);
+      const run = await loader.getComponentInstance('http://example.org/myHelloWorld1');
       expect(run._params).toEqual({
         KEY1: 'VALUE1',
         KEY2: 'VALUE2',
@@ -434,7 +460,8 @@ describe('Loader', () => {
 
     it('a second config stream with component instances', async() => {
       const configResourceStream = parse('config-hello-world-dynamicentries.jsonld');
-      const run = await loader.instantiateFromStream('http://example.org/myHelloWorld2', configResourceStream);
+      await loader.registerConfigStream(configResourceStream);
+      const run = await loader.getComponentInstance('http://example.org/myHelloWorld2');
       expect(run._params).toEqual({
         KEY3: 'VALUE3',
         KEY4: 'VALUE4',
@@ -452,7 +479,8 @@ describe('Loader', () => {
 
     it('a config stream with component instances with inherited parameters from the parent', async() => {
       const configResourceStream = parse('config-hello-world-subclassmapping-dynamicentries.jsonld');
-      const run = await loader.instantiateFromStream('http://example.org/myHelloWorld1', configResourceStream);
+      await loader.registerConfigStream(configResourceStream);
+      const run = await loader.getComponentInstance('http://example.org/myHelloWorld1');
       expect(run._params).toEqual({
         '0KEY1': '0VALUE1',
         '0KEY2': '0VALUE2',
@@ -463,7 +491,8 @@ describe('Loader', () => {
 
     it('a config stream with component instances with inherited parameters from the parent\'s parent', async() => {
       const configResourceStream = parse('config-hello-world-subclassmapping-dynamicentries.jsonld');
-      const run = await loader.instantiateFromStream('http://example.org/myHelloWorld2', configResourceStream);
+      await loader.registerConfigStream(configResourceStream);
+      const run = await loader.getComponentInstance('http://example.org/myHelloWorld2');
       expect(run._params).toEqual({
         '0KEY1': '0VALUE1',
         '0KEY2': '0VALUE2',
@@ -485,14 +514,15 @@ describe('Loader', () => {
 
     it('should produce instances with inherited parameter values', async() => {
       const configResourceStream1 = parse('config-hello-world-dynamicentries2.jsonld');
-      const run1 = await loader.instantiateFromStream('http://example.org/myHelloWorld1', configResourceStream1);
+      await loader.registerConfigStream(configResourceStream1);
+      const run1 = await loader.getComponentInstance('http://example.org/myHelloWorld1');
       expect(run1._params).toEqual({
         somethings1: {
           KEY1: 'VALUE1',
           KEY2: 'VALUE2',
         },
       });
-      const run2 = await loader.instantiate(loader.objectLoader.resources['http://example.org/myHelloWorld2']);
+      const run2 = await instancePool.instantiate(objectLoader.resources['http://example.org/myHelloWorld2'], {});
       expect(run2._params).toEqual({
         somethings1: {
           KEY1: 'VALUE1',
@@ -519,12 +549,13 @@ describe('Loader', () => {
 
     it('should produce instances with inherited parameter values', async() => {
       const configResourceStream1 = parse('config-hello-world-inheritableparams-dynamicentries.jsonld');
-      const run1 = await loader.instantiateFromStream('http://example.org/myHelloWorld1', configResourceStream1);
+      await loader.registerConfigStream(configResourceStream1);
+      const run1 = await loader.getComponentInstance('http://example.org/myHelloWorld1');
       expect(run1._params).toEqual({
         KEY1: 'VALUE1',
         KEY2: 'VALUE2',
       });
-      const run2 = await loader.instantiate(loader.objectLoader.resources['http://example.org/myHelloWorld2']);
+      const run2 = await instancePool.instantiate(objectLoader.resources['http://example.org/myHelloWorld2'], {});
       expect(run2._params).toEqual({
         KEY1: 'VALUE1',
         KEY2: 'VALUE2',
@@ -598,11 +629,13 @@ describe('Loader', () => {
     it('should produce instances with correct parameter values after an erroring instantiation', async() => {
       const configResourceStream1 = parse('config-hello-world.jsonld');
       const configResourceStream2 = parse('config-hello-world-paramranges.jsonld');
-      await expect(loader.instantiateFromStream('http://example.org/myconfig', configResourceStream1))
+      await loader.registerConfigStream(configResourceStream1);
+      await expect(loader.getComponentInstance('http://example.org/myconfig'))
         .rejects.toThrow(new Error(
           'HI is not of type http://www.w3.org/2001/XMLSchema#boolean for parameter http://example.org/hello/say',
         ));
-      const run2 = await loader.instantiateFromStream('http://example.org/myconfig2', configResourceStream2);
+      await loader.registerConfigStream(configResourceStream2);
+      const run2 = await loader.getComponentInstance('http://example.org/myconfig2');
       expect(run2._params).toEqual({
         'http://example.org/hello/hello': [ 'WORLD' ],
         'http://example.org/hello/say': [ true ],
@@ -619,7 +652,8 @@ describe('Loader', () => {
 
     it('a config stream with component instances with nested array mappings', async() => {
       const configResourceStream = parse('config-hello-world-dynamicentries-nested.jsonld');
-      const run = await loader.instantiateFromStream('http://example.org/myHelloWorld1', configResourceStream);
+      await loader.registerConfigStream(configResourceStream);
+      const run = await loader.getComponentInstance('http://example.org/myHelloWorld1');
       expect(run._params).toEqual({
         KEY1: {
           'sub-KEY1': [ '1', '2' ],
@@ -633,7 +667,8 @@ describe('Loader', () => {
 
     it('a config stream with component instances with nested object mappings', async() => {
       const configResourceStream = parse('config-hello-world-dynamicentries-nested.jsonld');
-      const run = await loader.instantiateFromStream('http://example.org/myHelloWorld2', configResourceStream);
+      await loader.registerConfigStream(configResourceStream);
+      const run = await loader.getComponentInstance('http://example.org/myHelloWorld2');
       expect(run._params).toEqual({
         KEY1: {
           'sub-KEY1': {
@@ -656,7 +691,8 @@ describe('Loader', () => {
 
     it('a config stream with component instances with double nested array mappings', async() => {
       const configResourceStream = parse('config-hello-world-dynamicentries-nested.jsonld');
-      const run = await loader.instantiateFromStream('http://example.org/myHelloWorld3', configResourceStream);
+      await loader.registerConfigStream(configResourceStream);
+      const run = await loader.getComponentInstance('http://example.org/myHelloWorld3');
       expect(run._params).toEqual({
         KEY1: [
           [ '1', '2' ],
@@ -678,7 +714,8 @@ describe('Loader', () => {
 
     it('should produce instances with lazy parameter values', async() => {
       const configResourceStream = parse('config-hello-world-lazy.jsonld');
-      const run = await loader.instantiateFromStream('http://example.org/myHelloWorldLazy1', configResourceStream);
+      await loader.registerConfigStream(configResourceStream);
+      const run = await loader.getComponentInstance('http://example.org/myHelloWorldLazy1');
       const val1 = await run._params.somethingLazy();
       const val2 = await val1._params.somethingLazy();
       expect(val2).toEqual('bla');

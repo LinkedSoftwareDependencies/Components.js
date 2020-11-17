@@ -1,5 +1,8 @@
 import type { IModuleState } from '../ModuleStateBuilder';
 
+/**
+ * Creates an instance of a given component.
+ */
 export interface IComponentFactory {
   /**
      * @param settings The settings for creating the instance.

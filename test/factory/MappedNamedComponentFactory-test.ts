@@ -1,6 +1,7 @@
 import type { RdfObjectLoader } from 'rdf-object';
 import { Resource } from 'rdf-object';
 import { MappedNamedComponentFactory } from '../../lib/factory/MappedNamedComponentFactory';
+import type { IInstancePool } from '../../lib/IInstancePool';
 import { Loader } from '../../lib/Loader';
 import type { IModuleState } from '../../lib/ModuleStateBuilder';
 import * as Util from '../../lib/Util';
@@ -12,7 +13,8 @@ describe('MappedNamedComponentFactory', () => {
   let loader: Loader;
   let objectLoader: RdfObjectLoader;
   let moduleState: IModuleState;
-  beforeEach(() => {
+  let instancePool: IInstancePool;
+  beforeEach(async() => {
     loader = new Loader();
     moduleState = <any> {
       mainModulePath: `${__dirname}/..`,
@@ -21,9 +23,26 @@ describe('MappedNamedComponentFactory', () => {
       },
     };
     (<any> loader).moduleState = moduleState;
-    // Create resources via object loader, so we can use CURIEs
-    objectLoader = loader.objectLoader;
+    objectLoader = (<any> loader).objectLoader;
+    instancePool = await loader.getInstancePool();
   });
+
+  function makeConstructor(
+    moduleDefinition: Resource,
+    componentDefinition: Resource,
+    config: Resource,
+    constructable = true,
+  ) {
+    return new MappedNamedComponentFactory({
+      objectLoader,
+      moduleDefinition,
+      componentDefinition,
+      config,
+      constructable,
+      overrideRequireNames: {},
+      instancePool,
+    });
+  }
 
   describe('for an N3 Lexer', () => {
     let n3LexerComponent: Resource;
@@ -71,11 +90,11 @@ describe('MappedNamedComponentFactory', () => {
     describe('for a constructor', () => {
       let constructor: MappedNamedComponentFactory;
       beforeEach(() => {
-        constructor = new MappedNamedComponentFactory(module, n3LexerComponent, objectLoader.createCompactedResource({
+        constructor = makeConstructor(module, n3LexerComponent, objectLoader.createCompactedResource({
           'http://example.org/n3#lineMode': objectLoader.createCompactedResource('"true"'),
           'http://example.org/n3#n3': objectLoader.createCompactedResource('"true"'),
           'http://example.org/n3#comments': objectLoader.createCompactedResource('"true"'),
-        }), true, {}, loader);
+        }));
       });
 
       it('should be valid', () => {
@@ -228,7 +247,7 @@ describe('MappedNamedComponentFactory', () => {
           n3ParserComponent,
         ],
       });
-      constructor = new MappedNamedComponentFactory(module, n3ParserComponent, objectLoader.createCompactedResource({
+      constructor = makeConstructor(module, n3ParserComponent, objectLoader.createCompactedResource({
         'http://example.org/n3#format': '"application/trig"',
         'http://example.org/n3#lexer': MappedNamedComponentFactory
           .makeUnnamedDefinitionConstructor(module, n3LexerComponent, objectLoader)(objectLoader
@@ -237,7 +256,7 @@ describe('MappedNamedComponentFactory', () => {
               'http://example.org/n3#n3': objectLoader.createCompactedResource('"true"'),
               'http://example.org/n3#comments': objectLoader.createCompactedResource('"true"'),
             })),
-      }), true, {}, loader);
+      }));
     });
 
     it('should be valid', () => {
@@ -275,14 +294,7 @@ describe('MappedNamedComponentFactory', () => {
           n3UtilComponent,
         ],
       });
-      constructor = new MappedNamedComponentFactory(
-        module,
-        n3UtilComponent,
-        objectLoader.createCompactedResource({}),
-        false,
-        {},
-        loader,
-      );
+      constructor = makeConstructor(module, n3UtilComponent, objectLoader.createCompactedResource({}), false);
     });
 
     it('should be valid', () => {
@@ -333,9 +345,9 @@ describe('MappedNamedComponentFactory', () => {
           n3DummyComponent,
         ],
       });
-      constructor = new MappedNamedComponentFactory(module, n3DummyComponent, objectLoader.createCompactedResource({
+      constructor = makeConstructor(module, n3DummyComponent, objectLoader.createCompactedResource({
         'http://example.org/n3#dummyParam': objectLoader.createCompactedResource('"true"'),
-      }), true, {}, loader);
+      }));
     });
 
     it('should be valid', () => {
@@ -424,12 +436,12 @@ describe('MappedNamedComponentFactory', () => {
           helloWorldComponent2,
         ],
       });
-      constructor = new MappedNamedComponentFactory(module, helloWorldComponent2, objectLoader.createCompactedResource({
+      constructor = makeConstructor(module, helloWorldComponent2, objectLoader.createCompactedResource({
         'http://example.org/HelloWorldModule#dummyParam': objectLoader.createCompactedResource('"true"'),
         'http://example.org/HelloWorldModule#instanceParam': MappedNamedComponentFactory
           .makeUnnamedDefinitionConstructor(module, helloWorldComponent1, objectLoader)(objectLoader
             .createCompactedResource({})),
-      }), true, {}, loader);
+      }));
     });
 
     it('should be valid', () => {
@@ -498,9 +510,9 @@ describe('MappedNamedComponentFactory', () => {
           helloWorldComponent3,
         ],
       });
-      constructor = new MappedNamedComponentFactory(module, helloWorldComponent3, objectLoader.createCompactedResource({
+      constructor = makeConstructor(module, helloWorldComponent3, objectLoader.createCompactedResource({
         '@id': 'http://example.org/myHelloComponent',
-      }), true, {}, loader);
+      }));
     });
 
     it('should be valid', () => {
@@ -555,10 +567,10 @@ describe('MappedNamedComponentFactory', () => {
           helloWorldComponent4,
         ],
       });
-      constructor = new MappedNamedComponentFactory(module, helloWorldComponent4, objectLoader.createCompactedResource({
+      constructor = makeConstructor(module, helloWorldComponent4, objectLoader.createCompactedResource({
         'http://example.org/HelloWorldModule#dummyParam': objectLoader.createCompactedResource('"true"'),
         'http://example.org/HelloWorldModule#instanceParam': objectLoader.createCompactedResource('"false"'),
-      }), true, {}, loader);
+      }));
     });
 
     it('should be valid', () => {
@@ -606,10 +618,10 @@ describe('MappedNamedComponentFactory', () => {
           helloWorldComponent4,
         ],
       });
-      constructor = new MappedNamedComponentFactory(module, helloWorldComponent4, objectLoader.createCompactedResource({
+      constructor = makeConstructor(module, helloWorldComponent4, objectLoader.createCompactedResource({
         'http://example.org/HelloWorldModule#dummyParam': objectLoader.createCompactedResource('"true"'),
         'http://example.org/HelloWorldModule#instanceParam': objectLoader.createCompactedResource('"false"'),
-      }), true, {}, loader);
+      }));
     });
 
     it('should be valid', () => {
@@ -676,14 +688,7 @@ describe('MappedNamedComponentFactory', () => {
 
     describe('without overridden default values', () => {
       beforeEach(() => {
-        constructor = new MappedNamedComponentFactory(
-          module,
-          helloWorldComponent5,
-          objectLoader.createCompactedResource({}),
-          true,
-          {},
-          loader,
-        );
+        constructor = makeConstructor(module, helloWorldComponent5, objectLoader.createCompactedResource({}));
       });
 
       it('should be valid', () => {
@@ -707,11 +712,10 @@ describe('MappedNamedComponentFactory', () => {
 
     describe('with overridden default values', () => {
       beforeEach(() => {
-        constructor = new MappedNamedComponentFactory(module, helloWorldComponent5, objectLoader
-          .createCompactedResource({
-            'http://example.org/n3#dummyParam1': objectLoader.createCompactedResource('"true"'),
-            'http://example.org/n3#dummyParam2': objectLoader.createCompactedResource('"false"'),
-          }), true, {}, loader);
+        constructor = makeConstructor(module, helloWorldComponent5, objectLoader.createCompactedResource({
+          'http://example.org/n3#dummyParam1': objectLoader.createCompactedResource('"true"'),
+          'http://example.org/n3#dummyParam2': objectLoader.createCompactedResource('"false"'),
+        }));
       });
 
       it('should be valid', () => {
@@ -792,14 +796,9 @@ describe('MappedNamedComponentFactory', () => {
 
     describe('without overridden default scoped values', () => {
       beforeEach(() => {
-        constructor = new MappedNamedComponentFactory(
-          module,
-          helloWorldComponent6,
-          objectLoader.createCompactedResource({ types: [ helloWorldComponent6 ]}),
-          true,
-          {},
-          loader,
-        );
+        constructor = makeConstructor(module, helloWorldComponent6, objectLoader.createCompactedResource({
+          types: [ helloWorldComponent6 ],
+        }));
       });
 
       it('should be valid', () => {
@@ -823,11 +822,10 @@ describe('MappedNamedComponentFactory', () => {
 
     describe('with overridden default scoped values', () => {
       beforeEach(() => {
-        constructor = new MappedNamedComponentFactory(module, helloWorldComponent6, objectLoader
-          .createCompactedResource({
-            'http://example.org/n3#dummyParam1': objectLoader.createCompactedResource('"true"'),
-            'http://example.org/n3#dummyParam2': objectLoader.createCompactedResource('"false"'),
-          }), true, {}, loader);
+        constructor = makeConstructor(module, helloWorldComponent6, objectLoader.createCompactedResource({
+          'http://example.org/n3#dummyParam1': objectLoader.createCompactedResource('"true"'),
+          'http://example.org/n3#dummyParam2': objectLoader.createCompactedResource('"false"'),
+        }));
       });
 
       it('should be valid', () => {
@@ -851,14 +849,9 @@ describe('MappedNamedComponentFactory', () => {
 
     describe('with non-applicable default scoped values', () => {
       beforeEach(() => {
-        constructor = new MappedNamedComponentFactory(
-          module,
-          helloWorldComponent6,
-          objectLoader.createCompactedResource({ types: [ 'http://example.org/HelloWorldModule#SayHelloComponent5' ]}),
-          true,
-          {},
-          loader,
-        );
+        constructor = makeConstructor(module, helloWorldComponent6, objectLoader.createCompactedResource({
+          types: [ 'http://example.org/HelloWorldModule#SayHelloComponent5' ],
+        }));
       });
 
       it('should be valid', () => {
@@ -919,29 +912,15 @@ describe('MappedNamedComponentFactory', () => {
 
     describe('without a valid required parameter', () => {
       it('should fail on construction', () => {
-        expect(() => new MappedNamedComponentFactory(
-          module,
-          helloWorldComponent7,
-          objectLoader.createCompactedResource({}),
-          true,
-          {},
-          loader,
-        )).toThrow();
+        expect(() => makeConstructor(module, helloWorldComponent7, objectLoader.createCompactedResource({}))).toThrow();
       });
     });
 
     describe('with a valid required parameter', () => {
       beforeEach(() => {
-        constructor = new MappedNamedComponentFactory(
-          module,
-          helloWorldComponent7,
-          objectLoader.createCompactedResource({
-            'http://example.org/HelloWorldModule#requiredParam': objectLoader.createCompactedResource('"true"'),
-          }),
-          true,
-          {},
-          loader,
-        );
+        constructor = makeConstructor(module, helloWorldComponent7, objectLoader.createCompactedResource({
+          'http://example.org/HelloWorldModule#requiredParam': objectLoader.createCompactedResource('"true"'),
+        }));
       });
 
       it('should be valid', () => {
@@ -1020,9 +999,9 @@ describe('MappedNamedComponentFactory', () => {
           helloWorldComponent8,
         ],
       });
-      constructor = new MappedNamedComponentFactory(module, helloWorldComponent8, objectLoader.createCompactedResource({
+      constructor = makeConstructor(module, helloWorldComponent8, objectLoader.createCompactedResource({
         'http://example.org/HelloWorldModule#dummyParamLazy': objectLoader.createCompactedResource('"true"'),
-      }), true, {}, loader);
+      }));
     });
 
     it('should be valid', () => {
@@ -1081,9 +1060,9 @@ describe('MappedNamedComponentFactory', () => {
 
       const variable: Resource = objectLoader.createCompactedResource('ex:var');
       variable.properties.types.push(objectLoader.createCompactedResource(`${Util.PREFIXES.om}Variable`));
-      constructor = new MappedNamedComponentFactory(module, helloWorldComponent, objectLoader.createCompactedResource({
+      constructor = makeConstructor(module, helloWorldComponent, objectLoader.createCompactedResource({
         'http://example.org/HelloWorldModule#dummyParam': variable,
-      }), true, {}, loader);
+      }));
     });
 
     it('should be valid', () => {
@@ -1152,8 +1131,7 @@ describe('MappedNamedComponentFactory', () => {
           helloWorldComponent,
         ],
       });
-      constructor = new MappedNamedComponentFactory(module, helloWorldComponent, objectLoader
-        .createCompactedResource({}), true, {}, loader);
+      constructor = makeConstructor(module, helloWorldComponent, objectLoader.createCompactedResource({}));
     });
 
     it('should be valid', () => {
@@ -1197,8 +1175,7 @@ describe('MappedNamedComponentFactory', () => {
           helloWorldComponent,
         ],
       });
-      constructor = new MappedNamedComponentFactory(module, helloWorldComponent, objectLoader
-        .createCompactedResource({}), true, {}, loader);
+      constructor = makeConstructor(module, helloWorldComponent, objectLoader.createCompactedResource({}));
     });
 
     it('should be valid', () => {
@@ -1247,10 +1224,10 @@ describe('MappedNamedComponentFactory', () => {
           helloWorldComponent,
         ],
       });
-      constructor = new MappedNamedComponentFactory(module, helloWorldComponent, objectLoader.createCompactedResource({
+      constructor = makeConstructor(module, helloWorldComponent, objectLoader.createCompactedResource({
         'http://example.org/HelloWorldModule#dummyParam': objectLoader
           .createCompactedResource('http://example.org/value'),
-      }), true, {}, loader);
+      }));
     });
 
     it('should be valid', () => {

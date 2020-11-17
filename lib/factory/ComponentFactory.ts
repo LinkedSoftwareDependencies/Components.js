@@ -1,66 +1,35 @@
-import type { Resource } from 'rdf-object';
-import type { Loader } from '../Loader';
-import Util = require('../Util');
+import type { ComponentFactoryOptions } from './ComponentFactoryOptions';
 import type { IComponentFactory, ICreationSettingsInner } from './IComponentFactory';
+import { MappedNamedComponentFactory } from './MappedNamedComponentFactory';
+import { UnmappedNamedComponentFactory } from './UnmappedNamedComponentFactory';
+import { UnnamedComponentFactory } from './UnnamedComponentFactory';
 
 /**
  * Factory for component definitions of any type.
  */
 export class ComponentFactory implements IComponentFactory {
-  protected readonly moduleDefinition: Resource | undefined;
-  protected readonly componentDefinition: Resource | undefined;
-  protected readonly config: Resource;
-  protected readonly overrideRequireNames: Record<string, string>;
-  protected readonly loader: Loader;
+  private readonly options: ComponentFactoryOptions;
 
-  public constructor(
-    moduleDefinition: Resource | undefined,
-    componentDefinition: Resource | undefined,
-    config: Resource,
-    overrideRequireNames: Record<string, string>,
-    loader: Loader,
-  ) {
-    this.moduleDefinition = moduleDefinition;
-    this.componentDefinition = componentDefinition;
-    this.config = config;
-    this.overrideRequireNames = overrideRequireNames;
-    this.loader = loader;
+  public constructor(options: ComponentFactoryOptions) {
+    this.options = options;
   }
 
   public _getComponentFactory(): IComponentFactory {
-    if (this.moduleDefinition &&
-      this.componentDefinition &&
-      !this.config.property.requireName &&
-      !this.config.property.requireElement) {
-      const constructable = !this.componentDefinition.isA(Util.DF.namedNode(`${Util.PREFIXES.oo}ComponentInstance`));
-      if (!this.componentDefinition.property.constructorArguments) {
+    if ('moduleDefinition' in this.options &&
+      'componentDefinition' in this.options &&
+      !this.options.config.property.requireName &&
+      !this.options.config.property.requireElement) {
+      if (!this.options.componentDefinition.property.constructorArguments) {
         // No constructor arguments, pass arguments manually
-        return new (require('./UnmappedNamedComponentFactory').UnmappedNamedComponentFactory)(
-          this.moduleDefinition,
-          this.componentDefinition,
-          this.config,
-          constructable,
-          this.overrideRequireNames,
-          this.loader,
-        );
+        return new UnmappedNamedComponentFactory(this.options);
       }
 
       // Available constructor arguments, map arguments to them
-      return new (require('./MappedNamedComponentFactory').MappedNamedComponentFactory)(
-        this.moduleDefinition,
-        this.componentDefinition,
-        this.config,
-        constructable,
-        this.overrideRequireNames,
-        this.loader,
-      );
+      return new MappedNamedComponentFactory(this.options);
     }
 
     // No component, construct based on requireName and requireElement
-    return new (require('./UnnamedComponentFactory').UnnamedComponentFactory)(this.config,
-      !this.config.isA(Util.DF.namedNode(`${Util.PREFIXES.oo}ComponentInstance`)),
-      this.overrideRequireNames,
-      this.loader);
+    return new UnnamedComponentFactory(this.options);
   }
 
   public makeArguments(settings: ICreationSettingsInner): Promise<any[]> {

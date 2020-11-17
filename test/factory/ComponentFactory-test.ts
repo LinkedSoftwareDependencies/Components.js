@@ -3,6 +3,7 @@ import { ComponentFactory } from '../../lib/factory/ComponentFactory';
 import { MappedNamedComponentFactory } from '../../lib/factory/MappedNamedComponentFactory';
 import { UnmappedNamedComponentFactory } from '../../lib/factory/UnmappedNamedComponentFactory';
 import { UnnamedComponentFactory } from '../../lib/factory/UnnamedComponentFactory';
+import type { IInstancePool } from '../../lib/IInstancePool';
 import { Loader } from '../../lib/Loader';
 import type { IModuleState } from '../../lib/ModuleStateBuilder';
 import * as Util from '../../lib/Util';
@@ -13,7 +14,8 @@ describe('ComponentFactory', () => {
   let loader: Loader;
   let objectLoader: RdfObjectLoader;
   let moduleState: IModuleState;
-  beforeEach(() => {
+  let instancePool: IInstancePool;
+  beforeEach(async() => {
     loader = new Loader();
     moduleState = <any> {
       mainModulePath: `${__dirname}/..`,
@@ -22,9 +24,26 @@ describe('ComponentFactory', () => {
       },
     };
     (<any> loader).moduleState = moduleState;
-    // Create resources via object loader, so we can use CURIEs
-    objectLoader = loader.objectLoader;
+    objectLoader = (<any> loader).objectLoader;
+    instancePool = await loader.getInstancePool();
   });
+
+  function makeConstructor(
+    moduleDefinition: Resource,
+    componentDefinition: Resource,
+    config: Resource,
+    constructable = true,
+  ) {
+    return new ComponentFactory({
+      objectLoader,
+      moduleDefinition,
+      componentDefinition,
+      config,
+      constructable,
+      overrideRequireNames: {},
+      instancePool,
+    });
+  }
 
   describe('for an unmapped N3 Lexer definition', () => {
     let n3LexerComponentDefinitionUnmapped: Resource;
@@ -65,13 +84,7 @@ describe('ComponentFactory', () => {
             ],
           },
         });
-        constructor = new ComponentFactory(
-          module,
-          n3LexerComponentDefinitionUnmapped,
-          n3LexerComponentConfigUnnamed,
-          {},
-          loader,
-        );
+        constructor = makeConstructor(module, n3LexerComponentDefinitionUnmapped, n3LexerComponentConfigUnnamed);
       });
 
       it('should use the unnamed component factory', () => {
@@ -98,13 +111,7 @@ describe('ComponentFactory', () => {
           types: [ 'http://example.org/n3#Lexer' ],
           'http://example.org/n3#comments': '"true"',
         });
-        constructor = new ComponentFactory(
-          module,
-          n3LexerComponentDefinitionUnmapped,
-          n3LexerComponentConfigNamed,
-          {},
-          loader,
-        );
+        constructor = makeConstructor(module, n3LexerComponentDefinitionUnmapped, n3LexerComponentConfigNamed);
       });
 
       it('should use the unmapped component factory', () => {
@@ -161,13 +168,7 @@ describe('ComponentFactory', () => {
           n3LexerComponentDefinitionMapped,
         ],
       });
-      constructor = new ComponentFactory(
-        module,
-        n3LexerComponentDefinitionMapped,
-        n3LexerComponentConfigNamed,
-        {},
-        loader,
-      );
+      constructor = makeConstructor(module, n3LexerComponentDefinitionMapped, n3LexerComponentConfigNamed);
     });
 
     it('should use the mapped component factory', () => {

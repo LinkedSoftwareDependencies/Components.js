@@ -1,28 +1,24 @@
 import type { Resource } from 'rdf-object';
 import type { RdfObjectLoader } from 'rdf-object/lib/RdfObjectLoader';
-import type { Loader } from '../Loader';
 import Util = require('../Util');
 import { resourceIdToString, resourceToString } from '../Util';
+import type { IComponentFactoryOptionsNamed } from './ComponentFactoryOptions';
 import { UnnamedComponentFactory } from './UnnamedComponentFactory';
 
 /**
  * Factory for component definitions with semantic arguments and with constructor mappings.
  */
 export class MappedNamedComponentFactory extends UnnamedComponentFactory {
-  public constructor(
-    moduleDefinition: Resource,
-    componentDefinition: Resource,
-    config: Resource,
-    constructable: boolean,
-    overrideRequireNames: Record<string, string>,
-    loader: Loader,
-  ) {
+  public constructor(options: IComponentFactoryOptionsNamed) {
     // TODO: check if constructorArguments param references are defined in parameters
-    super(MappedNamedComponentFactory.makeUnnamedDefinitionConstructor(
-      moduleDefinition,
-      componentDefinition,
-      loader.objectLoader,
-    )(config), constructable, overrideRequireNames, loader);
+    super({
+      ...options,
+      config: MappedNamedComponentFactory.makeUnnamedDefinitionConstructor(
+        options.moduleDefinition,
+        options.componentDefinition,
+        options.objectLoader,
+      )(options.config),
+    });
   }
 
   public static mapValue(

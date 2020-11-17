@@ -1,25 +1,21 @@
 import type { Resource, RdfObjectLoader } from 'rdf-object';
-import type { Loader } from '../Loader';
 import Util = require('../Util');
+import type { IComponentFactoryOptionsNamed } from './ComponentFactoryOptions';
 import { UnnamedComponentFactory } from './UnnamedComponentFactory';
 
 /**
  * Factory for component definitions with semantic arguments and without constructor mappings.
  */
 export class UnmappedNamedComponentFactory extends UnnamedComponentFactory {
-  public constructor(
-    moduleDefinition: Resource,
-    componentDefinition: Resource,
-    config: Resource,
-    constructable: boolean,
-    overrideRequireNames: Record<string, string>,
-    loader: Loader,
-  ) {
-    super(UnmappedNamedComponentFactory.makeUnnamedDefinitionConstructor(
-      moduleDefinition,
-      componentDefinition,
-      loader.objectLoader,
-    )(config), constructable, overrideRequireNames, loader);
+  public constructor(options: IComponentFactoryOptionsNamed) {
+    super({
+      ...options,
+      config: UnmappedNamedComponentFactory.makeUnnamedDefinitionConstructor(
+        options.moduleDefinition,
+        options.componentDefinition,
+        options.objectLoader,
+      )(options.config),
+    });
   }
 
   /**
