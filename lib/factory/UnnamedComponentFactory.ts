@@ -31,6 +31,13 @@ export class UnnamedComponentFactory implements IComponentFactory {
     this.validateParam(this.config, 'requireNoConstructor', 'Literal', true);
   }
 
+  /**
+   * Check if the given field of given type exists in the given resource.
+   * @param resource A resource to look in.
+   * @param field A field name to look for.
+   * @param type The term type to expect.
+   * @param optional If the field is optional.
+   */
   public validateParam(resource: Resource, field: string, type: string, optional?: boolean): void {
     if (!resource.property[field]) {
       if (!optional) {
@@ -44,6 +51,11 @@ export class UnnamedComponentFactory implements IComponentFactory {
     }
   }
 
+  /**
+   * Convert the given argument value resource into a JavaScript object or primitive.
+   * @param value One or more argument values.
+   * @param settings Creation settings.
+   */
   public async getArgumentValue(value: Resource | Resource[], settings: ICreationSettings): Promise<any> {
     if (Array.isArray(value)) {
       // Unwrap unique values out of the array
@@ -133,10 +145,11 @@ export class UnnamedComponentFactory implements IComponentFactory {
   }
 
   /**
+   * Create an array of constructor arguments based on the configured config.
    * @param settings The settings for creating the instance.
    * @returns New instantiations of the provided arguments.
    */
-  public async makeArguments(settings: ICreationSettingsInner): Promise<any[]> {
+  public async createArguments(settings: ICreationSettingsInner): Promise<any[]> {
     if (this.config.property.arguments) {
       if (!this.config.property.arguments.list) {
         throw new Error(`Detected invalid arguments for component "${Util.resourceIdToString(this.config, this.objectLoader)}": arguments are not an RDF list.`);
@@ -148,7 +161,7 @@ export class UnnamedComponentFactory implements IComponentFactory {
   }
 
   /**
-   * Require a package if the module that was invoked has the given module name.
+   * Require the given module iff the module is the current main module.
    * This is done by looking for the nearest package.json.
    * @param moduleState The module state.
    * @param requireName The module name that should be required.
@@ -165,20 +178,21 @@ export class UnnamedComponentFactory implements IComponentFactory {
   }
 
   /**
+   * Get the path to the main module's main entrypoint.
    * @param moduleState The module state.
-   * @return {string} The index module path of the current running module.
-   * @private
+   * @return {string} The index module path of the current running module (`"main"` entry in package.json).
    */
-  protected _getCurrentRunningModuleMain(moduleState: IModuleState): string {
+  protected getCurrentRunningModuleMain(moduleState: IModuleState): string {
     const pckg = moduleState.packageJsons[moduleState.mainModulePath];
     return Path.join(moduleState.mainModulePath, pckg.main);
   }
 
   /**
+   * Instantiate the current config.
    * @param settings The settings for creating the instance.
    * @returns A new instance of the component.
    */
-  public async create(settings: ICreationSettingsInner): Promise<any> {
+  public async createInstance(settings: ICreationSettingsInner): Promise<any> {
     const serializations: string[] | undefined = settings.serializations;
     let requireName: string = this.config.property.requireName.value;
     requireName = this.overrideRequireNames[requireName] || requireName;
@@ -193,7 +207,7 @@ export class UnnamedComponentFactory implements IComponentFactory {
         throw new Error('Component is not the main module');
       } else if (serializations) {
         resultingRequirePath = `.${Path.sep
-        }${Path.relative(settings.moduleState.mainModulePath, this._getCurrentRunningModuleMain(settings.moduleState))}`;
+        }${Path.relative(settings.moduleState.mainModulePath, this.getCurrentRunningModuleMain(settings.moduleState))}`;
       }
     } catch {
       if (serializations) {
@@ -232,7 +246,7 @@ export class UnnamedComponentFactory implements IComponentFactory {
           throw new Error(`ConstructableComponent is not a function: ${Util.resourceToString(object)
           }\n${Util.resourceToString(this.config)}`);
         }
-        const args: any[] = await this.makeArguments(settings);
+        const args: any[] = await this.createArguments(settings);
         if (serializations) {
           serialization = `new (${serialization})(${args.map(arg => JSON.stringify(arg, null, '  ').replace(/(^|[^\\])"/gu, '$1')).join(',')})`;
         } else {

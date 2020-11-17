@@ -177,7 +177,7 @@ export class InstancePool implements IInstancePool {
     if (!this.instances[configResource.value]) {
       const subBlackList: Record<string, boolean> = { ...resourceBlacklist };
       subBlackList[configResource.value] = true;
-      this.instances[configResource.value] = await this.getConfigConstructor(configResource).create(
+      this.instances[configResource.value] = await this.getConfigConstructor(configResource).createInstance(
         { resourceBlacklist: subBlackList, ...settingsInner },
       );
     }

@@ -12,6 +12,11 @@ import { RdfStreamIncluder } from './RdfStreamIncluder';
  * Parses a data stream to a triple stream.
  */
 export class RdfParser {
+  /**
+   * Parses the given stream into RDF quads.
+   * @param textStream A text stream.
+   * @param options Parsing options.
+   */
   public parse(textStream: NodeJS.ReadableStream, options: RdfParserOptions): RDF.Stream & Readable {
     options.path = Path.normalize(options.path);
 
@@ -25,9 +30,15 @@ export class RdfParser {
         options.baseIRI = `file://${options.baseIRI}`;
       }
     }
+
+    // Override the JSON-LD document loader
     (<any> options)['@comunica/actor-rdf-parse-jsonld:documentLoader'] =
       new PrefetchedDocumentLoader(options.contexts || {});
+
+    // Enable strict parsing of JSON-LD to error on potential user config errors
     (<any> options)['@comunica/actor-rdf-parse-jsonld:strictValues'] = true;
+
+    // Execute parsing
     const quadStream = rdfParser.parse(textStream, options);
     const includedQuadStream = quadStream.pipe(new RdfStreamIncluder(options));
     textStream.on('error', errorListener);
@@ -45,7 +56,7 @@ export class RdfParser {
 
 export type RdfParserOptions = ParseOptions & {
   /**
-   * If imports should be ignored.
+   * If imports in the RDF document should be ignored.
    */
   ignoreImports?: boolean;
   /**
@@ -58,7 +69,7 @@ export type RdfParserOptions = ParseOptions & {
    */
   fromPath?: string;
   /**
-   * The cached JSON-LD contexts
+   * The cached JSON-LD contexts.
    */
   contexts?: Record<string, any>;
   /**

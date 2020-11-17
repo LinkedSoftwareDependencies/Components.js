@@ -269,6 +269,9 @@ export class ModuleStateBuilder {
   }
 }
 
+/**
+ * Represents a module's state with respect to the discoverable modules and components.
+ */
 export interface IModuleState {
   /**
    * Path to the current Node module from which all importing is done.

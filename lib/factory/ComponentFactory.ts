@@ -14,7 +14,10 @@ export class ComponentFactory implements IComponentFactory {
     this.options = options;
   }
 
-  public _getComponentFactory(): IComponentFactory {
+  /**
+   * Create a component factory based on the component factory options.
+   */
+  public createComponentFactory(): IComponentFactory {
     if ('moduleDefinition' in this.options &&
       'componentDefinition' in this.options &&
       !this.options.config.property.requireName &&
@@ -32,11 +35,11 @@ export class ComponentFactory implements IComponentFactory {
     return new UnnamedComponentFactory(this.options);
   }
 
-  public makeArguments(settings: ICreationSettingsInner): Promise<any[]> {
-    return this._getComponentFactory().makeArguments(settings);
+  public createArguments(settings: ICreationSettingsInner): Promise<any[]> {
+    return this.createComponentFactory().createArguments(settings);
   }
 
-  public create(settings: ICreationSettingsInner): Promise<any> {
-    return this._getComponentFactory().create(settings);
+  public createInstance(settings: ICreationSettingsInner): Promise<any> {
+    return this.createComponentFactory().createInstance(settings);
   }
 }

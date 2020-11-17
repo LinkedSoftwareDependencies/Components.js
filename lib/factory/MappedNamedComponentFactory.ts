@@ -6,7 +6,7 @@ import type { IComponentFactoryOptionsNamed } from './ComponentFactoryOptions';
 import { UnnamedComponentFactory } from './UnnamedComponentFactory';
 
 /**
- * Factory for component definitions with semantic arguments and with constructor mappings.
+ * Factory for component definitions with semantic parameters and with constructor mappings.
  */
 export class MappedNamedComponentFactory extends UnnamedComponentFactory {
   public constructor(options: IComponentFactoryOptionsNamed) {
@@ -21,6 +21,14 @@ export class MappedNamedComponentFactory extends UnnamedComponentFactory {
     });
   }
 
+  /**
+   * Map a value resource.
+   * @param resourceScope The resource scope to map in.
+   * @param valueIn The value resource to map.
+   * @param params The parameters object.
+   * @param rawValue If the IRI represents a raw string value instead of a parameter reference.
+   * @param objectLoader The RDF object loader.
+   */
   public static mapValue(
     resourceScope: Resource,
     valueIn: Resource,
@@ -36,7 +44,7 @@ export class MappedNamedComponentFactory extends UnnamedComponentFactory {
     } else if (valueIn.type === 'NamedNode') {
       valueOut = Util.applyParameterValues(resourceScope, valueIn, params, objectLoader);
     } else {
-      valueOut = MappedNamedComponentFactory.map(resourceScope, valueIn, params, objectLoader);
+      valueOut = MappedNamedComponentFactory.mapObject(resourceScope, valueIn, params, objectLoader);
     }
     if (rawValue) {
       valueOut = [ objectLoader.createCompactedResource(`"${valueOut[0].value}"`) ];
@@ -46,51 +54,52 @@ export class MappedNamedComponentFactory extends UnnamedComponentFactory {
   }
 
   /**
-     * Map a resource object.
-     * Only the values of object-resources will be mapped to its parameter value.
-     * For example, the resource { k: Resource.newString('param0'), v: new Resource('http://example.org/param0') }
-     * with params { 'http://example.org/param0': Resource.newString('abc') }
-     * will be mapped to { k: Resource.newString('param0'), v: Resource.newString('abc') }.
-     * @param resourceScope The resource scope to map in.
-     * @param resource The resource to map.
-     * @param params The parameters object.
-     * @param objectLoader The RDF object loader.
-     * @returns {any} The mapped resource.
-     */
-  public static map(
+   * Map an object resource.
+   * Only the values of object-resources will be mapped to its parameter value.
+   * For example, the resource { key: Resource.newString('param0'), value: new Resource('http://example.org/param0') }
+   * with params { 'http://example.org/param0': Resource.newString('abc') }
+   * will be mapped to { key: Resource.newString('param0'), value: Resource.newString('abc') }.
+   * @param resourceScope The resource scope to map in.
+   * @param objectMapping The resource to map.
+   * @param params The parameters object.
+   * @param objectLoader The RDF object loader.
+   */
+  public static mapObject(
     resourceScope: Resource,
-    resource: Resource,
+    objectMapping: Resource,
     params: Resource,
     objectLoader: RdfObjectLoader,
   ): Resource[] {
-    if (resource.property.value || resource.property.valueRawReference) {
-      if (resource.property.key && resource.property.key.type === 'Literal' && !resource.property.collectEntries) {
+    if (objectMapping.property.value || objectMapping.property.valueRawReference) {
+      if (objectMapping.property.key &&
+        objectMapping.property.key.type === 'Literal' &&
+        !objectMapping.property.collectEntries) {
         const ret = objectLoader.createCompactedResource({});
-        ret.property.key = resource.property.key;
+        ret.property.key = objectMapping.property.key;
         for (const value of MappedNamedComponentFactory.mapValue(
           resourceScope,
-          resource.property.value || resource.property.valueRawReference,
+          objectMapping.property.value || objectMapping.property.valueRawReference,
           params,
-          Boolean(resource.property.valueRawReference),
+          Boolean(objectMapping.property.valueRawReference),
           objectLoader,
         )) {
           ret.properties.value.push(value);
         }
         return [ ret ];
       }
-      if (!resource.property.key && !resource.property.collectEntries) {
+      if (!objectMapping.property.key && !objectMapping.property.collectEntries) {
         return MappedNamedComponentFactory.mapValue(
           resourceScope,
-          resource.property.value || resource.property.valueRawReference,
+          objectMapping.property.value || objectMapping.property.valueRawReference,
           params,
-          Boolean(resource.property.valueRawReference),
+          Boolean(objectMapping.property.valueRawReference),
           objectLoader,
         );
       }
-      if (!resource.property.collectEntries) {
-        throw new Error(`If an object key is a URI, it must provide dynamic entries using the oo:collectEntries predicate: ${resourceToString(resource)}`);
+      if (!objectMapping.property.collectEntries) {
+        throw new Error(`If an object key is a URI, it must provide dynamic entries using the oo:collectEntries predicate: ${resourceToString(objectMapping)}`);
       }
-      return resource.properties.collectEntries.reduce((data: Resource[], entry: Resource) => {
+      return objectMapping.properties.collectEntries.reduce((data: Resource[], entry: Resource) => {
         if (entry.type !== 'NamedNode') {
           throw new Error(`Dynamic entry identifiers must be URI's: ${resourceToString(entry)}`);
         }
@@ -102,28 +111,28 @@ export class MappedNamedComponentFactory extends UnnamedComponentFactory {
         .map((entryResource: Resource) => {
           let key: Resource | undefined;
           let value: Resource;
-          if (resource.property.key) {
-            if (resource.property.key.type === 'NamedNode' && resource.property.key.value === `${Util.PREFIXES.rdf}subject`) {
+          if (objectMapping.property.key) {
+            if (objectMapping.property.key.type === 'NamedNode' && objectMapping.property.key.value === `${Util.PREFIXES.rdf}subject`) {
               key = objectLoader.getOrMakeResource(Util.DF.literal(entryResource.value));
-            } else if (entryResource.properties[resource.property.key.value].length !== 1) {
-              throw new Error(`Expected exactly one label definition for a dynamic entry ${resourceIdToString(resource.property.key, objectLoader)} in ${resourceIdToString(entryResource, objectLoader)}\nFound:${resourceToString(entryResource)}`);
+            } else if (entryResource.properties[objectMapping.property.key.value].length !== 1) {
+              throw new Error(`Expected exactly one label definition for a dynamic entry ${resourceIdToString(objectMapping.property.key, objectLoader)} in ${resourceIdToString(entryResource, objectLoader)}\nFound:${resourceToString(entryResource)}`);
             } else {
-              key = entryResource.properties[resource.property.key.value][0];
+              key = entryResource.properties[objectMapping.property.key.value][0];
             }
           }
 
-          if (resource.property.value.type === 'NamedNode' && resource.property.value.value === `${Util.PREFIXES.rdf}subject`) {
+          if (objectMapping.property.value.type === 'NamedNode' && objectMapping.property.value.value === `${Util.PREFIXES.rdf}subject`) {
             value = objectLoader.getOrMakeResource(Util.DF.literal(entryResource.value));
-          } else if (resource.property.value.type === 'NamedNode' && resource.property.value.value === `${Util.PREFIXES.rdf}object`) {
-            value = MappedNamedComponentFactory.map(resourceScope, entryResource, params, objectLoader)[0];
-          } else if (resource.property.value && (resource.property.value.property.fields ||
-            resource.property.value.property.elements)) {
+          } else if (objectMapping.property.value.type === 'NamedNode' && objectMapping.property.value.value === `${Util.PREFIXES.rdf}object`) {
+            value = MappedNamedComponentFactory.mapObject(resourceScope, entryResource, params, objectLoader)[0];
+          } else if (objectMapping.property.value && (objectMapping.property.value.property.fields ||
+            objectMapping.property.value.property.elements)) {
             // Nested mapping should reduce the parameter scope
-            value = this.mapValue(resourceScope, resource.property.value, entryResource, false, objectLoader)[0];
-          } else if (entryResource.properties[resource.property.value.value].length !== 1) {
-            throw new Error(`Expected exactly one value definition for a dynamic entry ${resourceIdToString(resource.property.value, objectLoader)} in ${resourceIdToString(entryResource, objectLoader)}\nFound: ${resourceToString(entryResource)}`);
+            value = this.mapValue(resourceScope, objectMapping.property.value, entryResource, false, objectLoader)[0];
+          } else if (entryResource.properties[objectMapping.property.value.value].length !== 1) {
+            throw new Error(`Expected exactly one value definition for a dynamic entry ${resourceIdToString(objectMapping.property.value, objectLoader)} in ${resourceIdToString(entryResource, objectLoader)}\nFound: ${resourceToString(entryResource)}`);
           } else {
-            value = entryResource.properties[resource.property.value.value][0];
+            value = entryResource.properties[objectMapping.property.value.value][0];
           }
           if (key) {
             const ret = objectLoader.getOrMakeResource(Util.DF.blankNode());
@@ -135,22 +144,23 @@ export class MappedNamedComponentFactory extends UnnamedComponentFactory {
           return value;
         });
     }
-    if (resource.property.fields) {
+    if (objectMapping.property.fields) {
       const ret = objectLoader.createCompactedResource({});
-      for (const field of resource.properties.fields) {
-        for (const mappedResource of MappedNamedComponentFactory.map(resourceScope, field, params, objectLoader)) {
+      for (const field of objectMapping.properties.fields) {
+        for (const mappedResource of MappedNamedComponentFactory
+          .mapObject(resourceScope, field, params, objectLoader)) {
           ret.properties.fields.push(mappedResource);
         }
       }
       ret.property.unique = objectLoader.createCompactedResource('"true"');
       return [ ret ];
     }
-    if (resource.property.elements) {
-      if (!resource.property.elements.list) {
-        throw new Error(`Parameter array elements musts be lists, but found: ${resourceToString(resource.property.elements)}`);
+    if (objectMapping.property.elements) {
+      if (!objectMapping.property.elements.list) {
+        throw new Error(`Parameter array elements musts be lists, but found: ${resourceToString(objectMapping.property.elements)}`);
       }
       const ret = objectLoader.createCompactedResource({});
-      for (const element of resource.property.elements.list) {
+      for (const element of objectMapping.property.elements.list) {
         if (element.type !== 'NamedNode' && !element.property.value && !element.property.valueRawReference) {
           throw new Error(`Parameter array elements must be URI's, but found: ${resourceToString(element)}`);
         }
@@ -166,12 +176,12 @@ export class MappedNamedComponentFactory extends UnnamedComponentFactory {
       }
       return [ ret ];
     }
-    if (resource.list) {
+    if (objectMapping.list) {
       const ret = objectLoader.createCompactedResource({});
       ret.list = [];
-      for (const argument of resource.list) {
+      for (const argument of objectMapping.list) {
         const mapped = argument.property.fields || argument.property.elements ?
-          MappedNamedComponentFactory.map(resourceScope, argument, params, objectLoader) :
+          MappedNamedComponentFactory.mapObject(resourceScope, argument, params, objectLoader) :
           MappedNamedComponentFactory.mapValue(resourceScope, argument, params, false, objectLoader);
         if (mapped.length > 0) {
           ret.list.push(mapped[0]);
@@ -179,19 +189,19 @@ export class MappedNamedComponentFactory extends UnnamedComponentFactory {
       }
       return [ ret ];
     }
-    return [ resource ];
+    return [ objectMapping ];
   }
 
   /**
-     * Create an unnamed component definition resource constructor.
-     * The component definition's parameters will first be mapped, and then delegated to the component constructor.
-     * @param moduleDefinition The module definition with parameter definitions.
-     * @param componentDefinition The component definition with parameter instances.
-     * @param objectLoader The RDF object loader.
-     * @returns {(params:any)=>Resource} A function that takes a parameter object for mapping parameter names to values
-     *                                   like { 'http://example.org/param0': Resource.newString('abc') }
-     *                                   and returns an unnamed component definition resource.
-     */
+   * Create an unnamed component definition resource constructor.
+   * The component definition's parameters will first be mapped, and then delegated to the component constructor.
+   * @param moduleDefinition The module definition with parameter definitions.
+   * @param componentDefinition The component definition with parameter instances.
+   * @param objectLoader The RDF object loader.
+   * @returns {(params:Resource)=>Resource} A function that takes a parameter object for mapping parameter names
+   *                                        to values like { 'http://example.org/param0': Resource.newString('abc') }
+   *                                        and returns an unnamed component definition resource.
+   */
   public static makeUnnamedDefinitionConstructor(
     moduleDefinition: Resource,
     componentDefinition: Resource,
@@ -205,7 +215,7 @@ export class MappedNamedComponentFactory extends UnnamedComponentFactory {
       resource.property.requireElement = componentDefinition.property.requireElement;
       if (componentDefinition.property.constructorArguments) {
         resource.properties.arguments = MappedNamedComponentFactory
-          .map(params, componentDefinition.property.constructorArguments, params, objectLoader);
+          .mapObject(params, componentDefinition.property.constructorArguments, params, objectLoader);
       }
       return resource;
     };

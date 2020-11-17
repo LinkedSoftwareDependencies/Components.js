@@ -8,12 +8,12 @@ export interface IComponentFactory {
      * @param settings The settings for creating the instance.
      * @returns New instantiations of the provided arguments.
      */
-  makeArguments: (settings: ICreationSettingsInner) => Promise<any[]>;
+  createArguments: (settings: ICreationSettingsInner) => Promise<any[]>;
   /**
      * @param settings The settings for creating the instance.
      * @returns A new instance of the component.
      */
-  create: (settings: ICreationSettingsInner) => Promise<any>;
+  createInstance: (settings: ICreationSettingsInner) => Promise<any>;
 }
 
 export interface ICreationSettings {

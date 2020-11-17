@@ -17,10 +17,8 @@ import Util = require('./Util');
 import { resourceIdToString } from './Util';
 
 /**
- * A loader class for component configs.
- * Modules must first be registered to this loader.
- * After that, components can be instantiated.
- * Components with the same URI will only be instantiated once.
+ * A Loader is able to take in module registrations,
+ * after which components can be instantiated.
  */
 export class Loader {
   private readonly objectLoader: RdfObjectLoader;
@@ -62,6 +60,9 @@ export class Loader {
     }
   }
 
+  /**
+   * Get or create the current module's state.
+   */
   public async getModuleState(): Promise<IModuleState> {
     if (!this.moduleState) {
       try {
@@ -75,6 +76,9 @@ export class Loader {
     return this.moduleState;
   }
 
+  /**
+   * Get or create an instance pool for creating new instances.
+   */
   public async getInstancePool(): Promise<IInstancePool> {
     if (!this.instancePool) {
       this.instancePool = new InstancePool({
@@ -97,7 +101,7 @@ export class Loader {
       if (this.registrationFinalized) {
         throw new Error(`Tried registering a component ${resourceIdToString(componentResource, this.objectLoader)} after the loader has been finalized.`);
       }
-      this._requireValidComponent(componentResource);
+      this.requireValidComponent(componentResource);
       this.componentResources[componentResource.value] = componentResource;
     } catch (error: unknown) {
       throw this.generateErrorLog(error);
@@ -106,23 +110,23 @@ export class Loader {
 
   /**
    * Check if the given resource is a valid component.
+   * A valid component is either an abstract class, a class, or an instance.
    * @param componentResource A resource.
    * @returns {boolean} If the resource is a valid component.
    */
-  public _isValidComponent(componentResource: Resource): boolean {
+  public isValidComponent(componentResource: Resource): boolean {
     return componentResource.isA('AbstractClass') ||
             componentResource.isA('Class') ||
             componentResource.isA('Instance');
   }
 
   /**
-   * Require that the given resource is a valid component,
-   * otherwise and error is thrown.
+   * Require that the given resource is a valid component, otherwise and error is thrown.
    * @param componentResource A resource.
    * @param referencingComponent The optional component referencing the given component.
    */
-  public _requireValidComponent(componentResource: Resource, referencingComponent?: Resource): void {
-    if (!this._isValidComponent(componentResource)) {
+  public requireValidComponent(componentResource: Resource, referencingComponent?: Resource): void {
+    if (!this.isValidComponent(componentResource)) {
       throw new Error(`The referenced resource ${resourceIdToString(componentResource, this.objectLoader)} is not a valid ` +
                 `component resource, either it is not defined or incorrectly referenced${
                   referencingComponent ? ` by ${resourceIdToString(referencingComponent, this.objectLoader)}.` : '.'}`);
@@ -137,8 +141,8 @@ export class Loader {
   public inheritParameters(componentResource: Resource, inheritValues?: Resource[]): void {
     if (inheritValues) {
       for (const component of inheritValues) {
-        this._requireValidComponent(component, componentResource);
-        if (this._isValidComponent(component)) {
+        this.requireValidComponent(component, componentResource);
+        if (this.isValidComponent(component)) {
           if (component.property.parameters) {
             for (const parameter of component.properties.parameters) {
               if (!componentResource.properties.parameters.includes(parameter)) {
@@ -225,7 +229,6 @@ export class Loader {
    * Register new modules and their components.
    * This will ensure that component configs referring to components as types of these modules are recognized.
    * @param moduleResourceStream A triple stream containing modules.
-   * @returns {Promise<T>} A promise that resolves once loading has finished.
    */
   public async registerModuleResourcesStream(moduleResourceStream: RDF.Stream & Readable): Promise<void> {
     try {
@@ -240,7 +243,6 @@ export class Loader {
    * This will ensure that component configs referring to components as types of these modules are recognized.
    * @param moduleResourceUrl An RDF document URL
    * @param fromPath The path to base relative paths on. This will typically be __dirname.
-   * @returns {Promise<T>} A promise that resolves once loading has finished.
    */
   public async registerModuleResourcesUrl(moduleResourceUrl: string, fromPath?: string): Promise<void> {
     try {
@@ -264,7 +266,6 @@ export class Loader {
    * Register all reachable modules and their components.
    * This will interpret the package.json from the main module and all its dependencies for discovering modules.
    * This will ensure that component configs referring to components as types of these modules are recognized.
-   * @returns {Promise<T>} A promise that resolves once loading has finished.
    */
   public async registerAvailableModuleResources(): Promise<void> {
     const state = await this.getModuleState();
@@ -345,7 +346,6 @@ export class Loader {
   /**
    * Get a component config constructor based on a config IRI.
    * @param configResourceIri The config resource IRI.
-   * @returns {Promise<T>} A promise resolving to the component constructor.
    */
   public async getComponentFactory(configResourceIri: string): Promise<IComponentFactory> {
     try {
@@ -363,7 +363,6 @@ export class Loader {
    * Instantiate a component based on a config IRI.
    * @param configResourceIri The config resource URI.
    * @param settings The settings for creating the instance.
-   * @returns {Promise<T>} A promise resolving to the run instance.
    */
   public async getComponentInstance(configResourceIri: string, settings: ICreationSettings = {}): Promise<any> {
     try {
@@ -382,7 +381,6 @@ export class Loader {
    * @param componentIri The IRI of a component.
    * @param params A dictionary with named parameters.
    * @param settings The settings for creating the instance.
-   * @returns {any} The run instance.
    */
   public async getComponentInstanceCustom(
     componentIri: string,
@@ -413,7 +411,7 @@ export class Loader {
         constructable: !configResource.isA('Instance'),
         moduleDefinition: moduleResource,
         componentDefinition: componentResource,
-      }).create(settingsInner);
+      }).createInstance(settingsInner);
     } catch (error: unknown) {
       throw this.generateErrorLog(error);
     }
@@ -431,6 +429,10 @@ export class Loader {
     }
   }
 
+  /**
+   * Create an `componentsjs-error-state.json` file to represent the application state in the current working directory.
+   * @param error The error that causes this error state to be created.
+   */
   public generateErrorLog(error: unknown): Error {
     if (this.dumpErrorState && !this.generatedErrorLog) {
       this.generatedErrorLog = true;

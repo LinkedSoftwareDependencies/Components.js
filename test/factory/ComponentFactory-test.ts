@@ -88,7 +88,7 @@ describe('ComponentFactory', () => {
       });
 
       it('should use the unnamed component factory', () => {
-        expect(constructor._getComponentFactory()).toBeInstanceOf(UnnamedComponentFactory);
+        expect(constructor.createComponentFactory()).toBeInstanceOf(UnnamedComponentFactory);
       });
 
       it('should be valid', () => {
@@ -96,7 +96,7 @@ describe('ComponentFactory', () => {
       });
 
       it('should make a valid instance', async() => {
-        const instance = await constructor.create({ moduleState });
+        const instance = await constructor.createInstance({ moduleState });
         expect(instance).toBeTruthy();
         expect(instance).toBeInstanceOf(N3.Lexer);
       });
@@ -115,7 +115,7 @@ describe('ComponentFactory', () => {
       });
 
       it('should use the unmapped component factory', () => {
-        expect(constructor._getComponentFactory()).toBeInstanceOf(UnmappedNamedComponentFactory);
+        expect(constructor.createComponentFactory()).toBeInstanceOf(UnmappedNamedComponentFactory);
       });
 
       it('should be valid', () => {
@@ -123,7 +123,7 @@ describe('ComponentFactory', () => {
       });
 
       it('should make a valid instance', async() => {
-        const instance = await constructor.create({ moduleState });
+        const instance = await constructor.createInstance({ moduleState });
         expect(instance).toBeTruthy();
         expect(instance).toBeInstanceOf(N3.Lexer);
       });
@@ -172,7 +172,7 @@ describe('ComponentFactory', () => {
     });
 
     it('should use the mapped component factory', () => {
-      expect(constructor._getComponentFactory()).toBeInstanceOf(MappedNamedComponentFactory);
+      expect(constructor.createComponentFactory()).toBeInstanceOf(MappedNamedComponentFactory);
     });
 
     it('should be valid', () => {
@@ -180,7 +180,7 @@ describe('ComponentFactory', () => {
     });
 
     it('should make a valid instance', async() => {
-      const instance = await constructor.create({ moduleState });
+      const instance = await constructor.createInstance({ moduleState });
       expect(instance).toBeTruthy();
       expect(instance).toBeInstanceOf(N3.Lexer);
     });

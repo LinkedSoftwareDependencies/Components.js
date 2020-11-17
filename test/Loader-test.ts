@@ -570,7 +570,7 @@ describe('Loader', () => {
     });
 
     it('must be an invalid component', () => {
-      expect(loader._isValidComponent(resource)).toBeFalsy();
+      expect(loader.isValidComponent(resource)).toBeFalsy();
     });
   });
 
@@ -585,7 +585,7 @@ describe('Loader', () => {
     });
 
     it('must be an invalid component', () => {
-      expect(loader._isValidComponent(resource)).toBeFalsy();
+      expect(loader.isValidComponent(resource)).toBeFalsy();
     });
   });
 
@@ -600,7 +600,7 @@ describe('Loader', () => {
     });
 
     it('must be a valid component', () => {
-      expect(loader._isValidComponent(resource)).toBeTruthy();
+      expect(loader.isValidComponent(resource)).toBeTruthy();
     });
   });
 
@@ -615,7 +615,7 @@ describe('Loader', () => {
     });
 
     it('must be a valid component', () => {
-      expect(loader._isValidComponent(resource)).toBeTruthy();
+      expect(loader.isValidComponent(resource)).toBeTruthy();
     });
   });
 
