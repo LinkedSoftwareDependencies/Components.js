@@ -5,6 +5,8 @@ import type { Resource } from 'rdf-object';
 import { RdfObjectLoader } from 'rdf-object';
 import type { Logger } from 'winston';
 import { createLogger, format, transports } from 'winston';
+import { CreationStrategyCommonJs } from './creationstrategy/CreationStrategyCommonJs';
+import type { ICreationStrategy } from './creationstrategy/ICreationStrategy';
 import { ComponentFactory } from './factory/ComponentFactory';
 import type { IComponentFactory, ICreationSettings, ICreationSettingsInner } from './factory/IComponentFactory';
 import type { IInstancePool } from './IInstancePool';
@@ -20,12 +22,12 @@ import { resourceIdToString } from './Util';
  * A Loader is able to take in module registrations,
  * after which components can be instantiated.
  */
-export class Loader {
+export class Loader<Instance> {
   private readonly objectLoader: RdfObjectLoader;
   private readonly mainModulePath?: string;
   private readonly absolutizeRelativePaths: boolean;
   private readonly dumpErrorState: boolean;
-  private readonly overrideRequireNames: Record<string, string>;
+  private readonly creationStrategy: ICreationStrategy<Instance>;
   public readonly logger?: Logger;
 
   private readonly componentResources: Record<string, Resource> = {};
@@ -35,7 +37,10 @@ export class Loader {
   protected registrationFinalized = false;
   protected generatedErrorLog = false;
 
-  public constructor(options: ILoaderProperties = {}) {
+  public constructor(
+    options: ILoaderProperties = {},
+    creationStrategy: ICreationStrategy<Instance> = new CreationStrategyCommonJs(),
+  ) {
     this.objectLoader = new RdfObjectLoader({
       context: JSON.parse(fs.readFileSync(`${__dirname}/../components/context.jsonld`, 'utf8')),
     });
@@ -44,7 +49,7 @@ export class Loader {
       Boolean(options.absolutizeRelativePaths) :
       true;
     this.dumpErrorState = Boolean(options.dumpErrorState);
-    this.overrideRequireNames = options.overrideRequireNames || {};
+    this.creationStrategy = creationStrategy;
     if (options.logLevel) {
       this.logger = createLogger({
         level: options.logLevel,
@@ -85,7 +90,6 @@ export class Loader {
         objectLoader: this.objectLoader,
         componentResources: this.componentResources,
         moduleState: await this.getModuleState(),
-        overrideRequireNames: this.overrideRequireNames,
       });
     }
     return this.instancePool;
@@ -360,17 +364,33 @@ export class Loader {
   }
 
   /**
+   * Return the inner creation settings from the given creation settings.
+   * This adds additional fields to the settings.
+   * @param settings Creation settings.
+   */
+  public async getCreationSettingsInner(settings: ICreationSettings): Promise<ICreationSettingsInner<Instance>> {
+    return {
+      ...settings,
+      moduleState: await this.getModuleState(),
+      creationStrategy: this.creationStrategy,
+    };
+  }
+
+  /**
    * Instantiate a component based on a config IRI.
    * @param configResourceIri The config resource URI.
    * @param settings The settings for creating the instance.
    */
-  public async getComponentInstance(configResourceIri: string, settings: ICreationSettings = {}): Promise<any> {
+  public async getComponentInstance(
+    configResourceIri: string,
+    settings: ICreationSettings = {},
+  ): Promise<Instance> {
     try {
       const configResource: Resource = this.objectLoader.resources[configResourceIri];
       if (!configResource) {
         throw new Error(`Could not find a component config with URI ${configResourceIri} in the triple stream.`);
       }
-      return (await this.getInstancePool()).instantiate(configResource, settings);
+      return (await this.getInstancePool()).instantiate(configResource, await this.getCreationSettingsInner(settings));
     } catch (error: unknown) {
       throw this.generateErrorLog(error);
     }
@@ -388,7 +408,6 @@ export class Loader {
     settings: ICreationSettings = {},
   ): Promise<any> {
     try {
-      const settingsInner: ICreationSettingsInner = { ...settings, moduleState: await this.getModuleState() };
       this.checkFinalizeRegistration();
       const componentResource: Resource = this.componentResources[componentIri];
       if (!componentResource) {
@@ -406,12 +425,11 @@ export class Loader {
       return new ComponentFactory({
         objectLoader: this.objectLoader,
         config: configResource,
-        overrideRequireNames: this.overrideRequireNames,
         instancePool,
         constructable: !configResource.isA('Instance'),
         moduleDefinition: moduleResource,
         componentDefinition: componentResource,
-      }).createInstance(settingsInner);
+      }).createInstance(await this.getCreationSettingsInner(settings));
     } catch (error: unknown) {
       throw this.generateErrorLog(error);
     }
@@ -460,9 +478,4 @@ export interface ILoaderProperties {
   mainModulePath?: string;
   dumpErrorState?: boolean;
   logLevel?: LogLevel;
-  /**
-   * Require overrides.
-   * Require name as path, require override as value.
-   */
-  overrideRequireNames?: Record<string, string>;
 }

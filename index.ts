@@ -1,3 +1,6 @@
+export * from './lib/creationstrategy/CreationStrategyCommonJs';
+export * from './lib/creationstrategy/CreationStrategyCommonJsString';
+export * from './lib/creationstrategy/ICreationStrategy';
 export * from './lib/factory/ComponentFactory';
 export * from './lib/factory/ComponentFactoryOptions';
 export * from './lib/factory/IComponentFactory';

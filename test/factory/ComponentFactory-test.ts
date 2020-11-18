@@ -5,19 +5,17 @@ import { UnmappedNamedComponentFactory } from '../../lib/factory/UnmappedNamedCo
 import { UnnamedComponentFactory } from '../../lib/factory/UnnamedComponentFactory';
 import type { IInstancePool } from '../../lib/IInstancePool';
 import { Loader } from '../../lib/Loader';
-import type { IModuleState } from '../../lib/ModuleStateBuilder';
 import * as Util from '../../lib/Util';
 
 const N3 = require('n3');
 
 describe('ComponentFactory', () => {
-  let loader: Loader;
+  let loader: Loader<any>;
   let objectLoader: RdfObjectLoader;
-  let moduleState: IModuleState;
   let instancePool: IInstancePool;
   beforeEach(async() => {
     loader = new Loader();
-    moduleState = <any> {
+    const moduleState = <any> {
       mainModulePath: `${__dirname}/..`,
       importPaths: {
         'http://example.org/': `${__dirname}/`,
@@ -40,7 +38,6 @@ describe('ComponentFactory', () => {
       componentDefinition,
       config,
       constructable,
-      overrideRequireNames: {},
       instancePool,
     });
   }
@@ -96,7 +93,7 @@ describe('ComponentFactory', () => {
       });
 
       it('should make a valid instance', async() => {
-        const instance = await constructor.createInstance({ moduleState });
+        const instance = await constructor.createInstance(await loader.getCreationSettingsInner({}));
         expect(instance).toBeTruthy();
         expect(instance).toBeInstanceOf(N3.Lexer);
       });
@@ -123,7 +120,7 @@ describe('ComponentFactory', () => {
       });
 
       it('should make a valid instance', async() => {
-        const instance = await constructor.createInstance({ moduleState });
+        const instance = await constructor.createInstance(await loader.getCreationSettingsInner({}));
         expect(instance).toBeTruthy();
         expect(instance).toBeInstanceOf(N3.Lexer);
       });
@@ -180,7 +177,7 @@ describe('ComponentFactory', () => {
     });
 
     it('should make a valid instance', async() => {
-      const instance = await constructor.createInstance({ moduleState });
+      const instance = await constructor.createInstance(await loader.getCreationSettingsInner({}));
       expect(instance).toBeTruthy();
       expect(instance).toBeInstanceOf(N3.Lexer);
     });

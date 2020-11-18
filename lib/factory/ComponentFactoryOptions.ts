@@ -23,11 +23,6 @@ export interface IComponentFactoryOptionsBase {
    */
   constructable: boolean;
   /**
-   * Overrides for `require()` calls.
-   * For example, an override entry `abc -> def` will map all calls from `require('abc')` to `require('def')`.
-   */
-  overrideRequireNames: Record<string, string>;
-  /**
    * The instance pool.
    */
   instancePool: IInstancePool;

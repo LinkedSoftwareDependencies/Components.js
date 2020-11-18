@@ -5,7 +5,7 @@ import * as Util from '../lib/Util';
 describe('Util', () => {
   let objectLoader: RdfObjectLoader;
   beforeEach(() => {
-    objectLoader = new Loader().objectLoader;
+    objectLoader = (<any> new Loader()).objectLoader;
   });
 
   describe('captureType', () => {

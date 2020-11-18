@@ -1,3 +1,4 @@
+import { CreationStrategyCommonJsString } from './creationstrategy/CreationStrategyCommonJsString';
 import type { ILoaderProperties } from './Loader';
 import { Loader } from './Loader';
 import { RdfParser } from './rdf/RdfParser';
@@ -23,7 +24,8 @@ export async function compileConfig(
   asFunction?: boolean,
 ): Promise<string> {
   // Load modules and config
-  const loader = new Loader(properties);
+  const creationStrategy = new CreationStrategyCommonJsString({ asFunction });
+  const loader = new Loader(properties, creationStrategy);
   await loader.registerAvailableModuleResources();
   const state = await loader.getModuleState();
   const configStream = new RdfParser().parse(configStreamRaw, {
@@ -37,11 +39,9 @@ export async function compileConfig(
   });
 
   // Serialize the config
-  const moduleLines: string[] = [];
   await loader.registerConfigStream(configStream);
-  const serializationVariableName = await loader
-    .getComponentInstance(configResourceUri, { serializations: moduleLines, asFunction });
-  let document: string = moduleLines.join('\n');
+  const serializationVariableName = await loader.getComponentInstance(configResourceUri);
+  let document: string = creationStrategy.lines.join('\n');
 
   // Override main variable name if needed
   exportVariableName = exportVariableName ? Util.uriToVariableName(exportVariableName) : exportVariableName;

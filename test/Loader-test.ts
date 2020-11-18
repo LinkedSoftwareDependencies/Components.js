@@ -4,7 +4,6 @@ import type * as RDF from 'rdf-js';
 import type { RdfObjectLoader, Resource } from 'rdf-object';
 import type { IInstancePool } from '../lib/IInstancePool';
 import { Loader } from '../lib/Loader';
-import type { IModuleState } from '../lib/ModuleStateBuilder';
 import { RdfParser } from '../lib/rdf/RdfParser';
 import * as Util from '../lib/Util';
 const quad = require('rdf-quad');
@@ -12,13 +11,12 @@ const quad = require('rdf-quad');
 const Hello = require('../__mocks__/helloworld').Hello;
 
 describe('Loader', () => {
-  let loader: Loader;
+  let loader: Loader<any>;
   let objectLoader: RdfObjectLoader;
-  let moduleState: IModuleState;
   let instancePool: IInstancePool;
   beforeEach(async() => {
     loader = new Loader();
-    moduleState = <any> {
+    const moduleState = <any> {
       mainModulePath: __dirname,
       importPaths: {
         'http://example.org/': `${__dirname}/`,
@@ -123,7 +121,7 @@ describe('Loader', () => {
           'http://example.org/myModule/params#param2': '"DEF"',
           'http://example.org/myModule/params#param3': '"GHI"',
         });
-        const run = await instancePool.instantiate(configResource, {});
+        const run = await instancePool.instantiate(configResource, await loader.getCreationSettingsInner({}));
         expect(run._params).toEqual({
           'http://example.org/myModule/params#param1': [ 'ABC' ],
           'http://example.org/myModule/params#param3': [ 'GHI' ],
@@ -178,7 +176,7 @@ describe('Loader', () => {
           'http://example.org/hello/say': '"HELLO"',
           'http://example.org/hello/bla': '"BLA"',
         });
-        const run = await instancePool.instantiate(configResource, {});
+        const run = await instancePool.instantiate(configResource, await loader.getCreationSettingsInner({}));
         expect(run._params).toEqual({
           'http://example.org/hello/hello': [ 'WORLD' ],
           'http://example.org/hello/say': [ 'HELLO' ],
@@ -347,7 +345,8 @@ describe('Loader', () => {
       expect(run1._params).toEqual({
         'http://example.org/hello/something': [ 'SOMETHING' ],
       });
-      const run2 = await instancePool.instantiate(objectLoader.resources['http://example.org/myHelloWorld2'], {});
+      const run2 = await instancePool.instantiate(objectLoader.resources['http://example.org/myHelloWorld2'],
+        await loader.getCreationSettingsInner({}));
       expect(run2._params).toEqual({
         'http://example.org/hello/something': [ 'SOMETHING' ],
       });
@@ -434,7 +433,8 @@ describe('Loader', () => {
       expect(run1._params).toEqual({
         something: [ 'SOMETHING' ],
       });
-      const run2 = await instancePool.instantiate(objectLoader.resources['http://example.org/myHelloWorld2'], {});
+      const run2 = await instancePool.instantiate(objectLoader.resources['http://example.org/myHelloWorld2'],
+        await loader.getCreationSettingsInner({}));
       expect(run2._params).toEqual({
         something: [ 'SOMETHING' ],
       });
@@ -522,7 +522,8 @@ describe('Loader', () => {
           KEY2: 'VALUE2',
         },
       });
-      const run2 = await instancePool.instantiate(objectLoader.resources['http://example.org/myHelloWorld2'], {});
+      const run2 = await instancePool.instantiate(objectLoader.resources['http://example.org/myHelloWorld2'],
+        await loader.getCreationSettingsInner({}));
       expect(run2._params).toEqual({
         somethings1: {
           KEY1: 'VALUE1',
@@ -555,7 +556,8 @@ describe('Loader', () => {
         KEY1: 'VALUE1',
         KEY2: 'VALUE2',
       });
-      const run2 = await instancePool.instantiate(objectLoader.resources['http://example.org/myHelloWorld2'], {});
+      const run2 = await instancePool.instantiate(objectLoader.resources['http://example.org/myHelloWorld2'],
+        await loader.getCreationSettingsInner({}));
       expect(run2._params).toEqual({
         KEY1: 'VALUE1',
         KEY2: 'VALUE2',

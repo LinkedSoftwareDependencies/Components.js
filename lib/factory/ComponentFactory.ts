@@ -35,11 +35,11 @@ export class ComponentFactory implements IComponentFactory {
     return new UnnamedComponentFactory(this.options);
   }
 
-  public createArguments(settings: ICreationSettingsInner): Promise<any[]> {
+  public createArguments<Instance>(settings: ICreationSettingsInner<Instance>): Promise<Instance[]> {
     return this.createComponentFactory().createArguments(settings);
   }
 
-  public createInstance(settings: ICreationSettingsInner): Promise<any> {
+  public createInstance<Instance>(settings: ICreationSettingsInner<Instance>): Promise<Instance> {
     return this.createComponentFactory().createInstance(settings);
   }
 }

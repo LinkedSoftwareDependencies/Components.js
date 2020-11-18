@@ -1,5 +1,5 @@
 import type { Resource } from 'rdf-object';
-import type { ICreationSettings, IComponentFactory } from './factory/IComponentFactory';
+import type { IComponentFactory, ICreationSettingsInner } from './factory/IComponentFactory';
 
 /**
  * Manages and creates instances of components.
@@ -19,6 +19,6 @@ export interface IInstancePool {
    * @param settings The settings for creating the instance.
    * @returns {any} The run instance.
    */
-  instantiate: (configResource: Resource, settings: ICreationSettings) => Promise<any>;
+  instantiate: <Instance>(configResource: Resource, settings: ICreationSettingsInner<Instance>) => Promise<Instance>;
 
 }

@@ -2,19 +2,16 @@ import type { Resource, RdfObjectLoader } from 'rdf-object';
 import { UnnamedComponentFactory } from '../../lib/factory/UnnamedComponentFactory';
 import type { IInstancePool } from '../../lib/IInstancePool';
 import { Loader } from '../../lib/Loader';
-import type { IModuleState } from '../../lib/ModuleStateBuilder';
-
 const N3 = require('n3');
 const Hello = require('../../__mocks__/helloworld').HelloNested.Deeper.Hello;
 
 describe('UnnamedComponentFactory', () => {
-  let loader: Loader;
+  let loader: Loader<any>;
   let objectLoader: RdfObjectLoader;
-  let moduleState: IModuleState;
   let instancePool: IInstancePool;
   beforeEach(async() => {
     loader = new Loader();
-    moduleState = <any> {
+    const moduleState = <any> {
       mainModulePath: `${__dirname}/..`,
       importPaths: {
         'http://example.org/': `${__dirname}/`,
@@ -30,7 +27,6 @@ describe('UnnamedComponentFactory', () => {
       objectLoader,
       config,
       constructable: true,
-      overrideRequireNames: {},
       instancePool,
     });
   }
@@ -58,12 +54,12 @@ describe('UnnamedComponentFactory', () => {
       it('should create valid literals', async() => {
         expect(await constructor.getArgumentValue(
           objectLoader.createCompactedResource('"application/trig"'),
-          {},
+          await loader.getCreationSettingsInner({}),
         )).toEqual('application/trig');
       });
 
       it('should create valid instances', async() => {
-        const ret = await constructor.getArgumentValue(config, {});
+        const ret = await constructor.getArgumentValue(config, await loader.getCreationSettingsInner({}));
         expect(ret).toBeTruthy();
         expect(ret).toBeInstanceOf(N3.Lexer);
       });
@@ -74,12 +70,12 @@ describe('UnnamedComponentFactory', () => {
     });
 
     it('should create valid arguments', async() => {
-      const args = await constructor.createArguments({ moduleState });
+      const args = await constructor.createArguments(await loader.getCreationSettingsInner({}));
       expect(args).toEqual([{ comments: [ 'true' ]}]);
     });
 
     it('should make a valid instance', async() => {
-      const ret = await constructor.getArgumentValue(config, {});
+      const ret = await constructor.getArgumentValue(config, await loader.getCreationSettingsInner({}));
       expect(ret).toBeTruthy();
       expect(ret).toBeInstanceOf(N3.Lexer);
     });
@@ -109,12 +105,12 @@ describe('UnnamedComponentFactory', () => {
     });
 
     it('should create valid arguments', async() => {
-      const args = await constructor.createArguments({ moduleState });
+      const args = await constructor.createArguments(await loader.getCreationSettingsInner({}));
       expect(args).toEqual([[ 'A', 'B', 'C' ]]);
     });
 
     it('should make a valid instance', async() => {
-      const instance = await constructor.createInstance({ moduleState });
+      const instance = await constructor.createInstance(await loader.getCreationSettingsInner({}));
       expect(instance).toBeTruthy();
       expect(instance).toBeInstanceOf(N3.Lexer);
     });
@@ -160,7 +156,7 @@ describe('UnnamedComponentFactory', () => {
     });
 
     it('should create valid arguments', async() => {
-      const args = await constructor.createArguments({ moduleState });
+      const args = await constructor.createArguments(await loader.getCreationSettingsInner({}));
       expect(args.length).toEqual(1);
       expect(args[0].format).toEqual([ 'application/trig' ]);
       expect(args[0].lexer).toBeTruthy();
@@ -168,7 +164,7 @@ describe('UnnamedComponentFactory', () => {
     });
 
     it('should make a valid instance', async() => {
-      const instance = await constructor.createInstance({ moduleState });
+      const instance = await constructor.createInstance(await loader.getCreationSettingsInner({}));
       expect(instance).toBeTruthy();
       expect(instance).toBeInstanceOf(N3.Parser);
     });
@@ -194,12 +190,12 @@ describe('UnnamedComponentFactory', () => {
     });
 
     it('should create valid arguments', async() => {
-      const args = await constructor.createArguments({ moduleState });
+      const args = await constructor.createArguments(await loader.getCreationSettingsInner({}));
       expect(args).toEqual([]);
     });
 
     it('should make a valid instance', async() => {
-      const instance = await constructor.createInstance({ moduleState });
+      const instance = await constructor.createInstance(await loader.getCreationSettingsInner({}));
       expect(instance).toBeTruthy();
       expect(instance).toBeInstanceOf(Hello);
     });
@@ -223,12 +219,12 @@ describe('UnnamedComponentFactory', () => {
     });
 
     it('should create valid arguments', async() => {
-      const args = await constructor.createArguments({ moduleState });
+      const args = await constructor.createArguments(await loader.getCreationSettingsInner({}));
       expect(args).toEqual([]);
     });
 
     it('should make a valid instance', async() => {
-      const instance = await constructor.createInstance({ moduleState });
+      const instance = await constructor.createInstance(await loader.getCreationSettingsInner({}));
       expect(instance).toBeTruthy();
       expect(instance).toBeInstanceOf(Hello);
     });

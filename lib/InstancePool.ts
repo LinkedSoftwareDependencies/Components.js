@@ -1,7 +1,7 @@
 import type { Resource, RdfObjectLoader } from 'rdf-object';
 import { ComponentFactory } from './factory/ComponentFactory';
 import type { ComponentFactoryOptions } from './factory/ComponentFactoryOptions';
-import type { ICreationSettings, ICreationSettingsInner, IComponentFactory } from './factory/IComponentFactory';
+import type { ICreationSettingsInner, IComponentFactory } from './factory/IComponentFactory';
 import type { IInstancePool } from './IInstancePool';
 import type { IModuleState } from './ModuleStateBuilder';
 import Util = require('./Util');
@@ -14,7 +14,6 @@ export class InstancePool implements IInstancePool {
   private readonly objectLoader: RdfObjectLoader;
   private readonly componentResources: Record<string, Resource>;
   private readonly moduleState: IModuleState;
-  private readonly overrideRequireNames: Record<string, string>;
 
   private readonly runTypeConfigs: Record<string, Resource[]> = {};
   private readonly instances: Record<string, any> = {};
@@ -23,7 +22,6 @@ export class InstancePool implements IInstancePool {
     this.objectLoader = options.objectLoader;
     this.componentResources = options.componentResources;
     this.moduleState = options.moduleState;
-    this.overrideRequireNames = options.overrideRequireNames;
   }
 
   /**
@@ -119,7 +117,6 @@ export class InstancePool implements IInstancePool {
     let options: ComponentFactoryOptions = {
       objectLoader: this.objectLoader,
       config: configResource,
-      overrideRequireNames: this.overrideRequireNames,
       instancePool: this,
       constructable: !configResource.isA('Instance'),
     };
@@ -149,8 +146,11 @@ export class InstancePool implements IInstancePool {
    * @param settings The settings for creating the instance.
    * @returns {any} The run instance.
    */
-  public async instantiate(configResource: Resource, settings: ICreationSettings): Promise<any> {
-    const settingsInner: ICreationSettingsInner = { ...settings, moduleState: this.moduleState };
+  public async instantiate<Instance>(
+    configResource: Resource,
+    settings: ICreationSettingsInner<Instance>,
+  ): Promise<any> {
+    const settingsInner: ICreationSettingsInner<Instance> = { ...settings, moduleState: this.moduleState };
     // Check if this resource is required as argument in its own chain,
     // if so, return a dummy value, to avoid infinite recursion.
     const resourceBlacklist = settingsInner.resourceBlacklist || {};
@@ -160,18 +160,7 @@ export class InstancePool implements IInstancePool {
 
     // Before instantiating, first check if the resource is a variable
     if (configResource.isA('Variable')) {
-      if (settingsInner.serializations) {
-        if (settingsInner.asFunction) {
-          return `getVariableValue('${configResource.value}')`;
-        }
-        throw new Error(`Detected a variable during config compilation: ${resourceIdToString(configResource, this.objectLoader)}. Variables are not supported, but require the -f flag to expose the compiled config as function.`);
-      } else {
-        const value = settingsInner.variables ? settingsInner.variables[configResource.value] : undefined;
-        if (value === undefined) {
-          throw new Error(`Undefined variable: ${resourceIdToString(configResource, this.objectLoader)}`);
-        }
-        return value;
-      }
+      return settings.creationStrategy.getVariableValue({ settings, variableName: configResource.value });
     }
 
     if (!this.instances[configResource.value]) {
@@ -189,5 +178,4 @@ export interface IInstancePoolOptions {
   objectLoader: RdfObjectLoader;
   componentResources: Record<string, Resource>;
   moduleState: IModuleState;
-  overrideRequireNames: Record<string, string>;
 }
