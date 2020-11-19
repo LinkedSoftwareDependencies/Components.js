@@ -8,16 +8,17 @@ import type {
   ICreationStrategySupplierOptions,
   ICreationStrategyPrimitiveOptions, ICreationStrategyVariableOptions,
 } from './ICreationStrategy';
-import Module = NodeJS.Module;
 
 /**
  * A creation strategy for creating instances with CommonJS.
  */
 export class CreationStrategyCommonJs implements ICreationStrategy<any> {
   private readonly overrideRequireNames: Record<string, string>;
+  private readonly req: NodeJS.Require;
 
-  public constructor(options: ICreationStrategyCommonJsOptions = {}) {
+  public constructor(options: ICreationStrategyCommonJsOptions) {
     this.overrideRequireNames = options.overrideRequireNames || {};
+    this.req = options.req;
   }
 
   public createInstance(options: ICreationStrategyInstanceOptions<any>): any {
@@ -27,8 +28,11 @@ export class CreationStrategyCommonJs implements ICreationStrategy<any> {
     try {
       object = this.requireCurrentRunningModuleIfCurrent(options.settings.moduleState, options.requireName);
     } catch {
+      if (!this.req.main) {
+        throw new Error(`Corrupt Node.js state: Could not find a main module.`);
+      }
       // Always require relative from main module, because Components.js will in most cases just be dependency.
-      object = (<Module>require.main).require(options.requireName.startsWith('.') ?
+      object = this.req.main.require(options.requireName.startsWith('.') ?
         Path.join(process.cwd(), options.requireName) :
         options.requireName);
     }
@@ -73,7 +77,7 @@ export class CreationStrategyCommonJs implements ICreationStrategy<any> {
     if (pckg) {
       if (requireName === pckg.name) {
         const mainPath: string = Path.join(moduleState.mainModulePath, pckg.main);
-        const required = require(mainPath);
+        const required = this.req(mainPath);
         if (required) {
           return required;
         }
@@ -122,4 +126,8 @@ export interface ICreationStrategyCommonJsOptions {
    * For example, an override entry `abc -> def` will map all calls from `require('abc')` to `require('def')`.
    */
   overrideRequireNames?: Record<string, string>;
+  /**
+   * The `require` instance.
+   */
+  req: NodeJS.Require;
 }

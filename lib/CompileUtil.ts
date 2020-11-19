@@ -24,7 +24,7 @@ export async function compileConfig(
   asFunction?: boolean,
 ): Promise<string> {
   // Load modules and config
-  const creationStrategy = new CreationStrategyCommonJsString({ asFunction });
+  const creationStrategy = new CreationStrategyCommonJsString({ asFunction, req: require });
   const loader = new Loader(properties, creationStrategy);
   await loader.registerAvailableModuleResources();
   const state = await loader.getModuleState();

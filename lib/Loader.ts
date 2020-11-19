@@ -39,7 +39,7 @@ export class Loader<Instance> {
 
   public constructor(
     options: ILoaderProperties = {},
-    creationStrategy: ICreationStrategy<Instance> = new CreationStrategyCommonJs(),
+    creationStrategy: ICreationStrategy<Instance> = new CreationStrategyCommonJs({ req: require }),
   ) {
     this.objectLoader = new RdfObjectLoader({
       context: JSON.parse(fs.readFileSync(`${__dirname}/../components/context.jsonld`, 'utf8')),

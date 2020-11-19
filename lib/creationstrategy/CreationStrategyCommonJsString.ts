@@ -22,10 +22,10 @@ export class CreationStrategyCommonJsString implements ICreationStrategy<string>
 
   public readonly lines: string[] = [];
 
-  public constructor(options: ICreationStrategyCommonJsStringOptions = {}) {
+  public constructor(options: ICreationStrategyCommonJsStringOptions) {
     this.overrideRequireNames = options.overrideRequireNames || {};
     this.asFunction = Boolean(options.asFunction);
-    this.strategyCommonJs = new CreationStrategyCommonJs(this.overrideRequireNames);
+    this.strategyCommonJs = new CreationStrategyCommonJs(options);
   }
 
   public createInstance(options: ICreationStrategyInstanceOptions<string>): string {
@@ -48,7 +48,7 @@ export class CreationStrategyCommonJsString implements ICreationStrategy<string>
 
     // Call the constructor of the element
     if (options.callConstructor) {
-      serialization = `new (${serialization})(${options.args.join(',')})`;
+      serialization = `new (${serialization})(${options.args.join(', ')})`;
     }
 
     // Add a line to our file to declare the instantiated element as a const
