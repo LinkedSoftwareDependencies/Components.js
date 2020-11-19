@@ -1,4 +1,5 @@
 import * as fs from 'fs';
+import * as Path from 'path';
 import { Readable } from 'stream';
 import type * as RDF from 'rdf-js';
 import type { RdfObjectLoader, Resource } from 'rdf-object';
@@ -208,7 +209,7 @@ describe('Loader', () => {
     });
 
     it('should get contents from a file', () => {
-      return expect(Util.getContentsFromUrlOrPath('assets/dummy.txt', __dirname)
+      return expect(Util.fetchFileOrUrl(Path.join(__dirname, 'assets/dummy.txt'))
         .then(data => new Promise((resolve, reject) => {
           let body = '';
           data.on('data', d => body += d.toString());
@@ -218,12 +219,12 @@ describe('Loader', () => {
     });
 
     it('should get contents from an URL', async() => {
-      await expect(Util.getContentsFromUrlOrPath('http://google.com', __dirname)).resolves.toBeTruthy();
+      await expect(Util.fetchFileOrUrl('http://google.com')).resolves.toBeTruthy();
     });
 
     describe('with a valid JSON file path', () => {
       beforeEach(async() => {
-        await loader.registerModuleResourcesUrl('./assets/module-hello-world.jsonld', __dirname);
+        await loader.registerModuleResourcesUrl(Path.join(__dirname, './assets/module-hello-world.jsonld'));
         loader.finalizeRegistration();
       });
 
@@ -235,7 +236,7 @@ describe('Loader', () => {
 
     describe('with a valid ttl file path', () => {
       beforeEach(async() => {
-        await loader.registerModuleResourcesUrl('assets/module-hello-world.ttl', __dirname);
+        await loader.registerModuleResourcesUrl(Path.join(__dirname, './assets/module-hello-world.ttl'));
         loader.finalizeRegistration();
       });
 
@@ -247,16 +248,15 @@ describe('Loader', () => {
 
     describe('with an invalid file path', () => {
       it('should reject the promise', async() => {
-        await expect(loader.registerModuleResourcesUrl(
-          'assets/module-hello-world.jsonld.invalid',
-          __dirname,
-        )).rejects.toThrow();
+        await expect(loader.registerModuleResourcesUrl(Path
+          .join(__dirname, './assets/module-hello-world-unknown.jsonld'))).rejects
+          .toThrow(/No such file or directory: /u);
       });
     });
 
     describe('with import statements', () => {
       beforeEach(async() => {
-        await loader.registerModuleResourcesUrl('assets/module-hello-world-imports.jsonld', __dirname);
+        await loader.registerModuleResourcesUrl(Path.join(__dirname, './assets/module-hello-world-imports.jsonld'));
         loader.finalizeRegistration();
       });
 

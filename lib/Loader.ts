@@ -25,7 +25,6 @@ import { resourceIdToString } from './Util';
 export class Loader<Instance> {
   private readonly objectLoader: RdfObjectLoader;
   private readonly mainModulePath?: string;
-  private readonly absolutizeRelativePaths: boolean;
   private readonly dumpErrorState: boolean;
   private readonly creationStrategy: ICreationStrategy<Instance>;
   public readonly logger?: Logger;
@@ -45,9 +44,6 @@ export class Loader<Instance> {
       context: JSON.parse(fs.readFileSync(`${__dirname}/../components/context.jsonld`, 'utf8')),
     });
     this.mainModulePath = options.mainModulePath;
-    this.absolutizeRelativePaths = 'absolutizeRelativePaths' in options ?
-      Boolean(options.absolutizeRelativePaths) :
-      true;
     this.dumpErrorState = Boolean(options.dumpErrorState);
     this.creationStrategy = creationStrategy;
     if (options.logLevel) {
@@ -246,19 +242,15 @@ export class Loader<Instance> {
    * Register new modules and their components.
    * This will ensure that component configs referring to components as types of these modules are recognized.
    * @param moduleResourceUrl An RDF document URL
-   * @param fromPath The path to base relative paths on. This will typically be __dirname.
    */
-  public async registerModuleResourcesUrl(moduleResourceUrl: string, fromPath?: string): Promise<void> {
+  public async registerModuleResourcesUrl(moduleResourceUrl: string): Promise<void> {
     try {
       const state = await this.getModuleState();
-      const data = await Util.getContentsFromUrlOrPath(moduleResourceUrl, fromPath);
-      return this.registerModuleResourcesStream(new RdfParser().parse(data, {
-        fromPath,
+      const data = await Util.fetchFileOrUrl(moduleResourceUrl);
+      await this.registerModuleResourcesStream(new RdfParser().parse(data, {
         path: moduleResourceUrl,
         contexts: state.contexts,
         importPaths: state.importPaths,
-        ignoreImports: false,
-        absolutizeRelativePaths: this.absolutizeRelativePaths,
         logger: this.logger,
       }));
     } catch (error: unknown) {
@@ -326,20 +318,16 @@ export class Loader<Instance> {
   /**
    * Run a component config based on a config URL or local file path.
    * @param configResourceUrl An RDF document URL or local file path.
-   * @param fromPath The path to base relative paths on. This will typically be __dirname.
-   *                 Default is the current running directory.
    */
-  public async registerConfigUrl(configResourceUrl: string, fromPath?: string): Promise<void> {
+  public async registerConfigUrl(configResourceUrl: string): Promise<void> {
     try {
       const state = await this.getModuleState();
-      const data = await Util.getContentsFromUrlOrPath(configResourceUrl, fromPath);
+      const data = await Util.fetchFileOrUrl(configResourceUrl);
       return await this.registerConfigStream(new RdfParser().parse(data, {
-        fromPath,
         path: configResourceUrl,
         contexts: state.contexts,
         importPaths: state.importPaths,
         ignoreImports: false,
-        absolutizeRelativePaths: this.absolutizeRelativePaths,
         logger: this.logger,
       }));
     } catch (error: unknown) {
@@ -456,7 +444,6 @@ export class Loader<Instance> {
       this.generatedErrorLog = true;
       const contents = JSON.stringify({
         mainModulePathIn: this.mainModulePath,
-        absolutizeRelativePaths: this.absolutizeRelativePaths,
         components: Object.keys(this.componentResources),
         moduleState: {
           mainModulePath: this.moduleState?.mainModulePath,
@@ -474,7 +461,6 @@ export class Loader<Instance> {
 }
 
 export interface ILoaderProperties {
-  absolutizeRelativePaths?: boolean;
   mainModulePath?: string;
   dumpErrorState?: boolean;
   logLevel?: LogLevel;

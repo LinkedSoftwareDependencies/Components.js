@@ -1,6 +1,4 @@
 import fs = require('fs');
-import http = require('http');
-import https = require('https');
 import Path = require('path');
 import type { Readable } from 'stream';
 import url = require('url');
@@ -9,7 +7,6 @@ import { DataFactory } from 'rdf-data-factory';
 import type * as RDF from 'rdf-js';
 import { Resource } from 'rdf-object';
 import type { RdfObjectLoader } from 'rdf-object';
-
 export const PREFIXES: Record<string, string> = {
   oo: 'https://linkedsoftwaredependencies.org/vocabularies/object-oriented#',
   om: 'https://linkedsoftwaredependencies.org/vocabularies/object-mapping#',
@@ -24,41 +21,21 @@ export const DF: DataFactory = new DataFactory<RDF.Quad>();
 export const IRI_MODULE: RDF.NamedNode = DF.namedNode(`${PREFIXES.oo}Module`);
 
 /**
- * Get the file contents from a file path or URL
- * @param path The file path or url.
- * @param fromPath The path to base relative paths on.
- *                 Default is the current running directory.
+ * Get the file contents from a file path or URL.
+ * @param pathOrUrl The file path or url.
  * @returns {Promise<T>} A promise resolving to the data stream.
- * @private
  */
-export function getContentsFromUrlOrPath(path: string, fromPath?: string): Promise<Readable> {
-  return new Promise((resolve, reject) => {
-    const parsedUrl: any = url.parse(path);
-    const separatorPos: number = path.indexOf(':');
-    if ((separatorPos >= 0 && separatorPos < path.length && path.charAt(separatorPos + 1) === '\\') ||
-      !parsedUrl.protocol || parsedUrl.protocol === 'file:') {
-      if (Path.isAbsolute(parsedUrl.path)) {
-        fromPath = '';
-      }
-      resolve(fs.createReadStream(Path.join(fromPath || '', parsedUrl.path)).on('error', rejectContext));
-    } else {
-      try {
-        const request = (<any>(parsedUrl.protocol === 'https:' ? https : http))
-          .request(parsedUrl, (data: Readable) => {
-            data.on('error', rejectContext);
-            resolve(data);
-          });
-        request.on('error', rejectContext);
-        request.end();
-      } catch (error: unknown) {
-        rejectContext(<Error>error);
-      }
+export async function fetchFileOrUrl(pathOrUrl: string): Promise<Readable> {
+  const parsedUrl: any = url.parse(pathOrUrl);
+  const separatorPos: number = pathOrUrl.indexOf(':');
+  if ((separatorPos >= 0 && separatorPos < pathOrUrl.length && pathOrUrl.charAt(separatorPos + 1) === '\\') ||
+    !parsedUrl.protocol || parsedUrl.protocol === 'file:') {
+    if (!fs.existsSync(parsedUrl.path)) {
+      throw new Error(`No such file or directory: ${pathOrUrl}`);
     }
-
-    function rejectContext(error: Error): void {
-      reject(addFilePathToError(error, path, fromPath));
-    }
-  });
+    return fs.createReadStream(parsedUrl.path);
+  }
+  return <any> (await fetch(pathOrUrl)).body;
 }
 
 /**
@@ -241,17 +218,6 @@ export function captureType(value: Resource, param: Resource, objectLoader: RdfO
   function incorrectType(): void {
     throw new Error(`${value.value} is not of type ${param.property.range.value} for parameter ${resourceIdToString(param, objectLoader)}`);
   }
-}
-
-/**
- * Add a file path to an error message.
- * @param error The original error message.
- * @param filePath The file path.
- * @param fromPath The optional base path.
- * @returns {Error} The new error with file path context.
- */
-export function addFilePathToError(error: Error, filePath: string, fromPath?: string): Error {
-  return new Error(`Invalid components file "${fromPath ? Path.join(fromPath, filePath) : filePath}":\n${error.stack}`);
 }
 
 /**

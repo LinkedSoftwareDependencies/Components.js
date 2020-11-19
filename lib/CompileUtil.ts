@@ -29,12 +29,9 @@ export async function compileConfig(
   await loader.registerAvailableModuleResources();
   const state = await loader.getModuleState();
   const configStream = new RdfParser().parse(configStreamRaw, {
-    fromPath: properties.mainModulePath,
     path: configPath,
     contexts: state.contexts,
     importPaths: state.importPaths,
-    ignoreImports: false,
-    absolutizeRelativePaths: true,
     logger: loader.logger,
   });
 

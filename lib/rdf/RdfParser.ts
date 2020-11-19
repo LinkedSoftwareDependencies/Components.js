@@ -4,7 +4,6 @@ import type * as RDF from 'rdf-js';
 import type { ParseOptions } from 'rdf-parse';
 import rdfParser from 'rdf-parse';
 import type { Logger } from 'winston';
-import Util = require('../Util');
 import { PrefetchedDocumentLoader } from './PrefetchedDocumentLoader';
 import { RdfStreamIncluder } from './RdfStreamIncluder';
 
@@ -18,11 +17,7 @@ export class RdfParser {
    * @param options Parsing options.
    */
   public parse(textStream: NodeJS.ReadableStream, options: RdfParserOptions): RDF.Stream & Readable {
-    options.path = Path.normalize(options.path);
-
-    if (!options.fromPath) {
-      options.fromPath = Path.dirname(options.path);
-    }
+    options.path = options.path.includes('://') ? options.path : Path.normalize(options.path);
 
     if (!options.baseIRI) {
       options.baseIRI = options.path;
@@ -41,16 +36,19 @@ export class RdfParser {
     // Execute parsing
     const quadStream = rdfParser.parse(textStream, options);
     const includedQuadStream = quadStream.pipe(new RdfStreamIncluder(options));
-    textStream.on('error', errorListener);
-    quadStream.on('error', errorListener);
-    function errorListener(error: Error): void {
-      includedQuadStream.emit('error', Util.addFilePathToError(
-        error,
-        <string> (options.path || options.baseIRI),
-        options.path ? options.baseIRI : undefined,
-      ));
-    }
+    quadStream.on('error', (error: Error) => includedQuadStream
+      .emit('error', RdfParser.addPathToError(error, options.path)));
     return includedQuadStream;
+  }
+
+  /**
+   * Add the path to an error message.
+   * @param error The original error message.
+   * @param path The file path or URL.
+   * @returns {Error} The new error with file path context.
+   */
+  public static addPathToError(error: Error, path: string): Error {
+    return new Error(`Error while parsing file "${path}": ${error.message}`);
   }
 }
 
@@ -64,11 +62,6 @@ export type RdfParserOptions = ParseOptions & {
    */
   path: string;
   /**
-   * The path to base relative paths on.
-   * Used for error reporting.
-   */
-  fromPath?: string;
-  /**
    * The cached JSON-LD contexts.
    */
   contexts?: Record<string, any>;
@@ -81,10 +74,6 @@ export type RdfParserOptions = ParseOptions & {
    * Undefined if this file is the root file.
    */
   importedFromPath?: string;
-  /**
-   * If relative paths 'file://' should be made absolute 'file:///'.
-   */
-  absolutizeRelativePaths?: boolean;
   /**
    * An optional logger.
    */

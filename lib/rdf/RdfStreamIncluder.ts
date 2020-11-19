@@ -1,22 +1,17 @@
 import Path = require('path');
 import type { Readable, TransformCallback } from 'stream';
 import { Transform } from 'stream';
-import { DataFactory } from 'rdf-data-factory';
 import type * as RDF from 'rdf-js';
-import { getNamedNodes, getTerms, mapTerms } from 'rdf-terms';
+import { getNamedNodes, getTerms } from 'rdf-terms';
 import Util = require('../Util');
 import { isValidIri } from '../Util';
 import { RdfParser } from './RdfParser';
 import type { RdfParserOptions } from './RdfParser';
 
-const DF = new DataFactory();
-
 /**
  * A RdfStreamIncluder takes a triple stream and detects owl:includes to automatically include other files.
  */
 export class RdfStreamIncluder extends Transform {
-  private static readonly RELATIVE_PATH_MATCHER: RegExp = /^"file:\/\/([^/].*)".*$/u;
-
   private runningImporters = 1;
   private readonly parserOptions: RdfParserOptions;
   private flushCallback: TransformCallback | undefined;
@@ -29,7 +24,6 @@ export class RdfStreamIncluder extends Transform {
 
   public _transform(quad: RDF.Quad, encoding: string, callback: TransformCallback): boolean {
     this.handleImports(quad);
-    this.absolutizeRelativePaths(quad);
     this.validateIris(quad);
     callback(null, quad);
     return true;
@@ -66,11 +60,8 @@ export class RdfStreamIncluder extends Transform {
         }
       }
 
-      const errorHandler = (error: Error): boolean => this.emit('error', Util
-        .addFilePathToError(error, relativeFilePath, this.parserOptions.baseIRI));
-
       // Recursively call the parser
-      Util.getContentsFromUrlOrPath(relativeFilePath, this.parserOptions.baseIRI)
+      Util.fetchFileOrUrl(relativeFilePath)
         .then((rawStream: Readable) => {
           const data: Readable = new RdfParser().parse(rawStream, {
             ...this.parserOptions,
@@ -79,40 +70,15 @@ export class RdfStreamIncluder extends Transform {
           });
           data
             .on('data', (subData: RDF.Quad) => this.push(subData))
-            .on('error', errorHandler)
+            .on('error', (error: Error): boolean => this.emit('error', error))
             .on('end', () => {
               if (this.flushCallback && --this.runningImporters === 0) {
                 this.flushCallback();
               }
             });
         })
-        .catch(errorHandler);
+        .catch((error: Error) => this.emit('error', RdfParser.addPathToError(error, this.parserOptions.path)));
     }
-  }
-
-  /**
-   * Convert all relative paths in the given quad's terms into absolute paths.
-   * @param quad A quad.
-   */
-  public absolutizeRelativePaths(quad: RDF.Quad): RDF.Quad {
-    if (this.parserOptions.absolutizeRelativePaths) {
-      quad = mapTerms(quad, term => {
-        if (term.termType !== 'NamedNode') {
-          return term;
-        }
-        // Make relative paths absolute
-        const match = RdfStreamIncluder.RELATIVE_PATH_MATCHER.exec(term.value);
-        if (match) {
-          if (!this.parserOptions.baseIRI) {
-            this.emit('error', new Error('Tried to absolutize relative paths with an undefined baseIRI'));
-          } else {
-            return DF.namedNode(`"file:///${Path.join(this.parserOptions.baseIRI, match[1])}"${Util.PREFIXES.xsd}string`);
-          }
-        }
-        return term;
-      });
-    }
-    return quad;
   }
 
   /**
