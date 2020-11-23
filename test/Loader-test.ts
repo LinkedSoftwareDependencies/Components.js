@@ -209,7 +209,7 @@ describe('Loader', () => {
     });
 
     it('should get contents from a file', () => {
-      return expect(Util.fetchFileOrUrl(Path.join(__dirname, 'assets/dummy.txt'))
+      return expect(RdfParser.fetchFileOrUrl(Path.join(__dirname, 'assets/dummy.txt'))
         .then(data => new Promise((resolve, reject) => {
           let body = '';
           data.on('data', d => body += d.toString());
@@ -219,7 +219,7 @@ describe('Loader', () => {
     });
 
     it('should get contents from an URL', async() => {
-      await expect(Util.fetchFileOrUrl('http://google.com')).resolves.toBeTruthy();
+      await expect(RdfParser.fetchFileOrUrl('http://google.com')).resolves.toBeTruthy();
     });
 
     describe('with a valid JSON file path', () => {
@@ -250,7 +250,7 @@ describe('Loader', () => {
       it('should reject the promise', async() => {
         await expect(loader.registerModuleResourcesUrl(Path
           .join(__dirname, './assets/module-hello-world-unknown.jsonld'))).rejects
-          .toThrow(/No such file or directory: /u);
+          .toThrow(/ENOENT/u);
       });
     });
 

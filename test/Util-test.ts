@@ -89,31 +89,4 @@ describe('Util', () => {
         .toEqual(256.36);
     });
   });
-
-  describe('isValidIri', () => {
-    it('should be false on an empty string', () => {
-      expect(Util.isValidIri('')).toBeFalsy();
-    });
-
-    it('should be false without colon', () => {
-      expect(Util.isValidIri('abc')).toBeFalsy();
-    });
-
-    it('should be false with one colon without //', () => {
-      expect(Util.isValidIri('a:a')).toBeFalsy();
-    });
-
-    it('should be false with one colon with further //', () => {
-      expect(Util.isValidIri('a:a//a')).toBeFalsy();
-    });
-
-    it('should be true with one colon followed by immediate //', () => {
-      expect(Util.isValidIri('a://a')).toBeTruthy();
-    });
-
-    it('should be true with more than one colon', () => {
-      expect(Util.isValidIri('a:a:a')).toBeTruthy();
-      expect(Util.isValidIri('a:a:a:a')).toBeTruthy();
-    });
-  });
 });

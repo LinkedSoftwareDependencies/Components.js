@@ -2,8 +2,10 @@ import * as Path from 'path';
 import type { RdfParserOptions } from '../../lib/rdf/RdfParser';
 import { RdfParser } from '../../lib/rdf/RdfParser';
 import 'jest-rdf';
+// Import syntax only works in Node > 12
 const arrayifyStream = require('arrayify-stream');
 const quad = require('rdf-quad');
+const stringifyStream = require('stream-to-string');
 const streamifyString = require('streamify-string');
 
 global.fetch = <any>jest.fn(async(url: string) => {
@@ -385,6 +387,35 @@ describe('RdfParser', () => {
           quad('file://path/to/s', 'file://path/to/p', 'file://path/to/o'),
         ]);
       expect(logger.warn).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('fetchFileOrUrl', () => {
+    it('for a URL', async() => {
+      expect(await stringifyStream(await RdfParser.fetchFileOrUrl('http://example.org/myfile1.ttl')))
+        .toEqual(`<ex:s1> <ex:p1> <ex:o1>.`);
+    });
+
+    it('for a file without protocol', async() => {
+      expect(await stringifyStream(await RdfParser.fetchFileOrUrl(Path.join(__dirname, '../assets/rdf/a/myfile1.ttl'))))
+        .toEqual(`<ex:sl1> <ex:pl1> <ex:ol1>.
+`);
+    });
+
+    it('for a file with protocol', async() => {
+      expect(await stringifyStream(await RdfParser.fetchFileOrUrl(`file://${Path.join(__dirname, '../assets/rdf/a/myfile1.ttl')}`)))
+        .toEqual(`<ex:sl1> <ex:pl1> <ex:ol1>.
+`);
+    });
+
+    it('for a non-existing file without protocol', async() => {
+      await expect(RdfParser.fetchFileOrUrl(Path.join(__dirname, '../assets/rdf/a/myfileunknown.ttl')))
+        .rejects.toThrowError(/^ENOENT/u);
+    });
+
+    it('for a folder without protocol', async() => {
+      await expect(RdfParser.fetchFileOrUrl(Path.join(__dirname, '../assets/rdf/a/')))
+        .rejects.toThrowError(/^Path does not refer to a valid file/u);
     });
   });
 });

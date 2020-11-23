@@ -4,7 +4,6 @@ import { Transform } from 'stream';
 import type * as RDF from 'rdf-js';
 import { getNamedNodes, getTerms } from 'rdf-terms';
 import Util = require('../Util');
-import { isValidIri } from '../Util';
 import { RdfParser } from './RdfParser';
 import type { RdfParserOptions } from './RdfParser';
 
@@ -61,7 +60,7 @@ export class RdfStreamIncluder extends Transform {
       }
 
       // Recursively call the parser
-      Util.fetchFileOrUrl(relativeFilePath)
+      RdfParser.fetchFileOrUrl(relativeFilePath)
         .then((rawStream: Readable) => {
           const data: Readable = new RdfParser().parse(rawStream, {
             ...this.parserOptions,
@@ -88,10 +87,18 @@ export class RdfStreamIncluder extends Transform {
   public validateIris(quad: RDF.Quad): void {
     if (this.parserOptions.logger) {
       for (const term of getNamedNodes(getTerms(quad))) {
-        if (!isValidIri(term.value)) {
+        if (!RdfStreamIncluder.isValidIri(term.value)) {
           this.parserOptions.logger.warn(`Detected potentially invalid IRI '${term.value}' in ${this.parserOptions.path}`);
         }
       }
     }
+  }
+
+  /**
+   * Check if the given IRI is valid.
+   * @param iri A potential IRI.
+   */
+  public static isValidIri(iri: string): boolean {
+    return Boolean(/:((\/\/)|(.*:))/u.exec(iri));
   }
 }

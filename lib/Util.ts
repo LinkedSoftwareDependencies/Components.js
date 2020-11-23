@@ -1,7 +1,3 @@
-import fs = require('fs');
-import Path = require('path');
-import type { Readable } from 'stream';
-import url = require('url');
 import NodeUtil = require('util');
 import { DataFactory } from 'rdf-data-factory';
 import type * as RDF from 'rdf-js';
@@ -19,24 +15,6 @@ export const PREFIXES: Record<string, string> = {
 
 export const DF: DataFactory = new DataFactory<RDF.Quad>();
 export const IRI_MODULE: RDF.NamedNode = DF.namedNode(`${PREFIXES.oo}Module`);
-
-/**
- * Get the file contents from a file path or URL.
- * @param pathOrUrl The file path or url.
- * @returns {Promise<T>} A promise resolving to the data stream.
- */
-export async function fetchFileOrUrl(pathOrUrl: string): Promise<Readable> {
-  const parsedUrl: any = url.parse(pathOrUrl);
-  const separatorPos: number = pathOrUrl.indexOf(':');
-  if ((separatorPos >= 0 && separatorPos < pathOrUrl.length && pathOrUrl.charAt(separatorPos + 1) === '\\') ||
-    !parsedUrl.protocol || parsedUrl.protocol === 'file:') {
-    if (!fs.existsSync(parsedUrl.path)) {
-      throw new Error(`No such file or directory: ${pathOrUrl}`);
-    }
-    return fs.createReadStream(parsedUrl.path);
-  }
-  return <any> (await fetch(pathOrUrl)).body;
-}
 
 /**
  * Convert the given resource to a compact string.
@@ -227,12 +205,4 @@ export function captureType(value: Resource, param: Resource, objectLoader: RdfO
  */
 export function uriToVariableName(uri: string): string {
   return uri.replace(/[#./:@\\^-]/gu, '_');
-}
-
-/**
- * Check if the given IRI is valid.
- * @param iri A potential IRI.
- */
-export function isValidIri(iri: string): boolean {
-  return Boolean(/:((\/\/)|(.*:))/u.exec(iri));
 }

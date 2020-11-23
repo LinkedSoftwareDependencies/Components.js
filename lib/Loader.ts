@@ -246,7 +246,7 @@ export class Loader<Instance> {
   public async registerModuleResourcesUrl(moduleResourceUrl: string): Promise<void> {
     try {
       const state = await this.getModuleState();
-      const data = await Util.fetchFileOrUrl(moduleResourceUrl);
+      const data = await RdfParser.fetchFileOrUrl(moduleResourceUrl);
       await this.registerModuleResourcesStream(new RdfParser().parse(data, {
         path: moduleResourceUrl,
         contexts: state.contexts,
@@ -322,7 +322,7 @@ export class Loader<Instance> {
   public async registerConfigUrl(configResourceUrl: string): Promise<void> {
     try {
       const state = await this.getModuleState();
-      const data = await Util.fetchFileOrUrl(configResourceUrl);
+      const data = await RdfParser.fetchFileOrUrl(configResourceUrl);
       return await this.registerConfigStream(new RdfParser().parse(data, {
         path: configResourceUrl,
         contexts: state.contexts,

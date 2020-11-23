@@ -6,6 +6,9 @@ import rdfParser from 'rdf-parse';
 import type { Logger } from 'winston';
 import { PrefetchedDocumentLoader } from './PrefetchedDocumentLoader';
 import { RdfStreamIncluder } from './RdfStreamIncluder';
+import { createReadStream } from 'fs';
+// Import syntax only works in Node > 12
+const fs = require('fs').promises;
 
 /**
  * Parses a data stream to a triple stream.
@@ -39,6 +42,23 @@ export class RdfParser {
     quadStream.on('error', (error: Error) => includedQuadStream
       .emit('error', RdfParser.addPathToError(error, options.path)));
     return includedQuadStream;
+  }
+
+  /**
+   * Get the file contents from a file path or URL.
+   * @param pathOrUrl The file path or url.
+   * @returns {Promise<T>} A promise resolving to the data stream.
+   */
+  public static async fetchFileOrUrl(pathOrUrl: string): Promise<Readable> {
+    const colonPos: number = pathOrUrl.indexOf(':');
+    if (colonPos < 0 || pathOrUrl.startsWith('file://')) {
+      const path = colonPos < 0 ? pathOrUrl : pathOrUrl.slice(7);
+      if (!(await fs.stat(path)).isFile()) {
+        throw new Error(`Path does not refer to a valid file: ${pathOrUrl}`);
+      }
+      return createReadStream(path);
+    }
+    return <any> (await fetch(pathOrUrl)).body;
   }
 
   /**
