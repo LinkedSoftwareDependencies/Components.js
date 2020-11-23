@@ -329,4 +329,43 @@ describe('CreationStrategyCommonJsString', () => {
       expect(creationStrategy.createUndefined()).toEqual('undefined');
     });
   });
+
+  describe('uriToVariableName', () => {
+    it('should replace #', () => {
+      expect(CreationStrategyCommonJsString.uriToVariableName('abc#xyz')).toEqual('abc_xyz');
+    });
+
+    it('should replace .', () => {
+      expect(CreationStrategyCommonJsString.uriToVariableName('abc.xyz')).toEqual('abc_xyz');
+    });
+
+    it('should replace /', () => {
+      expect(CreationStrategyCommonJsString.uriToVariableName('abc/xyz')).toEqual('abc_xyz');
+    });
+
+    it('should replace :', () => {
+      expect(CreationStrategyCommonJsString.uriToVariableName('abc:xyz')).toEqual('abc_xyz');
+    });
+
+    it('should replace @', () => {
+      expect(CreationStrategyCommonJsString.uriToVariableName('abc@xyz')).toEqual('abc_xyz');
+    });
+
+    it('should replace \\', () => {
+      expect(CreationStrategyCommonJsString.uriToVariableName('abc\\xyz')).toEqual('abc_xyz');
+    });
+
+    it('should replace ^', () => {
+      expect(CreationStrategyCommonJsString.uriToVariableName('abc^xyz')).toEqual('abc_xyz');
+    });
+
+    it('should replace -', () => {
+      expect(CreationStrategyCommonJsString.uriToVariableName('abc-xyz')).toEqual('abc_xyz');
+    });
+
+    it('should handle a complex IRI', () => {
+      expect(CreationStrategyCommonJsString.uriToVariableName(`https://linkedsoftwaredependencies.org/bundles/npm/%40comunica%2Factor-init-sparql/%5E1.0.0/config/config-default.json#thing`))
+        .toEqual(`https___linkedsoftwaredependencies_org_bundles_npm_%40comunica%2Factor_init_sparql_%5E1_0_0_config_config_default_json_thing`);
+    });
+  });
 });

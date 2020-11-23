@@ -197,12 +197,3 @@ export function captureType(value: Resource, param: Resource, objectLoader: RdfO
     throw new Error(`${value.value} is not of type ${param.property.range.value} for parameter ${resourceIdToString(param, objectLoader)}`);
   }
 }
-
-/**
- * Deterministically converts a URI to a variable name that is safe for usage within JavaScript.
- * @param {string} uri A URI.
- * @return {string} A variable name.
- */
-export function uriToVariableName(uri: string): string {
-  return uri.replace(/[#./:@\\^-]/gu, '_');
-}

@@ -1,6 +1,5 @@
 import * as Path from 'path';
 import type { IModuleState } from '../ModuleStateBuilder';
-import * as Util from '../Util';
 import type { ICreationStrategyCommonJsOptions } from './CreationStrategyCommonJs';
 import { CreationStrategyCommonJs } from './CreationStrategyCommonJs';
 import type { ICreationStrategy,
@@ -52,7 +51,7 @@ export class CreationStrategyCommonJsString implements ICreationStrategy<string>
     }
 
     // Add a line to our file to declare the instantiated element as a const
-    const serializationVariableName = Util.uriToVariableName(options.instanceId);
+    const serializationVariableName = CreationStrategyCommonJsString.uriToVariableName(options.instanceId);
     serialization = `const ${serializationVariableName} = ${serialization};`;
     this.lines.push(serialization);
     serialization = serializationVariableName;
@@ -107,6 +106,15 @@ export class CreationStrategyCommonJsString implements ICreationStrategy<string>
 
   public createUndefined(): string {
     return 'undefined';
+  }
+
+  /**
+   * Deterministically converts a URI to a variable name that is safe for usage within JavaScript.
+   * @param {string} uri A URI.
+   * @return {string} A variable name.
+   */
+  public static uriToVariableName(uri: string): string {
+    return uri.replace(/[#./:@\\^-]/gu, '_');
   }
 }
 

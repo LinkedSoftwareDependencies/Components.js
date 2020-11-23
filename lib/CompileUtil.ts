@@ -2,7 +2,6 @@ import { CreationStrategyCommonJsString } from './creationstrategy/CreationStrat
 import type { ILoaderProperties } from './Loader';
 import { Loader } from './Loader';
 import { RdfParser } from './rdf/RdfParser';
-import Util = require('./Util');
 
 /**
  * Compile a configuration stream to a JavaScript source file.
@@ -41,7 +40,9 @@ export async function compileConfig(
   let document: string = creationStrategy.lines.join('\n');
 
   // Override main variable name if needed
-  exportVariableName = exportVariableName ? Util.uriToVariableName(exportVariableName) : exportVariableName;
+  exportVariableName = exportVariableName ?
+    CreationStrategyCommonJsString.uriToVariableName(exportVariableName) :
+    exportVariableName;
   if (exportVariableName !== serializationVariableName) {
     // Remove the instantiation of the runner component, as it will not be needed anymore.
     document = document.replace('new (require(\'@comunica/runner\').Runner)', '');
