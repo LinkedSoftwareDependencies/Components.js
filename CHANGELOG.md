@@ -1,6 +1,13 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v3.6.1"></a>
+## [v3.6.1](https://github.com/LinkedSoftwareDependencies/Components.js/compare/v3.6.0...v3.6.1) - 2020-11-25
+
+### Fixed
+* [Fix Array checks.](https://github.com/LinkedSoftwareDependencies/Components.js/commit/fdd48f6910ce395c72607992056f724953729f32)
+* [Fix function check.](https://github.com/LinkedSoftwareDependencies/Components.js/commit/b685468cfc9de39c74207a1f79cc9efae2bffa4e)
+
 <a name="v3.6.0"></a>
 ## [v3.6.0](https://github.com/LinkedSoftwareDependencies/Components.js/compare/v3.5.0...v3.6.0) - 2020-09-14
 
