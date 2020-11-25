@@ -70,23 +70,45 @@ export class CreationStrategyCommonJsString implements ICreationStrategy<string>
   }
 
   protected stringify(data: any): string {
-    return JSON.stringify(data, null, '  ').replace(/(^|[^\\])"/gu, '$1');
+    return JSON.stringify(data, null, '  ');
   }
 
   public createHash(options: ICreationStrategyHashOptions<string>): string {
-    return this.stringify(this.strategyCommonJs.createHash({
-      settings: options.settings,
-      entries: options.entries.map(entry => {
-        if (entry) {
-          entry = { key: `'${entry.key}'`, value: entry.value };
+    const sb: string[] = [ '{' ];
+    for (const entry of options.entries) {
+      if (entry) {
+        if (sb.length > 1) {
+          sb.push(',');
         }
-        return entry;
-      }),
-    }));
+        sb.push('\n');
+        sb.push('  ');
+        sb.push(`'${entry.key}'`);
+        sb.push(': ');
+        sb.push(entry.value);
+      }
+    }
+    if (sb.length > 1) {
+      sb.push('\n');
+    }
+    sb.push('}');
+    return sb.join('');
   }
 
   public createArray(options: ICreationStrategyArrayOptions<string>): string {
-    return this.stringify(this.strategyCommonJs.createArray(options));
+    const sb: string[] = [ '[' ];
+    for (const value of options.elements) {
+      if (sb.length > 1) {
+        sb.push(',');
+      }
+      sb.push('\n');
+      sb.push('  ');
+      sb.push(value);
+    }
+    if (sb.length > 1) {
+      sb.push('\n');
+    }
+    sb.push(']');
+    return sb.join('');
   }
 
   public async createLazySupplier(options: ICreationStrategySupplierOptions<string>): Promise<string> {

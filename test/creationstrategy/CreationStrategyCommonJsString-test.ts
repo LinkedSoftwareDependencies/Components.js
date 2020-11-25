@@ -256,6 +256,20 @@ describe('CreationStrategyCommonJsString', () => {
   'c': 3
 }`);
     });
+
+    it('for defined entries with array values', () => {
+      expect(creationStrategy.createHash({
+        settings,
+        entries: [
+          { key: 'a', value: '[\n  a,\n  b\n]' },
+        ],
+      })).toEqual(`{
+  'a': [
+  a,
+  b
+]
+}`);
+    });
   });
 
   describe('createArray', () => {
@@ -273,6 +287,16 @@ describe('CreationStrategyCommonJsString', () => {
       })).toEqual(`[
   a,
   b
+]`);
+    });
+
+    it('for string elements', () => {
+      expect(creationStrategy.createArray({
+        settings,
+        elements: [ '"a"', '"b"' ],
+      })).toEqual(`[
+  "a",
+  "b"
 ]`);
     });
   });
