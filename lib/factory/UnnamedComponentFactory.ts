@@ -227,7 +227,7 @@ export class UnnamedComponentFactory implements IComponentFactory {
             object = subObject;
             if (!this._componentDefinition.requireNoConstructor || this._componentDefinition.requireNoConstructor.value !== 'true') {
                 if (this._constructable) {
-                    if (!(object instanceof Function)) {
+                    if (typeof object !== 'function') {
                         return reject(new Error('ConstructableComponent is not a function: ' + NodeUtil.inspect(object)
                           + "\n" + NodeUtil.inspect(this._componentDefinition)));
                     }
