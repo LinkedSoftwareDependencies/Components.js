@@ -85,7 +85,7 @@ export class UnnamedComponentFactory implements IComponentFactory {
                 })).then((elements: any[]) => {
                     var ret: any[] = [];
                     elements.forEach((element) => {
-                        if (element instanceof Array) {
+                        if (Array.isArray(element)) {
                             ret = ret.concat(element);
                         } else {
                             ret.push(element);
@@ -93,7 +93,7 @@ export class UnnamedComponentFactory implements IComponentFactory {
                     });
                     resolve(ret);
                 }).catch(reject);
-            } else if (value instanceof Array) {
+            } else if (Array.isArray(value)) {
                 return Promise.all(value.map(
                     (element) => UnnamedComponentFactory.getArgumentValue(element, componentRunner, settings)))
                     .then(resolve).catch(reject);

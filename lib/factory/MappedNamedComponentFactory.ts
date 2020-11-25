@@ -106,7 +106,7 @@ export class MappedNamedComponentFactory extends UnnamedComponentFactory {
             return new Resource(null, {
                 fields: resource.fields.reduce((fields: any[], field: any) => {
                     let mapped: any = MappedNamedComponentFactory.map(resourceScope, field, params);
-                    if (mapped instanceof Array) {
+                    if (Array.isArray(mapped)) {
                         fields = fields.concat(mapped);
                     } else {
                         fields.push(mapped);
