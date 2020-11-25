@@ -56,7 +56,7 @@ export class CreationStrategyCommonJs implements ICreationStrategy<any> {
     // Call the constructor of the element
     object = subObject;
     if (options.callConstructor) {
-      if (!(object instanceof Function)) {
+      if (typeof object !== 'function') {
         throw new Error(`Attempted to construct ${options.requireElement} from module ${options.requireName} that does not have a constructor`);
       }
       object = new (Function.prototype.bind.apply(object, <[any, ...any]>[{}].concat(options.args)))();
