@@ -696,7 +696,7 @@ describe('MappedNamedComponentFactory', () => {
         const args = await constructor.createArguments(await loader.getCreationSettingsInner({}));
         expect(args).toEqual([{
           dummyParam1: [ 'a', 'b' ],
-          dummyParam2: [ 'a' ],
+          dummyParam2: 'a',
         }]);
       });
 
@@ -723,7 +723,7 @@ describe('MappedNamedComponentFactory', () => {
         const args = await constructor.createArguments(await loader.getCreationSettingsInner({}));
         expect(args).toEqual([{
           dummyParam1: [ 'true' ],
-          dummyParam2: [ 'false' ],
+          dummyParam2: 'false',
         }]);
       });
 
@@ -806,7 +806,7 @@ describe('MappedNamedComponentFactory', () => {
         const args = await constructor.createArguments(await loader.getCreationSettingsInner({}));
         expect(args).toEqual([{
           dummyParam1: [ 'a', 'b' ],
-          dummyParam2: [ 'a' ],
+          dummyParam2: 'a',
         }]);
       });
 
@@ -833,7 +833,7 @@ describe('MappedNamedComponentFactory', () => {
         const args = await constructor.createArguments(await loader.getCreationSettingsInner({}));
         expect(args).toEqual([{
           dummyParam1: [ 'true' ],
-          dummyParam2: [ 'false' ],
+          dummyParam2: 'false',
         }]);
       });
 
@@ -859,7 +859,7 @@ describe('MappedNamedComponentFactory', () => {
         const args = await constructor.createArguments(await loader.getCreationSettingsInner({}));
         expect(args).toEqual([{
           dummyParam1: [ 'a', 'b' ],
-          dummyParam2: [ 'a' ],
+          dummyParam2: 'a',
         }]);
       });
 

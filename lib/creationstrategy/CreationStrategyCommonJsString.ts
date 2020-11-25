@@ -69,10 +69,6 @@ export class CreationStrategyCommonJsString implements ICreationStrategy<string>
     return Path.join(moduleState.mainModulePath, pckg.main);
   }
 
-  protected stringify(data: any): string {
-    return JSON.stringify(data, null, '  ');
-  }
-
   public createHash(options: ICreationStrategyHashOptions<string>): string {
     const sb: string[] = [ '{' ];
     for (const entry of options.entries) {

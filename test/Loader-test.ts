@@ -312,7 +312,7 @@ describe('Loader', () => {
       await loader.registerConfigStream(configResourceStream);
       const run = await loader.getComponentInstance('http://example.org/myHelloWorld1');
       expect(run._params).toEqual({
-        'http://example.org/hello/hello': [{}],
+        'http://example.org/hello/hello': [ undefined ],
       });
     });
   });

@@ -16,7 +16,7 @@ export class InstancePool implements IInstancePool {
   private readonly moduleState: IModuleState;
 
   private readonly runTypeConfigs: Record<string, Resource[]> = {};
-  private readonly instances: Record<string, any> = {};
+  private readonly instances: Record<string, Promise<any>> = {};
 
   public constructor(options: IInstancePoolOptions) {
     this.objectLoader = options.objectLoader;
@@ -25,60 +25,75 @@ export class InstancePool implements IInstancePool {
   }
 
   /**
-   * Let then given config inherit parameter values from referenced passed configs.
+   * Let this config inherit parameter values from previously instantiated configs.
+   * This will check for inheritanceValues that are defined on the component,
+   * which can refer to parameters from other components.
+   *
+   * For example, assume we had previously instantiated a component X with param P set to 'value'.
+   * If we instantiate component Y, which is defined to inherit values from param P of X,
+   * then it will automatically inherit this param P set to 'value'.
+   *
+   * This can effectively mutate the given config resource.
    * @param configResource The config
    * @param componentResource The component
    */
   public inheritParameterValues(configResource: Resource, componentResource: Resource): void {
-    // Inherit parameter values from passed instances of the given types
-    if (componentResource.property.parameters) {
-      for (const parameter of componentResource.properties.parameters) {
-        // Collect all owl:Restriction's
-        const restrictions: Resource[] = parameter.properties.inheritValues
-          .reduce((acc: Resource[], clazz: Resource) => {
-            if (clazz.properties.types.reduce((subAcc: boolean, type: Resource) => subAcc ||
-              type.value === `${Util.PREFIXES.owl}Restriction`, false)) {
-              acc.push(clazz);
+    // Iterate over all params in the instantiating component
+    for (const parameter of componentResource.properties.parameters) {
+      // Collect all InheritanceValue's (=owl:Restriction)
+      const inheritanceValueDefinitions: Resource[] = parameter.properties.inheritValues
+        .reduce((acc: Resource[], clazz: Resource) => {
+          if (clazz.properties.types.reduce((subAcc: boolean, type: Resource) => subAcc ||
+            type.value === `${Util.PREFIXES.owl}Restriction`, false)) {
+            acc.push(clazz);
+          }
+          return acc;
+        }, []);
+
+      // Check the validity of all definitions
+      for (const inheritanceValueDefinition of inheritanceValueDefinitions) {
+        // Check if 'from' refers to a component
+        if (inheritanceValueDefinition.property.from) {
+          // Check if 'onParameter' refers to a parameter
+          if (!inheritanceValueDefinition.property.onParameter) {
+            throw new Error(`Missing onParameter property on parameter value inheritance definition: ${resourceToString(parameter)}`);
+          }
+
+          // Iterate over all components to inherit from
+          for (const componentType of inheritanceValueDefinition.properties.from) {
+            if (componentType.type !== 'NamedNode') {
+              throw new Error(`Detected invalid from term type '${componentType.type}' on parameter value inheritance definition: ${resourceToString(componentType)}`);
             }
-            return acc;
-          }, []);
 
-        for (const restriction of restrictions) {
-          if (restriction.property.from) {
-            if (!restriction.property.onParameter) {
-              throw new Error(`Parameters that inherit values must refer to a property: ${resourceToString(parameter)}`);
-            }
+            // Iterate over all instantiations of the referenced component
+            const typeInstances: Resource[] = this.runTypeConfigs[componentType.value];
+            if (typeInstances) {
+              for (const instance of typeInstances) {
+                // Iterate over all parameters to inherit from
+                for (const parentParameter of inheritanceValueDefinition.properties.onParameter) {
+                  if (parentParameter.type !== 'NamedNode') {
+                    throw new Error(`Detected invalid onParameter term type '${parentParameter.type}' on parameter value inheritance definition: ${resourceToString(parentParameter)}`);
+                  }
 
-            for (const componentType of restriction.properties.from) {
-              if (componentType.type !== 'NamedNode') {
-                throw new Error(`Parameter inheritance values must refer to component type identifiers, not literals: ${resourceToString(componentType)}`);
-              }
+                  // If the previous instance had a value for this parameter, copy it to our current config
+                  if (instance.property[parentParameter.value]) {
+                    // Copy the parameters
+                    for (const value of instance.properties[parentParameter.value]) {
+                      configResource.properties[parentParameter.value].push(value);
+                    }
 
-              const typeInstances: Resource[] = this.runTypeConfigs[componentType.value];
-              if (typeInstances) {
-                for (const instance of typeInstances) {
-                  for (const parentParameter of restriction.properties.onParameter) {
-                    // TODO: this might be a bug in the JSON-LD parser
-                    // if (parentParameter.termType !== 'NamedNode') {
-                    // throw new Error('Parameters that inherit values must refer to sub properties as URI\'s: '
-                    // + JSON.stringify(parentParameter));
-                    // }
-                    if (instance.property[parentParameter.value]) {
-                      // Copy the parameters
-                      for (const value of instance.properties[parentParameter.value]) {
-                        configResource.properties[parentParameter.value].push(value);
-                      }
-
-                      // Also add the parameter to the parameter type list
-                      if (!componentResource.properties.parameters.includes(parentParameter)) {
-                        componentResource.properties.parameters.push(parentParameter);
-                      }
+                    // Also add the parameter to the parameter type list
+                    // This is needed to ensure that the param value will be instantiated during mapping
+                    if (!componentResource.properties.parameters.includes(parentParameter)) {
+                      componentResource.properties.parameters.push(parentParameter);
                     }
                   }
                 }
               }
             }
           }
+        } else {
+          throw new Error(`Missing from property on parameter value inheritance definition: ${resourceToString(parameter)}`);
         }
       }
     }
@@ -90,30 +105,27 @@ export class InstancePool implements IInstancePool {
    * @returns The component factory.
    */
   public getConfigConstructor(configResource: Resource): IComponentFactory {
-    const allTypes: string[] = [];
-    const componentTypes: Resource[] = configResource.properties.types
-      .reduce((types: Resource[], typeUri: Resource) => {
-        const componentResource: Resource = this.componentResources[typeUri.value];
-        allTypes.push(typeUri.value);
-        if (componentResource) {
-          types.push(componentResource);
-          if (!this.runTypeConfigs[componentResource.value]) {
-            this.runTypeConfigs[componentResource.value] = [];
-          }
-          this.runTypeConfigs[componentResource.value].push(configResource);
-        }
-        return types;
-      }, []);
-    if (componentTypes.length !== 1 &&
-      !configResource.property.requireName &&
-      !configResource.property.requireElement) {
-      throw new Error(`Could not run config ${resourceIdToString(configResource, this.objectLoader)} because exactly one valid component type ` +
-        `was expected, while ${componentTypes.length} were found in the defined types [${allTypes}]. ` +
-        `Alternatively, the requireName and requireElement must be provided.\nFound: ${
-          resourceToString(configResource)}\nAll available usable types: [\n${
-          Object.keys(this.componentResources).join(',\n')}\n]`);
+    // Collect all component types from the resource
+    const componentTypes: Resource[] = [];
+    for (const type of configResource.properties.types) {
+      const componentResource: Resource = this.componentResources[type.value];
+      if (componentResource) {
+        componentTypes.push(componentResource);
+      }
     }
 
+    // Require either exactly one component type, or a requireName
+    if (componentTypes.length > 1) {
+      throw new Error(`Detected more than one component types for ${resourceIdToString(configResource, this.objectLoader)}: [${componentTypes.map(resource => resource.value)}].
+Parsed config: ${resourceToString(configResource)}`);
+    }
+    if (componentTypes.length === 0 && !configResource.property.requireName) {
+      throw new Error(`Could not find (valid) component types for ${resourceIdToString(configResource, this.objectLoader)} among types [${configResource.properties.types.map(resource => resource.value)}], or a requireName.
+Parsed config: ${resourceToString(configResource)}
+Available component types: [\n${Object.keys(this.componentResources).join(',\n')}\n]`);
+    }
+
+    // Create common factory options
     let options: ComponentFactoryOptions = {
       objectLoader: this.objectLoader,
       config: configResource,
@@ -121,6 +133,7 @@ export class InstancePool implements IInstancePool {
       constructable: !configResource.isA('Instance'),
     };
 
+    // If we have a referred component type, add it to the factory options
     if (componentTypes.length > 0) {
       const componentResource = componentTypes[0];
       const moduleResource = componentResource.property.module;
@@ -128,6 +141,13 @@ export class InstancePool implements IInstancePool {
         throw new Error(`No module was found for the component ${resourceIdToString(componentResource, this.objectLoader)}`);
       }
 
+      // Save this config so that other configs may inherit params from it in the future.
+      if (!this.runTypeConfigs[componentResource.value]) {
+        this.runTypeConfigs[componentResource.value] = [];
+      }
+      this.runTypeConfigs[componentResource.value].push(configResource);
+
+      // Inherit parameter values
       this.inheritParameterValues(configResource, componentResource);
 
       options = {
@@ -149,13 +169,12 @@ export class InstancePool implements IInstancePool {
   public async instantiate<Instance>(
     configResource: Resource,
     settings: ICreationSettingsInner<Instance>,
-  ): Promise<any> {
-    const settingsInner: ICreationSettingsInner<Instance> = { ...settings, moduleState: this.moduleState };
+  ): Promise<Instance> {
     // Check if this resource is required as argument in its own chain,
     // if so, return a dummy value, to avoid infinite recursion.
-    const resourceBlacklist = settingsInner.resourceBlacklist || {};
+    const resourceBlacklist = settings.resourceBlacklist || {};
     if (resourceBlacklist[configResource.value]) {
-      return {};
+      return settings.creationStrategy.createUndefined();
     }
 
     // Before instantiating, first check if the resource is a variable
@@ -163,14 +182,16 @@ export class InstancePool implements IInstancePool {
       return settings.creationStrategy.getVariableValue({ settings, variableName: configResource.value });
     }
 
-    if (!this.instances[configResource.value]) {
+    // Instantiate only once
+    if (!(configResource.value in this.instances)) {
+      // The blacklist avoids infinite recursion for self-referencing configs
       const subBlackList: Record<string, boolean> = { ...resourceBlacklist };
       subBlackList[configResource.value] = true;
-      this.instances[configResource.value] = await this.getConfigConstructor(configResource).createInstance(
-        { resourceBlacklist: subBlackList, ...settingsInner },
+      this.instances[configResource.value] = this.getConfigConstructor(configResource).createInstance(
+        { resourceBlacklist: subBlackList, ...settings },
       );
     }
-    return this.instances[configResource.value];
+    return await this.instances[configResource.value];
   }
 }
 

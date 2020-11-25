@@ -26,6 +26,7 @@ export const IRI_MODULE: RDF.NamedNode = DF.namedNode(`${PREFIXES.oo}Module`);
  * @param resource A resource.
  */
 export function resourceToString(resource: Resource): string {
+  delete (<any> resource).context;
   delete (<any> resource).predicates;
   delete (<any> resource).propertiesUri;
   delete (<any> resource).property;
@@ -38,7 +39,7 @@ export function resourceToString(resource: Resource): string {
  * @param objectLoader An object loader.
  */
 export function resourceIdToString(resource: Resource, objectLoader: RdfObjectLoader): string {
-  return objectLoader.contextResolved.compactIri(resource.value);
+  return resource.value;
 }
 
 /**

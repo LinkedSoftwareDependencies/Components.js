@@ -4687,10 +4687,10 @@ rdf-literal@^1.2.0:
     "@types/rdf-js" "^4.0.0"
     rdf-data-factory "^1.0.1"
 
-rdf-object@^1.5.0:
-  version "1.5.0"
-  resolved "https://registry.yarnpkg.com/rdf-object/-/rdf-object-1.5.0.tgz#ffae2622430286fb5f94b1621358c6b24b135bf9"
-  integrity sha512-HDEw3GIQwBk+IUu18B+F4JoendOdP+cEwAZ+dCGb4Uc9emfqvgWLj7E2es1f7babNBJLepLdFecXwNdzFLcUGw==
+rdf-object@^1.7.1:
+  version "1.7.1"
+  resolved "https://registry.yarnpkg.com/rdf-object/-/rdf-object-1.7.1.tgz#1dabf78bd5458df002f0b08220381d7cdcc87da6"
+  integrity sha512-opHugbxDR8Hm0gEWHlgKax0c8wtGd1dPkDE1njm+PLvttxUU2pw7rmBX4WaqltSSliZSMuAoh4nIVc7M/wYBYQ==
   dependencies:
     jsonld-context-parser "^2.0.2"
     rdf-data-factory "^1.0.3"
