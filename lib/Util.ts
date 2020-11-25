@@ -137,7 +137,7 @@ class Util {
                 if (!value) {
                     value = [];
                 }
-                if (!(value instanceof Array)) {
+                if (!Array.isArray(value)) {
                     throw new Error('Values must be an array\n' + NodeUtil.inspect(param));
                 }
                 param.fixed.forEach((f: any) => value.push(f));
@@ -145,13 +145,13 @@ class Util {
         }
 
         // If the value is singular, and the value should be unique, transform the array to a single element
-        if (param.unique && param.unique.value === 'true' && value instanceof Array) {
+        if (param.unique && param.unique.value === 'true' && Array.isArray(value)) {
             value = value[0];
         }
 
         // If a param range is defined, apply the type and validate the range.
         if (param.range) {
-            if (value instanceof Array) {
+            if (Array.isArray(value)) {
                 value = value.map((e) => Util.captureType(e, param));
             } else {
                 value = Util.captureType(value, param);
