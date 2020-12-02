@@ -7,13 +7,14 @@ import type { Logger } from 'winston';
 import { createLogger, format, transports } from 'winston';
 import { CreationStrategyCommonJs } from './creationstrategy/CreationStrategyCommonJs';
 import type { ICreationStrategy } from './creationstrategy/ICreationStrategy';
-import { ComponentFactory } from './factory/ComponentFactory';
-import type { IComponentFactory, ICreationSettings, ICreationSettingsInner } from './factory/IComponentFactory';
-import type { IInstancePool } from './IInstancePool';
-import { InstancePool } from './InstancePool';
+import type { IInstancePool } from './instantiation/IInstancePool';
+import type { IInstantiationSettings, IInstantiationSettingsInner } from './instantiation/IInstantiationSettings';
+import { InstancePool } from './instantiation/InstancePool';
 import type { LogLevel } from './LogLevel';
 import type { IModuleState } from './ModuleStateBuilder';
 import { ModuleStateBuilder } from './ModuleStateBuilder';
+import { ConfigPreprocessorComponent } from './preprocess/ConfigPreprocessorComponent';
+import { ConfigPreprocessorComponentMapped } from './preprocess/ConfigPreprocessorComponentMapped';
 import { RdfParser } from './rdf/RdfParser';
 import Util = require('./Util');
 import { resourceIdToString } from './Util';
@@ -82,10 +83,21 @@ export class Loader<Instance> {
    */
   public async getInstancePool(): Promise<IInstancePool> {
     if (!this.instancePool) {
+      const runTypeConfigs = {};
       this.instancePool = new InstancePool({
         objectLoader: this.objectLoader,
-        componentResources: this.componentResources,
-        moduleState: await this.getModuleState(),
+        configPreprocessors: [
+          new ConfigPreprocessorComponentMapped({
+            objectLoader: this.objectLoader,
+            componentResources: this.componentResources,
+            runTypeConfigs,
+          }),
+          new ConfigPreprocessorComponent({
+            objectLoader: this.objectLoader,
+            componentResources: this.componentResources,
+            runTypeConfigs,
+          }),
+        ],
       });
     }
     return this.instancePool;
@@ -336,27 +348,13 @@ export class Loader<Instance> {
   }
 
   /**
-   * Get a component config constructor based on a config IRI.
-   * @param configResourceIri The config resource IRI.
-   */
-  public async getComponentFactory(configResourceIri: string): Promise<IComponentFactory> {
-    try {
-      const configResource: Resource = this.objectLoader.resources[configResourceIri];
-      if (!configResource) {
-        throw new Error(`Could not find a component config with URI ${configResourceIri} in the triple stream.`);
-      }
-      return (await this.getInstancePool()).getConfigConstructor(configResource);
-    } catch (error: unknown) {
-      throw this.generateErrorLog(error);
-    }
-  }
-
-  /**
    * Return the inner creation settings from the given creation settings.
    * This adds additional fields to the settings.
    * @param settings Creation settings.
    */
-  public async getCreationSettingsInner(settings: ICreationSettings): Promise<ICreationSettingsInner<Instance>> {
+  public async getCreationSettingsInner(
+    settings: IInstantiationSettings,
+  ): Promise<IInstantiationSettingsInner<Instance>> {
     return {
       ...settings,
       moduleState: await this.getModuleState(),
@@ -371,7 +369,7 @@ export class Loader<Instance> {
    */
   public async getComponentInstance(
     configResourceIri: string,
-    settings: ICreationSettings = {},
+    settings: IInstantiationSettings = {},
   ): Promise<Instance> {
     try {
       const configResource: Resource = this.objectLoader.resources[configResourceIri];
@@ -393,31 +391,25 @@ export class Loader<Instance> {
   public async getComponentInstanceCustom(
     componentIri: string,
     params: Record<string, string>,
-    settings: ICreationSettings = {},
+    settings: IInstantiationSettings = {},
   ): Promise<any> {
     try {
       this.checkFinalizeRegistration();
+
+      // Determine the component type
       const componentResource: Resource = this.componentResources[componentIri];
       if (!componentResource) {
         throw new Error(`Could not find a component for URI ${componentIri}`);
       }
-      const moduleResource: Resource = componentResource.property.module;
-      if (!moduleResource) {
-        throw new Error(`No module was found for the component ${resourceIdToString(componentResource, this.objectLoader)}`);
-      }
+
+      // Create ad-hoc resource
       const configResource = this.objectLoader.createCompactedResource({});
+      configResource.properties.types.push(componentResource);
       for (const key of Object.keys(params)) {
         configResource.property[key] = this.objectLoader.createCompactedResource(`"${params[key]}"`);
       }
-      const instancePool = await this.getInstancePool();
-      return new ComponentFactory({
-        objectLoader: this.objectLoader,
-        config: configResource,
-        instancePool,
-        constructable: !configResource.isA('Instance'),
-        moduleDefinition: moduleResource,
-        componentDefinition: componentResource,
-      }).createInstance(await this.getCreationSettingsInner(settings));
+
+      return (await this.getInstancePool()).instantiate(configResource, await this.getCreationSettingsInner(settings));
     } catch (error: unknown) {
       throw this.generateErrorLog(error);
     }

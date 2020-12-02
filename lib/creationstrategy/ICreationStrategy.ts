@@ -1,4 +1,4 @@
-import type { ICreationSettingsInner } from '../factory/IComponentFactory';
+import type { IInstantiationSettingsInner } from '../instantiation/IInstantiationSettings';
 
 /**
  * Implementations of this interface represent a certain strategy for creating instances.
@@ -44,7 +44,7 @@ export interface ICreationStrategyInstanceOptions<Instance> {
   /**
    * Creation settings.
    */
-  settings: ICreationSettingsInner<Instance>;
+  settings: IInstantiationSettingsInner<Instance>;
   /**
    * The module that is being required. `require(<this>)`
    */
@@ -74,7 +74,7 @@ export interface ICreationStrategyHashOptions<Instance> {
   /**
    * Creation settings.
    */
-  settings: ICreationSettingsInner<Instance>;
+  settings: IInstantiationSettingsInner<Instance>;
   /**
    * An array of key-value entries for the hash.
    */
@@ -85,7 +85,7 @@ export interface ICreationStrategyArrayOptions<Instance> {
   /**
    * Creation settings.
    */
-  settings: ICreationSettingsInner<Instance>;
+  settings: IInstantiationSettingsInner<Instance>;
   /**
    * An array of elements.
    */
@@ -96,7 +96,7 @@ export interface ICreationStrategySupplierOptions<Instance> {
   /**
    * Creation settings.
    */
-  settings: ICreationSettingsInner<Instance>;
+  settings: IInstantiationSettingsInner<Instance>;
   /**
    * A lazy instance supplier.
    */
@@ -107,7 +107,7 @@ export interface ICreationStrategyPrimitiveOptions<Instance> {
   /**
    * Creation settings.
    */
-  settings: ICreationSettingsInner<Instance>;
+  settings: IInstantiationSettingsInner<Instance>;
   /**
    * A string or number value.
    */
@@ -118,7 +118,7 @@ export interface ICreationStrategyVariableOptions<Instance> {
   /**
    * Creation settings.
    */
-  settings: ICreationSettingsInner<Instance>;
+  settings: IInstantiationSettingsInner<Instance>;
   /**
    * A variable name.
    */

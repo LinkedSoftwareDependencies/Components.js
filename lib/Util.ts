@@ -44,66 +44,66 @@ export function resourceIdToString(resource: Resource, objectLoader: RdfObjectLo
 
 /**
  * Apply parameter values for the given parameter.
- * @param resourceScope The resource scope to map in.
- * @param param A parameter type.
- * @param paramValueMapping A mapping from parameter to value.
+ * @param configRoot The root config resource that we are working in.
+ * @param parameter The parameter resource to get the value for.
+ * @param configElement Part of the config resource to look for parameter instantiations as predicates.
  * @param objectLoader The current RDF object loader.
- * @return The parameter value(s) or undefined
+ * @return The parameter value(s)
  */
 export function applyParameterValues(
-  resourceScope: Resource,
-  param: Resource,
-  paramValueMapping: Resource,
+  configRoot: Resource,
+  parameter: Resource,
+  configElement: Resource,
   objectLoader: RdfObjectLoader,
 ): Resource[] {
-  let value: Resource[] = paramValueMapping.properties[param.value];
+  let value: Resource[] = configElement.properties[parameter.value];
   // Set default value if no value has been given
-  if (value.length === 0 && param.property.defaultScoped) {
-    for (const scoped of param.properties.defaultScoped) {
+  if (value.length === 0 && parameter.property.defaultScoped) {
+    for (const scoped of parameter.properties.defaultScoped) {
       if (!scoped.property.defaultScope) {
-        throw new Error(`Missing required oo:defaultScope value for a default scope.\n${resourceToString(param)}`);
+        throw new Error(`Missing required oo:defaultScope value for a default scope.\n${resourceToString(parameter)}`);
       }
       for (const scope of scoped.properties.defaultScope) {
         if (!scoped.property.defaultScopedValue) {
-          throw new Error(`Missing required oo:defaultScopedValue value for a default scope.\n${resourceToString(param)}`);
+          throw new Error(`Missing required oo:defaultScopedValue value for a default scope.\n${resourceToString(parameter)}`);
         }
-        if (resourceScope.isA(scope.term)) {
+        if (configRoot.isA(scope.term)) {
           value = scoped.properties.defaultScopedValue;
         }
       }
     }
   }
 
-  if (value.length === 0 && param.property.default) {
-    value = param.properties.default;
+  if (value.length === 0 && parameter.property.default) {
+    value = parameter.properties.default;
   }
-  if (value.length === 0 && param.property.required) {
-    throw new Error(`Parameter ${resourceIdToString(param, objectLoader)} is required, but no value for it has been set in ${resourceIdToString(paramValueMapping, objectLoader)}.
-${resourceToString(paramValueMapping)}`);
+  if (value.length === 0 && parameter.property.required) {
+    throw new Error(`Parameter ${resourceIdToString(parameter, objectLoader)} is required, but no value for it has been set in ${resourceIdToString(configElement, objectLoader)}.
+${resourceToString(configElement)}`);
   }
 
   // Force-add fixed parameter values
-  if (param.property.fixed) {
+  if (parameter.property.fixed) {
     // If the parameter value must be unique and a value has already been set, crash
-    if (param.property.unique) {
+    if (parameter.property.unique) {
       if (value.length > 0) {
-        throw new Error(`A parameter is unique, has a fixed value, but also has another defined value.\n${resourceToString(param)}`);
+        throw new Error(`A parameter is unique, has a fixed value, but also has another defined value.\n${resourceToString(parameter)}`);
       } else {
-        value = param.properties.fixed;
+        value = parameter.properties.fixed;
       }
     } else {
       // Otherwise, add to the value
       if (!Array.isArray(value)) {
-        throw new Error(`Values must be an array\n${resourceToString(param)}`);
+        throw new Error(`Values must be an array\n${resourceToString(parameter)}`);
       }
-      for (const fixed of param.properties.fixed) {
+      for (const fixed of parameter.properties.fixed) {
         value.push(fixed);
       }
     }
   }
 
   // If the value is singular, and the value should be unique, transform the array to a single element
-  if (param.property.unique && param.property.unique.value === 'true' && value.length > 0) {
+  if (parameter.property.unique && parameter.property.unique.value === 'true' && value.length > 0) {
     value = [ value[0] ];
 
     // !!!Hack incoming!!!
@@ -120,22 +120,22 @@ ${resourceToString(paramValueMapping)}`);
     value = [ newValue ];
 
     for (const subValue of value) {
-      subValue.property.unique = param.property.unique;
+      subValue.property.unique = parameter.property.unique;
     }
   }
 
   // If a param range is defined, apply the type and validate the range.
-  if (param.property.range) {
+  if (parameter.property.range) {
     for (const subValue of value) {
-      captureType(subValue, param, objectLoader);
+      captureType(subValue, parameter, objectLoader);
     }
   }
 
   // If the parameter is marked as lazy,
   // make the value inherit this lazy tag so that it can be handled later.
-  if (value && param.property.lazy) {
+  if (value && parameter.property.lazy) {
     for (const subValue of value) {
-      subValue.property.lazy = param.property.lazy;
+      subValue.property.lazy = parameter.property.lazy;
     }
   }
 

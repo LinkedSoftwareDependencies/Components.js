@@ -1,6 +1,6 @@
 import * as Path from 'path';
 import { CreationStrategyCommonJs } from '../../lib/creationstrategy/CreationStrategyCommonJs';
-import type { ICreationSettingsInner } from '../../lib/factory/IComponentFactory';
+import type { IInstantiationSettingsInner } from '../../lib/instantiation/IInstantiationSettings';
 import type { IModuleState } from '../../lib/ModuleStateBuilder';
 
 class MyClass {
@@ -23,7 +23,7 @@ describe('CreationStrategyCommonJs', () => {
   let req: NodeJS.Require;
   let moduleState: IModuleState;
   let creationStrategy: CreationStrategyCommonJs;
-  let settings: ICreationSettingsInner<any>;
+  let settings: IInstantiationSettingsInner<any>;
   beforeEach(async() => {
     requireMain = {
       a: {

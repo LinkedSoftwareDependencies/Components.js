@@ -1,5 +1,5 @@
 import { CreationStrategyCommonJsString } from '../../lib/creationstrategy/CreationStrategyCommonJsString';
-import type { ICreationSettingsInner } from '../../lib/factory/IComponentFactory';
+import type { IInstantiationSettingsInner } from '../../lib/instantiation/IInstantiationSettings';
 import type { IModuleState } from '../../lib/ModuleStateBuilder';
 
 describe('CreationStrategyCommonJsString', () => {
@@ -8,7 +8,7 @@ describe('CreationStrategyCommonJsString', () => {
   let req: NodeJS.Require;
   let moduleState: IModuleState;
   let creationStrategy: CreationStrategyCommonJsString;
-  let settings: ICreationSettingsInner<any>;
+  let settings: IInstantiationSettingsInner<any>;
   beforeEach(async() => {
     requireMain = {
       a: {
