@@ -1,4 +1,4 @@
-import { RdfStreamIncluder } from '../../lib/rdf/RdfStreamIncluder';
+import { RdfStreamIncluder } from '../../../lib/rdf/RdfStreamIncluder';
 
 describe('RdfStreamIncluder', () => {
   describe('isValidIri', () => {

@@ -4,10 +4,10 @@ import type { Resource } from 'rdf-object';
 import { RdfObjectLoader } from 'rdf-object';
 import type {
   IComponentConfigPreprocessorHandleResponse,
-} from '../../lib/preprocess/ConfigPreprocessorComponent';
+} from '../../../lib/preprocess/ConfigPreprocessorComponent';
 import {
   ConfigPreprocessorComponent,
-} from '../../lib/preprocess/ConfigPreprocessorComponent';
+} from '../../../lib/preprocess/ConfigPreprocessorComponent';
 
 describe('ConfigPreprocessorComponent', () => {
   let objectLoader: RdfObjectLoader;
@@ -16,7 +16,7 @@ describe('ConfigPreprocessorComponent', () => {
 
   beforeEach(async() => {
     objectLoader = new RdfObjectLoader({
-      context: JSON.parse(fs.readFileSync(`${__dirname}/../../components/context.jsonld`, 'utf8')),
+      context: JSON.parse(fs.readFileSync(`${__dirname}/../../../components/context.jsonld`, 'utf8')),
     });
     await objectLoader.context;
     componentResources = {

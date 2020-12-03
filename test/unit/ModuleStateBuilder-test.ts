@@ -1,6 +1,6 @@
 import * as Path from 'path';
 import { mocked } from 'ts-jest/utils';
-import { ModuleStateBuilder } from '../lib/ModuleStateBuilder';
+import { ModuleStateBuilder } from '../../lib/ModuleStateBuilder';
 
 // Import syntax only works in Node > 12
 const fs = require('fs').promises;

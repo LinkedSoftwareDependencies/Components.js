@@ -1,5 +1,5 @@
 import * as fs from 'fs';
-import { PrefetchedDocumentLoader } from '../../lib/rdf/PrefetchedDocumentLoader';
+import { PrefetchedDocumentLoader } from '../../../lib/rdf/PrefetchedDocumentLoader';
 
 global.fetch = <any>jest.fn(async() => ({
   json: () => ({ x: 'y' }),
@@ -24,7 +24,7 @@ describe('PrefetchedDocumentLoader', () => {
 
     it('for the built-in prefetched context', async() => {
       expect(await loader.load(`https://linkedsoftwaredependencies.org/bundles/npm/componentsjs/^3.0.0/components/context.jsonld`))
-        .toEqual(JSON.parse(fs.readFileSync(`${__dirname}/../../components/context.jsonld`, 'utf8')));
+        .toEqual(JSON.parse(fs.readFileSync(`${__dirname}/../../../components/context.jsonld`, 'utf8')));
     });
 
     it('for a non-prefetched context', async() => {

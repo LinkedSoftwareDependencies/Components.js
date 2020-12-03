@@ -1,6 +1,6 @@
 import * as Path from 'path';
-import type { RdfParserOptions } from '../../lib/rdf/RdfParser';
-import { RdfParser } from '../../lib/rdf/RdfParser';
+import type { RdfParserOptions } from '../../../lib/rdf/RdfParser';
+import { RdfParser } from '../../../lib/rdf/RdfParser';
 import 'jest-rdf';
 // Import syntax only works in Node > 12
 const arrayifyStream = require('arrayify-stream');

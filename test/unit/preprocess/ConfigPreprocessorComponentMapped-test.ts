@@ -1,8 +1,8 @@
 import * as fs from 'fs';
 import { RdfObjectLoader } from 'rdf-object/lib/RdfObjectLoader';
 import type { Resource } from 'rdf-object/lib/Resource';
-import type { IComponentConfigPreprocessorHandleResponse } from '../../lib/preprocess/ConfigPreprocessorComponent';
-import { ConfigPreprocessorComponentMapped } from '../../lib/preprocess/ConfigPreprocessorComponentMapped';
+import type { IComponentConfigPreprocessorHandleResponse } from '../../../lib/preprocess/ConfigPreprocessorComponent';
+import { ConfigPreprocessorComponentMapped } from '../../../lib/preprocess/ConfigPreprocessorComponentMapped';
 import 'jest-rdf';
 
 describe('ConfigPreprocessorComponentMapped', () => {
@@ -12,7 +12,7 @@ describe('ConfigPreprocessorComponentMapped', () => {
 
   beforeEach(async() => {
     objectLoader = new RdfObjectLoader({
-      context: JSON.parse(fs.readFileSync(`${__dirname}/../../components/context.jsonld`, 'utf8')),
+      context: JSON.parse(fs.readFileSync(`${__dirname}/../../../components/context.jsonld`, 'utf8')),
     });
     await objectLoader.context;
     componentResources = {

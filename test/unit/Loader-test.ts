@@ -3,13 +3,13 @@ import * as Path from 'path';
 import { Readable } from 'stream';
 import type * as RDF from 'rdf-js';
 import type { RdfObjectLoader, Resource } from 'rdf-object';
-import type { IInstancePool } from '../lib/instantiation/IInstancePool';
-import { Loader } from '../lib/Loader';
-import { RdfParser } from '../lib/rdf/RdfParser';
-import * as Util from '../lib/Util';
+import type { IInstancePool } from '../../lib/instantiation/IInstancePool';
+import { Loader } from '../../lib/Loader';
+import { RdfParser } from '../../lib/rdf/RdfParser';
+import * as Util from '../../lib/Util';
 const quad = require('rdf-quad');
 
-const Hello = require('../__mocks__/helloworld').Hello;
+const Hello = require('../../__mocks__/helloworld').Hello;
 
 describe('Loader', () => {
   let loader: Loader<any>;
@@ -20,7 +20,7 @@ describe('Loader', () => {
     const moduleState = <any> {
       mainModulePath: __dirname,
       importPaths: {
-        'http://example.org/': `${__dirname}/`,
+        'http://example.org/': `${__dirname}/../`,
       },
     };
     (<any> loader).moduleState = moduleState;
@@ -210,7 +210,7 @@ describe('Loader', () => {
 
     describe('with a valid JSON file path', () => {
       beforeEach(async() => {
-        await loader.registerModuleResourcesUrl(Path.join(__dirname, './assets/module-hello-world.jsonld'));
+        await loader.registerModuleResourcesUrl(Path.join(__dirname, '../assets/module-hello-world.jsonld'));
         loader.finalizeRegistration();
       });
 
@@ -222,7 +222,7 @@ describe('Loader', () => {
 
     describe('with a valid ttl file path', () => {
       beforeEach(async() => {
-        await loader.registerModuleResourcesUrl(Path.join(__dirname, './assets/module-hello-world.ttl'));
+        await loader.registerModuleResourcesUrl(Path.join(__dirname, '../assets/module-hello-world.ttl'));
         loader.finalizeRegistration();
       });
 
@@ -242,7 +242,7 @@ describe('Loader', () => {
 
     describe('with import statements', () => {
       beforeEach(async() => {
-        await loader.registerModuleResourcesUrl(Path.join(__dirname, './assets/module-hello-world-imports.jsonld'));
+        await loader.registerModuleResourcesUrl(Path.join(__dirname, '../assets/module-hello-world-imports.jsonld'));
         loader.finalizeRegistration();
       });
 
@@ -714,7 +714,7 @@ describe('Loader', () => {
 
 function parse(fileName: string): RDF.Stream & Readable {
   return new RdfParser().parse(
-    fs.createReadStream(`${__dirname}/assets/${fileName}`),
+    fs.createReadStream(`${__dirname}/../assets/${fileName}`),
     { path: '.jsonld' },
   );
 }

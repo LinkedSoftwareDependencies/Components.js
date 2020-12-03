@@ -1,14 +1,14 @@
 import * as fs from 'fs';
 import type { Resource } from 'rdf-object';
 import { RdfObjectLoader } from 'rdf-object';
-import type { ICreationStrategy } from '../../lib/creationstrategy/ICreationStrategy';
-import type { IInstantiationSettingsInner } from '../../lib/instantiation/IInstantiationSettings';
-import { InstancePool } from '../../lib/instantiation/InstancePool';
-import type { IModuleState } from '../../lib/ModuleStateBuilder';
+import type { ICreationStrategy } from '../../../lib/creationstrategy/ICreationStrategy';
+import type { IInstantiationSettingsInner } from '../../../lib/instantiation/IInstantiationSettings';
+import { InstancePool } from '../../../lib/instantiation/InstancePool';
+import type { IModuleState } from '../../../lib/ModuleStateBuilder';
 import 'jest-rdf';
-import { ConfigPreprocessorComponent } from '../../lib/preprocess/ConfigPreprocessorComponent';
-import { ConfigPreprocessorComponentMapped } from '../../lib/preprocess/ConfigPreprocessorComponentMapped';
-import type { IConfigPreprocessor } from '../../lib/preprocess/IConfigPreprocessor';
+import { ConfigPreprocessorComponent } from '../../../lib/preprocess/ConfigPreprocessorComponent';
+import { ConfigPreprocessorComponentMapped } from '../../../lib/preprocess/ConfigPreprocessorComponentMapped';
+import type { IConfigPreprocessor } from '../../../lib/preprocess/IConfigPreprocessor';
 
 describe('InstancePool', () => {
   let objectLoader: RdfObjectLoader;
@@ -20,7 +20,7 @@ describe('InstancePool', () => {
   let creationSettings: IInstantiationSettingsInner<any>;
   beforeEach(async() => {
     objectLoader = new RdfObjectLoader({
-      context: JSON.parse(fs.readFileSync(`${__dirname}/../../components/context.jsonld`, 'utf8')),
+      context: JSON.parse(fs.readFileSync(`${__dirname}/../../../components/context.jsonld`, 'utf8')),
     });
     await objectLoader.context;
     componentResources = {};

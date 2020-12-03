@@ -1,7 +1,7 @@
 import * as Path from 'path';
-import { CreationStrategyCommonJs } from '../../lib/creationstrategy/CreationStrategyCommonJs';
-import type { IInstantiationSettingsInner } from '../../lib/instantiation/IInstantiationSettings';
-import type { IModuleState } from '../../lib/ModuleStateBuilder';
+import { CreationStrategyCommonJs } from '../../../lib/creationstrategy/CreationStrategyCommonJs';
+import type { IInstantiationSettingsInner } from '../../../lib/instantiation/IInstantiationSettings';
+import type { IModuleState } from '../../../lib/ModuleStateBuilder';
 
 class MyClass {
   public readonly arg1: string;

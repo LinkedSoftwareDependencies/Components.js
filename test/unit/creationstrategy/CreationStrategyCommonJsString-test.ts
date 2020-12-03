@@ -1,6 +1,6 @@
-import { CreationStrategyCommonJsString } from '../../lib/creationstrategy/CreationStrategyCommonJsString';
-import type { IInstantiationSettingsInner } from '../../lib/instantiation/IInstantiationSettings';
-import type { IModuleState } from '../../lib/ModuleStateBuilder';
+import { CreationStrategyCommonJsString } from '../../../lib/creationstrategy/CreationStrategyCommonJsString';
+import type { IInstantiationSettingsInner } from '../../../lib/instantiation/IInstantiationSettings';
+import type { IModuleState } from '../../../lib/ModuleStateBuilder';
 
 describe('CreationStrategyCommonJsString', () => {
   let requireMain: any;

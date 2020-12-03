@@ -2,11 +2,11 @@ import * as fs from 'fs';
 import { DataFactory } from 'rdf-data-factory';
 import { Resource, RdfObjectLoader } from 'rdf-object';
 
-import type { ICreationStrategy } from '../../lib/creationstrategy/ICreationStrategy';
-import { ConfigConstructor } from '../../lib/instantiation/ConfigConstructor';
-import type { IInstantiationSettingsInner } from '../../lib/instantiation/IInstantiationSettings';
-import type { InstancePool } from '../../lib/instantiation/InstancePool';
-import type { IModuleState } from '../../lib/ModuleStateBuilder';
+import type { ICreationStrategy } from '../../../lib/creationstrategy/ICreationStrategy';
+import { ConfigConstructor } from '../../../lib/instantiation/ConfigConstructor';
+import type { IInstantiationSettingsInner } from '../../../lib/instantiation/IInstantiationSettings';
+import type { InstancePool } from '../../../lib/instantiation/InstancePool';
+import type { IModuleState } from '../../../lib/ModuleStateBuilder';
 
 const DF = new DataFactory();
 
@@ -21,7 +21,7 @@ describe('ConfigConstructor', () => {
 
   beforeEach(async() => {
     objectLoader = new RdfObjectLoader({
-      context: JSON.parse(fs.readFileSync(`${__dirname}/../../components/context.jsonld`, 'utf8')),
+      context: JSON.parse(fs.readFileSync(`${__dirname}/../../../components/context.jsonld`, 'utf8')),
     });
     await objectLoader.context;
     componentResources = {};

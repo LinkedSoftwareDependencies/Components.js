@@ -1,6 +1,6 @@
 import type { RdfObjectLoader } from 'rdf-object/lib/RdfObjectLoader';
-import { Loader } from '../lib/Loader';
-import * as Util from '../lib/Util';
+import { Loader } from '../../lib/Loader';
+import * as Util from '../../lib/Util';
 
 describe('Util', () => {
   let objectLoader: RdfObjectLoader;
