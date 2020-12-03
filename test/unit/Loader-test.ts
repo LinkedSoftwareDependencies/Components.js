@@ -14,7 +14,7 @@ const Hello = require('../../__mocks__/helloworld').Hello;
 describe('Loader', () => {
   let loader: Loader<any>;
   let objectLoader: RdfObjectLoader;
-  let configConstructorPool: IConfigConstructorPool;
+  let configConstructorPool: IConfigConstructorPool<any>;
   beforeEach(async() => {
     loader = new Loader();
     const moduleState = <any> {
@@ -123,7 +123,7 @@ describe('Loader', () => {
           'http://example.org/myModule/params#param3': '"GHI"',
         });
         const run = await configConstructorPool
-          .instantiate(configResource, await loader.getConstructionSettingsInner({}));
+          .instantiate(configResource, {});
         expect(run._params).toEqual([{
           'http://example.org/myModule/params#param1': [ 'ABC' ],
           'http://example.org/myModule/params#param3': [ 'GHI' ],
@@ -179,7 +179,7 @@ describe('Loader', () => {
           'http://example.org/hello/bla': '"BLA"',
         });
         const run = await configConstructorPool
-          .instantiate(configResource, await loader.getConstructionSettingsInner({}));
+          .instantiate(configResource, {});
         expect(run._params).toEqual([{
           'http://example.org/hello/hello': [ 'WORLD' ],
           'http://example.org/hello/say': [ 'HELLO' ],
@@ -335,7 +335,7 @@ describe('Loader', () => {
         'http://example.org/hello/something': [ 'SOMETHING' ],
       }]);
       const run2 = await configConstructorPool.instantiate(objectLoader.resources['http://example.org/myHelloWorld2'],
-        await loader.getConstructionSettingsInner({}));
+        {});
       expect(run2._params).toEqual([{
         'http://example.org/hello/something': [ 'SOMETHING' ],
       }]);
@@ -423,7 +423,7 @@ describe('Loader', () => {
         something: [ 'SOMETHING' ],
       }]);
       const run2 = await configConstructorPool.instantiate(objectLoader.resources['http://example.org/myHelloWorld2'],
-        await loader.getConstructionSettingsInner({}));
+        {});
       expect(run2._params).toEqual([{
         something: [ 'SOMETHING' ],
       }]);
@@ -512,7 +512,7 @@ describe('Loader', () => {
         },
       }]);
       const run2 = await configConstructorPool.instantiate(objectLoader.resources['http://example.org/myHelloWorld2'],
-        await loader.getConstructionSettingsInner({}));
+        {});
       expect(run2._params).toEqual([{
         somethings1: {
           KEY1: 'VALUE1',
@@ -546,7 +546,7 @@ describe('Loader', () => {
         KEY2: 'VALUE2',
       }]);
       const run2 = await configConstructorPool.instantiate(objectLoader.resources['http://example.org/myHelloWorld2'],
-        await loader.getConstructionSettingsInner({}));
+        {});
       expect(run2._params).toEqual([{
         KEY1: 'VALUE1',
         KEY2: 'VALUE2',

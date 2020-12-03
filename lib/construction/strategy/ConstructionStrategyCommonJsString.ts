@@ -32,9 +32,9 @@ export class ConstructionStrategyCommonJsString implements IConstructionStrategy
     options.requireName = this.overrideRequireNames[options.requireName] || options.requireName;
     let resultingRequirePath: string;
     try {
-      this.strategyCommonJs.requireCurrentRunningModuleIfCurrent(options.settings.moduleState, options.requireName);
-      resultingRequirePath = `.${Path.sep}${Path.relative(options.settings.moduleState.mainModulePath,
-        this.getCurrentRunningModuleMain(options.settings.moduleState))}`;
+      this.strategyCommonJs.requireCurrentRunningModuleIfCurrent(options.moduleState, options.requireName);
+      resultingRequirePath = `.${Path.sep}${Path.relative(options.moduleState.mainModulePath,
+        this.getCurrentRunningModuleMain(options.moduleState))}`;
     } catch {
       resultingRequirePath = options.requireName;
     }

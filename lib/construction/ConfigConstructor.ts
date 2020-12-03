@@ -1,4 +1,5 @@
 import type { Resource, RdfObjectLoader } from 'rdf-object';
+import type { IModuleState } from '../ModuleStateBuilder';
 import * as Util from '../Util';
 import { ArgumentConstructorHandlerArray } from './argument/ArgumentConstructorHandlerArray';
 import { ArgumentConstructorHandlerHash } from './argument/ArgumentConstructorHandlerHash';
@@ -8,7 +9,8 @@ import { ArgumentConstructorHandlerValue } from './argument/ArgumentConstructorH
 import type { IArgumentConstructorHandler } from './argument/IArgumentConstructorHandler';
 import type { IArgumentsConstructor } from './argument/IArgumentsConstructor';
 import type { IConfigConstructorPool } from './IConfigConstructorPool';
-import type { IConstructionSettingsInner } from './IConstructionSettings';
+import type { IConstructionSettings } from './IConstructionSettings';
+import type { IConstructionStrategy } from './strategy/IConstructionStrategy';
 
 /**
  * Creates instances of raw configs using the configured creation strategy.
@@ -24,7 +26,7 @@ import type { IConstructionSettingsInner } from './IConstructionSettings';
  * If you want to make sure that instances are reused,
  * be sure to call {@link ConfigConstructorPool} instead.
  */
-export class ConfigConstructor implements IArgumentsConstructor {
+export class ConfigConstructor<Instance> implements IArgumentsConstructor<Instance> {
   private static readonly ARGS_HANDLERS: IArgumentConstructorHandler[] = [
     new ArgumentConstructorHandlerHash(),
     new ArgumentConstructorHandlerArray(),
@@ -34,16 +36,20 @@ export class ConfigConstructor implements IArgumentsConstructor {
   ];
 
   public readonly objectLoader: RdfObjectLoader;
-  public readonly configConstructorPool: IConfigConstructorPool;
+  public readonly configConstructorPool: IConfigConstructorPool<Instance>;
+  public readonly constructionStrategy: IConstructionStrategy<Instance>;
+  private readonly moduleState: IModuleState;
 
-  public constructor(options: IConfigConstructorOptions) {
+  public constructor(options: IConfigConstructorOptions<Instance>) {
     this.objectLoader = options.objectLoader;
     this.configConstructorPool = options.configConstructorPool;
+    this.constructionStrategy = options.constructionStrategy;
+    this.moduleState = options.moduleState;
   }
 
-  public async getArgumentValues<Instance>(
+  public async getArgumentValues(
     values: Resource[],
-    settings: IConstructionSettingsInner<Instance>,
+    settings: IConstructionSettings,
   ): Promise<Instance> {
     // Unwrap unique values out of the array
     if (values.length > 0 && values[0].property.unique && values[0].property.unique.value === 'true') {
@@ -52,12 +58,12 @@ export class ConfigConstructor implements IArgumentsConstructor {
 
     // Otherwise, keep the array form
     const elements = await Promise.all(values.map(element => this.getArgumentValue(element, settings)));
-    return settings.creationStrategy.createArray({ settings, elements });
+    return this.constructionStrategy.createArray({ settings, elements });
   }
 
-  public async getArgumentValue<Instance>(
+  public async getArgumentValue(
     value: Resource,
-    settings: IConstructionSettingsInner<Instance>,
+    settings: IConstructionSettings,
   ): Promise<Instance> {
     // Check if this args resource can be handled by one of the built-in handlers.
     for (const handler of ConfigConstructor.ARGS_HANDLERS) {
@@ -77,9 +83,9 @@ Value: ${Util.resourceToString(value)}`);
    * @param settings The settings for creating the instance.
    * @returns New instantiations of the provided arguments.
    */
-  public async createArguments<Instance>(
+  public async createArguments(
     config: Resource,
-    settings: IConstructionSettingsInner<Instance>,
+    settings: IConstructionSettings,
   ): Promise<Instance[]> {
     if (config.property.arguments) {
       if (!config.property.arguments.list) {
@@ -98,13 +104,14 @@ Config: ${Util.resourceToString(config)}`);
    * @param settings The settings for creating the instance.
    * @returns A new instance of the component.
    */
-  public async createInstance<Instance>(
+  public async createInstance(
     config: Resource,
-    settings: IConstructionSettingsInner<Instance>,
+    settings: IConstructionSettings,
   ): Promise<Instance> {
     const args: Instance[] = await this.createArguments(config, settings);
-    return settings.creationStrategy.createInstance({
+    return this.constructionStrategy.createInstance({
       settings,
+      moduleState: this.moduleState,
       requireName: config.property.requireName.value,
       requireElement: config.property.requireElement?.value,
       callConstructor: !config.isA('Instance') &&
@@ -118,7 +125,7 @@ Config: ${Util.resourceToString(config)}`);
 /**
  * Options for a component factory.
  */
-export interface IConfigConstructorOptions {
+export interface IConfigConstructorOptions<Instance> {
   /**
    * The RDF object loader.
    */
@@ -126,5 +133,13 @@ export interface IConfigConstructorOptions {
   /**
    * The instance pool.
    */
-  configConstructorPool: IConfigConstructorPool;
+  configConstructorPool: IConfigConstructorPool<Instance>;
+  /**
+   * The strategy for construction.
+   */
+  constructionStrategy: IConstructionStrategy<Instance>;
+  /**
+   * The module state.
+   */
+  moduleState: IModuleState;
 }

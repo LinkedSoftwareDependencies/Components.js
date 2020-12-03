@@ -1,5 +1,5 @@
 import type { Resource } from 'rdf-object';
-import type { IConstructionSettingsInner } from '../IConstructionSettings';
+import type { IConstructionSettings } from '../IConstructionSettings';
 import type { IArgumentsConstructor } from './IArgumentsConstructor';
 
 /**
@@ -14,8 +14,8 @@ export interface IArgumentConstructorHandler {
    */
   canHandle: <Instance>(
     value: Resource,
-    settings: IConstructionSettingsInner<Instance>,
-    argsCreator: IArgumentsConstructor,
+    settings: IConstructionSettings,
+    argsCreator: IArgumentsConstructor<Instance>,
   ) => boolean;
 
   /**
@@ -26,7 +26,7 @@ export interface IArgumentConstructorHandler {
    */
   handle: <Instance>(
     value: Resource,
-    settings: IConstructionSettingsInner<Instance>,
-    argsCreator: IArgumentsConstructor,
+    settings: IConstructionSettings,
+    argsCreator: IArgumentsConstructor<Instance>,
   ) => Promise<Instance>;
 }

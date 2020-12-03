@@ -26,7 +26,7 @@ export class ConstructionStrategyCommonJs implements IConstructionStrategy<any> 
     options.requireName = this.overrideRequireNames[options.requireName] || options.requireName;
     let object: any;
     try {
-      object = this.requireCurrentRunningModuleIfCurrent(options.settings.moduleState, options.requireName);
+      object = this.requireCurrentRunningModuleIfCurrent(options.moduleState, options.requireName);
     } catch {
       if (!this.req.main) {
         throw new Error(`Corrupt Node.js state: Could not find a main module.`);

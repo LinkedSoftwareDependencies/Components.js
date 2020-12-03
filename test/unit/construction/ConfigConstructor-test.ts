@@ -3,7 +3,7 @@ import { DataFactory } from 'rdf-data-factory';
 import { Resource, RdfObjectLoader } from 'rdf-object';
 import { ConfigConstructor } from '../../../lib/construction/ConfigConstructor';
 import type { ConfigConstructorPool } from '../../../lib/construction/ConfigConstructorPool';
-import type { IConstructionSettingsInner } from '../../../lib/construction/IConstructionSettings';
+import type { IConstructionSettings } from '../../../lib/construction/IConstructionSettings';
 import type { IConstructionStrategy } from '../../../lib/construction/strategy/IConstructionStrategy';
 import type { IModuleState } from '../../../lib/ModuleStateBuilder';
 
@@ -12,11 +12,11 @@ const DF = new DataFactory();
 describe('ConfigConstructor', () => {
   let objectLoader: RdfObjectLoader;
   let componentResources: Record<string, Resource>;
-  let configConstructorPool: ConfigConstructorPool;
-  let constructor: ConfigConstructor;
-  let creationStrategy: IConstructionStrategy<any>;
+  let configConstructorPool: ConfigConstructorPool<any>;
+  let constructor: ConfigConstructor<any>;
+  let constructionStrategy: IConstructionStrategy<any>;
   let moduleState: IModuleState;
-  let settings: IConstructionSettingsInner<any>;
+  let settings: IConstructionSettings;
 
   beforeEach(async() => {
     objectLoader = new RdfObjectLoader({
@@ -27,12 +27,7 @@ describe('ConfigConstructor', () => {
     configConstructorPool = <any> {
       instantiate: jest.fn(() => 'INSTANCE'),
     };
-    constructor = new ConfigConstructor({
-      objectLoader,
-      configConstructorPool,
-    });
-
-    creationStrategy = {
+    constructionStrategy = {
       createArray: jest.fn(options => options.elements),
       createHash: jest.fn(options => ({ entries: options.entries })),
       createInstance: jest.fn(() => 'INSTANCESTRAT'),
@@ -47,16 +42,20 @@ describe('ConfigConstructor', () => {
         'http://example.org/': `${__dirname}/`,
       },
     };
-    settings = {
+    constructor = new ConfigConstructor({
+      objectLoader,
+      configConstructorPool,
+      constructionStrategy,
       moduleState,
-      creationStrategy,
-    };
+    });
+
+    settings = {};
   });
 
   describe('getArgumentValues', () => {
     it('should handle an empty array', async() => {
       expect(await constructor.getArgumentValues([], settings)).toEqual([]);
-      expect(creationStrategy.createArray).toHaveBeenCalledWith({ settings, elements: []});
+      expect(constructionStrategy.createArray).toHaveBeenCalledWith({ settings, elements: []});
     });
 
     it('should handle a array with one unique value', async() => {
@@ -65,8 +64,8 @@ describe('ConfigConstructor', () => {
       ];
       values[0].property.unique = objectLoader.createCompactedResource('"true"');
       expect(await constructor.getArgumentValues(values, settings)).toEqual('ABC');
-      expect(creationStrategy.createArray).not.toHaveBeenCalled();
-      expect(creationStrategy.createPrimitive).toHaveBeenCalledWith({ settings, value: 'ABC' });
+      expect(constructionStrategy.createArray).not.toHaveBeenCalled();
+      expect(constructionStrategy.createPrimitive).toHaveBeenCalledWith({ settings, value: 'ABC' });
     });
 
     it('should handle a array with multiple values, but unique', async() => {
@@ -77,8 +76,8 @@ describe('ConfigConstructor', () => {
       ];
       values[0].property.unique = objectLoader.createCompactedResource('"true"');
       expect(await constructor.getArgumentValues(values, settings)).toEqual('ABC');
-      expect(creationStrategy.createArray).not.toHaveBeenCalled();
-      expect(creationStrategy.createPrimitive).toHaveBeenCalledWith({ settings, value: 'ABC' });
+      expect(constructionStrategy.createArray).not.toHaveBeenCalled();
+      expect(constructionStrategy.createPrimitive).toHaveBeenCalledWith({ settings, value: 'ABC' });
     });
 
     it('should handle a array with one non-unique value', async() => {
@@ -86,8 +85,8 @@ describe('ConfigConstructor', () => {
         objectLoader.createCompactedResource('"ABC"'),
       ];
       expect(await constructor.getArgumentValues(values, settings)).toEqual([ 'ABC' ]);
-      expect(creationStrategy.createArray).toHaveBeenCalledWith({ settings, elements: [ 'ABC' ]});
-      expect(creationStrategy.createPrimitive).toHaveBeenCalledWith({ settings, value: 'ABC' });
+      expect(constructionStrategy.createArray).toHaveBeenCalledWith({ settings, elements: [ 'ABC' ]});
+      expect(constructionStrategy.createPrimitive).toHaveBeenCalledWith({ settings, value: 'ABC' });
     });
 
     it('should handle a array with multiple values', async() => {
@@ -97,10 +96,10 @@ describe('ConfigConstructor', () => {
         objectLoader.createCompactedResource('"GHI"'),
       ];
       expect(await constructor.getArgumentValues(values, settings)).toEqual([ 'ABC', 'DEF', 'GHI' ]);
-      expect(creationStrategy.createArray).toHaveBeenCalledWith({ settings, elements: [ 'ABC', 'DEF', 'GHI' ]});
-      expect(creationStrategy.createPrimitive).toHaveBeenCalledWith({ settings, value: 'ABC' });
-      expect(creationStrategy.createPrimitive).toHaveBeenCalledWith({ settings, value: 'DEF' });
-      expect(creationStrategy.createPrimitive).toHaveBeenCalledWith({ settings, value: 'GHI' });
+      expect(constructionStrategy.createArray).toHaveBeenCalledWith({ settings, elements: [ 'ABC', 'DEF', 'GHI' ]});
+      expect(constructionStrategy.createPrimitive).toHaveBeenCalledWith({ settings, value: 'ABC' });
+      expect(constructionStrategy.createPrimitive).toHaveBeenCalledWith({ settings, value: 'DEF' });
+      expect(constructionStrategy.createPrimitive).toHaveBeenCalledWith({ settings, value: 'GHI' });
     });
   });
 
@@ -111,7 +110,7 @@ describe('ConfigConstructor', () => {
           hasFields: '"true"',
         });
         expect(await constructor.getArgumentValue(resource, settings)).toEqual({ entries: []});
-        expect(creationStrategy.createHash).toHaveBeenCalledWith({ settings, entries: []});
+        expect(constructionStrategy.createHash).toHaveBeenCalledWith({ settings, entries: []});
       });
 
       it('should handle one field', async() => {
@@ -131,7 +130,7 @@ describe('ConfigConstructor', () => {
             },
           ],
         });
-        expect(creationStrategy.createHash).toHaveBeenCalledWith({
+        expect(constructionStrategy.createHash).toHaveBeenCalledWith({
           settings,
           entries: [
             {
@@ -175,7 +174,7 @@ describe('ConfigConstructor', () => {
             },
           ],
         });
-        expect(creationStrategy.createHash).toHaveBeenCalledWith({
+        expect(constructionStrategy.createHash).toHaveBeenCalledWith({
           settings,
           entries: [
             {
@@ -230,7 +229,7 @@ describe('ConfigConstructor', () => {
         expect(await constructor.getArgumentValue(resource, settings)).toEqual({
           entries: [ undefined ],
         });
-        expect(creationStrategy.createHash).toHaveBeenCalledWith({
+        expect(constructionStrategy.createHash).toHaveBeenCalledWith({
           settings,
           entries: [ undefined ],
         });
@@ -249,7 +248,7 @@ describe('ConfigConstructor', () => {
         expect(await constructor.getArgumentValue(resource, settings)).toEqual([
           'ABC',
         ]);
-        expect(creationStrategy.createArray).toHaveBeenCalledWith({
+        expect(constructionStrategy.createArray).toHaveBeenCalledWith({
           settings,
           elements: [
             'ABC',
@@ -276,7 +275,7 @@ describe('ConfigConstructor', () => {
           'DEF',
           'GHI',
         ]);
-        expect(creationStrategy.createArray).toHaveBeenCalledWith({
+        expect(constructionStrategy.createArray).toHaveBeenCalledWith({
           settings,
           elements: [
             'ABC',
@@ -308,7 +307,7 @@ describe('ConfigConstructor', () => {
         expect(await constructor.getArgumentValue(resource, settings)).toEqual([
           'ABC',
         ]);
-        expect(creationStrategy.createPrimitive).toHaveBeenCalledWith({
+        expect(constructionStrategy.createPrimitive).toHaveBeenCalledWith({
           settings,
           value: 'ABC',
         });
@@ -321,7 +320,7 @@ describe('ConfigConstructor', () => {
         expect(await constructor.getArgumentValue(resource, settings)).toEqual([
           'ABC',
         ]);
-        expect(creationStrategy.createPrimitive).toHaveBeenCalledWith({
+        expect(constructionStrategy.createPrimitive).toHaveBeenCalledWith({
           settings,
           value: 'ABC',
         });
@@ -349,7 +348,7 @@ describe('ConfigConstructor', () => {
         expect(await constructor.getArgumentValue(resource, settings)).toEqual({
           entries: [],
         });
-        expect(creationStrategy.createHash).toHaveBeenCalledWith({
+        expect(constructionStrategy.createHash).toHaveBeenCalledWith({
           settings,
           entries: [],
         });
@@ -361,7 +360,7 @@ describe('ConfigConstructor', () => {
         expect(await constructor.getArgumentValue(resource, settings)).toEqual({
           entries: [],
         });
-        expect(creationStrategy.createHash).toHaveBeenCalledWith({
+        expect(constructionStrategy.createHash).toHaveBeenCalledWith({
           settings,
           entries: [],
         });
@@ -374,7 +373,7 @@ describe('ConfigConstructor', () => {
         });
         expect(await (await constructor.getArgumentValue(resource, settings))()).toEqual('INSTANCE');
         expect(configConstructorPool.instantiate).toHaveBeenCalledWith(resource, settings);
-        expect(creationStrategy.createLazySupplier).toHaveBeenCalledWith({
+        expect(constructionStrategy.createLazySupplier).toHaveBeenCalledWith({
           settings,
           supplier: expect.any(Function),
         });
@@ -386,7 +385,7 @@ describe('ConfigConstructor', () => {
         });
         expect(await (await constructor.getArgumentValue(resource, settings))()).toEqual('INSTANCE');
         expect(configConstructorPool.instantiate).toHaveBeenCalledWith(resource, settings);
-        expect(creationStrategy.createLazySupplier).toHaveBeenCalledWith({
+        expect(constructionStrategy.createLazySupplier).toHaveBeenCalledWith({
           settings,
           supplier: expect.any(Function),
         });
@@ -397,7 +396,7 @@ describe('ConfigConstructor', () => {
       it('should handle a string value', async() => {
         const resource = objectLoader.createCompactedResource('"ABC"');
         expect(await constructor.getArgumentValue(resource, settings)).toEqual('ABC');
-        expect(creationStrategy.createPrimitive).toHaveBeenCalledWith({
+        expect(constructionStrategy.createPrimitive).toHaveBeenCalledWith({
           settings,
           value: 'ABC',
         });
@@ -407,8 +406,8 @@ describe('ConfigConstructor', () => {
         const resource = objectLoader.createCompactedResource('"ABC"');
         resource.property.lazy = objectLoader.createCompactedResource('"true"');
         expect(await (await constructor.getArgumentValue(resource, settings))()).toEqual('ABC');
-        expect(creationStrategy.createPrimitive).toHaveBeenCalledWith({ settings, value: 'ABC' });
-        expect(creationStrategy.createLazySupplier).toHaveBeenCalledWith({
+        expect(constructionStrategy.createPrimitive).toHaveBeenCalledWith({ settings, value: 'ABC' });
+        expect(constructionStrategy.createLazySupplier).toHaveBeenCalledWith({
           settings,
           supplier: expect.any(Function),
         });
@@ -418,7 +417,7 @@ describe('ConfigConstructor', () => {
         const resource = objectLoader.createCompactedResource('"123"');
         (<any> resource.term).valueRaw = 123;
         expect(await constructor.getArgumentValue(resource, settings)).toEqual(123);
-        expect(creationStrategy.createPrimitive).toHaveBeenCalledWith({
+        expect(constructionStrategy.createPrimitive).toHaveBeenCalledWith({
           settings,
           value: 123,
         });
@@ -483,8 +482,9 @@ describe('ConfigConstructor', () => {
         requireName: '"REQUIRENAME"',
       });
       expect(await constructor.createInstance(config, settings)).toEqual('INSTANCESTRAT');
-      expect(creationStrategy.createInstance).toHaveBeenCalledWith({
+      expect(constructionStrategy.createInstance).toHaveBeenCalledWith({
         settings,
+        moduleState,
         requireName: 'REQUIRENAME',
         requireElement: undefined,
         callConstructor: true,
@@ -506,8 +506,9 @@ describe('ConfigConstructor', () => {
         types: 'oo:ComponentInstance',
       });
       expect(await constructor.createInstance(config, settings)).toEqual('INSTANCESTRAT');
-      expect(creationStrategy.createInstance).toHaveBeenCalledWith({
+      expect(constructionStrategy.createInstance).toHaveBeenCalledWith({
         settings,
+        moduleState,
         requireName: 'REQUIRENAME',
         requireElement: 'REQUIREELEMENT',
         callConstructor: false,
@@ -523,8 +524,9 @@ describe('ConfigConstructor', () => {
         originalInstance: 'ex:myOriginalConfig',
       });
       expect(await constructor.createInstance(config, settings)).toEqual('INSTANCESTRAT');
-      expect(creationStrategy.createInstance).toHaveBeenCalledWith({
+      expect(constructionStrategy.createInstance).toHaveBeenCalledWith({
         settings,
+        moduleState,
         requireName: 'REQUIRENAME',
         requireElement: undefined,
         callConstructor: true,
@@ -540,8 +542,9 @@ describe('ConfigConstructor', () => {
         requireNoConstructor: '"true"',
       });
       expect(await constructor.createInstance(config, settings)).toEqual('INSTANCESTRAT');
-      expect(creationStrategy.createInstance).toHaveBeenCalledWith({
+      expect(constructionStrategy.createInstance).toHaveBeenCalledWith({
         settings,
+        moduleState,
         requireName: 'REQUIRENAME',
         requireElement: undefined,
         callConstructor: false,
@@ -557,8 +560,9 @@ describe('ConfigConstructor', () => {
         requireNoConstructor: '"false"',
       });
       expect(await constructor.createInstance(config, settings)).toEqual('INSTANCESTRAT');
-      expect(creationStrategy.createInstance).toHaveBeenCalledWith({
+      expect(constructionStrategy.createInstance).toHaveBeenCalledWith({
         settings,
+        moduleState,
         requireName: 'REQUIRENAME',
         requireElement: undefined,
         callConstructor: true,

@@ -1,5 +1,5 @@
 import type { Resource } from 'rdf-object';
-import type { IConstructionSettingsInner } from '../IConstructionSettings';
+import type { IConstructionSettings } from '../IConstructionSettings';
 import type { IArgumentConstructorHandler } from './IArgumentConstructorHandler';
 import type { IArgumentsConstructor } from './IArgumentsConstructor';
 
@@ -9,16 +9,16 @@ import type { IArgumentsConstructor } from './IArgumentsConstructor';
 export class ArgumentConstructorHandlerValue implements IArgumentConstructorHandler {
   public canHandle<Instance>(
     value: Resource,
-    settings: IConstructionSettingsInner<Instance>,
-    argsCreator: IArgumentsConstructor,
+    settings: IConstructionSettings,
+    argsCreator: IArgumentsConstructor<Instance>,
   ): boolean {
     return Boolean(value.property.value);
   }
 
   public async handle<Instance>(
     value: Resource,
-    settings: IConstructionSettingsInner<Instance>,
-    argsCreator: IArgumentsConstructor,
+    settings: IConstructionSettings,
+    argsCreator: IArgumentsConstructor<Instance>,
   ): Promise<Instance> {
     return await argsCreator.getArgumentValues(value.properties.value, settings);
   }

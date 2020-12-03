@@ -1,4 +1,5 @@
-import type { IConstructionSettingsInner } from '../IConstructionSettings';
+import type { IModuleState } from '../../ModuleStateBuilder';
+import type { IConstructionSettings } from '../IConstructionSettings';
 
 /**
  * Implementations of this interface represent a certain strategy for creating instances.
@@ -44,7 +45,11 @@ export interface ICreationStrategyInstanceOptions<Instance> {
   /**
    * Creation settings.
    */
-  settings: IConstructionSettingsInner<Instance>;
+  settings: IConstructionSettings;
+  /**
+   * The module state.
+   */
+  moduleState: IModuleState;
   /**
    * The module that is being required. `require(<this>)`
    */
@@ -74,7 +79,7 @@ export interface ICreationStrategyHashOptions<Instance> {
   /**
    * Creation settings.
    */
-  settings: IConstructionSettingsInner<Instance>;
+  settings: IConstructionSettings;
   /**
    * An array of key-value entries for the hash.
    */
@@ -85,7 +90,7 @@ export interface ICreationStrategyArrayOptions<Instance> {
   /**
    * Creation settings.
    */
-  settings: IConstructionSettingsInner<Instance>;
+  settings: IConstructionSettings;
   /**
    * An array of elements.
    */
@@ -96,7 +101,7 @@ export interface ICreationStrategySupplierOptions<Instance> {
   /**
    * Creation settings.
    */
-  settings: IConstructionSettingsInner<Instance>;
+  settings: IConstructionSettings;
   /**
    * A lazy instance supplier.
    */
@@ -107,7 +112,7 @@ export interface ICreationStrategyPrimitiveOptions<Instance> {
   /**
    * Creation settings.
    */
-  settings: IConstructionSettingsInner<Instance>;
+  settings: IConstructionSettings;
   /**
    * A string or number value.
    */
@@ -118,7 +123,7 @@ export interface ICreationStrategyVariableOptions<Instance> {
   /**
    * Creation settings.
    */
-  settings: IConstructionSettingsInner<Instance>;
+  settings: IConstructionSettings;
   /**
    * A variable name.
    */

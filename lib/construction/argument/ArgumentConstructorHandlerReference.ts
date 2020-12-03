@@ -1,5 +1,5 @@
 import type { Resource } from 'rdf-object';
-import type { IConstructionSettingsInner } from '../IConstructionSettings';
+import type { IConstructionSettings } from '../IConstructionSettings';
 import type { IArgumentConstructorHandler } from './IArgumentConstructorHandler';
 import type { IArgumentsConstructor } from './IArgumentsConstructor';
 
@@ -9,26 +9,26 @@ import type { IArgumentsConstructor } from './IArgumentsConstructor';
 export class ArgumentConstructorHandlerReference implements IArgumentConstructorHandler {
   public canHandle<Instance>(
     value: Resource,
-    settings: IConstructionSettingsInner<Instance>,
-    argsCreator: IArgumentsConstructor,
+    settings: IConstructionSettings,
+    argsCreator: IArgumentsConstructor<Instance>,
   ): boolean {
     return Boolean(value.type === 'NamedNode' || value.type === 'BlankNode');
   }
 
   public async handle<Instance>(
     value: Resource,
-    settings: IConstructionSettingsInner<Instance>,
-    argsCreator: IArgumentsConstructor,
+    settings: IConstructionSettings,
+    argsCreator: IArgumentsConstructor<Instance>,
   ): Promise<Instance> {
     // Don't instantiate if we ask for shallow construction
     if (settings.shallow) {
-      return settings.creationStrategy.createHash({ settings, entries: []});
+      return argsCreator.constructionStrategy.createHash({ settings, entries: []});
     }
 
     // Apply lazy construction if needed
     if (value.property.lazy && value.property.lazy.value === 'true') {
       const supplier = (): Promise<Instance> => argsCreator.configConstructorPool.instantiate(value, settings);
-      return await settings.creationStrategy.createLazySupplier({ settings, supplier });
+      return await argsCreator.constructionStrategy.createLazySupplier({ settings, supplier });
     }
 
     // Regular construction

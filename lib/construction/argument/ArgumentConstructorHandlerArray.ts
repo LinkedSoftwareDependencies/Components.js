@@ -1,6 +1,6 @@
 import type { Resource } from 'rdf-object';
 import * as Util from '../../Util';
-import type { IConstructionSettingsInner } from '../IConstructionSettings';
+import type { IConstructionSettings } from '../IConstructionSettings';
 import type { IArgumentConstructorHandler } from './IArgumentConstructorHandler';
 import type { IArgumentsConstructor } from './IArgumentsConstructor';
 
@@ -10,16 +10,16 @@ import type { IArgumentsConstructor } from './IArgumentsConstructor';
 export class ArgumentConstructorHandlerArray implements IArgumentConstructorHandler {
   public canHandle<Instance>(
     value: Resource,
-    settings: IConstructionSettingsInner<Instance>,
-    argsCreator: IArgumentsConstructor,
+    settings: IConstructionSettings,
+    argsCreator: IArgumentsConstructor<Instance>,
   ): boolean {
     return Boolean(value.property.elements);
   }
 
   public async handle<Instance>(
     value: Resource,
-    settings: IConstructionSettingsInner<Instance>,
-    argsCreator: IArgumentsConstructor,
+    settings: IConstructionSettings,
+    argsCreator: IArgumentsConstructor<Instance>,
   ): Promise<Instance> {
     // Recursively handle all sub-args in the array
     const elements = await Promise.all(value.properties.elements.map(async(entry: Resource) => {
@@ -31,6 +31,6 @@ Elements: ${Util.resourceToString(value)}`);
       return await argsCreator.getArgumentValue(entry.property.value, settings);
     }));
 
-    return settings.creationStrategy.createArray({ settings, elements });
+    return argsCreator.constructionStrategy.createArray({ settings, elements });
   }
 }

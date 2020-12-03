@@ -1,4 +1,4 @@
-import type { IConstructionSettingsInner } from '../../../../lib/construction/IConstructionSettings';
+import type { IConstructionSettings } from '../../../../lib/construction/IConstructionSettings';
 import {
   ConstructionStrategyCommonJsString,
 } from '../../../../lib/construction/strategy/ConstructionStrategyCommonJsString';
@@ -9,8 +9,8 @@ describe('ConstructionStrategyCommonJsString', () => {
 
   let req: NodeJS.Require;
   let moduleState: IModuleState;
-  let creationStrategy: ConstructionStrategyCommonJsString;
-  let settings: IConstructionSettingsInner<any>;
+  let constructionStrategy: ConstructionStrategyCommonJsString;
+  let settings: IConstructionSettings;
   beforeEach(async() => {
     requireMain = {
       a: {
@@ -44,114 +44,110 @@ describe('ConstructionStrategyCommonJsString', () => {
         },
       },
     };
-    creationStrategy = new ConstructionStrategyCommonJsString({ req });
-    settings = {
-      moduleState,
-      creationStrategy,
-    };
+    constructionStrategy = new ConstructionStrategyCommonJsString({ req });
+    settings = {};
   });
 
   describe('createInstance', () => {
     it('without requireElement and constructor in the current module', () => {
-      expect(creationStrategy.createInstance({
+      expect(constructionStrategy.createInstance({
         settings,
+        moduleState,
         requireName: 'currentmodule',
         requireElement: undefined,
         callConstructor: false,
         args: [],
         instanceId: 'myinstance',
       })).toEqual(`myinstance`);
-      expect(creationStrategy.lines).toEqual([
+      expect(constructionStrategy.lines).toEqual([
         `const myinstance = require('./main.js');`,
       ]);
     });
 
     it('without requireElement and constructor in the current module with defined require names', () => {
-      creationStrategy = new ConstructionStrategyCommonJsString({ req, overrideRequireNames: {}});
-      settings = {
-        moduleState,
-        creationStrategy,
-      };
-      expect(creationStrategy.createInstance({
+      constructionStrategy = new ConstructionStrategyCommonJsString({ req, overrideRequireNames: {}});
+      expect(constructionStrategy.createInstance({
         settings,
+        moduleState,
         requireName: 'currentmodule',
         requireElement: undefined,
         callConstructor: false,
         args: [],
         instanceId: 'myinstance',
       })).toEqual(`myinstance`);
-      expect(creationStrategy.lines).toEqual([
+      expect(constructionStrategy.lines).toEqual([
         `const myinstance = require('./main.js');`,
       ]);
     });
 
     it('without requireElement and constructor in the current module overridden require name', () => {
-      creationStrategy = new ConstructionStrategyCommonJsString({
+      constructionStrategy = new ConstructionStrategyCommonJsString({
         req,
         overrideRequireNames: { mainalias: 'currentmodule' },
       });
-      settings = {
-        moduleState,
-        creationStrategy,
-      };
-      expect(creationStrategy.createInstance({
+      expect(constructionStrategy.createInstance({
         settings,
+        moduleState,
         requireName: 'mainalias',
         requireElement: undefined,
         callConstructor: false,
         args: [],
         instanceId: 'myinstance',
       })).toEqual(`myinstance`);
-      expect(creationStrategy.lines).toEqual([
+      expect(constructionStrategy.lines).toEqual([
         `const myinstance = require('./main.js');`,
       ]);
     });
 
     it('with requireElement of length 1 and without constructor in the current module', () => {
-      expect(creationStrategy.createInstance({
+      expect(constructionStrategy.createInstance({
         settings,
+        moduleState,
         requireName: 'currentmodule',
         requireElement: 'a',
         callConstructor: false,
         args: [],
         instanceId: 'myinstance',
       })).toEqual(`myinstance`);
-      expect(creationStrategy.lines).toEqual([
+      expect(constructionStrategy.lines).toEqual([
         `const myinstance = require('./main.js').a;`,
       ]);
     });
 
     it('with requireElement of length 2 and without constructor in the current module', () => {
-      expect(creationStrategy.createInstance({
+      expect(constructionStrategy.createInstance({
         settings,
+        moduleState,
         requireName: 'currentmodule',
         requireElement: 'a.b',
         callConstructor: false,
         args: [],
         instanceId: 'myinstance',
       })).toEqual(`myinstance`);
-      expect(creationStrategy.lines).toEqual([
+      expect(constructionStrategy.lines).toEqual([
         `const myinstance = require('./main.js').a.b;`,
       ]);
     });
 
     it('with requireElement to class and without constructor in the current module', () => {
-      expect(creationStrategy.createInstance({
+      expect(constructionStrategy.createInstance({
         settings,
+        moduleState,
         requireName: 'currentmodule',
         requireElement: 'MyClass',
         callConstructor: false,
         args: [],
         instanceId: 'myinstance',
       })).toEqual(`myinstance`);
-      expect(creationStrategy.lines).toEqual([
+      expect(constructionStrategy.lines).toEqual([
         `const myinstance = require('./main.js').MyClass;`,
       ]);
     });
 
     it('with requireElement to class and with constructor in the current module', () => {
-      const instance = creationStrategy.createInstance({
+      const instance = constructionStrategy.createInstance({
         settings,
+        moduleState,
         requireName: 'currentmodule',
         requireElement: 'MyClass',
         callConstructor: true,
@@ -159,14 +155,15 @@ describe('ConstructionStrategyCommonJsString', () => {
         instanceId: 'myinstance',
       });
       expect(instance).toEqual(`myinstance`);
-      expect(creationStrategy.lines).toEqual([
+      expect(constructionStrategy.lines).toEqual([
         `const myinstance = new (require('./main.js').MyClass)();`,
       ]);
     });
 
     it('with requireElement to class and with constructor and args in the current module', () => {
-      const instance = creationStrategy.createInstance({
+      const instance = constructionStrategy.createInstance({
         settings,
+        moduleState,
         requireName: 'currentmodule',
         requireElement: 'MyClass',
         callConstructor: true,
@@ -174,49 +171,52 @@ describe('ConstructionStrategyCommonJsString', () => {
         instanceId: 'myinstance',
       });
       expect(instance).toEqual(`myinstance`);
-      expect(creationStrategy.lines).toEqual([
+      expect(constructionStrategy.lines).toEqual([
         `const myinstance = new (require('./main.js').MyClass)(a, b, c);`,
       ]);
     });
 
     it('without requireElement and without constructor in another module', () => {
-      expect(creationStrategy.createInstance({
+      expect(constructionStrategy.createInstance({
         settings,
+        moduleState,
         requireName: 'othermodule',
         requireElement: undefined,
         callConstructor: false,
         args: [],
         instanceId: 'myinstance',
       })).toEqual(`myinstance`);
-      expect(creationStrategy.lines).toEqual([
+      expect(constructionStrategy.lines).toEqual([
         `const myinstance = require('othermodule');`,
       ]);
     });
 
     it('with requireElement and without constructor in another module', () => {
-      expect(creationStrategy.createInstance({
+      expect(constructionStrategy.createInstance({
         settings,
+        moduleState,
         requireName: 'othermodule',
         requireElement: 'c.d',
         callConstructor: false,
         args: [],
         instanceId: 'myinstance',
       })).toEqual(`myinstance`);
-      expect(creationStrategy.lines).toEqual([
+      expect(constructionStrategy.lines).toEqual([
         `const myinstance = require('othermodule').c.d;`,
       ]);
     });
 
     it('without requireElement and without constructor in a relative file', () => {
-      expect(creationStrategy.createInstance({
+      expect(constructionStrategy.createInstance({
         settings,
+        moduleState,
         requireName: './myfile.js',
         requireElement: undefined,
         callConstructor: false,
         args: [],
         instanceId: 'myinstance',
       })).toEqual(`myinstance`);
-      expect(creationStrategy.lines).toEqual([
+      expect(constructionStrategy.lines).toEqual([
         `const myinstance = require('./myfile.js');`,
       ]);
     });
@@ -224,14 +224,14 @@ describe('ConstructionStrategyCommonJsString', () => {
 
   describe('createHash', () => {
     it('for no entries', () => {
-      expect(creationStrategy.createHash({
+      expect(constructionStrategy.createHash({
         settings,
         entries: [],
       })).toEqual(`{}`);
     });
 
     it('for defined entries', () => {
-      expect(creationStrategy.createHash({
+      expect(constructionStrategy.createHash({
         settings,
         entries: [
           { key: 'a', value: '1' },
@@ -246,7 +246,7 @@ describe('ConstructionStrategyCommonJsString', () => {
     });
 
     it('for defined and undefined entries', () => {
-      expect(creationStrategy.createHash({
+      expect(constructionStrategy.createHash({
         settings,
         entries: [
           { key: 'a', value: '1' },
@@ -260,7 +260,7 @@ describe('ConstructionStrategyCommonJsString', () => {
     });
 
     it('for defined entries with array values', () => {
-      expect(creationStrategy.createHash({
+      expect(constructionStrategy.createHash({
         settings,
         entries: [
           { key: 'a', value: '[\n  a,\n  b\n]' },
@@ -276,14 +276,14 @@ describe('ConstructionStrategyCommonJsString', () => {
 
   describe('createArray', () => {
     it('for no elements', () => {
-      expect(creationStrategy.createArray({
+      expect(constructionStrategy.createArray({
         settings,
         elements: [],
       })).toEqual(`[]`);
     });
 
     it('for elements', () => {
-      expect(creationStrategy.createArray({
+      expect(constructionStrategy.createArray({
         settings,
         elements: [ 'a', 'b' ],
       })).toEqual(`[
@@ -293,7 +293,7 @@ describe('ConstructionStrategyCommonJsString', () => {
     });
 
     it('for string elements', () => {
-      expect(creationStrategy.createArray({
+      expect(constructionStrategy.createArray({
         settings,
         elements: [ '"a"', '"b"' ],
       })).toEqual(`[
@@ -306,7 +306,7 @@ describe('ConstructionStrategyCommonJsString', () => {
   describe('createLazySupplier', () => {
     it('for a lazy supplier', async() => {
       const supplier = () => Promise.resolve('a');
-      expect(await creationStrategy.createLazySupplier({
+      expect(await constructionStrategy.createLazySupplier({
         settings,
         supplier,
       })).toEqual('new function() { return Promise.resolve(a); }');
@@ -315,14 +315,14 @@ describe('ConstructionStrategyCommonJsString', () => {
 
   describe('createPrimitive', () => {
     it('for a string', () => {
-      expect(creationStrategy.createPrimitive({
+      expect(constructionStrategy.createPrimitive({
         settings,
         value: 'abc',
       })).toEqual(`'abc'`);
     });
 
     it('for a number', () => {
-      expect(creationStrategy.createPrimitive({
+      expect(constructionStrategy.createPrimitive({
         settings,
         value: 123,
       })).toEqual(`123`);
@@ -331,19 +331,15 @@ describe('ConstructionStrategyCommonJsString', () => {
 
   describe('getVariableValue', () => {
     it('should throw when asFunction is false', () => {
-      expect(() => creationStrategy.getVariableValue({
+      expect(() => constructionStrategy.getVariableValue({
         settings,
         variableName: 'varA',
       })).toThrow(new Error(`Detected a variable during config compilation: varA. Variables are not supported, but require the -f flag to expose the compiled config as function.`));
     });
 
     it('when asFunction is true', () => {
-      creationStrategy = new ConstructionStrategyCommonJsString({ req, asFunction: true });
-      settings = {
-        moduleState,
-        creationStrategy,
-      };
-      expect(creationStrategy.getVariableValue({
+      constructionStrategy = new ConstructionStrategyCommonJsString({ req, asFunction: true });
+      expect(constructionStrategy.getVariableValue({
         settings,
         variableName: 'varA',
       })).toEqual(`getVariableValue('varA')`);
@@ -352,7 +348,7 @@ describe('ConstructionStrategyCommonJsString', () => {
 
   describe('createUndefined', () => {
     it('returns undefined', () => {
-      expect(creationStrategy.createUndefined()).toEqual('undefined');
+      expect(constructionStrategy.createUndefined()).toEqual('undefined');
     });
   });
 

@@ -23,8 +23,8 @@ export async function compileConfig(
   asFunction?: boolean,
 ): Promise<string> {
   // Load modules and config
-  const creationStrategy = new ConstructionStrategyCommonJsString({ asFunction, req: require });
-  const loader = new Loader(properties, creationStrategy);
+  const constructionStrategy = new ConstructionStrategyCommonJsString({ asFunction, req: require });
+  const loader = new Loader(properties, constructionStrategy);
   await loader.registerAvailableModuleResources();
   const state = await loader.getModuleState();
   const configStream = new RdfParser().parse(configStreamRaw, {
@@ -37,7 +37,7 @@ export async function compileConfig(
   // Serialize the config
   await loader.registerConfigStream(configStream);
   const serializationVariableName = await loader.getComponentInstance(configResourceUri);
-  let document: string = creationStrategy.lines.join('\n');
+  let document: string = constructionStrategy.lines.join('\n');
 
   // Override main variable name if needed
   exportVariableName = exportVariableName ?

@@ -1,7 +1,7 @@
 import type { Resource, RdfObjectLoader } from 'rdf-object';
 import { mocked } from 'ts-jest/utils';
 import type { IConfigConstructorPool } from '../../lib/construction/IConfigConstructorPool';
-import type { IConstructionSettingsInner } from '../../lib/construction/IConstructionSettings';
+import type { IConstructionSettings } from '../../lib/construction/IConstructionSettings';
 import type { Loader } from '../../lib/Loader';
 import * as Util from '../../lib/Util';
 import { LoaderMocked } from './LoaderMocked';
@@ -15,14 +15,14 @@ jest.mock('n3', () => ({
 
 describe('construction with component configs as Resource', () => {
   let loader: Loader<any>;
-  let configConstructorPool: IConfigConstructorPool;
+  let configConstructorPool: IConfigConstructorPool<any>;
   let objectLoader: RdfObjectLoader;
-  let settings: IConstructionSettingsInner<any>;
+  let settings: IConstructionSettings;
   beforeEach(async() => {
     loader = new LoaderMocked();
     configConstructorPool = await loader.getInstancePool();
     objectLoader = (<any> loader).objectLoader;
-    settings = await loader.getConstructionSettingsInner({});
+    settings = {};
     jest.clearAllMocks();
   });
 

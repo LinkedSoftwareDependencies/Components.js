@@ -7,7 +7,7 @@ import type { Logger } from 'winston';
 import { createLogger, format, transports } from 'winston';
 import { ConfigConstructorPool } from './construction/ConfigConstructorPool';
 import type { IConfigConstructorPool } from './construction/IConfigConstructorPool';
-import type { IConstructionSettings, IConstructionSettingsInner } from './construction/IConstructionSettings';
+import type { IConstructionSettings } from './construction/IConstructionSettings';
 import { ConstructionStrategyCommonJs } from './construction/strategy/ConstructionStrategyCommonJs';
 import type { IConstructionStrategy } from './construction/strategy/IConstructionStrategy';
 import type { LogLevel } from './LogLevel';
@@ -27,26 +27,26 @@ export class Loader<Instance> {
   private readonly objectLoader: RdfObjectLoader;
   private readonly mainModulePath?: string;
   private readonly dumpErrorState: boolean;
-  private readonly creationStrategy: IConstructionStrategy<Instance>;
+  private readonly constructionStrategy: IConstructionStrategy<Instance>;
   public readonly logger?: Logger;
 
   private readonly componentResources: Record<string, Resource> = {};
 
   protected moduleState?: IModuleState;
-  protected configConstructorPool?: IConfigConstructorPool;
+  protected configConstructorPool?: IConfigConstructorPool<Instance>;
   protected registrationFinalized = false;
   protected generatedErrorLog = false;
 
   public constructor(
     options: ILoaderProperties = {},
-    creationStrategy: IConstructionStrategy<Instance> = new ConstructionStrategyCommonJs({ req: require }),
+    constructionStrategy: IConstructionStrategy<Instance> = new ConstructionStrategyCommonJs({ req: require }),
   ) {
     this.objectLoader = new RdfObjectLoader({
       context: JSON.parse(fs.readFileSync(`${__dirname}/../components/context.jsonld`, 'utf8')),
     });
     this.mainModulePath = options.mainModulePath;
     this.dumpErrorState = Boolean(options.dumpErrorState);
-    this.creationStrategy = creationStrategy;
+    this.constructionStrategy = constructionStrategy;
     if (options.logLevel) {
       this.logger = createLogger({
         level: options.logLevel,
@@ -81,7 +81,7 @@ export class Loader<Instance> {
   /**
    * Get or create an instance pool for creating new instances.
    */
-  public async getInstancePool(): Promise<IConfigConstructorPool> {
+  public async getInstancePool(): Promise<IConfigConstructorPool<Instance>> {
     if (!this.configConstructorPool) {
       const runTypeConfigs = {};
       this.configConstructorPool = new ConfigConstructorPool({
@@ -98,6 +98,8 @@ export class Loader<Instance> {
             runTypeConfigs,
           }),
         ],
+        constructionStrategy: this.constructionStrategy,
+        moduleState: await this.getModuleState(),
       });
     }
     return this.configConstructorPool;
@@ -348,21 +350,6 @@ export class Loader<Instance> {
   }
 
   /**
-   * Return the inner construction settings from the given construction settings.
-   * This adds additional fields to the settings.
-   * @param settings Construction settings.
-   */
-  public async getConstructionSettingsInner(
-    settings: IConstructionSettings,
-  ): Promise<IConstructionSettingsInner<Instance>> {
-    return {
-      ...settings,
-      moduleState: await this.getModuleState(),
-      creationStrategy: this.creationStrategy,
-    };
-  }
-
-  /**
    * Instantiate a component based on a config IRI.
    * @param configResourceIri The config resource URI.
    * @param settings The settings for creating the instance.
@@ -376,8 +363,7 @@ export class Loader<Instance> {
       if (!configResource) {
         throw new Error(`Could not find a component config with URI ${configResourceIri} in the triple stream.`);
       }
-      return (await this.getInstancePool())
-        .instantiate(configResource, await this.getConstructionSettingsInner(settings));
+      return (await this.getInstancePool()).instantiate(configResource, settings);
     } catch (error: unknown) {
       throw this.generateErrorLog(error);
     }
@@ -410,8 +396,7 @@ export class Loader<Instance> {
         configResource.property[key] = this.objectLoader.createCompactedResource(`"${params[key]}"`);
       }
 
-      return (await this.getInstancePool())
-        .instantiate(configResource, await this.getConstructionSettingsInner(settings));
+      return (await this.getInstancePool()).instantiate(configResource, settings);
     } catch (error: unknown) {
       throw this.generateErrorLog(error);
     }

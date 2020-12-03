@@ -1,9 +1,11 @@
 import type { Resource, RdfObjectLoader } from 'rdf-object';
+import type { IModuleState } from '../ModuleStateBuilder';
 import type { IConfigPreprocessor } from '../preprocess/IConfigPreprocessor';
 import * as Util from '../Util';
 import { ConfigConstructor } from './ConfigConstructor';
 import type { IConfigConstructorPool } from './IConfigConstructorPool';
-import type { IConstructionSettingsInner } from './IConstructionSettings';
+import type { IConstructionSettings } from './IConstructionSettings';
+import type { IConstructionStrategy } from './strategy/IConstructionStrategy';
 
 /**
  * Manages and creates instances of components based on a given config.
@@ -13,34 +15,38 @@ import type { IConstructionSettingsInner } from './IConstructionSettings';
  * This will make sure that configs with the same id will only be instantiated once,
  * and multiple references to configs will always reuse the same instance.
  */
-export class ConfigConstructorPool implements IConfigConstructorPool {
+export class ConfigConstructorPool<Instance> implements IConfigConstructorPool<Instance> {
   private readonly configPreprocessors: IConfigPreprocessor<any>[];
-  private readonly configConstructor: ConfigConstructor;
+  private readonly configConstructor: ConfigConstructor<Instance>;
+  private readonly constructionStrategy: IConstructionStrategy<Instance>;
 
   private readonly instances: Record<string, Promise<any>> = {};
 
-  public constructor(options: IInstancePoolOptions) {
+  public constructor(options: IInstancePoolOptions<Instance>) {
     this.configPreprocessors = options.configPreprocessors;
     this.configConstructor = new ConfigConstructor({
       objectLoader: options.objectLoader,
       configConstructorPool: this,
+      constructionStrategy: options.constructionStrategy,
+      moduleState: options.moduleState,
     });
+    this.constructionStrategy = options.constructionStrategy;
   }
 
-  public async instantiate<Instance>(
+  public async instantiate(
     configResource: Resource,
-    settings: IConstructionSettingsInner<Instance>,
+    settings: IConstructionSettings,
   ): Promise<Instance> {
     // Check if this resource is required as argument in its own chain,
     // if so, return a dummy value, to avoid infinite recursion.
     const resourceBlacklist = settings.resourceBlacklist || {};
     if (resourceBlacklist[configResource.value]) {
-      return settings.creationStrategy.createUndefined();
+      return this.constructionStrategy.createUndefined();
     }
 
     // Before instantiating, first check if the resource is a variable
     if (configResource.isA('Variable')) {
-      return settings.creationStrategy.getVariableValue({ settings, variableName: configResource.value });
+      return this.constructionStrategy.getVariableValue({ settings, variableName: configResource.value });
     }
 
     // Instantiate only once
@@ -113,7 +119,21 @@ Config: ${Util.resourceToString(resource)}`);
   }
 }
 
-export interface IInstancePoolOptions {
+export interface IInstancePoolOptions<Instance> {
+  /**
+   * The RDF object loader.
+   */
   objectLoader: RdfObjectLoader;
+  /**
+   * Config preprocessors.
+   */
   configPreprocessors: IConfigPreprocessor<any>[];
+  /**
+   * The strategy for construction.
+   */
+  constructionStrategy: IConstructionStrategy<Instance>;
+  /**
+   * The module state.
+   */
+  moduleState: IModuleState;
 }

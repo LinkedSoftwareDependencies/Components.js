@@ -1,6 +1,6 @@
 import type { Resource } from 'rdf-object';
 import * as Util from '../../Util';
-import type { IConstructionSettingsInner } from '../IConstructionSettings';
+import type { IConstructionSettings } from '../IConstructionSettings';
 import type { IArgumentConstructorHandler } from './IArgumentConstructorHandler';
 import type { IArgumentsConstructor } from './IArgumentsConstructor';
 
@@ -10,16 +10,16 @@ import type { IArgumentsConstructor } from './IArgumentsConstructor';
 export class ArgumentConstructorHandlerHash implements IArgumentConstructorHandler {
   public canHandle<Instance>(
     value: Resource,
-    settings: IConstructionSettingsInner<Instance>,
-    argsCreator: IArgumentsConstructor,
+    settings: IConstructionSettings,
+    argsCreator: IArgumentsConstructor<Instance>,
   ): boolean {
     return Boolean(value.property.fields || value.property.hasFields);
   }
 
   public async handle<Instance>(
     value: Resource,
-    settings: IConstructionSettingsInner<Instance>,
-    argsCreator: IArgumentsConstructor,
+    settings: IConstructionSettings,
+    argsCreator: IArgumentsConstructor<Instance>,
   ): Promise<Instance> {
     // Determine all key-value pairs
     const entries = await Promise.all(value.properties.fields.map(async(entry: Resource) => {
@@ -46,6 +46,6 @@ Fields: ${Util.resourceToString(value)}`);
     }));
 
     // Create a hash containing the key-value pairs
-    return settings.creationStrategy.createHash({ settings, entries });
+    return argsCreator.constructionStrategy.createHash({ settings, entries });
   }
 }

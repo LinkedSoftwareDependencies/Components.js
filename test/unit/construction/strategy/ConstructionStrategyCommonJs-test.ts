@@ -1,5 +1,5 @@
 import * as Path from 'path';
-import type { IConstructionSettingsInner } from '../../../../lib/construction/IConstructionSettings';
+import type { IConstructionSettings } from '../../../../lib/construction/IConstructionSettings';
 import { ConstructionStrategyCommonJs } from '../../../../lib/construction/strategy/ConstructionStrategyCommonJs';
 import type { IModuleState } from '../../../../lib/ModuleStateBuilder';
 
@@ -22,8 +22,8 @@ describe('ConstructionStrategyCommonJs', () => {
 
   let req: NodeJS.Require;
   let moduleState: IModuleState;
-  let creationStrategy: ConstructionStrategyCommonJs;
-  let settings: IConstructionSettingsInner<any>;
+  let constructionStrategy: ConstructionStrategyCommonJs;
+  let settings: IConstructionSettings;
   beforeEach(async() => {
     requireMain = {
       a: {
@@ -75,17 +75,15 @@ describe('ConstructionStrategyCommonJs', () => {
         },
       },
     };
-    creationStrategy = new ConstructionStrategyCommonJs({ req });
-    settings = {
-      moduleState,
-      creationStrategy,
-    };
+    constructionStrategy = new ConstructionStrategyCommonJs({ req });
+    settings = {};
   });
 
   describe('createInstance', () => {
     it('without requireElement and constructor in the current module', () => {
-      expect(creationStrategy.createInstance({
+      expect(constructionStrategy.createInstance({
         settings,
+        moduleState,
         requireName: 'currentmodule',
         requireElement: undefined,
         callConstructor: false,
@@ -95,13 +93,10 @@ describe('ConstructionStrategyCommonJs', () => {
     });
 
     it('without requireElement and constructor in the current module with defined require names', () => {
-      creationStrategy = new ConstructionStrategyCommonJs({ req, overrideRequireNames: {}});
-      settings = {
-        moduleState,
-        creationStrategy,
-      };
-      expect(creationStrategy.createInstance({
+      constructionStrategy = new ConstructionStrategyCommonJs({ req, overrideRequireNames: {}});
+      expect(constructionStrategy.createInstance({
         settings,
+        moduleState,
         requireName: 'currentmodule',
         requireElement: undefined,
         callConstructor: false,
@@ -111,13 +106,13 @@ describe('ConstructionStrategyCommonJs', () => {
     });
 
     it('without requireElement and constructor in the current module overridden require name', () => {
-      creationStrategy = new ConstructionStrategyCommonJs({ req, overrideRequireNames: { mainalias: 'currentmodule' }});
-      settings = {
-        moduleState,
-        creationStrategy,
-      };
-      expect(creationStrategy.createInstance({
+      constructionStrategy = new ConstructionStrategyCommonJs({
+        req,
+        overrideRequireNames: { mainalias: 'currentmodule' },
+      });
+      expect(constructionStrategy.createInstance({
         settings,
+        moduleState,
         requireName: 'mainalias',
         requireElement: undefined,
         callConstructor: false,
@@ -127,8 +122,9 @@ describe('ConstructionStrategyCommonJs', () => {
     });
 
     it('with requireElement of length 1 and without constructor in the current module', () => {
-      expect(creationStrategy.createInstance({
+      expect(constructionStrategy.createInstance({
         settings,
+        moduleState,
         requireName: 'currentmodule',
         requireElement: 'a',
         callConstructor: false,
@@ -138,8 +134,9 @@ describe('ConstructionStrategyCommonJs', () => {
     });
 
     it('with requireElement of length 2 and without constructor in the current module', () => {
-      expect(creationStrategy.createInstance({
+      expect(constructionStrategy.createInstance({
         settings,
+        moduleState,
         requireName: 'currentmodule',
         requireElement: 'a.b',
         callConstructor: false,
@@ -149,8 +146,9 @@ describe('ConstructionStrategyCommonJs', () => {
     });
 
     it('with invalid initial requireElement and without constructor in the current module', () => {
-      expect(() => creationStrategy.createInstance({
+      expect(() => constructionStrategy.createInstance({
         settings,
+        moduleState,
         requireName: 'currentmodule',
         requireElement: 'X.b',
         callConstructor: false,
@@ -160,8 +158,9 @@ describe('ConstructionStrategyCommonJs', () => {
     });
 
     it('with invalid trailing requireElement and without constructor in the current module', () => {
-      expect(() => creationStrategy.createInstance({
+      expect(() => constructionStrategy.createInstance({
         settings,
+        moduleState,
         requireName: 'currentmodule',
         requireElement: 'a.X',
         callConstructor: false,
@@ -172,8 +171,9 @@ describe('ConstructionStrategyCommonJs', () => {
 
     it('without requireElement and constructor in another module with undefined req.main should throw', () => {
       req.main = undefined;
-      expect(() => creationStrategy.createInstance({
+      expect(() => constructionStrategy.createInstance({
         settings,
+        moduleState,
         requireName: 'othermodule',
         requireElement: undefined,
         callConstructor: false,
@@ -183,8 +183,9 @@ describe('ConstructionStrategyCommonJs', () => {
     });
 
     it('with requireElement to class and without constructor in the current module', () => {
-      expect(creationStrategy.createInstance({
+      expect(constructionStrategy.createInstance({
         settings,
+        moduleState,
         requireName: 'currentmodule',
         requireElement: 'MyClass',
         callConstructor: false,
@@ -194,8 +195,9 @@ describe('ConstructionStrategyCommonJs', () => {
     });
 
     it('with requireElement to non-class and with constructor in the current module should thrown', () => {
-      expect(() => creationStrategy.createInstance({
+      expect(() => constructionStrategy.createInstance({
         settings,
+        moduleState,
         requireName: 'currentmodule',
         requireElement: 'a',
         callConstructor: true,
@@ -205,8 +207,9 @@ describe('ConstructionStrategyCommonJs', () => {
     });
 
     it('with requireElement to class and with constructor in the current module', () => {
-      const instance = creationStrategy.createInstance({
+      const instance = constructionStrategy.createInstance({
         settings,
+        moduleState,
         requireName: 'currentmodule',
         requireElement: 'MyClass',
         callConstructor: true,
@@ -220,8 +223,9 @@ describe('ConstructionStrategyCommonJs', () => {
     });
 
     it('with requireElement to class and with constructor and args in the current module', () => {
-      const instance = creationStrategy.createInstance({
+      const instance = constructionStrategy.createInstance({
         settings,
+        moduleState,
         requireName: 'currentmodule',
         requireElement: 'MyClass',
         callConstructor: true,
@@ -235,8 +239,9 @@ describe('ConstructionStrategyCommonJs', () => {
     });
 
     it('without requireElement and without constructor in another module', () => {
-      expect(creationStrategy.createInstance({
+      expect(constructionStrategy.createInstance({
         settings,
+        moduleState,
         requireName: 'othermodule',
         requireElement: undefined,
         callConstructor: false,
@@ -246,8 +251,9 @@ describe('ConstructionStrategyCommonJs', () => {
     });
 
     it('with requireElement and without constructor in another module', () => {
-      expect(creationStrategy.createInstance({
+      expect(constructionStrategy.createInstance({
         settings,
+        moduleState,
         requireName: 'othermodule',
         requireElement: 'c.d',
         callConstructor: false,
@@ -257,8 +263,9 @@ describe('ConstructionStrategyCommonJs', () => {
     });
 
     it('without requireElement and without constructor in a relative file', () => {
-      expect(creationStrategy.createInstance({
+      expect(constructionStrategy.createInstance({
         settings,
+        moduleState,
         requireName: './myfile.js',
         requireElement: undefined,
         callConstructor: false,
@@ -270,12 +277,12 @@ describe('ConstructionStrategyCommonJs', () => {
 
   describe('requireCurrentRunningModuleIfCurrent', () => {
     it('for the current module should require its main entry', () => {
-      expect(creationStrategy.requireCurrentRunningModuleIfCurrent(moduleState, 'currentmodule'))
+      expect(constructionStrategy.requireCurrentRunningModuleIfCurrent(moduleState, 'currentmodule'))
         .toBe(requireMain);
     });
 
     it('for an unknown package should throw', () => {
-      expect(() => creationStrategy.requireCurrentRunningModuleIfCurrent(moduleState, 'unknownmodule'))
+      expect(() => constructionStrategy.requireCurrentRunningModuleIfCurrent(moduleState, 'unknownmodule'))
         .toThrow(new Error('Component is not the main module'));
     });
 
@@ -294,7 +301,7 @@ describe('ConstructionStrategyCommonJs', () => {
           },
         },
       };
-      expect(() => creationStrategy.requireCurrentRunningModuleIfCurrent(moduleState, 'currentmodule'))
+      expect(() => constructionStrategy.requireCurrentRunningModuleIfCurrent(moduleState, 'currentmodule'))
         .toThrow(new Error('Component is not the main module'));
     });
 
@@ -313,7 +320,7 @@ describe('ConstructionStrategyCommonJs', () => {
           },
         },
       };
-      expect(() => creationStrategy.requireCurrentRunningModuleIfCurrent(moduleState, 'currentmodule'))
+      expect(() => constructionStrategy.requireCurrentRunningModuleIfCurrent(moduleState, 'currentmodule'))
         .toThrow(new Error('Component is not the main module'));
     });
 
@@ -332,21 +339,21 @@ describe('ConstructionStrategyCommonJs', () => {
           },
         },
       };
-      expect(() => creationStrategy.requireCurrentRunningModuleIfCurrent(moduleState, 'currentmodule'))
+      expect(() => constructionStrategy.requireCurrentRunningModuleIfCurrent(moduleState, 'currentmodule'))
         .toThrow(new Error('Component is not the main module'));
     });
   });
 
   describe('createHash', () => {
     it('for no entries', () => {
-      expect(creationStrategy.createHash({
+      expect(constructionStrategy.createHash({
         settings,
         entries: [],
       })).toEqual({});
     });
 
     it('for defined entries', () => {
-      expect(creationStrategy.createHash({
+      expect(constructionStrategy.createHash({
         settings,
         entries: [
           { key: 'a', value: '1' },
@@ -361,7 +368,7 @@ describe('ConstructionStrategyCommonJs', () => {
     });
 
     it('for defined and undefined entries', () => {
-      expect(creationStrategy.createHash({
+      expect(constructionStrategy.createHash({
         settings,
         entries: [
           { key: 'a', value: '1' },
@@ -377,14 +384,14 @@ describe('ConstructionStrategyCommonJs', () => {
 
   describe('createArray', () => {
     it('for no elements', () => {
-      expect(creationStrategy.createArray({
+      expect(constructionStrategy.createArray({
         settings,
         elements: [],
       })).toEqual([]);
     });
 
     it('for elements', () => {
-      expect(creationStrategy.createArray({
+      expect(constructionStrategy.createArray({
         settings,
         elements: [ 'a', 'b' ],
       })).toEqual([ 'a', 'b' ]);
@@ -394,7 +401,7 @@ describe('ConstructionStrategyCommonJs', () => {
   describe('createLazySupplier', () => {
     it('for a lazy supplier', async() => {
       const supplier = () => Promise.resolve('a');
-      expect(await creationStrategy.createLazySupplier({
+      expect(await constructionStrategy.createLazySupplier({
         settings,
         supplier,
       })).toBe(supplier);
@@ -403,14 +410,14 @@ describe('ConstructionStrategyCommonJs', () => {
 
   describe('createPrimitive', () => {
     it('for a string', () => {
-      expect(creationStrategy.createPrimitive({
+      expect(constructionStrategy.createPrimitive({
         settings,
         value: 'abc',
       })).toEqual('abc');
     });
 
     it('for a number', () => {
-      expect(creationStrategy.createPrimitive({
+      expect(constructionStrategy.createPrimitive({
         settings,
         value: 123,
       })).toEqual(123);
@@ -419,7 +426,7 @@ describe('ConstructionStrategyCommonJs', () => {
 
   describe('getVariableValue', () => {
     it('for no variables should throw', () => {
-      expect(() => creationStrategy.getVariableValue({
+      expect(() => constructionStrategy.getVariableValue({
         settings,
         variableName: 'varA',
       })).toThrow(new Error(`Undefined variable: varA`));
@@ -429,7 +436,7 @@ describe('ConstructionStrategyCommonJs', () => {
       settings.variables = {
         varB: 123,
       };
-      expect(() => creationStrategy.getVariableValue({
+      expect(() => constructionStrategy.getVariableValue({
         settings,
         variableName: 'varA',
       })).toThrow(new Error(`Undefined variable: varA`));
@@ -439,7 +446,7 @@ describe('ConstructionStrategyCommonJs', () => {
       settings.variables = {
         varA: 123,
       };
-      expect(creationStrategy.getVariableValue({
+      expect(constructionStrategy.getVariableValue({
         settings,
         variableName: 'varA',
       })).toEqual(123);
@@ -448,7 +455,7 @@ describe('ConstructionStrategyCommonJs', () => {
 
   describe('createUndefined', () => {
     it('returns undefined', () => {
-      expect(creationStrategy.createUndefined()).toBeUndefined();
+      expect(constructionStrategy.createUndefined()).toBeUndefined();
     });
   });
 });

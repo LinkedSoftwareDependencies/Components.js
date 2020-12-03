@@ -1,23 +1,25 @@
 import type { Resource, RdfObjectLoader } from 'rdf-object';
 import type { IConfigConstructorPool } from '../IConfigConstructorPool';
-import type { IConstructionSettingsInner } from '../IConstructionSettings';
+import type { IConstructionSettings } from '../IConstructionSettings';
+import type { IConstructionStrategy } from '../strategy/IConstructionStrategy';
 
 /**
  * Instances of this interfaces can instantiate argument values.
- * This is mainly used by {@link IArgumentCreationHandler}.
+ * This is mainly used by {@link IArgumentConstructorHandler}.
  */
-export interface IArgumentsConstructor {
+export interface IArgumentsConstructor<Instance> {
   readonly objectLoader: RdfObjectLoader;
-  readonly configConstructorPool: IConfigConstructorPool;
+  readonly configConstructorPool: IConfigConstructorPool<Instance>;
+  readonly constructionStrategy: IConstructionStrategy<Instance>;
 
   /**
    * Convert the given argument values resource into a JavaScript object or primitive.
    * @param values An array of argument values.
    * @param settings Creation settings.
    */
-  getArgumentValues: <Instance>(
+  getArgumentValues: (
     values: Resource[],
-    settings: IConstructionSettingsInner<Instance>,
+    settings: IConstructionSettings,
   ) => Promise<Instance>;
 
   /**
@@ -25,8 +27,8 @@ export interface IArgumentsConstructor {
    * @param value An argument value.
    * @param settings Creation settings.
    */
-  getArgumentValue: <Instance>(
+  getArgumentValue: (
     value: Resource,
-    settings: IConstructionSettingsInner<Instance>,
+    settings: IConstructionSettings,
   ) => Promise<Instance>;
 }

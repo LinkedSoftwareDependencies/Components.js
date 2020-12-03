@@ -1,6 +1,6 @@
-import type { IModuleState } from '../ModuleStateBuilder';
-import type { IConstructionStrategy } from './strategy/IConstructionStrategy';
-
+/**
+ * Settings for the construction of a specific config.
+ */
 export interface IConstructionSettings {
   /**
    * @param shallow If no component constructors should recursively be called.
@@ -14,15 +14,4 @@ export interface IConstructionSettings {
    * Mapping of variable id's to values.
    */
   variables?: Record<string, any>;
-}
-
-export interface IConstructionSettingsInner<Instance> extends IConstructionSettings {
-  /**
-   * The current module state.
-   */
-  moduleState: IModuleState;
-  /**
-   * The strategy for creating instances.
-   */
-  creationStrategy: IConstructionStrategy<Instance>;
 }

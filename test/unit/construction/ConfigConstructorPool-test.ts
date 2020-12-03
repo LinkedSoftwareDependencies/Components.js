@@ -2,7 +2,7 @@ import * as fs from 'fs';
 import type { Resource } from 'rdf-object';
 import { RdfObjectLoader } from 'rdf-object';
 import { ConfigConstructorPool } from '../../../lib/construction/ConfigConstructorPool';
-import type { IConstructionSettingsInner } from '../../../lib/construction/IConstructionSettings';
+import type { IConstructionSettings } from '../../../lib/construction/IConstructionSettings';
 import type { IConstructionStrategy } from '../../../lib/construction/strategy/IConstructionStrategy';
 import type { IModuleState } from '../../../lib/ModuleStateBuilder';
 import 'jest-rdf';
@@ -14,10 +14,10 @@ describe('ConfigConstructorPool', () => {
   let objectLoader: RdfObjectLoader;
   let componentResources: Record<string, Resource>;
   let rawConfigFactories: IConfigPreprocessor<any>[];
-  let pool: ConfigConstructorPool;
-  let creationStrategy: IConstructionStrategy<any>;
+  let pool: ConfigConstructorPool<any>;
+  let constructionStrategy: IConstructionStrategy<any>;
   let moduleState: IModuleState;
-  let creationSettings: IConstructionSettingsInner<any>;
+  let creationSettings: IConstructionSettings;
   beforeEach(async() => {
     objectLoader = new RdfObjectLoader({
       context: JSON.parse(fs.readFileSync(`${__dirname}/../../../components/context.jsonld`, 'utf8')),
@@ -25,12 +25,7 @@ describe('ConfigConstructorPool', () => {
     await objectLoader.context;
     componentResources = {};
     rawConfigFactories = [];
-    pool = new ConfigConstructorPool({
-      objectLoader,
-      configPreprocessors: rawConfigFactories,
-    });
-
-    creationStrategy = <any> {
+    constructionStrategy = <any> {
       createUndefined: () => 'UNDEFINED',
       getVariableValue: ({ settings, variableName }: any) => settings.variables[variableName],
     };
@@ -40,10 +35,13 @@ describe('ConfigConstructorPool', () => {
         'http://example.org/': `${__dirname}/`,
       },
     };
-    creationSettings = {
+    pool = new ConfigConstructorPool({
+      objectLoader,
+      configPreprocessors: rawConfigFactories,
+      constructionStrategy,
       moduleState,
-      creationStrategy,
-    };
+    });
+    creationSettings = {};
   });
 
   describe('with no preprocessors', () => {
