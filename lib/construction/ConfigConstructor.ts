@@ -1,14 +1,14 @@
 import type { Resource, RdfObjectLoader } from 'rdf-object';
 import * as Util from '../Util';
-import { ArgumentCreationHandlerArray } from './argumentcreation/ArgumentCreationHandlerArray';
-import { ArgumentCreationHandlerHash } from './argumentcreation/ArgumentCreationHandlerHash';
-import { ArgumentCreationHandlerPrimitive } from './argumentcreation/ArgumentCreationHandlerPrimitive';
-import { ArgumentCreationHandlerReference } from './argumentcreation/ArgumentCreationHandlerReference';
-import { ArgumentCreationHandlerValue } from './argumentcreation/ArgumentCreationHandlerValue';
-import type { IArgumentCreationHandler } from './argumentcreation/IArgumentCreationHandler';
-import type { IArgumentsCreator } from './argumentcreation/IArgumentsCreator';
-import type { IInstancePool } from './IInstancePool';
-import type { IInstantiationSettingsInner } from './IInstantiationSettings';
+import { ArgumentConstructorHandlerArray } from './argument/ArgumentConstructorHandlerArray';
+import { ArgumentConstructorHandlerHash } from './argument/ArgumentConstructorHandlerHash';
+import { ArgumentConstructorHandlerPrimitive } from './argument/ArgumentConstructorHandlerPrimitive';
+import { ArgumentConstructorHandlerReference } from './argument/ArgumentConstructorHandlerReference';
+import { ArgumentConstructorHandlerValue } from './argument/ArgumentConstructorHandlerValue';
+import type { IArgumentConstructorHandler } from './argument/IArgumentConstructorHandler';
+import type { IArgumentsConstructor } from './argument/IArgumentsConstructor';
+import type { IConfigConstructorPool } from './IConfigConstructorPool';
+import type { IConstructionSettingsInner } from './IConstructionSettings';
 
 /**
  * Creates instances of raw configs using the configured creation strategy.
@@ -17,27 +17,33 @@ import type { IInstantiationSettingsInner } from './IInstantiationSettings';
  * * requireName: required
  * * requireElement: optional
  * * arguments: optional
+ *
+ * Arguments will recursively be converted to instances using {@link IArgumentConstructorHandler}'s.
+ *
+ * This will always create unique instances of configs.
+ * If you want to make sure that instances are reused,
+ * be sure to call {@link ConfigConstructorPool} instead.
  */
-export class ConfigConstructor implements IArgumentsCreator {
-  private static readonly ARGS_HANDLERS: IArgumentCreationHandler[] = [
-    new ArgumentCreationHandlerHash(),
-    new ArgumentCreationHandlerArray(),
-    new ArgumentCreationHandlerValue(),
-    new ArgumentCreationHandlerReference(),
-    new ArgumentCreationHandlerPrimitive(),
+export class ConfigConstructor implements IArgumentsConstructor {
+  private static readonly ARGS_HANDLERS: IArgumentConstructorHandler[] = [
+    new ArgumentConstructorHandlerHash(),
+    new ArgumentConstructorHandlerArray(),
+    new ArgumentConstructorHandlerValue(),
+    new ArgumentConstructorHandlerReference(),
+    new ArgumentConstructorHandlerPrimitive(),
   ];
 
   public readonly objectLoader: RdfObjectLoader;
-  public readonly instancePool: IInstancePool;
+  public readonly configConstructorPool: IConfigConstructorPool;
 
   public constructor(options: IConfigConstructorOptions) {
     this.objectLoader = options.objectLoader;
-    this.instancePool = options.instancePool;
+    this.configConstructorPool = options.configConstructorPool;
   }
 
   public async getArgumentValues<Instance>(
     values: Resource[],
-    settings: IInstantiationSettingsInner<Instance>,
+    settings: IConstructionSettingsInner<Instance>,
   ): Promise<Instance> {
     // Unwrap unique values out of the array
     if (values.length > 0 && values[0].property.unique && values[0].property.unique.value === 'true') {
@@ -51,7 +57,7 @@ export class ConfigConstructor implements IArgumentsCreator {
 
   public async getArgumentValue<Instance>(
     value: Resource,
-    settings: IInstantiationSettingsInner<Instance>,
+    settings: IConstructionSettingsInner<Instance>,
   ): Promise<Instance> {
     // Check if this args resource can be handled by one of the built-in handlers.
     for (const handler of ConfigConstructor.ARGS_HANDLERS) {
@@ -73,7 +79,7 @@ Value: ${Util.resourceToString(value)}`);
    */
   public async createArguments<Instance>(
     config: Resource,
-    settings: IInstantiationSettingsInner<Instance>,
+    settings: IConstructionSettingsInner<Instance>,
   ): Promise<Instance[]> {
     if (config.property.arguments) {
       if (!config.property.arguments.list) {
@@ -94,7 +100,7 @@ Config: ${Util.resourceToString(config)}`);
    */
   public async createInstance<Instance>(
     config: Resource,
-    settings: IInstantiationSettingsInner<Instance>,
+    settings: IConstructionSettingsInner<Instance>,
   ): Promise<Instance> {
     const args: Instance[] = await this.createArguments(config, settings);
     return settings.creationStrategy.createInstance({
@@ -120,5 +126,5 @@ export interface IConfigConstructorOptions {
   /**
    * The instance pool.
    */
-  instancePool: IInstancePool;
+  configConstructorPool: IConfigConstructorPool;
 }

@@ -1,11 +1,10 @@
 import * as fs from 'fs';
 import { DataFactory } from 'rdf-data-factory';
 import { Resource, RdfObjectLoader } from 'rdf-object';
-
-import type { ICreationStrategy } from '../../../lib/creationstrategy/ICreationStrategy';
-import { ConfigConstructor } from '../../../lib/instantiation/ConfigConstructor';
-import type { IInstantiationSettingsInner } from '../../../lib/instantiation/IInstantiationSettings';
-import type { InstancePool } from '../../../lib/instantiation/InstancePool';
+import { ConfigConstructor } from '../../../lib/construction/ConfigConstructor';
+import type { ConfigConstructorPool } from '../../../lib/construction/ConfigConstructorPool';
+import type { IConstructionSettingsInner } from '../../../lib/construction/IConstructionSettings';
+import type { IConstructionStrategy } from '../../../lib/construction/strategy/IConstructionStrategy';
 import type { IModuleState } from '../../../lib/ModuleStateBuilder';
 
 const DF = new DataFactory();
@@ -13,11 +12,11 @@ const DF = new DataFactory();
 describe('ConfigConstructor', () => {
   let objectLoader: RdfObjectLoader;
   let componentResources: Record<string, Resource>;
-  let instancePool: InstancePool;
+  let configConstructorPool: ConfigConstructorPool;
   let constructor: ConfigConstructor;
-  let creationStrategy: ICreationStrategy<any>;
+  let creationStrategy: IConstructionStrategy<any>;
   let moduleState: IModuleState;
-  let settings: IInstantiationSettingsInner<any>;
+  let settings: IConstructionSettingsInner<any>;
 
   beforeEach(async() => {
     objectLoader = new RdfObjectLoader({
@@ -25,12 +24,12 @@ describe('ConfigConstructor', () => {
     });
     await objectLoader.context;
     componentResources = {};
-    instancePool = <any> {
+    configConstructorPool = <any> {
       instantiate: jest.fn(() => 'INSTANCE'),
     };
     constructor = new ConfigConstructor({
       objectLoader,
-      instancePool,
+      configConstructorPool,
     });
 
     creationStrategy = {
@@ -328,21 +327,21 @@ describe('ConfigConstructor', () => {
         });
       });
 
-      it('should handle an IRI as instantiation', async() => {
+      it('should handle an IRI as construction', async() => {
         const resource = objectLoader.createCompactedResource({
           '@id': 'ex:abc',
         });
         expect(await constructor.getArgumentValue(resource, settings)).toEqual('INSTANCE');
-        expect(instancePool.instantiate).toHaveBeenCalledWith(resource, settings);
+        expect(configConstructorPool.instantiate).toHaveBeenCalledWith(resource, settings);
       });
 
-      it('should handle a bnode as instantiation', async() => {
+      it('should handle a bnode as construction', async() => {
         const resource = objectLoader.createCompactedResource({});
         expect(await constructor.getArgumentValue(resource, settings)).toEqual('INSTANCE');
-        expect(instancePool.instantiate).toHaveBeenCalledWith(resource, settings);
+        expect(configConstructorPool.instantiate).toHaveBeenCalledWith(resource, settings);
       });
 
-      it('should not handle an IRI with shallow instantiation', async() => {
+      it('should not handle an IRI with shallow construction', async() => {
         settings.shallow = true;
         const resource = objectLoader.createCompactedResource({
           '@id': 'ex:abc',
@@ -356,7 +355,7 @@ describe('ConfigConstructor', () => {
         });
       });
 
-      it('should not handle a bnode with shallow instantiation', async() => {
+      it('should not handle a bnode with shallow construction', async() => {
         settings.shallow = true;
         const resource = objectLoader.createCompactedResource({});
         expect(await constructor.getArgumentValue(resource, settings)).toEqual({
@@ -368,25 +367,25 @@ describe('ConfigConstructor', () => {
         });
       });
 
-      it('should handle an IRI with lazy flag as instantiation', async() => {
+      it('should handle an IRI with lazy flag as construction', async() => {
         const resource = objectLoader.createCompactedResource({
           '@id': 'ex:abc',
           lazy: '"true"',
         });
         expect(await (await constructor.getArgumentValue(resource, settings))()).toEqual('INSTANCE');
-        expect(instancePool.instantiate).toHaveBeenCalledWith(resource, settings);
+        expect(configConstructorPool.instantiate).toHaveBeenCalledWith(resource, settings);
         expect(creationStrategy.createLazySupplier).toHaveBeenCalledWith({
           settings,
           supplier: expect.any(Function),
         });
       });
 
-      it('should handle a bnode with lazy flag as instantiation', async() => {
+      it('should handle a bnode with lazy flag as construction', async() => {
         const resource = objectLoader.createCompactedResource({
           lazy: '"true"',
         });
         expect(await (await constructor.getArgumentValue(resource, settings))()).toEqual('INSTANCE');
-        expect(instancePool.instantiate).toHaveBeenCalledWith(resource, settings);
+        expect(configConstructorPool.instantiate).toHaveBeenCalledWith(resource, settings);
         expect(creationStrategy.createLazySupplier).toHaveBeenCalledWith({
           settings,
           supplier: expect.any(Function),

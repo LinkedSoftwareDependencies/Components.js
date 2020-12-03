@@ -1,10 +1,10 @@
 import type { Resource } from 'rdf-object';
-import type { IInstantiationSettingsInner } from './IInstantiationSettings';
+import type { IConstructionSettingsInner } from './IConstructionSettings';
 
 /**
  * Manages and creates instances of components.
  */
-export interface IInstancePool {
+export interface IConfigConstructorPool {
   /**
    * Instantiate a component based on a Resource.
    * @param configResource A config resource.
@@ -13,7 +13,7 @@ export interface IInstancePool {
    */
   instantiate: <Instance>(
     configResource: Resource,
-    settings: IInstantiationSettingsInner<Instance>,
+    settings: IConstructionSettingsInner<Instance>,
   ) => Promise<Instance>;
 
 }

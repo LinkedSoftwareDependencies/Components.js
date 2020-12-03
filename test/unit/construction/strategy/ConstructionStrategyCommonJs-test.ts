@@ -1,7 +1,7 @@
 import * as Path from 'path';
-import { CreationStrategyCommonJs } from '../../../lib/creationstrategy/CreationStrategyCommonJs';
-import type { IInstantiationSettingsInner } from '../../../lib/instantiation/IInstantiationSettings';
-import type { IModuleState } from '../../../lib/ModuleStateBuilder';
+import type { IConstructionSettingsInner } from '../../../../lib/construction/IConstructionSettings';
+import { ConstructionStrategyCommonJs } from '../../../../lib/construction/strategy/ConstructionStrategyCommonJs';
+import type { IModuleState } from '../../../../lib/ModuleStateBuilder';
 
 class MyClass {
   public readonly arg1: string;
@@ -15,15 +15,15 @@ class MyClass {
   }
 }
 
-describe('CreationStrategyCommonJs', () => {
+describe('ConstructionStrategyCommonJs', () => {
   let requireMain: any;
   let requireOther: any;
   let requireFile: any;
 
   let req: NodeJS.Require;
   let moduleState: IModuleState;
-  let creationStrategy: CreationStrategyCommonJs;
-  let settings: IInstantiationSettingsInner<any>;
+  let creationStrategy: ConstructionStrategyCommonJs;
+  let settings: IConstructionSettingsInner<any>;
   beforeEach(async() => {
     requireMain = {
       a: {
@@ -75,7 +75,7 @@ describe('CreationStrategyCommonJs', () => {
         },
       },
     };
-    creationStrategy = new CreationStrategyCommonJs({ req });
+    creationStrategy = new ConstructionStrategyCommonJs({ req });
     settings = {
       moduleState,
       creationStrategy,
@@ -95,7 +95,7 @@ describe('CreationStrategyCommonJs', () => {
     });
 
     it('without requireElement and constructor in the current module with defined require names', () => {
-      creationStrategy = new CreationStrategyCommonJs({ req, overrideRequireNames: {}});
+      creationStrategy = new ConstructionStrategyCommonJs({ req, overrideRequireNames: {}});
       settings = {
         moduleState,
         creationStrategy,
@@ -111,7 +111,7 @@ describe('CreationStrategyCommonJs', () => {
     });
 
     it('without requireElement and constructor in the current module overridden require name', () => {
-      creationStrategy = new CreationStrategyCommonJs({ req, overrideRequireNames: { mainalias: 'currentmodule' }});
+      creationStrategy = new ConstructionStrategyCommonJs({ req, overrideRequireNames: { mainalias: 'currentmodule' }});
       settings = {
         moduleState,
         creationStrategy,

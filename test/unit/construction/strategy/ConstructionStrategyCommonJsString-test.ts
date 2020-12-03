@@ -1,14 +1,16 @@
-import { CreationStrategyCommonJsString } from '../../../lib/creationstrategy/CreationStrategyCommonJsString';
-import type { IInstantiationSettingsInner } from '../../../lib/instantiation/IInstantiationSettings';
-import type { IModuleState } from '../../../lib/ModuleStateBuilder';
+import type { IConstructionSettingsInner } from '../../../../lib/construction/IConstructionSettings';
+import {
+  ConstructionStrategyCommonJsString,
+} from '../../../../lib/construction/strategy/ConstructionStrategyCommonJsString';
+import type { IModuleState } from '../../../../lib/ModuleStateBuilder';
 
-describe('CreationStrategyCommonJsString', () => {
+describe('ConstructionStrategyCommonJsString', () => {
   let requireMain: any;
 
   let req: NodeJS.Require;
   let moduleState: IModuleState;
-  let creationStrategy: CreationStrategyCommonJsString;
-  let settings: IInstantiationSettingsInner<any>;
+  let creationStrategy: ConstructionStrategyCommonJsString;
+  let settings: IConstructionSettingsInner<any>;
   beforeEach(async() => {
     requireMain = {
       a: {
@@ -42,7 +44,7 @@ describe('CreationStrategyCommonJsString', () => {
         },
       },
     };
-    creationStrategy = new CreationStrategyCommonJsString({ req });
+    creationStrategy = new ConstructionStrategyCommonJsString({ req });
     settings = {
       moduleState,
       creationStrategy,
@@ -65,7 +67,7 @@ describe('CreationStrategyCommonJsString', () => {
     });
 
     it('without requireElement and constructor in the current module with defined require names', () => {
-      creationStrategy = new CreationStrategyCommonJsString({ req, overrideRequireNames: {}});
+      creationStrategy = new ConstructionStrategyCommonJsString({ req, overrideRequireNames: {}});
       settings = {
         moduleState,
         creationStrategy,
@@ -84,7 +86,7 @@ describe('CreationStrategyCommonJsString', () => {
     });
 
     it('without requireElement and constructor in the current module overridden require name', () => {
-      creationStrategy = new CreationStrategyCommonJsString({
+      creationStrategy = new ConstructionStrategyCommonJsString({
         req,
         overrideRequireNames: { mainalias: 'currentmodule' },
       });
@@ -336,7 +338,7 @@ describe('CreationStrategyCommonJsString', () => {
     });
 
     it('when asFunction is true', () => {
-      creationStrategy = new CreationStrategyCommonJsString({ req, asFunction: true });
+      creationStrategy = new ConstructionStrategyCommonJsString({ req, asFunction: true });
       settings = {
         moduleState,
         creationStrategy,
@@ -356,39 +358,39 @@ describe('CreationStrategyCommonJsString', () => {
 
   describe('uriToVariableName', () => {
     it('should replace #', () => {
-      expect(CreationStrategyCommonJsString.uriToVariableName('abc#xyz')).toEqual('abc_xyz');
+      expect(ConstructionStrategyCommonJsString.uriToVariableName('abc#xyz')).toEqual('abc_xyz');
     });
 
     it('should replace .', () => {
-      expect(CreationStrategyCommonJsString.uriToVariableName('abc.xyz')).toEqual('abc_xyz');
+      expect(ConstructionStrategyCommonJsString.uriToVariableName('abc.xyz')).toEqual('abc_xyz');
     });
 
     it('should replace /', () => {
-      expect(CreationStrategyCommonJsString.uriToVariableName('abc/xyz')).toEqual('abc_xyz');
+      expect(ConstructionStrategyCommonJsString.uriToVariableName('abc/xyz')).toEqual('abc_xyz');
     });
 
     it('should replace :', () => {
-      expect(CreationStrategyCommonJsString.uriToVariableName('abc:xyz')).toEqual('abc_xyz');
+      expect(ConstructionStrategyCommonJsString.uriToVariableName('abc:xyz')).toEqual('abc_xyz');
     });
 
     it('should replace @', () => {
-      expect(CreationStrategyCommonJsString.uriToVariableName('abc@xyz')).toEqual('abc_xyz');
+      expect(ConstructionStrategyCommonJsString.uriToVariableName('abc@xyz')).toEqual('abc_xyz');
     });
 
     it('should replace \\', () => {
-      expect(CreationStrategyCommonJsString.uriToVariableName('abc\\xyz')).toEqual('abc_xyz');
+      expect(ConstructionStrategyCommonJsString.uriToVariableName('abc\\xyz')).toEqual('abc_xyz');
     });
 
     it('should replace ^', () => {
-      expect(CreationStrategyCommonJsString.uriToVariableName('abc^xyz')).toEqual('abc_xyz');
+      expect(ConstructionStrategyCommonJsString.uriToVariableName('abc^xyz')).toEqual('abc_xyz');
     });
 
     it('should replace -', () => {
-      expect(CreationStrategyCommonJsString.uriToVariableName('abc-xyz')).toEqual('abc_xyz');
+      expect(ConstructionStrategyCommonJsString.uriToVariableName('abc-xyz')).toEqual('abc_xyz');
     });
 
     it('should handle a complex IRI', () => {
-      expect(CreationStrategyCommonJsString.uriToVariableName(`https://linkedsoftwaredependencies.org/bundles/npm/%40comunica%2Factor-init-sparql/%5E1.0.0/config/config-default.json#thing`))
+      expect(ConstructionStrategyCommonJsString.uriToVariableName(`https://linkedsoftwaredependencies.org/bundles/npm/%40comunica%2Factor-init-sparql/%5E1.0.0/config/config-default.json#thing`))
         .toEqual(`https___linkedsoftwaredependencies_org_bundles_npm_%40comunica%2Factor_init_sparql_%5E1_0_0_config_config_default_json_thing`);
     });
   });

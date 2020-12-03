@@ -1,23 +1,23 @@
 import * as fs from 'fs';
 import type { Resource } from 'rdf-object';
 import { RdfObjectLoader } from 'rdf-object';
-import type { ICreationStrategy } from '../../../lib/creationstrategy/ICreationStrategy';
-import type { IInstantiationSettingsInner } from '../../../lib/instantiation/IInstantiationSettings';
-import { InstancePool } from '../../../lib/instantiation/InstancePool';
+import { ConfigConstructorPool } from '../../../lib/construction/ConfigConstructorPool';
+import type { IConstructionSettingsInner } from '../../../lib/construction/IConstructionSettings';
+import type { IConstructionStrategy } from '../../../lib/construction/strategy/IConstructionStrategy';
 import type { IModuleState } from '../../../lib/ModuleStateBuilder';
 import 'jest-rdf';
 import { ConfigPreprocessorComponent } from '../../../lib/preprocess/ConfigPreprocessorComponent';
 import { ConfigPreprocessorComponentMapped } from '../../../lib/preprocess/ConfigPreprocessorComponentMapped';
 import type { IConfigPreprocessor } from '../../../lib/preprocess/IConfigPreprocessor';
 
-describe('InstancePool', () => {
+describe('ConfigConstructorPool', () => {
   let objectLoader: RdfObjectLoader;
   let componentResources: Record<string, Resource>;
   let rawConfigFactories: IConfigPreprocessor<any>[];
-  let pool: InstancePool;
-  let creationStrategy: ICreationStrategy<any>;
+  let pool: ConfigConstructorPool;
+  let creationStrategy: IConstructionStrategy<any>;
   let moduleState: IModuleState;
-  let creationSettings: IInstantiationSettingsInner<any>;
+  let creationSettings: IConstructionSettingsInner<any>;
   beforeEach(async() => {
     objectLoader = new RdfObjectLoader({
       context: JSON.parse(fs.readFileSync(`${__dirname}/../../../components/context.jsonld`, 'utf8')),
@@ -25,7 +25,7 @@ describe('InstancePool', () => {
     await objectLoader.context;
     componentResources = {};
     rawConfigFactories = [];
-    pool = new InstancePool({
+    pool = new ConfigConstructorPool({
       objectLoader,
       configPreprocessors: rawConfigFactories,
     });

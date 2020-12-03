@@ -1,25 +1,25 @@
 import type { Resource } from 'rdf-object';
 import * as Util from '../../Util';
-import type { IInstantiationSettingsInner } from '../IInstantiationSettings';
-import type { IArgumentCreationHandler } from './IArgumentCreationHandler';
-import type { IArgumentsCreator } from './IArgumentsCreator';
+import type { IConstructionSettingsInner } from '../IConstructionSettings';
+import type { IArgumentConstructorHandler } from './IArgumentConstructorHandler';
+import type { IArgumentsConstructor } from './IArgumentsConstructor';
 
 /**
  * Handles arguments with fields as hashes.
  */
-export class ArgumentCreationHandlerHash implements IArgumentCreationHandler {
+export class ArgumentConstructorHandlerHash implements IArgumentConstructorHandler {
   public canHandle<Instance>(
     value: Resource,
-    settings: IInstantiationSettingsInner<Instance>,
-    argsCreator: IArgumentsCreator,
+    settings: IConstructionSettingsInner<Instance>,
+    argsCreator: IArgumentsConstructor,
   ): boolean {
     return Boolean(value.property.fields || value.property.hasFields);
   }
 
   public async handle<Instance>(
     value: Resource,
-    settings: IInstantiationSettingsInner<Instance>,
-    argsCreator: IArgumentsCreator,
+    settings: IConstructionSettingsInner<Instance>,
+    argsCreator: IArgumentsConstructor,
   ): Promise<Instance> {
     // Determine all key-value pairs
     const entries = await Promise.all(value.properties.fields.map(async(entry: Resource) => {

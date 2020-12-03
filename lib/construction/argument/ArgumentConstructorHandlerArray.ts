@@ -1,25 +1,25 @@
 import type { Resource } from 'rdf-object';
 import * as Util from '../../Util';
-import type { IInstantiationSettingsInner } from '../IInstantiationSettings';
-import type { IArgumentCreationHandler } from './IArgumentCreationHandler';
-import type { IArgumentsCreator } from './IArgumentsCreator';
+import type { IConstructionSettingsInner } from '../IConstructionSettings';
+import type { IArgumentConstructorHandler } from './IArgumentConstructorHandler';
+import type { IArgumentsConstructor } from './IArgumentsConstructor';
 
 /**
  * Handles arguments with elements as array.
  */
-export class ArgumentCreationHandlerArray implements IArgumentCreationHandler {
+export class ArgumentConstructorHandlerArray implements IArgumentConstructorHandler {
   public canHandle<Instance>(
     value: Resource,
-    settings: IInstantiationSettingsInner<Instance>,
-    argsCreator: IArgumentsCreator,
+    settings: IConstructionSettingsInner<Instance>,
+    argsCreator: IArgumentsConstructor,
   ): boolean {
     return Boolean(value.property.elements);
   }
 
   public async handle<Instance>(
     value: Resource,
-    settings: IInstantiationSettingsInner<Instance>,
-    argsCreator: IArgumentsCreator,
+    settings: IConstructionSettingsInner<Instance>,
+    argsCreator: IArgumentsConstructor,
   ): Promise<Instance> {
     // Recursively handle all sub-args in the array
     const elements = await Promise.all(value.properties.elements.map(async(entry: Resource) => {

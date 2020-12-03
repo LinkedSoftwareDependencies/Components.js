@@ -1,4 +1,4 @@
-import { CreationStrategyCommonJsString } from './creationstrategy/CreationStrategyCommonJsString';
+import { ConstructionStrategyCommonJsString } from './construction/strategy/ConstructionStrategyCommonJsString';
 import type { ILoaderProperties } from './Loader';
 import { Loader } from './Loader';
 import { RdfParser } from './rdf/RdfParser';
@@ -23,7 +23,7 @@ export async function compileConfig(
   asFunction?: boolean,
 ): Promise<string> {
   // Load modules and config
-  const creationStrategy = new CreationStrategyCommonJsString({ asFunction, req: require });
+  const creationStrategy = new ConstructionStrategyCommonJsString({ asFunction, req: require });
   const loader = new Loader(properties, creationStrategy);
   await loader.registerAvailableModuleResources();
   const state = await loader.getModuleState();
@@ -41,10 +41,10 @@ export async function compileConfig(
 
   // Override main variable name if needed
   exportVariableName = exportVariableName ?
-    CreationStrategyCommonJsString.uriToVariableName(exportVariableName) :
+    ConstructionStrategyCommonJsString.uriToVariableName(exportVariableName) :
     exportVariableName;
   if (exportVariableName !== serializationVariableName) {
-    // Remove the instantiation of the runner component, as it will not be needed anymore.
+    // Remove the construction of the runner component, as it will not be needed anymore.
     document = document.replace('new (require(\'@comunica/runner\').Runner)', '');
   }
 

@@ -1,7 +1,7 @@
 import type { Resource, RdfObjectLoader } from 'rdf-object';
 import { mocked } from 'ts-jest/utils';
-import type { IInstancePool } from '../../lib/instantiation/IInstancePool';
-import type { IInstantiationSettingsInner } from '../../lib/instantiation/IInstantiationSettings';
+import type { IConfigConstructorPool } from '../../lib/construction/IConfigConstructorPool';
+import type { IConstructionSettingsInner } from '../../lib/construction/IConstructionSettings';
 import type { Loader } from '../../lib/Loader';
 import * as Util from '../../lib/Util';
 import { LoaderMocked } from './LoaderMocked';
@@ -13,20 +13,20 @@ jest.mock('n3', () => ({
   Util: { type: 'UTIL' },
 }));
 
-describe('instantiation with component configs as Resource', () => {
+describe('construction with component configs as Resource', () => {
   let loader: Loader<any>;
-  let instancePool: IInstancePool;
+  let configConstructorPool: IConfigConstructorPool;
   let objectLoader: RdfObjectLoader;
-  let settings: IInstantiationSettingsInner<any>;
+  let settings: IConstructionSettingsInner<any>;
   beforeEach(async() => {
     loader = new LoaderMocked();
-    instancePool = await loader.getInstancePool();
+    configConstructorPool = await loader.getInstancePool();
     objectLoader = (<any> loader).objectLoader;
-    settings = await loader.getCreationSettingsInner({});
+    settings = await loader.getConstructionSettingsInner({});
     jest.clearAllMocks();
   });
 
-  describe('for a component that requires no instantiation', () => {
+  describe('for a component that requires no construction', () => {
     beforeEach(() => {
       (<any> loader).componentResources['http://example.org/n3#Util'] = objectLoader.createCompactedResource({
         '@id': 'http://example.org/n3#Util',
@@ -43,7 +43,7 @@ describe('instantiation with component configs as Resource', () => {
       const config = objectLoader.createCompactedResource({
         types: 'http://example.org/n3#Util',
       });
-      const instance = await instancePool.instantiate(config, settings);
+      const instance = await configConstructorPool.instantiate(config, settings);
       expect(instance.type).toEqual('UTIL');
       expect(instance).toBe(N3.Util);
     });
@@ -65,7 +65,7 @@ describe('instantiation with component configs as Resource', () => {
       const config = objectLoader.createCompactedResource({
         types: 'http://example.org/n3#Lexer',
       });
-      const instance = await instancePool.instantiate(config, settings);
+      const instance = await configConstructorPool.instantiate(config, settings);
       expect(instance.type).toEqual('LEXER');
       expect(N3.Lexer).toHaveBeenCalledWith({});
     });
@@ -95,7 +95,7 @@ describe('instantiation with component configs as Resource', () => {
         'http://example.org/n3#n3': '"true"',
         'http://example.org/n3#comments': '"true"',
       });
-      const instance = await instancePool.instantiate(config, settings);
+      const instance = await configConstructorPool.instantiate(config, settings);
       expect(instance.type).toEqual('LEXER');
       expect(N3.Lexer).toHaveBeenCalledWith({
         'http://example.org/n3#lineMode': [ 'true' ],
@@ -111,7 +111,7 @@ describe('instantiation with component configs as Resource', () => {
         'http://example.org/n3#n3': [ '"B1"', '"B2"' ],
         'http://example.org/n3#comments': [ '"C1"', '"C2"' ],
       });
-      const instance = await instancePool.instantiate(config, settings);
+      const instance = await configConstructorPool.instantiate(config, settings);
       expect(instance.type).toEqual('LEXER');
       expect(N3.Lexer).toHaveBeenCalledWith({
         'http://example.org/n3#lineMode': [ 'A1', 'A2' ],
@@ -145,7 +145,7 @@ describe('instantiation with component configs as Resource', () => {
         'http://example.org/n3#n3': '"true"',
         'http://example.org/n3#comments': '"true"',
       });
-      const instance = await instancePool.instantiate(config, settings);
+      const instance = await configConstructorPool.instantiate(config, settings);
       expect(instance.type).toEqual('LEXER');
       expect(N3.Lexer).toHaveBeenCalledWith({
         'http://example.org/n3#lineMode': 'true',
@@ -161,7 +161,7 @@ describe('instantiation with component configs as Resource', () => {
         'http://example.org/n3#n3': [ '"B1"', '"B2"' ],
         'http://example.org/n3#comments': [ '"C1"', '"C2"' ],
       });
-      const instance = await instancePool.instantiate(config, settings);
+      const instance = await configConstructorPool.instantiate(config, settings);
       expect(instance.type).toEqual('LEXER');
       expect(N3.Lexer).toHaveBeenCalledWith({
         'http://example.org/n3#lineMode': 'A1',
@@ -187,7 +187,7 @@ describe('instantiation with component configs as Resource', () => {
           'ex:var2': 'B',
           'ex:var3': 'C',
         };
-        const instance = await instancePool.instantiate(config, settings);
+        const instance = await configConstructorPool.instantiate(config, settings);
         expect(instance.type).toEqual('LEXER');
         expect(N3.Lexer).toHaveBeenCalledWith({
           'http://example.org/n3#lineMode': 'A',
@@ -197,7 +197,7 @@ describe('instantiation with component configs as Resource', () => {
       });
 
       it('with undefined variables', async() => {
-        await expect(instancePool.instantiate(config, settings)).rejects
+        await expect(configConstructorPool.instantiate(config, settings)).rejects
           .toThrowError(/^Undefined variable: ex:var1/u);
       });
 
@@ -206,7 +206,7 @@ describe('instantiation with component configs as Resource', () => {
           'ex:var1': 'A',
           'ex:var3': 'C',
         };
-        await expect(instancePool.instantiate(config, settings)).rejects
+        await expect(configConstructorPool.instantiate(config, settings)).rejects
           .toThrowError(/^Undefined variable: ex:var2/u);
       });
     });
@@ -236,7 +236,7 @@ describe('instantiation with component configs as Resource', () => {
         'http://example.org/n3#n3': '"true"',
         'http://example.org/n3#comments': '"true"',
       });
-      const instance = await instancePool.instantiate(config, settings);
+      const instance = await configConstructorPool.instantiate(config, settings);
       expect(instance.type).toEqual('LEXER');
       expect(N3.Lexer).toHaveBeenCalledWith({
         'http://example.org/n3#lineMode': 'true',
@@ -249,7 +249,7 @@ describe('instantiation with component configs as Resource', () => {
       const config = objectLoader.createCompactedResource({
         types: 'http://example.org/n3#Lexer',
       });
-      await expect(instancePool.instantiate(config, settings)).rejects
+      await expect(configConstructorPool.instantiate(config, settings)).rejects
         .toThrowError(/^Parameter .* is required, but no value for it has been set in/u);
     });
   });
@@ -296,7 +296,7 @@ describe('instantiation with component configs as Resource', () => {
           'http://example.org/n3#comments': '"true"',
         },
       });
-      const instance = await instancePool.instantiate(config, settings);
+      const instance = await configConstructorPool.instantiate(config, settings);
       expect(instance.type).toEqual('PARSER');
       expect(N3.Parser).toHaveBeenCalledWith({
         'http://example.org/n3#format': 'application/trig',
@@ -336,7 +336,7 @@ describe('instantiation with component configs as Resource', () => {
         'http://example.org/n3#n3': '"true"',
         'http://example.org/n3#comments': '"true"',
       });
-      const instance = await instancePool.instantiate(config, settings);
+      const instance = await configConstructorPool.instantiate(config, settings);
       expect(instance.type).toEqual('LEXER');
       expect(N3.Lexer).toHaveBeenCalledWith({
         'http://example.org/n3#lineMode': 'true',
@@ -349,7 +349,7 @@ describe('instantiation with component configs as Resource', () => {
       const config = objectLoader.createCompactedResource({
         types: 'http://example.org/n3#Lexer',
       });
-      const instance = await instancePool.instantiate(config, settings);
+      const instance = await configConstructorPool.instantiate(config, settings);
       expect(instance.type).toEqual('LEXER');
       expect(N3.Lexer).toHaveBeenCalledWith({
         'http://example.org/n3#lineMode': 'A',
@@ -408,7 +408,7 @@ describe('instantiation with component configs as Resource', () => {
         'http://example.org/n3#n3': '"true"',
         'http://example.org/n3#comments': '"true"',
       });
-      const instance = await instancePool.instantiate(config, settings);
+      const instance = await configConstructorPool.instantiate(config, settings);
       expect(instance.type).toEqual('LEXER');
       expect(N3.Lexer).toHaveBeenCalledWith({
         'http://example.org/n3#lineMode': 'true',
@@ -421,7 +421,7 @@ describe('instantiation with component configs as Resource', () => {
       const config = objectLoader.createCompactedResource({
         types: 'http://example.org/n3#Lexer',
       });
-      const instance = await instancePool.instantiate(config, settings);
+      const instance = await configConstructorPool.instantiate(config, settings);
       expect(instance.type).toEqual('LEXER');
       expect(N3.Lexer).toHaveBeenCalledWith({
         'http://example.org/n3#lineMode': 'A',
@@ -454,7 +454,7 @@ describe('instantiation with component configs as Resource', () => {
         'http://example.org/n3#n3': '"true"',
         'http://example.org/n3#comments': '"true"',
       });
-      const instance = await instancePool.instantiate(config, settings);
+      const instance = await configConstructorPool.instantiate(config, settings);
       expect(instance.type).toEqual('LEXER');
       expect(N3.Lexer).toHaveBeenCalledWith({
         'http://example.org/n3#lineMode': [ 'true', 'A' ],
@@ -467,7 +467,7 @@ describe('instantiation with component configs as Resource', () => {
       const config = objectLoader.createCompactedResource({
         types: 'http://example.org/n3#Lexer',
       });
-      const instance = await instancePool.instantiate(config, settings);
+      const instance = await configConstructorPool.instantiate(config, settings);
       expect(instance.type).toEqual('LEXER');
       expect(N3.Lexer).toHaveBeenCalledWith({
         'http://example.org/n3#lineMode': [ 'A' ],
@@ -500,7 +500,7 @@ describe('instantiation with component configs as Resource', () => {
         'http://example.org/n3#n3': '"true"',
         'http://example.org/n3#comments': '"true"',
       });
-      await expect(instancePool.instantiate(config, settings)).rejects
+      await expect(configConstructorPool.instantiate(config, settings)).rejects
         .toThrow(/^A parameter is unique, has a fixed value, but also has another defined value\./u);
     });
 
@@ -508,7 +508,7 @@ describe('instantiation with component configs as Resource', () => {
       const config = objectLoader.createCompactedResource({
         types: 'http://example.org/n3#Lexer',
       });
-      const instance = await instancePool.instantiate(config, settings);
+      const instance = await configConstructorPool.instantiate(config, settings);
       expect(instance.type).toEqual('LEXER');
       expect(N3.Lexer).toHaveBeenCalledWith({
         'http://example.org/n3#lineMode': 'A',
@@ -539,7 +539,7 @@ describe('instantiation with component configs as Resource', () => {
         'http://example.org/n3#lineMode': '"true"',
         'http://example.org/n3#n3': '"true"',
       });
-      const instance = await instancePool.instantiate(config, settings);
+      const instance = await configConstructorPool.instantiate(config, settings);
       expect(instance.type).toEqual('LEXER');
       expect(await mocked(N3.Lexer).mock.calls[0][0]['http://example.org/n3#lineMode']()).toEqual('true');
       expect(await mocked(N3.Lexer).mock.calls[0][0]['http://example.org/n3#n3'][0]()).toEqual('true');
@@ -551,7 +551,7 @@ describe('instantiation with component configs as Resource', () => {
         'http://example.org/n3#lineMode': [ '"A1"', '"A2"' ],
         'http://example.org/n3#n3': [ '"B1"', '"B2"' ],
       });
-      const instance = await instancePool.instantiate(config, settings);
+      const instance = await configConstructorPool.instantiate(config, settings);
       expect(instance.type).toEqual('LEXER');
       expect(await mocked(N3.Lexer).mock.calls[0][0]['http://example.org/n3#lineMode']()).toEqual('A1');
       expect(await mocked(N3.Lexer).mock.calls[0][0]['http://example.org/n3#n3'][0]()).toEqual('B1');

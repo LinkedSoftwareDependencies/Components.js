@@ -1,7 +1,7 @@
-import type { ICreationStrategy } from '../creationstrategy/ICreationStrategy';
 import type { IModuleState } from '../ModuleStateBuilder';
+import type { IConstructionStrategy } from './strategy/IConstructionStrategy';
 
-export interface IInstantiationSettings {
+export interface IConstructionSettings {
   /**
    * @param shallow If no component constructors should recursively be called.
    */
@@ -16,7 +16,7 @@ export interface IInstantiationSettings {
   variables?: Record<string, any>;
 }
 
-export interface IInstantiationSettingsInner<Instance> extends IInstantiationSettings {
+export interface IConstructionSettingsInner<Instance> extends IConstructionSettings {
   /**
    * The current module state.
    */
@@ -24,5 +24,5 @@ export interface IInstantiationSettingsInner<Instance> extends IInstantiationSet
   /**
    * The strategy for creating instances.
    */
-  creationStrategy: ICreationStrategy<Instance>;
+  creationStrategy: IConstructionStrategy<Instance>;
 }

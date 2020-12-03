@@ -5,11 +5,11 @@ import type { Resource } from 'rdf-object';
 import { RdfObjectLoader } from 'rdf-object';
 import type { Logger } from 'winston';
 import { createLogger, format, transports } from 'winston';
-import { CreationStrategyCommonJs } from './creationstrategy/CreationStrategyCommonJs';
-import type { ICreationStrategy } from './creationstrategy/ICreationStrategy';
-import type { IInstancePool } from './instantiation/IInstancePool';
-import type { IInstantiationSettings, IInstantiationSettingsInner } from './instantiation/IInstantiationSettings';
-import { InstancePool } from './instantiation/InstancePool';
+import { ConfigConstructorPool } from './construction/ConfigConstructorPool';
+import type { IConfigConstructorPool } from './construction/IConfigConstructorPool';
+import type { IConstructionSettings, IConstructionSettingsInner } from './construction/IConstructionSettings';
+import { ConstructionStrategyCommonJs } from './construction/strategy/ConstructionStrategyCommonJs';
+import type { IConstructionStrategy } from './construction/strategy/IConstructionStrategy';
 import type { LogLevel } from './LogLevel';
 import type { IModuleState } from './ModuleStateBuilder';
 import { ModuleStateBuilder } from './ModuleStateBuilder';
@@ -27,19 +27,19 @@ export class Loader<Instance> {
   private readonly objectLoader: RdfObjectLoader;
   private readonly mainModulePath?: string;
   private readonly dumpErrorState: boolean;
-  private readonly creationStrategy: ICreationStrategy<Instance>;
+  private readonly creationStrategy: IConstructionStrategy<Instance>;
   public readonly logger?: Logger;
 
   private readonly componentResources: Record<string, Resource> = {};
 
   protected moduleState?: IModuleState;
-  protected instancePool?: IInstancePool;
+  protected configConstructorPool?: IConfigConstructorPool;
   protected registrationFinalized = false;
   protected generatedErrorLog = false;
 
   public constructor(
     options: ILoaderProperties = {},
-    creationStrategy: ICreationStrategy<Instance> = new CreationStrategyCommonJs({ req: require }),
+    creationStrategy: IConstructionStrategy<Instance> = new ConstructionStrategyCommonJs({ req: require }),
   ) {
     this.objectLoader = new RdfObjectLoader({
       context: JSON.parse(fs.readFileSync(`${__dirname}/../components/context.jsonld`, 'utf8')),
@@ -81,10 +81,10 @@ export class Loader<Instance> {
   /**
    * Get or create an instance pool for creating new instances.
    */
-  public async getInstancePool(): Promise<IInstancePool> {
-    if (!this.instancePool) {
+  public async getInstancePool(): Promise<IConfigConstructorPool> {
+    if (!this.configConstructorPool) {
       const runTypeConfigs = {};
-      this.instancePool = new InstancePool({
+      this.configConstructorPool = new ConfigConstructorPool({
         objectLoader: this.objectLoader,
         configPreprocessors: [
           new ConfigPreprocessorComponentMapped({
@@ -100,7 +100,7 @@ export class Loader<Instance> {
         ],
       });
     }
-    return this.instancePool;
+    return this.configConstructorPool;
   }
 
   /**
@@ -348,13 +348,13 @@ export class Loader<Instance> {
   }
 
   /**
-   * Return the inner creation settings from the given creation settings.
+   * Return the inner construction settings from the given construction settings.
    * This adds additional fields to the settings.
-   * @param settings Creation settings.
+   * @param settings Construction settings.
    */
-  public async getCreationSettingsInner(
-    settings: IInstantiationSettings,
-  ): Promise<IInstantiationSettingsInner<Instance>> {
+  public async getConstructionSettingsInner(
+    settings: IConstructionSettings,
+  ): Promise<IConstructionSettingsInner<Instance>> {
     return {
       ...settings,
       moduleState: await this.getModuleState(),
@@ -369,14 +369,15 @@ export class Loader<Instance> {
    */
   public async getComponentInstance(
     configResourceIri: string,
-    settings: IInstantiationSettings = {},
+    settings: IConstructionSettings = {},
   ): Promise<Instance> {
     try {
       const configResource: Resource = this.objectLoader.resources[configResourceIri];
       if (!configResource) {
         throw new Error(`Could not find a component config with URI ${configResourceIri} in the triple stream.`);
       }
-      return (await this.getInstancePool()).instantiate(configResource, await this.getCreationSettingsInner(settings));
+      return (await this.getInstancePool())
+        .instantiate(configResource, await this.getConstructionSettingsInner(settings));
     } catch (error: unknown) {
       throw this.generateErrorLog(error);
     }
@@ -391,7 +392,7 @@ export class Loader<Instance> {
   public async getComponentInstanceCustom(
     componentIri: string,
     params: Record<string, string>,
-    settings: IInstantiationSettings = {},
+    settings: IConstructionSettings = {},
   ): Promise<any> {
     try {
       this.checkFinalizeRegistration();
@@ -409,7 +410,8 @@ export class Loader<Instance> {
         configResource.property[key] = this.objectLoader.createCompactedResource(`"${params[key]}"`);
       }
 
-      return (await this.getInstancePool()).instantiate(configResource, await this.getCreationSettingsInner(settings));
+      return (await this.getInstancePool())
+        .instantiate(configResource, await this.getConstructionSettingsInner(settings));
     } catch (error: unknown) {
       throw this.generateErrorLog(error);
     }

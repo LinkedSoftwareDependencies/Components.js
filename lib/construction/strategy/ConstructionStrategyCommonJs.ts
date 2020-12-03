@@ -1,18 +1,18 @@
 import * as Path from 'path';
-import type { IModuleState } from '../ModuleStateBuilder';
+import type { IModuleState } from '../../ModuleStateBuilder';
 import type {
   ICreationStrategyInstanceOptions,
-  ICreationStrategy,
+  IConstructionStrategy,
   ICreationStrategyHashOptions,
   ICreationStrategyArrayOptions,
   ICreationStrategySupplierOptions,
   ICreationStrategyPrimitiveOptions, ICreationStrategyVariableOptions,
-} from './ICreationStrategy';
+} from './IConstructionStrategy';
 
 /**
  * A creation strategy for creating instances with CommonJS.
  */
-export class CreationStrategyCommonJs implements ICreationStrategy<any> {
+export class ConstructionStrategyCommonJs implements IConstructionStrategy<any> {
   private readonly overrideRequireNames: Record<string, string>;
   private readonly req: NodeJS.Require;
 

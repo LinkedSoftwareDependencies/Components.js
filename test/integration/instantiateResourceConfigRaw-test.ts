@@ -1,6 +1,6 @@
 import type { RdfObjectLoader } from 'rdf-object';
-import type { IInstancePool } from '../../lib/instantiation/IInstancePool';
-import type { IInstantiationSettingsInner } from '../../lib/instantiation/IInstantiationSettings';
+import type { IConfigConstructorPool } from '../../lib/construction/IConfigConstructorPool';
+import type { IConstructionSettingsInner } from '../../lib/construction/IConstructionSettings';
 import type { Loader } from '../../lib/Loader';
 import { LoaderMocked } from './LoaderMocked';
 
@@ -13,16 +13,16 @@ jest.mock('n3', () => ({
 
 const Hello = require('../../__mocks__/helloworld').Hello;
 
-describe('instantiation with component configs as Resource', () => {
+describe('construction with component configs as Resource', () => {
   let loader: Loader<any>;
-  let instancePool: IInstancePool;
+  let configConstructorPool: IConfigConstructorPool;
   let objectLoader: RdfObjectLoader;
-  let settings: IInstantiationSettingsInner<any>;
+  let settings: IConstructionSettingsInner<any>;
   beforeEach(async() => {
     loader = new LoaderMocked();
-    instancePool = await loader.getInstancePool();
+    configConstructorPool = await loader.getInstancePool();
     objectLoader = (<any> loader).objectLoader;
-    settings = await loader.getCreationSettingsInner({});
+    settings = await loader.getConstructionSettingsInner({});
     jest.clearAllMocks();
   });
 
@@ -38,7 +38,7 @@ describe('instantiation with component configs as Resource', () => {
         ],
       },
     });
-    const instance = await instancePool.instantiate(config, settings);
+    const instance = await configConstructorPool.instantiate(config, settings);
     expect(instance.type).toEqual('LEXER');
     expect(N3.Lexer).toHaveBeenCalledWith({ comments: [ 'true' ]});
   });
@@ -55,7 +55,7 @@ describe('instantiation with component configs as Resource', () => {
         ],
       },
     });
-    const instance = await instancePool.instantiate(config, settings);
+    const instance = await configConstructorPool.instantiate(config, settings);
     expect(instance.type).toEqual('LEXER');
     expect(N3.Lexer).toHaveBeenCalledWith([ 'A', 'B', 'C' ]);
   });
@@ -87,7 +87,7 @@ describe('instantiation with component configs as Resource', () => {
         ],
       },
     });
-    const instance = await instancePool.instantiate(config, settings);
+    const instance = await configConstructorPool.instantiate(config, settings);
     expect(instance.type).toEqual('PARSER');
     expect(N3.Parser).toHaveBeenCalledWith({
       format: [ 'application/trig' ],
@@ -108,7 +108,7 @@ describe('instantiation with component configs as Resource', () => {
         list: [],
       },
     });
-    const instance = await instancePool.instantiate(config, settings);
+    const instance = await configConstructorPool.instantiate(config, settings);
     expect(instance).toBeInstanceOf(Hello);
   });
 
@@ -118,7 +118,7 @@ describe('instantiation with component configs as Resource', () => {
       requireElement: '"Util"',
       requireNoConstructor: '"true"',
     });
-    const instance = await instancePool.instantiate(config, settings);
+    const instance = await configConstructorPool.instantiate(config, settings);
     expect(instance.type).toEqual('UTIL');
     expect(instance).toBe(N3.Util);
   });

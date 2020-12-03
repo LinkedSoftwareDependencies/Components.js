@@ -1,11 +1,11 @@
 import type { Resource } from 'rdf-object';
-import type { IInstantiationSettingsInner } from '../IInstantiationSettings';
-import type { IArgumentsCreator } from './IArgumentsCreator';
+import type { IConstructionSettingsInner } from '../IConstructionSettings';
+import type { IArgumentsConstructor } from './IArgumentsConstructor';
 
 /**
  * Creates instances for specific types of arguments.
  */
-export interface IArgumentCreationHandler {
+export interface IArgumentConstructorHandler {
   /**
    * Check if this can handle the given argument.
    * @param value An argument value.
@@ -14,8 +14,8 @@ export interface IArgumentCreationHandler {
    */
   canHandle: <Instance>(
     value: Resource,
-    settings: IInstantiationSettingsInner<Instance>,
-    argsCreator: IArgumentsCreator,
+    settings: IConstructionSettingsInner<Instance>,
+    argsCreator: IArgumentsConstructor,
   ) => boolean;
 
   /**
@@ -26,7 +26,7 @@ export interface IArgumentCreationHandler {
    */
   handle: <Instance>(
     value: Resource,
-    settings: IInstantiationSettingsInner<Instance>,
-    argsCreator: IArgumentsCreator,
+    settings: IConstructionSettingsInner<Instance>,
+    argsCreator: IArgumentsConstructor,
   ) => Promise<Instance>;
 }

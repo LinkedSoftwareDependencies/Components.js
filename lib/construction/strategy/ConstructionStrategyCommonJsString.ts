@@ -1,30 +1,30 @@
 import * as Path from 'path';
-import type { IModuleState } from '../ModuleStateBuilder';
-import type { ICreationStrategyCommonJsOptions } from './CreationStrategyCommonJs';
-import { CreationStrategyCommonJs } from './CreationStrategyCommonJs';
-import type { ICreationStrategy,
+import type { IModuleState } from '../../ModuleStateBuilder';
+import type { ICreationStrategyCommonJsOptions } from './ConstructionStrategyCommonJs';
+import { ConstructionStrategyCommonJs } from './ConstructionStrategyCommonJs';
+import type { IConstructionStrategy,
   ICreationStrategyHashOptions,
   ICreationStrategyInstanceOptions,
 
   ICreationStrategyArrayOptions,
   ICreationStrategyPrimitiveOptions,
   ICreationStrategySupplierOptions,
-  ICreationStrategyVariableOptions } from './ICreationStrategy';
+  ICreationStrategyVariableOptions } from './IConstructionStrategy';
 
 /**
  * A creation strategy for a string representation of CommonJS.
  */
-export class CreationStrategyCommonJsString implements ICreationStrategy<string> {
+export class ConstructionStrategyCommonJsString implements IConstructionStrategy<string> {
   private readonly overrideRequireNames: Record<string, string>;
   private readonly asFunction: boolean;
-  private readonly strategyCommonJs: CreationStrategyCommonJs;
+  private readonly strategyCommonJs: ConstructionStrategyCommonJs;
 
   public readonly lines: string[] = [];
 
   public constructor(options: ICreationStrategyCommonJsStringOptions) {
     this.overrideRequireNames = options.overrideRequireNames || {};
     this.asFunction = Boolean(options.asFunction);
-    this.strategyCommonJs = new CreationStrategyCommonJs(options);
+    this.strategyCommonJs = new ConstructionStrategyCommonJs(options);
   }
 
   public createInstance(options: ICreationStrategyInstanceOptions<string>): string {
@@ -51,7 +51,7 @@ export class CreationStrategyCommonJsString implements ICreationStrategy<string>
     }
 
     // Add a line to our file to declare the instantiated element as a const
-    const serializationVariableName = CreationStrategyCommonJsString.uriToVariableName(options.instanceId);
+    const serializationVariableName = ConstructionStrategyCommonJsString.uriToVariableName(options.instanceId);
     serialization = `const ${serializationVariableName} = ${serialization};`;
     this.lines.push(serialization);
     serialization = serializationVariableName;

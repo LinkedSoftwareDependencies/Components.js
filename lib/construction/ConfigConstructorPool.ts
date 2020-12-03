@@ -2,13 +2,18 @@ import type { Resource, RdfObjectLoader } from 'rdf-object';
 import type { IConfigPreprocessor } from '../preprocess/IConfigPreprocessor';
 import * as Util from '../Util';
 import { ConfigConstructor } from './ConfigConstructor';
-import type { IInstancePool } from './IInstancePool';
-import type { IInstantiationSettingsInner } from './IInstantiationSettings';
+import type { IConfigConstructorPool } from './IConfigConstructorPool';
+import type { IConstructionSettingsInner } from './IConstructionSettings';
 
 /**
- * Manages and creates instances of components.
+ * Manages and creates instances of components based on a given config.
+ *
+ * This accepts different config variants, as supported by the configured {@link IConfigPreprocessor}'s.
+ *
+ * This will make sure that configs with the same id will only be instantiated once,
+ * and multiple references to configs will always reuse the same instance.
  */
-export class InstancePool implements IInstancePool {
+export class ConfigConstructorPool implements IConfigConstructorPool {
   private readonly configPreprocessors: IConfigPreprocessor<any>[];
   private readonly configConstructor: ConfigConstructor;
 
@@ -18,13 +23,13 @@ export class InstancePool implements IInstancePool {
     this.configPreprocessors = options.configPreprocessors;
     this.configConstructor = new ConfigConstructor({
       objectLoader: options.objectLoader,
-      instancePool: this,
+      configConstructorPool: this,
     });
   }
 
   public async instantiate<Instance>(
     configResource: Resource,
-    settings: IInstantiationSettingsInner<Instance>,
+    settings: IConstructionSettingsInner<Instance>,
   ): Promise<Instance> {
     // Check if this resource is required as argument in its own chain,
     // if so, return a dummy value, to avoid infinite recursion.
@@ -53,6 +58,8 @@ export class InstancePool implements IInstancePool {
 
   /**
    * Determine the raw config of the given config.
+   * As such, the config can be transformd by zero or more {@link IConfigPreprocessor}'s.
+   *
    * @param config Config to possibly transform.
    * @returns The raw config data.
    */

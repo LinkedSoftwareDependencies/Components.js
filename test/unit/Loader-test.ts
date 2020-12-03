@@ -3,7 +3,7 @@ import * as Path from 'path';
 import { Readable } from 'stream';
 import type * as RDF from 'rdf-js';
 import type { RdfObjectLoader, Resource } from 'rdf-object';
-import type { IInstancePool } from '../../lib/instantiation/IInstancePool';
+import type { IConfigConstructorPool } from '../../lib/construction/IConfigConstructorPool';
 import { Loader } from '../../lib/Loader';
 import { RdfParser } from '../../lib/rdf/RdfParser';
 import * as Util from '../../lib/Util';
@@ -14,7 +14,7 @@ const Hello = require('../../__mocks__/helloworld').Hello;
 describe('Loader', () => {
   let loader: Loader<any>;
   let objectLoader: RdfObjectLoader;
-  let instancePool: IInstancePool;
+  let configConstructorPool: IConfigConstructorPool;
   beforeEach(async() => {
     loader = new Loader();
     const moduleState = <any> {
@@ -25,7 +25,7 @@ describe('Loader', () => {
     };
     (<any> loader).moduleState = moduleState;
     objectLoader = (<any> loader).objectLoader;
-    instancePool = await loader.getInstancePool();
+    configConstructorPool = await loader.getInstancePool();
   });
 
   describe('constructing an N3 Parser, unnamed', () => {
@@ -122,7 +122,8 @@ describe('Loader', () => {
           'http://example.org/myModule/params#param2': '"DEF"',
           'http://example.org/myModule/params#param3': '"GHI"',
         });
-        const run = await instancePool.instantiate(configResource, await loader.getCreationSettingsInner({}));
+        const run = await configConstructorPool
+          .instantiate(configResource, await loader.getConstructionSettingsInner({}));
         expect(run._params).toEqual([{
           'http://example.org/myModule/params#param1': [ 'ABC' ],
           'http://example.org/myModule/params#param3': [ 'GHI' ],
@@ -177,7 +178,8 @@ describe('Loader', () => {
           'http://example.org/hello/say': '"HELLO"',
           'http://example.org/hello/bla': '"BLA"',
         });
-        const run = await instancePool.instantiate(configResource, await loader.getCreationSettingsInner({}));
+        const run = await configConstructorPool
+          .instantiate(configResource, await loader.getConstructionSettingsInner({}));
         expect(run._params).toEqual([{
           'http://example.org/hello/hello': [ 'WORLD' ],
           'http://example.org/hello/say': [ 'HELLO' ],
@@ -261,7 +263,7 @@ describe('Loader', () => {
       loader.finalizeRegistration();
     });
 
-    it('should produce instances with correct parameter values for a first instantiation', async() => {
+    it('should produce instances with correct parameter values for a first construction', async() => {
       const configResourceStream1 = parse('config-hello-world-mapping.jsonld');
       await loader.registerConfigStream(configResourceStream1);
       const run1 = await loader.getComponentInstance('http://example.org/myHelloWorld1');
@@ -270,7 +272,7 @@ describe('Loader', () => {
       }]);
     });
 
-    it('should produce instances with correct parameter values for a second instantiation', async() => {
+    it('should produce instances with correct parameter values for a second construction', async() => {
       const configResourceStream2 = parse('config-hello-world-mapping.jsonld');
       await loader.registerConfigStream(configResourceStream2);
       const run2 = await loader.getComponentInstance('http://example.org/myHelloWorld2');
@@ -332,8 +334,8 @@ describe('Loader', () => {
       expect(run1._params).toEqual([{
         'http://example.org/hello/something': [ 'SOMETHING' ],
       }]);
-      const run2 = await instancePool.instantiate(objectLoader.resources['http://example.org/myHelloWorld2'],
-        await loader.getCreationSettingsInner({}));
+      const run2 = await configConstructorPool.instantiate(objectLoader.resources['http://example.org/myHelloWorld2'],
+        await loader.getConstructionSettingsInner({}));
       expect(run2._params).toEqual([{
         'http://example.org/hello/something': [ 'SOMETHING' ],
       }]);
@@ -420,8 +422,8 @@ describe('Loader', () => {
       expect(run1._params).toEqual([{
         something: [ 'SOMETHING' ],
       }]);
-      const run2 = await instancePool.instantiate(objectLoader.resources['http://example.org/myHelloWorld2'],
-        await loader.getCreationSettingsInner({}));
+      const run2 = await configConstructorPool.instantiate(objectLoader.resources['http://example.org/myHelloWorld2'],
+        await loader.getConstructionSettingsInner({}));
       expect(run2._params).toEqual([{
         something: [ 'SOMETHING' ],
       }]);
@@ -509,8 +511,8 @@ describe('Loader', () => {
           KEY2: 'VALUE2',
         },
       }]);
-      const run2 = await instancePool.instantiate(objectLoader.resources['http://example.org/myHelloWorld2'],
-        await loader.getCreationSettingsInner({}));
+      const run2 = await configConstructorPool.instantiate(objectLoader.resources['http://example.org/myHelloWorld2'],
+        await loader.getConstructionSettingsInner({}));
       expect(run2._params).toEqual([{
         somethings1: {
           KEY1: 'VALUE1',
@@ -543,8 +545,8 @@ describe('Loader', () => {
         KEY1: 'VALUE1',
         KEY2: 'VALUE2',
       }]);
-      const run2 = await instancePool.instantiate(objectLoader.resources['http://example.org/myHelloWorld2'],
-        await loader.getCreationSettingsInner({}));
+      const run2 = await configConstructorPool.instantiate(objectLoader.resources['http://example.org/myHelloWorld2'],
+        await loader.getConstructionSettingsInner({}));
       expect(run2._params).toEqual([{
         KEY1: 'VALUE1',
         KEY2: 'VALUE2',
@@ -615,7 +617,7 @@ describe('Loader', () => {
       loader.finalizeRegistration();
     });
 
-    it('should produce instances with correct parameter values after an erroring instantiation', async() => {
+    it('should produce instances with correct parameter values after an erroring construction', async() => {
       const configResourceStream1 = parse('config-hello-world.jsonld');
       const configResourceStream2 = parse('config-hello-world-paramranges.jsonld');
       await loader.registerConfigStream(configResourceStream1);
