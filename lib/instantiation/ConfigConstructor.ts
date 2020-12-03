@@ -1,5 +1,12 @@
 import type { Resource, RdfObjectLoader } from 'rdf-object';
 import * as Util from '../Util';
+import { ArgumentCreationHandlerArray } from './argumentcreation/ArgumentCreationHandlerArray';
+import { ArgumentCreationHandlerHash } from './argumentcreation/ArgumentCreationHandlerHash';
+import { ArgumentCreationHandlerPrimitive } from './argumentcreation/ArgumentCreationHandlerPrimitive';
+import { ArgumentCreationHandlerReference } from './argumentcreation/ArgumentCreationHandlerReference';
+import { ArgumentCreationHandlerValue } from './argumentcreation/ArgumentCreationHandlerValue';
+import type { IArgumentCreationHandler } from './argumentcreation/IArgumentCreationHandler';
+import type { IArgumentsCreator } from './argumentcreation/IArgumentsCreator';
 import type { IInstancePool } from './IInstancePool';
 import type { IInstantiationSettingsInner } from './IInstantiationSettings';
 
@@ -11,20 +18,23 @@ import type { IInstantiationSettingsInner } from './IInstantiationSettings';
  * * requireElement: optional
  * * arguments: optional
  */
-export class ConfigConstructor {
-  protected readonly objectLoader: RdfObjectLoader;
-  protected readonly instancePool: IInstancePool;
+export class ConfigConstructor implements IArgumentsCreator {
+  private static readonly ARGS_HANDLERS: IArgumentCreationHandler[] = [
+    new ArgumentCreationHandlerHash(),
+    new ArgumentCreationHandlerArray(),
+    new ArgumentCreationHandlerValue(),
+    new ArgumentCreationHandlerReference(),
+    new ArgumentCreationHandlerPrimitive(),
+  ];
+
+  public readonly objectLoader: RdfObjectLoader;
+  public readonly instancePool: IInstancePool;
 
   public constructor(options: IConfigConstructorOptions) {
     this.objectLoader = options.objectLoader;
     this.instancePool = options.instancePool;
   }
 
-  /**
-   * Convert the given argument values resource into a JavaScript object or primitive.
-   * @param values An array of argument values.
-   * @param settings Creation settings.
-   */
   public async getArgumentValues<Instance>(
     values: Resource[],
     settings: IInstantiationSettingsInner<Instance>,
@@ -39,85 +49,18 @@ export class ConfigConstructor {
     return settings.creationStrategy.createArray({ settings, elements });
   }
 
-  /**
-   * Convert the given argument value resource into a JavaScript object or primitive.
-   * @param value An argument value.
-   * @param settings Creation settings.
-   */
   public async getArgumentValue<Instance>(
     value: Resource,
     settings: IInstantiationSettingsInner<Instance>,
   ): Promise<Instance> {
-    // Handle hash
-    // TODO: HasFields is a hack for making UnmappedNamedComponentFactory work
-    if (value.property.fields || value.property.hasFields) {
-      // The parameter is an object
-      const entries = await Promise.all(value.properties.fields.map(async(entry: Resource) => {
-        if (!entry.property.key) {
-          throw new Error(`Missing key in fields entry.
-Entry: ${Util.resourceToString(entry)}
-Fields: ${Util.resourceToString(value)}`);
-        }
-        if (entry.property.key.type !== 'Literal') {
-          throw new Error(`Illegal non-literal key (${Util.resourceIdToString(entry.property.key, this.objectLoader)} as ${entry.property.key.type}) in fields entry.
-Entry: ${Util.resourceToString(entry)}
-Fields: ${Util.resourceToString(value)}`);
-        }
-        if (entry.property.value) {
-          const subValue = await this.getArgumentValues(entry.properties.value, settings);
-          return { key: entry.property.key.value, value: subValue };
-        }
-        // TODO: should we throw if value is missing?
-        // return Promise.reject(
-        // new Error('Parameter object entries must have values, but found: ' + JSON.stringify(entry, null, '  ')));
-      }));
-      return settings.creationStrategy.createHash({ settings, entries });
+    // Check if this args resource can be handled by one of the built-in handlers.
+    for (const handler of ConfigConstructor.ARGS_HANDLERS) {
+      if (handler.canHandle(value, settings, this)) {
+        return handler.handle(value, settings, this);
+      }
     }
 
-    // Handle array
-    if (value.property.elements) {
-      // The parameter is a dynamic array
-      const elements = await Promise.all(value.properties.elements.map(async(entry: Resource) => {
-        if (!entry.property.value) {
-          throw new Error(`Missing value in array elements entry.
-Entry: ${Util.resourceToString(entry)}
-Elements: ${Util.resourceToString(value)}`);
-        } else {
-          // TODO: must this be a call to the array form?
-          return await this.getArgumentValue(entry.property.value, settings);
-        }
-      }));
-      return settings.creationStrategy.createArray({ settings, elements });
-    }
-
-    // Handle reference to another instance
-    if (value.type === 'NamedNode' || value.type === 'BlankNode') {
-      if (value.property.value) {
-        return await this.getArgumentValues(value.properties.value, settings);
-      }
-      if (settings.shallow) {
-        return settings.creationStrategy.createHash({ settings, entries: []});
-      }
-      if (value.property.lazy && value.property.lazy.value === 'true') {
-        const supplier = (): Promise<Instance> => this.instancePool.instantiate(value, settings);
-        return await settings.creationStrategy.createLazySupplier({ settings, supplier });
-      }
-      return await this.instancePool.instantiate(value, settings);
-    }
-
-    // Handle primitive value
-    if (value.type === 'Literal') {
-      // ValueRaw can be set in Util.captureType
-      // TODO: improve this, so that the hacked valueRaw is not needed
-      const rawValue: any = 'valueRaw' in value.term ? (<any> value.term).valueRaw : value.value;
-      if (value.property.lazy && value.property.lazy.value === 'true') {
-        const supplier = (): Promise<Instance> => Promise.resolve(settings.creationStrategy
-          .createPrimitive({ settings, value: rawValue }));
-        return await settings.creationStrategy.createLazySupplier({ settings, supplier });
-      }
-      return settings.creationStrategy.createPrimitive({ settings, value: rawValue });
-    }
-
+    // Error if no handlers can handle this argument
     throw new Error(`Unsupported argument value during config construction.
 Value: ${Util.resourceToString(value)}`);
   }
