@@ -7,7 +7,7 @@ import type { IConfigPreprocessor } from './IConfigPreprocessor';
  * The component may have parameters that can be applied on the config.
  */
 export class ConfigPreprocessorComponent implements IConfigPreprocessor<IComponentConfigPreprocessorHandleResponse> {
-  protected readonly objectLoader: RdfObjectLoader;
+  public readonly objectLoader: RdfObjectLoader;
   protected readonly componentResources: Record<string, Resource>;
   protected readonly runTypeConfigs: Record<string, Resource[]>;
 
