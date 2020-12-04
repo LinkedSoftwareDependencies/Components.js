@@ -318,7 +318,7 @@ describe('construction with mapped component configs as Resource', () => {
         types: 'http://example.org/n3#Lexer',
       });
       await expect(configConstructorPool.instantiate(config, settings)).rejects
-        .toThrowError(/^Parameter .* is required, but no value for it has been set in/u);
+        .toThrowError(/^No value was set for required parameter '.*' in./u);
     });
   });
 
@@ -629,8 +629,8 @@ describe('construction with mapped component configs as Resource', () => {
       const instance = await configConstructorPool.instantiate(config, settings);
       expect(instance.type).toEqual('LEXER');
       expect(N3.Lexer).toHaveBeenCalledWith({
-        lineMode: [ 'true', 'A' ],
-        n3: [ 'true', 'B', 'C' ],
+        lineMode: [ 'A', 'true' ],
+        n3: [ 'B', 'C', 'true' ],
         comments: [ 'true' ],
       });
     });
@@ -692,8 +692,13 @@ describe('construction with mapped component configs as Resource', () => {
         'http://example.org/n3#n3': '"true"',
         'http://example.org/n3#comments': '"true"',
       });
-      await expect(configConstructorPool.instantiate(config, settings)).rejects
-        .toThrow(/^A parameter is unique, has a fixed value, but also has another defined value\./u);
+      const instance = await configConstructorPool.instantiate(config, settings);
+      expect(instance.type).toEqual('LEXER');
+      expect(N3.Lexer).toHaveBeenCalledWith({
+        lineMode: 'A',
+        n3: 'B',
+        comments: 'true',
+      });
     });
 
     it('instantiated with a config without parameters', async() => {

@@ -4,6 +4,7 @@ import type { Resource } from 'rdf-object/lib/Resource';
 import type { IComponentConfigPreprocessorHandleResponse } from '../../../lib/preprocess/ConfigPreprocessorComponent';
 import { ConfigPreprocessorComponentMapped } from '../../../lib/preprocess/ConfigPreprocessorComponentMapped';
 import 'jest-rdf';
+import { ParameterHandler } from '../../../lib/preprocess/ParameterHandler';
 
 describe('ConfigPreprocessorComponentMapped', () => {
   let objectLoader: RdfObjectLoader;
@@ -31,6 +32,7 @@ describe('ConfigPreprocessorComponentMapped', () => {
       objectLoader,
       componentResources,
       runTypeConfigs: {},
+      parameterHandler: new ParameterHandler({ objectLoader }),
     });
   });
 

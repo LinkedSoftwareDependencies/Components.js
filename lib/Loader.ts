@@ -15,6 +15,7 @@ import type { IModuleState } from './ModuleStateBuilder';
 import { ModuleStateBuilder } from './ModuleStateBuilder';
 import { ConfigPreprocessorComponent } from './preprocess/ConfigPreprocessorComponent';
 import { ConfigPreprocessorComponentMapped } from './preprocess/ConfigPreprocessorComponentMapped';
+import { ParameterHandler } from './preprocess/ParameterHandler';
 import { RdfParser } from './rdf/RdfParser';
 import Util = require('./Util');
 import { resourceIdToString } from './Util';
@@ -84,6 +85,9 @@ export class Loader<Instance> {
   public async getInstancePool(): Promise<IConfigConstructorPool<Instance>> {
     if (!this.configConstructorPool) {
       const runTypeConfigs = {};
+      const parameterHandler = new ParameterHandler({
+        objectLoader: this.objectLoader,
+      });
       this.configConstructorPool = new ConfigConstructorPool({
         objectLoader: this.objectLoader,
         configPreprocessors: [
@@ -91,11 +95,13 @@ export class Loader<Instance> {
             objectLoader: this.objectLoader,
             componentResources: this.componentResources,
             runTypeConfigs,
+            parameterHandler,
           }),
           new ConfigPreprocessorComponent({
             objectLoader: this.objectLoader,
             componentResources: this.componentResources,
             runTypeConfigs,
+            parameterHandler,
           }),
         ],
         constructionStrategy: this.constructionStrategy,

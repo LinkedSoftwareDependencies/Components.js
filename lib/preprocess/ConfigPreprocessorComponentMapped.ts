@@ -35,9 +35,9 @@ import type {
  */
 export class ConfigPreprocessorComponentMapped extends ConfigPreprocessorComponent
   implements IConstructorArgumentsMapper {
-  private static readonly HANDLERS: IConstructorArgumentsElementMappingHandler[] = [
+  private readonly mappingHandlers: IConstructorArgumentsElementMappingHandler[] = [
     new ConstructorArgumentsElementMappingHandlerKeyValue(),
-    new ConstructorArgumentsElementMappingHandlerCollectEntries(),
+    new ConstructorArgumentsElementMappingHandlerCollectEntries(this.parameterHandler),
     new ConstructorArgumentsElementMappingHandlerFields(),
     new ConstructorArgumentsElementMappingHandlerElements(),
     new ConstructorArgumentsElementMappingHandlerList(),
@@ -65,7 +65,7 @@ export class ConfigPreprocessorComponentMapped extends ConfigPreprocessorCompone
     configElement: Resource,
   ): Resource[] {
     // Check if this constructor args resource can be handled by one of the built-in handlers.
-    for (const handler of ConfigPreprocessorComponentMapped.HANDLERS) {
+    for (const handler of this.mappingHandlers) {
       if (handler.canHandle(configRoot, constructorArgs, configElement, this)) {
         return handler.handle(configRoot, constructorArgs, configElement, this);
       }
@@ -87,7 +87,7 @@ export class ConfigPreprocessorComponentMapped extends ConfigPreprocessorCompone
       valueOut = [ this.objectLoader.createCompactedResource(`"${configElement.value}"`) ];
       valueOut[0].property.unique = this.objectLoader.createCompactedResource('"true"');
     } else if (parameter.type === 'NamedNode') {
-      valueOut = Util.applyParameterValues(configRoot, parameter, configElement, this.objectLoader);
+      valueOut = this.parameterHandler.applyParameterValues(configRoot, parameter, configElement);
     } else {
       valueOut = this.applyConstructorArgumentsParameters(configRoot, parameter, configElement);
     }

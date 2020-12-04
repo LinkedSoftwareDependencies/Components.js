@@ -8,6 +8,7 @@ import type {
 import {
   ConfigPreprocessorComponent,
 } from '../../../lib/preprocess/ConfigPreprocessorComponent';
+import { ParameterHandler } from '../../../lib/preprocess/ParameterHandler';
 
 describe('ConfigPreprocessorComponent', () => {
   let objectLoader: RdfObjectLoader;
@@ -32,6 +33,7 @@ describe('ConfigPreprocessorComponent', () => {
       objectLoader,
       componentResources,
       runTypeConfigs: {},
+      parameterHandler: new ParameterHandler({ objectLoader }),
     });
   });
 

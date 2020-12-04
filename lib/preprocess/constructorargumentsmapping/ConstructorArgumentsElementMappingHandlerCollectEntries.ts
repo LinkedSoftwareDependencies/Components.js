@@ -1,6 +1,7 @@
 import type { Resource } from 'rdf-object';
 import { resourceIdToString, resourceToString } from '../../Util';
 import * as Util from '../../Util';
+import type { ParameterHandler } from '../ParameterHandler';
 import type { IConstructorArgumentsElementMappingHandler } from './IConstructorArgumentsElementMappingHandler';
 import type { IConstructorArgumentsMapper } from './IConstructorArgumentsMapper';
 
@@ -9,6 +10,12 @@ import type { IConstructorArgumentsMapper } from './IConstructorArgumentsMapper'
  */
 export class ConstructorArgumentsElementMappingHandlerCollectEntries
 implements IConstructorArgumentsElementMappingHandler {
+  private readonly parameterHandler: ParameterHandler;
+
+  public constructor(parameterHandler: ParameterHandler) {
+    this.parameterHandler = parameterHandler;
+  }
+
   public canHandle(
     configRoot: Resource,
     constructorArgs: Resource,
@@ -33,7 +40,7 @@ implements IConstructorArgumentsElementMappingHandler {
 Constructor arguments: ${resourceToString(constructorArgs)}
 Parsed config: ${resourceToString(configRoot)}`);
       }
-      for (const value of Util.applyParameterValues(configRoot, entry, configElement, mapper.objectLoader)) {
+      for (const value of this.parameterHandler.applyParameterValues(configRoot, entry, configElement)) {
         entryResources.push(value);
       }
     }

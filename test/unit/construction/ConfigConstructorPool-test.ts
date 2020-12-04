@@ -9,6 +9,7 @@ import 'jest-rdf';
 import { ConfigPreprocessorComponent } from '../../../lib/preprocess/ConfigPreprocessorComponent';
 import { ConfigPreprocessorComponentMapped } from '../../../lib/preprocess/ConfigPreprocessorComponentMapped';
 import type { IConfigPreprocessor } from '../../../lib/preprocess/IConfigPreprocessor';
+import { ParameterHandler } from '../../../lib/preprocess/ParameterHandler';
 
 describe('ConfigConstructorPool', () => {
   let objectLoader: RdfObjectLoader;
@@ -18,6 +19,7 @@ describe('ConfigConstructorPool', () => {
   let constructionStrategy: IConstructionStrategy<any>;
   let moduleState: IModuleState;
   let creationSettings: IConstructionSettings;
+  let parameterHandler: ParameterHandler;
   beforeEach(async() => {
     objectLoader = new RdfObjectLoader({
       context: JSON.parse(fs.readFileSync(`${__dirname}/../../../components/context.jsonld`, 'utf8')),
@@ -42,6 +44,7 @@ describe('ConfigConstructorPool', () => {
       moduleState,
     });
     creationSettings = {};
+    parameterHandler = new ParameterHandler({ objectLoader });
   });
 
   describe('with no preprocessors', () => {
@@ -112,11 +115,13 @@ describe('ConfigConstructorPool', () => {
         objectLoader,
         componentResources,
         runTypeConfigs,
+        parameterHandler,
       }));
       rawConfigFactories.push(new ConfigPreprocessorComponent({
         objectLoader,
         componentResources,
         runTypeConfigs,
+        parameterHandler,
       }));
     });
 

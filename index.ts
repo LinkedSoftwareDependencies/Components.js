@@ -19,9 +19,10 @@ export * from './lib/preprocess/constructorargumentsmapping/ConstructorArguments
 export * from './lib/preprocess/constructorargumentsmapping/ConstructorArgumentsElementMappingHandlerList';
 export * from './lib/preprocess/constructorargumentsmapping/IConstructorArgumentsElementMappingHandler';
 export * from './lib/preprocess/constructorargumentsmapping/IConstructorArgumentsMapper';
-export * from './lib/preprocess/IConfigPreprocessor';
 export * from './lib/preprocess/ConfigPreprocessorComponent';
 export * from './lib/preprocess/ConfigPreprocessorComponentMapped';
+export * from './lib/preprocess/IConfigPreprocessor';
+export * from './lib/preprocess/ParameterHandler';
 export * from './lib/rdf/PrefetchedDocumentLoader';
 export * from './lib/rdf/RdfParser';
 export * from './lib/rdf/RdfStreamIncluder';

@@ -1,6 +1,7 @@
 import type { Resource, RdfObjectLoader } from 'rdf-object';
-import { applyParameterValues, PREFIXES, resourceIdToString, resourceToString } from '../Util';
+import { PREFIXES, resourceIdToString, resourceToString } from '../Util';
 import type { IConfigPreprocessor } from './IConfigPreprocessor';
+import type { ParameterHandler } from './ParameterHandler';
 
 /**
  * Handles config that refer to a component as type.
@@ -10,11 +11,13 @@ export class ConfigPreprocessorComponent implements IConfigPreprocessor<ICompone
   public readonly objectLoader: RdfObjectLoader;
   protected readonly componentResources: Record<string, Resource>;
   protected readonly runTypeConfigs: Record<string, Resource[]>;
+  protected readonly parameterHandler: ParameterHandler;
 
   public constructor(options: IComponentConfigPreprocessorOptions) {
     this.objectLoader = options.objectLoader;
     this.componentResources = options.componentResources;
     this.runTypeConfigs = options.runTypeConfigs;
+    this.parameterHandler = options.parameterHandler;
   }
 
   public canHandle(config: Resource): IComponentConfigPreprocessorHandleResponse | undefined {
@@ -105,12 +108,7 @@ Parsed config: ${resourceToString(config)}`);
     for (const fieldData of handleResponse.component.properties.parameters) {
       const field = this.objectLoader.createCompactedResource({});
       field.property.key = this.objectLoader.createCompactedResource(`"${fieldData.term.value}"`);
-      for (const value of applyParameterValues(
-        handleResponse.component,
-        fieldData,
-        config,
-        this.objectLoader,
-      )) {
+      for (const value of this.parameterHandler.applyParameterValues(handleResponse.component, fieldData, config)) {
         field.properties.value.push(value);
       }
       param0.properties.fields.push(field);
@@ -203,6 +201,7 @@ export interface IComponentConfigPreprocessorOptions {
   objectLoader: RdfObjectLoader;
   componentResources: Record<string, Resource>;
   runTypeConfigs: Record<string, Resource[]>;
+  parameterHandler: ParameterHandler;
 }
 
 export interface IComponentConfigPreprocessorHandleResponse {
