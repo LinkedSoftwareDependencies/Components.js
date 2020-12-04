@@ -1,12 +1,8 @@
 import * as fs from 'fs';
-import { DataFactory } from 'rdf-data-factory';
 import type { Resource } from 'rdf-object';
 import { RdfObjectLoader } from 'rdf-object/lib/RdfObjectLoader';
 import { ParameterHandler } from '../../../lib/preprocess/ParameterHandler';
-import { PREFIXES } from '../../../lib/Util';
 import 'jest-rdf';
-
-const DF = new DataFactory();
 
 describe('ParameterHandler', () => {
   let objectLoader: RdfObjectLoader;
@@ -23,6 +19,7 @@ describe('ParameterHandler', () => {
 
     configRoot = objectLoader.createCompactedResource({
       types: 'ex:Component1',
+      extends: 'ex:Component1Super',
     });
     configElement = objectLoader.createCompactedResource({
       '@id': 'ex:myConfig',
@@ -222,6 +219,55 @@ describe('ParameterHandler', () => {
         });
       });
 
+      describe('with one applicable default scoped value via extends', () => {
+        beforeEach(() => {
+          param = objectLoader.createCompactedResource({
+            '@id': 'ex:myParam',
+            defaultScoped: [
+              {
+                defaultScope: [
+                  'ex:Component1Super',
+                ],
+                defaultScopedValue: '"DEFAULT"',
+              },
+            ],
+          });
+        });
+
+        it('should be the default for an undefined value', () => {
+          const expected: Resource[] = [
+            objectLoader.createCompactedResource('"DEFAULT"'),
+          ];
+          expectOutputOnlyTerm(handler.applyParameterValues(configRoot, param, configElement), expected);
+        });
+
+        it('should override the default with one set value', () => {
+          configElement = objectLoader.createCompactedResource({
+            'ex:myParam': '"ABC"',
+          });
+          const expected: Resource[] = [
+            objectLoader.createCompactedResource('"ABC"'),
+          ];
+          expectOutputOnlyTerm(handler.applyParameterValues(configRoot, param, configElement), expected);
+        });
+
+        it('should override the default with multiple set values', () => {
+          configElement = objectLoader.createCompactedResource({
+            'ex:myParam': [
+              '"A"',
+              '"B"',
+              '"C"',
+            ],
+          });
+          const expected: Resource[] = [
+            objectLoader.createCompactedResource('"A"'),
+            objectLoader.createCompactedResource('"B"'),
+            objectLoader.createCompactedResource('"C"'),
+          ];
+          expectOutputOnlyTerm(handler.applyParameterValues(configRoot, param, configElement), expected);
+        });
+      });
+
       describe('with multiple applicable default scoped values', () => {
         beforeEach(() => {
           param = objectLoader.createCompactedResource({
@@ -376,6 +422,36 @@ describe('ParameterHandler', () => {
         it('should not be the default for an undefined value', () => {
           const expected: Resource[] = [
             objectLoader.createCompactedResource('"DEFAULT1"'),
+          ];
+          expectOutputOnlyTerm(handler.applyParameterValues(configRoot, param, configElement), expected);
+        });
+      });
+
+      describe('with multiple applicable default scopes', () => {
+        beforeEach(() => {
+          param = objectLoader.createCompactedResource({
+            '@id': 'ex:myParam',
+            defaultScoped: [
+              {
+                defaultScope: [
+                  'ex:Component1',
+                ],
+                defaultScopedValue: '"DEFAULT1"',
+              },
+              {
+                defaultScope: [
+                  'ex:Component1',
+                ],
+                defaultScopedValue: '"DEFAULT2"',
+              },
+            ],
+          });
+        });
+
+        it('should set all default values', () => {
+          const expected: Resource[] = [
+            objectLoader.createCompactedResource('"DEFAULT1"'),
+            objectLoader.createCompactedResource('"DEFAULT2"'),
           ];
           expectOutputOnlyTerm(handler.applyParameterValues(configRoot, param, configElement), expected);
         });
@@ -733,95 +809,6 @@ describe('ParameterHandler', () => {
         expected[2].property.lazy = objectLoader.createCompactedResource('"true"');
         expectOutputProperties(handler.applyParameterValues(configRoot, param, configElement), expected);
       });
-    });
-  });
-
-  describe('captureType', () => {
-    it('should ignore non-literals', () => {
-      expect((<any> handler.captureType(objectLoader.createCompactedResource('ex:abc'), objectLoader.createCompactedResource({ range: `ex:bla` }))).term)
-        .toEqualRdfTerm(DF.namedNode('ex:abc'));
-      expect((<any> handler.captureType(objectLoader.createCompactedResource('_:abc'), objectLoader.createCompactedResource({ range: `ex:bla` }))).term)
-        .toEqualRdfTerm(DF.blankNode('abc'));
-    });
-
-    it('should capture strings', () => {
-      expect((<any> handler.captureType(objectLoader.createCompactedResource('"aaa"'), objectLoader.createCompactedResource({ range: `${PREFIXES.xsd}string` }))).term.valueRaw)
-        .toBeUndefined();
-      expect((<any> handler.captureType(objectLoader.createCompactedResource('"qqseqfqefefù$^"'), objectLoader.createCompactedResource({ range: `${PREFIXES.xsd}string` }))).term.valueRaw)
-        .toBeUndefined();
-    });
-
-    it('should capture booleans', () => {
-      expect((<any> handler.captureType(objectLoader.createCompactedResource('"true"'), objectLoader.createCompactedResource({ range: `${PREFIXES.xsd}boolean` }))).term.valueRaw)
-        .toEqual(true);
-      expect((<any> handler.captureType(objectLoader.createCompactedResource('"false"'), objectLoader.createCompactedResource({ range: `${PREFIXES.xsd}boolean` }))).term.valueRaw)
-        .toEqual(false);
-    });
-    it('should error on invalid booleans', () => {
-      expect(() => handler.captureType(objectLoader.createCompactedResource('"1"'), objectLoader.createCompactedResource({ range: `${PREFIXES.xsd}boolean`, '@id': 'param' })))
-        .toThrow(new Error('1 is not of type http://www.w3.org/2001/XMLSchema#boolean for parameter param'));
-    });
-
-    it('should capture integers', () => {
-      expect((<any> handler.captureType(objectLoader.createCompactedResource('"1"'), objectLoader.createCompactedResource({ range: `${PREFIXES.xsd}integer` }))).term.valueRaw)
-        .toEqual(1);
-      expect((<any> handler.captureType(objectLoader.createCompactedResource('"1456789876"'), objectLoader.createCompactedResource({ range: `${PREFIXES.xsd}integer` }))).term.valueRaw)
-        .toEqual(1_456_789_876);
-    });
-    it('should error on invalid integers', () => {
-      expect(() => handler.captureType(objectLoader.createCompactedResource('"a"'), objectLoader.createCompactedResource({ range: `${PREFIXES.xsd}integer`, '@id': 'param' })))
-        .toThrow(new Error('a is not of type http://www.w3.org/2001/XMLSchema#integer for parameter param'));
-    });
-    it('should error on invalid integers that are numbers', () => {
-      expect(() => handler.captureType(objectLoader.createCompactedResource('"1.12"'), objectLoader.createCompactedResource({ range: `${PREFIXES.xsd}integer`, '@id': 'param' })))
-        .toThrow(new Error('1.12 is not of type http://www.w3.org/2001/XMLSchema#integer for parameter param'));
-    });
-    it('should capture numbers', () => {
-      expect((<any> handler.captureType(objectLoader.createCompactedResource('"1"'), objectLoader.createCompactedResource({ range: `${PREFIXES.xsd}number` }))).term.valueRaw)
-        .toEqual(1);
-      expect((<any> handler.captureType(objectLoader.createCompactedResource('"456789876"'), objectLoader.createCompactedResource({ range: `${PREFIXES.xsd}number` }))).term.valueRaw)
-        .toEqual(456_789_876);
-    });
-    it('should capture ints', () => {
-      expect((<any> handler.captureType(objectLoader.createCompactedResource('"1"'), objectLoader.createCompactedResource({ range: `${PREFIXES.xsd}int` }))).term.valueRaw)
-        .toEqual(1);
-      expect((<any> handler.captureType(objectLoader.createCompactedResource('"456789876"'), objectLoader.createCompactedResource({ range: `${PREFIXES.xsd}int` }))).term.valueRaw)
-        .toEqual(456_789_876);
-    });
-    it('should capture bytes', () => {
-      expect((<any> handler.captureType(objectLoader.createCompactedResource('"1"'), objectLoader.createCompactedResource({ range: `${PREFIXES.xsd}byte` }))).term.valueRaw)
-        .toEqual(1);
-      expect((<any> handler.captureType(objectLoader.createCompactedResource('"456789876"'), objectLoader.createCompactedResource({ range: `${PREFIXES.xsd}byte` }))).term.valueRaw)
-        .toEqual(456_789_876);
-    });
-    it('should capture longs', () => {
-      expect((<any> handler.captureType(objectLoader.createCompactedResource('"1"'), objectLoader.createCompactedResource({ range: `${PREFIXES.xsd}long` }))).term.valueRaw)
-        .toEqual(1);
-      expect((<any> handler.captureType(objectLoader.createCompactedResource('"456789876"'), objectLoader.createCompactedResource({ range: `${PREFIXES.xsd}long` }))).term.valueRaw)
-        .toEqual(456_789_876);
-    });
-
-    it('should capture floats', () => {
-      expect((<any> handler.captureType(objectLoader.createCompactedResource('"1"'), objectLoader.createCompactedResource({ range: `${PREFIXES.xsd}float` }))).term.valueRaw)
-        .toEqual(1);
-      expect((<any> handler.captureType(objectLoader.createCompactedResource('"256.36"'), objectLoader.createCompactedResource({ range: `${PREFIXES.xsd}float` }))).term.valueRaw)
-        .toEqual(256.36);
-    });
-    it('should error on invalid floats', () => {
-      expect(() => handler.captureType(objectLoader.createCompactedResource('"a"'), objectLoader.createCompactedResource({ range: `${PREFIXES.xsd}float`, '@id': 'param' })))
-        .toThrow(new Error('a is not of type http://www.w3.org/2001/XMLSchema#float for parameter param'));
-    });
-    it('should capture decimals', () => {
-      expect((<any> handler.captureType(objectLoader.createCompactedResource('"1"'), objectLoader.createCompactedResource({ range: `${PREFIXES.xsd}decimal` }))).term.valueRaw)
-        .toEqual(1);
-      expect((<any> handler.captureType(objectLoader.createCompactedResource('"256.36"'), objectLoader.createCompactedResource({ range: `${PREFIXES.xsd}decimal` }))).term.valueRaw)
-        .toEqual(256.36);
-    });
-    it('should capture doubles', () => {
-      expect((<any> handler.captureType(objectLoader.createCompactedResource('"1"'), objectLoader.createCompactedResource({ range: `${PREFIXES.xsd}double` }))).term.valueRaw)
-        .toEqual(1);
-      expect((<any> handler.captureType(objectLoader.createCompactedResource('"256.36"'), objectLoader.createCompactedResource({ range: `${PREFIXES.xsd}double` }))).term.valueRaw)
-        .toEqual(256.36);
     });
   });
 });
