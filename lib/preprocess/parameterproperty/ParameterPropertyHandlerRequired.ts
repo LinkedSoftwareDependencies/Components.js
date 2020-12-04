@@ -1,5 +1,5 @@
 import type { RdfObjectLoader, Resource } from 'rdf-object';
-import { resourceIdToString, resourceToString } from '../../Util';
+import { ErrorResourcesContext } from '../../ErrorResourcesContext';
 import type { IParameterPropertyHandler } from './IParameterPropertyHandler';
 
 /**
@@ -17,8 +17,9 @@ export class ParameterPropertyHandlerRequired implements IParameterPropertyHandl
   }
 
   public handle(value: Resource[], configRoot: Resource, parameter: Resource, configElement: Resource): Resource[] {
-    throw new Error(`No value was set for required parameter '${resourceIdToString(parameter, this.objectLoader)}' in config '${resourceIdToString(configElement, this.objectLoader)}'.
-Config: ${resourceToString(configElement)}
-Parameter: ${resourceToString(parameter)}`);
+    throw new ErrorResourcesContext(`No value was set for required parameter "${parameter.value}"`, {
+      config: configElement,
+      parameter,
+    });
   }
 }

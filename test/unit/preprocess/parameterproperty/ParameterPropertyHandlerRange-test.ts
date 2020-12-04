@@ -50,7 +50,8 @@ describe('ParameterPropertyHandlerRange', () => {
     it('should error on invalid booleans', () => {
       expect(() => handler.captureType(objectLoader.createCompactedResource('"1"'),
         objectLoader.createCompactedResource({ range: IRIS_XSD.boolean, '@id': 'param' })))
-        .toThrow(new Error('1 is not of type http://www.w3.org/2001/XMLSchema#boolean for parameter param'));
+        // eslint-disable-next-line max-len
+        .toThrowError(/^Parameter value "1" is not of required range type "http:\/\/www.w3.org\/2001\/XMLSchema#boolean"/u);
     });
 
     it('should capture integers', () => {
@@ -64,12 +65,14 @@ describe('ParameterPropertyHandlerRange', () => {
     it('should error on invalid integers', () => {
       expect(() => handler.captureType(objectLoader.createCompactedResource('"a"'),
         objectLoader.createCompactedResource({ range: IRIS_XSD.integer, '@id': 'param' })))
-        .toThrow(new Error('a is not of type http://www.w3.org/2001/XMLSchema#integer for parameter param'));
+        // eslint-disable-next-line max-len
+        .toThrowError(/^Parameter value "a" is not of required range type "http:\/\/www.w3.org\/2001\/XMLSchema#integer"/u);
     });
     it('should error on invalid integers that are numbers', () => {
       expect(() => handler.captureType(objectLoader.createCompactedResource('"1.12"'),
         objectLoader.createCompactedResource({ range: IRIS_XSD.integer, '@id': 'param' })))
-        .toThrow(new Error('1.12 is not of type http://www.w3.org/2001/XMLSchema#integer for parameter param'));
+        // eslint-disable-next-line max-len
+        .toThrowError(/^Parameter value "1.12" is not of required range type "http:\/\/www.w3.org\/2001\/XMLSchema#integer"/u);
     });
     it('should capture numbers', () => {
       expect((<any> handler.captureType(objectLoader.createCompactedResource('"1"'),
@@ -115,7 +118,8 @@ describe('ParameterPropertyHandlerRange', () => {
     it('should error on invalid floats', () => {
       expect(() => handler.captureType(objectLoader.createCompactedResource('"a"'),
         objectLoader.createCompactedResource({ range: IRIS_XSD.float, '@id': 'param' })))
-        .toThrow(new Error('a is not of type http://www.w3.org/2001/XMLSchema#float for parameter param'));
+        // eslint-disable-next-line max-len
+        .toThrowError(/^Parameter value "a" is not of required range type "http:\/\/www.w3.org\/2001\/XMLSchema#float"/u);
     });
     it('should capture decimals', () => {
       expect((<any> handler.captureType(objectLoader.createCompactedResource('"1"'),

@@ -622,9 +622,8 @@ describe('Loader', () => {
       const configResourceStream2 = parse('config-hello-world-paramranges.jsonld');
       await loader.registerConfigStream(configResourceStream1);
       await expect(loader.getComponentInstance('http://example.org/myconfig'))
-        .rejects.toThrow(new Error(
-          'HI is not of type http://www.w3.org/2001/XMLSchema#boolean for parameter http://example.org/hello/say',
-        ));
+        // eslint-disable-next-line max-len
+        .rejects.toThrowError(/^Parameter value "HI" is not of required range type "http:\/\/www.w3.org\/2001\/XMLSchema#boolean"/u);
       await loader.registerConfigStream(configResourceStream2);
       const run2 = await loader.getComponentInstance('http://example.org/myconfig2');
       expect(run2._params).toEqual([{

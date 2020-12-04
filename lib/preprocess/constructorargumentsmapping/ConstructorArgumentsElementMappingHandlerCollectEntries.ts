@@ -1,6 +1,6 @@
 import type { Resource } from 'rdf-object';
+import { ErrorResourcesContext } from '../../ErrorResourcesContext';
 import { IRIS_RDF } from '../../rdf/Iris';
-import { resourceIdToString, resourceToString } from '../../Util';
 import type { ParameterHandler } from '../ParameterHandler';
 import type { IConstructorArgumentsElementMappingHandler } from './IConstructorArgumentsElementMappingHandler';
 import type { IConstructorArgumentsMapper } from './IConstructorArgumentsMapper';
@@ -36,9 +36,10 @@ implements IConstructorArgumentsElementMappingHandler {
     const entryResources = [];
     for (const entry of constructorArgs.properties.collectEntries) {
       if (entry.type !== 'NamedNode') {
-        throw new Error(`Detected illegal collectEntries value (${entry.type}), must be an IRI.
-Constructor arguments: ${resourceToString(constructorArgs)}
-Parsed config: ${resourceToString(configRoot)}`);
+        throw new ErrorResourcesContext(`Detected illegal collectEntries value "${entry.type}", must be an IRI`, {
+          constructorArgs,
+          config: configRoot,
+        });
       }
       for (const value of this.parameterHandler.applyParameterValues(configRoot, entry, configElement)) {
         entryResources.push(value);
@@ -66,12 +67,13 @@ Parsed config: ${resourceToString(configRoot)}`);
         key = mapper.objectLoader.createCompactedResource(`"${entryResource.value}"`);
       } else if (entryResource.properties[constructorArgs.property.key.value].length !== 1) {
         // Error if we find more than one entry key value
-        throw new Error(`Detected more than one key value in collectEntries.
-Key: ${resourceIdToString(constructorArgs.property.key, mapper.objectLoader)}
-Key values: ${entryResource.properties[constructorArgs.property.key.value].map(res => res.term.value)} 
-Collect entry: ${resourceToString(entryResource)}
-Constructor arguments: ${resourceToString(constructorArgs)}
-Parsed config: ${resourceToString(configRoot)}`);
+        throw new ErrorResourcesContext(`Detected more than one key value in collectEntries`, {
+          key: constructorArgs.property.key.value,
+          keyValues: entryResource.properties[constructorArgs.property.key.value].map(res => res.term.value).join(', '),
+          collectEntry: entryResource,
+          constructorArgs,
+          config: configRoot,
+        });
       } else {
         // Key is the first entry key value
         key = entryResource.properties[constructorArgs.property.key.value][0];
@@ -94,12 +96,14 @@ Parsed config: ${resourceToString(configRoot)}`);
       // TODO: in the case of elements, perhaps we don't always just want the first
       value = mapper.getParameterValue(configRoot, constructorArgs.property.value, entryResource, false)[0];
     } else if (entryResource.properties[constructorArgs.property.value.value].length !== 1) {
-      throw new Error(`Detected more than one value value in collectEntries.
-Value: ${resourceIdToString(constructorArgs.property.value, mapper.objectLoader)}
-Value values: ${entryResource.properties[constructorArgs.property.value.value].map(res => res.term.value)} 
-Collect entry: ${resourceToString(entryResource)}
-Constructor arguments: ${resourceToString(constructorArgs)}
-Parsed config: ${resourceToString(configRoot)}`);
+      throw new ErrorResourcesContext(`Detected more than one value value in collectEntries`, {
+        value: constructorArgs.property.value,
+        valueValues: entryResource.properties[constructorArgs.property.value.value]
+          .map(res => res.term.value).join(', '),
+        collectEntry: entryResource,
+        constructorArgs,
+        config: configRoot,
+      });
     } else {
       value = entryResource.properties[constructorArgs.property.value.value][0];
     }

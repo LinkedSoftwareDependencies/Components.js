@@ -106,7 +106,7 @@ describe('ConfigPreprocessorComponent', () => {
       });
       expect(() => preprocessor.canHandle(config))
         // eslint-disable-next-line max-len
-        .toThrowError(/^Detected more than one component types for ex:myComponentInstance: \[ex:Component,ex:Component2\]./u);
+        .toThrowError(/^Detected more than one component types for config "ex:myComponentInstance"/u);
     });
 
     it('should throw for a config with zero component types', () => {
@@ -116,7 +116,7 @@ describe('ConfigPreprocessorComponent', () => {
       });
       expect(() => preprocessor.canHandle(config))
         // eslint-disable-next-line max-len
-        .toThrowError(/^Could not find \(valid\) component types for ex:myComponentInstance among types \[\], or a requireName./u);
+        .toThrowError(/^Could not find \(valid\) component types for config "ex:myComponentInstance" among its types, or a requireName/u);
     });
 
     it('should throw for a config with unregistered component types', () => {
@@ -126,7 +126,7 @@ describe('ConfigPreprocessorComponent', () => {
       });
       expect(() => preprocessor.canHandle(config))
         // eslint-disable-next-line max-len
-        .toThrowError(/^Could not find \(valid\) component types for ex:myComponentInstance among types \[ex:ComponentUnknown,ex:ComponentUnknown2\], or a requireName./u);
+        .toThrowError(/^Could not find \(valid\) component types for config "ex:myComponentInstance" among its types, or a requireName/u);
     });
 
     it('should throw for a config with a component type without module', () => {
@@ -138,7 +138,7 @@ describe('ConfigPreprocessorComponent', () => {
         types: 'ex:ComponentNoModule',
       });
       expect(() => preprocessor.canHandle(config))
-        .toThrow(new Error(`No module was found for the component ex:ComponentNoModule`));
+        .toThrowError(/^No module was found for the component "ex:ComponentNoModule"/u);
     });
   });
 
@@ -448,7 +448,7 @@ describe('ConfigPreprocessorComponent', () => {
       const hr = <IComponentConfigPreprocessorHandleResponse> preprocessor.canHandle(config);
       expect(() => preprocessor.transform(config, hr))
         // eslint-disable-next-line max-len
-        .toThrowError(/^Could not find a requireName in either the config's module \(ex:Module\) or component \(ex:ComponentThis\)\./u);
+        .toThrowError(/^Could not find a requireName in either the config's module or component/u);
     });
 
     it('should prefer requireElement in component', () => {
@@ -818,7 +818,7 @@ describe('ConfigPreprocessorComponent', () => {
         },
       });
       expect(() => preprocessor.inheritParameterValues(configIn, component))
-        .toThrowError(/^Detected invalid from term type 'Literal' on parameter value inheritance definition/u);
+        .toThrowError(/^Detected invalid from term type "Literal" on parameter value inheritance definition/u);
     });
 
     it('should throw when onParameter refers to a literal', () => {
@@ -835,7 +835,7 @@ describe('ConfigPreprocessorComponent', () => {
         },
       });
       expect(() => preprocessor.inheritParameterValues(configIn, component))
-        .toThrowError(/^Detected invalid onParameter term type 'Literal' on parameter value inheritance definition/u);
+        .toThrowError(/^Detected invalid onParameter term type "Literal" on parameter value inheritance definition/u);
     });
   });
 });

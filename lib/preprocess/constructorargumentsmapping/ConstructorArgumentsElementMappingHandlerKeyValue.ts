@@ -1,5 +1,5 @@
 import type { Resource } from 'rdf-object';
-import { resourceToString } from '../../Util';
+import { ErrorResourcesContext } from '../../ErrorResourcesContext';
 import type { IConstructorArgumentsElementMappingHandler } from './IConstructorArgumentsElementMappingHandler';
 import type { IConstructorArgumentsMapper } from './IConstructorArgumentsMapper';
 
@@ -26,9 +26,11 @@ export class ConstructorArgumentsElementMappingHandlerKeyValue implements IConst
     if (constructorArgs.property.key) {
       // Throw if our key is not a literal
       if (constructorArgs.property.key.type !== 'Literal') {
-        throw new Error(`Detected illegal IRI object key '${constructorArgs.property.key.term.value}', which is only allowed with collectEntries.
-Constructor arguments: ${resourceToString(constructorArgs)}
-Parsed config: ${resourceToString(configRoot)}`);
+        throw new ErrorResourcesContext(`Detected illegal IRI object key, which is only allowed with collectEntries`, {
+          objectKey: constructorArgs.property.key.term.value,
+          constructorArgs,
+          config: configRoot,
+        });
       }
 
       // Key-value

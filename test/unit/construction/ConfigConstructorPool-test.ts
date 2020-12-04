@@ -77,7 +77,7 @@ describe('ConfigConstructorPool', () => {
           ],
         });
         expect(() => pool.getRawConfig(configIn))
-          .toThrowError(/^Invalid config: Missing requireName\./u);
+          .toThrowError(/^Invalid config: Missing requireName/u);
       });
 
       it('for a mapped component config should throw', () => {
@@ -103,7 +103,7 @@ describe('ConfigConstructorPool', () => {
           },
         });
         expect(() => pool.getRawConfig(configIn))
-          .toThrowError(/^Invalid config: Missing requireName\./u);
+          .toThrowError(/^Invalid config: Missing requireName/u);
       });
     });
   });
@@ -355,7 +355,7 @@ describe('ConfigConstructorPool', () => {
         requireNoConstructor: '"true"',
       });
       expect(() => pool.validateRawConfig(config))
-        .toThrowError(/^Invalid config: Missing requireName\./u);
+        .toThrowError(/^Invalid config: Missing requireName/u);
     });
 
     it('should throw on a non-literal requireName', () => {
@@ -366,7 +366,7 @@ describe('ConfigConstructorPool', () => {
         requireNoConstructor: '"true"',
       });
       expect(() => pool.validateRawConfig(config))
-        .toThrowError(/^Invalid config: requireName \(ex:abc\) must be a Literal, but got NamedNode\./u);
+        .toThrowError(/^Invalid config: requireName "ex:abc" must be a Literal, but got NamedNode/u);
     });
 
     it('should throw on a non-literal requireElement', () => {
@@ -377,7 +377,7 @@ describe('ConfigConstructorPool', () => {
         requireNoConstructor: '"true"',
       });
       expect(() => pool.validateRawConfig(config))
-        .toThrowError(/^Invalid config: requireElement \(ex:abc\) must be a Literal, but got NamedNode\./u);
+        .toThrowError(/^Invalid config: requireElement "ex:abc" must be a Literal, but got NamedNode/u);
     });
 
     it('should throw on a non-literal requireNoConstructor', () => {
@@ -388,7 +388,7 @@ describe('ConfigConstructorPool', () => {
         requireNoConstructor: 'ex:abc',
       });
       expect(() => pool.validateRawConfig(config))
-        .toThrowError(/^Invalid config: requireNoConstructor \(ex:abc\) must be a Literal, but got NamedNode\./u);
+        .toThrowError(/^Invalid config: requireNoConstructor "ex:abc" must be a Literal, but got NamedNode/u);
     });
   });
 });

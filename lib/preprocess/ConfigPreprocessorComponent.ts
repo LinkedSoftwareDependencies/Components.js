@@ -1,6 +1,6 @@
 import type { Resource, RdfObjectLoader } from 'rdf-object';
+import { ErrorResourcesContext } from '../ErrorResourcesContext';
 import { IRIS_OWL } from '../rdf/Iris';
-import { resourceIdToString, resourceToString } from '../Util';
 import type { IConfigPreprocessor } from './IConfigPreprocessor';
 import type { ParameterHandler } from './ParameterHandler';
 
@@ -34,20 +34,24 @@ export class ConfigPreprocessorComponent implements IConfigPreprocessor<ICompone
 
       // Require either exactly one component type, or a requireName
       if (componentTypes.length > 1) {
-        throw new Error(`Detected more than one component types for ${resourceIdToString(config, this.objectLoader)}: [${componentTypes.map(resource => resource.value)}].
-Parsed config: ${resourceToString(config)}`);
+        throw new ErrorResourcesContext(`Detected more than one component types for config "${config.value}"`, {
+          componentTypes: `[${componentTypes.map(resource => resource.value)}]`,
+          config,
+        });
       }
       if (componentTypes.length === 0) {
-        throw new Error(`Could not find (valid) component types for ${resourceIdToString(config, this.objectLoader)} among types [${config.properties.types.map(resource => resource.value)}], or a requireName.
-Parsed config: ${resourceToString(config)}
-Available component types: [\n${Object.keys(this.componentResources).join(',\n')}\n]`);
+        throw new ErrorResourcesContext(`Could not find (valid) component types for config "${config.value}" among its types, or a requireName`, {
+          configTypes: `${config.properties.types.map(resource => resource.value)}`,
+          availableComponentTypes: `[\n${Object.keys(this.componentResources).join(',\n')}\n]`,
+          config,
+        });
       }
 
       // If we have a referred component type, add it to the factory options
       const component = componentTypes[0];
       const module = component.property.module;
       if (!module) {
-        throw new Error(`No module was found for the component ${resourceIdToString(component, this.objectLoader)}`);
+        throw new ErrorResourcesContext(`No module was found for the component "${component.value}"`, { config });
       }
 
       // Save this config so that other configs may inherit params from it in the future.
@@ -79,8 +83,11 @@ Available component types: [\n${Object.keys(this.componentResources).join(',\n')
     configRaw.property.originalInstance = config;
     const requireName = handleResponse.component.property.requireName || handleResponse.module.property.requireName;
     if (!requireName) {
-      throw new Error(`Could not find a requireName in either the config's module (${resourceIdToString(handleResponse.module, this.objectLoader)}) or component (${resourceIdToString(handleResponse.component, this.objectLoader)}).
-Parsed config: ${resourceToString(config)}`);
+      throw new ErrorResourcesContext(`Could not find a requireName in either the config's module or component`, {
+        module: handleResponse.module,
+        component: handleResponse.component,
+        config,
+      });
     }
     configRaw.property.requireName = requireName;
     const requireElement = handleResponse.component.property.requireElement;
@@ -132,12 +139,12 @@ Parsed config: ${resourceToString(config)}`);
    * then it will automatically inherit this param P set to 'value'.
    *
    * This can effectively mutate the given config resource.
-   * @param configResource The config
-   * @param componentResource The component
+   * @param config The config
+   * @param component The component
    */
-  public inheritParameterValues(configResource: Resource, componentResource: Resource): void {
+  public inheritParameterValues(config: Resource, component: Resource): void {
     // Iterate over all params in the instantiating component
-    for (const parameter of componentResource.properties.parameters) {
+    for (const parameter of component.properties.parameters) {
       // Collect all InheritanceValue's (=owl:Restriction)
       const inheritanceValueDefinitions: Resource[] = parameter.properties.inheritValues
         .reduce((acc: Resource[], clazz: Resource) => {
@@ -154,13 +161,21 @@ Parsed config: ${resourceToString(config)}`);
         if (inheritanceValueDefinition.property.from) {
           // Check if 'onParameter' refers to a parameter
           if (!inheritanceValueDefinition.property.onParameter) {
-            throw new Error(`Missing onParameter property on parameter value inheritance definition: ${resourceToString(parameter)}`);
+            throw new ErrorResourcesContext(`Missing onParameter property on parameter value inheritance definition`, {
+              parameter,
+              config,
+              component,
+            });
           }
 
           // Iterate over all components to inherit from
           for (const componentType of inheritanceValueDefinition.properties.from) {
             if (componentType.type !== 'NamedNode') {
-              throw new Error(`Detected invalid from term type '${componentType.type}' on parameter value inheritance definition: ${resourceToString(componentType)}`);
+              throw new ErrorResourcesContext(`Detected invalid from term type "${componentType.type}" on parameter value inheritance definition`, {
+                parameter,
+                config,
+                component,
+              });
             }
 
             // Iterate over all instantiations of the referenced component
@@ -170,20 +185,24 @@ Parsed config: ${resourceToString(config)}`);
                 // Iterate over all parameters to inherit from
                 for (const parentParameter of inheritanceValueDefinition.properties.onParameter) {
                   if (parentParameter.type !== 'NamedNode') {
-                    throw new Error(`Detected invalid onParameter term type '${parentParameter.type}' on parameter value inheritance definition: ${resourceToString(parentParameter)}`);
+                    throw new ErrorResourcesContext(`Detected invalid onParameter term type "${parentParameter.type}" on parameter value inheritance definition`, {
+                      parentParameter,
+                      config,
+                      component,
+                    });
                   }
 
                   // If the previous instance had a value for this parameter, copy it to our current config
                   if (instance.property[parentParameter.value]) {
                     // Copy the parameters
                     for (const value of instance.properties[parentParameter.value]) {
-                      configResource.properties[parentParameter.value].push(value);
+                      config.properties[parentParameter.value].push(value);
                     }
 
                     // Also add the parameter to the parameter type list
                     // This is needed to ensure that the param value will be instantiated during mapping
-                    if (!componentResource.properties.parameters.includes(parentParameter)) {
-                      componentResource.properties.parameters.push(parentParameter);
+                    if (!component.properties.parameters.includes(parentParameter)) {
+                      component.properties.parameters.push(parentParameter);
                     }
                   }
                 }
@@ -191,7 +210,11 @@ Parsed config: ${resourceToString(config)}`);
             }
           }
         } else {
-          throw new Error(`Missing from property on parameter value inheritance definition: ${resourceToString(parameter)}`);
+          throw new ErrorResourcesContext(`Missing from property on parameter value inheritance definition`, {
+            parameter,
+            config,
+            component,
+          });
         }
       }
     }

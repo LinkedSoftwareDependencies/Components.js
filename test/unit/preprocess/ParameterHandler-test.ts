@@ -468,7 +468,7 @@ describe('ParameterHandler', () => {
             ],
           });
           expect(() => handler.applyParameterValues(configRoot, param, configElement))
-            .toThrowError(/^Invalid defaultScoped for parameter 'ex:myParam': Missing defaultScope\./u);
+            .toThrowError(/^Invalid defaultScoped for parameter "ex:myParam": Missing defaultScope/u);
         });
 
         it('should throw for a missing defaultScopedValue', () => {
@@ -483,7 +483,7 @@ describe('ParameterHandler', () => {
             ],
           });
           expect(() => handler.applyParameterValues(configRoot, param, configElement))
-            .toThrowError(/^Invalid defaultScoped for parameter 'ex:myParam': Missing defaultScopedValue\./u);
+            .toThrowError(/^Invalid defaultScoped for parameter "ex:myParam": Missing defaultScopedValue/u);
         });
       });
     });
@@ -498,7 +498,7 @@ describe('ParameterHandler', () => {
 
       it('should throw for an undefined value', () => {
         expect(() => handler.applyParameterValues(configRoot, param, configElement))
-          .toThrowError(/^No value was set for required parameter 'ex:myParam' in config 'ex:myConfig'\./u);
+          .toThrowError(/^No value was set for required parameter "ex:myParam"/u);
       });
 
       it('should allow one set value', () => {

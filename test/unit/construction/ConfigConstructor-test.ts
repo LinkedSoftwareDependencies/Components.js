@@ -202,7 +202,7 @@ describe('ConfigConstructor', () => {
           ],
         });
         await expect(constructor.getArgumentValue(resource, settings)).rejects
-          .toThrowError(/^Missing key in fields entry\./u);
+          .toThrowError(/^Missing key in fields entry/u);
       });
 
       it('should throw on IRI key', async() => {
@@ -215,7 +215,7 @@ describe('ConfigConstructor', () => {
           ],
         });
         await expect(constructor.getArgumentValue(resource, settings)).rejects
-          .toThrowError(/^Illegal non-literal key \(ex:abc as NamedNode\) in fields entry\./u);
+          .toThrowError(/^Illegal non-literal key \(ex:abc as NamedNode\) in fields entry/u);
       });
 
       it('should ignore fields without value', async() => {
@@ -294,7 +294,7 @@ describe('ConfigConstructor', () => {
           ],
         });
         await expect(constructor.getArgumentValue(resource, settings)).rejects
-          .toThrowError(/^Missing value in array elements entry\./u);
+          .toThrowError(/^Missing value in array elements entry/u);
       });
     });
 
@@ -427,7 +427,7 @@ describe('ConfigConstructor', () => {
     it('should throw on graph terms', async() => {
       const resource = new Resource({ term: DF.defaultGraph() });
       await expect(constructor.getArgumentValue(resource, settings)).rejects
-        .toThrowError(/^Unsupported argument value during config construction\./u);
+        .toThrowError(/^Unsupported argument value during config construction/u);
     });
   });
 
@@ -471,7 +471,7 @@ describe('ConfigConstructor', () => {
         arguments: '"ABC"',
       });
       await expect(constructor.createArguments(config, settings)).rejects
-        .toThrowError(/^Detected non-RDF-list as value for config arguments\./u);
+        .toThrowError(/^Detected non-RDF-list as value for config arguments/u);
     });
   });
 

@@ -31,4 +31,3 @@ export * from './lib/CompileUtil';
 export * from './lib/Loader';
 export * from './lib/LogLevel';
 export * from './lib/ModuleStateBuilder';
-export * from './lib/Util';

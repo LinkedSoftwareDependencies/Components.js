@@ -1,5 +1,5 @@
 import type { Resource } from 'rdf-object';
-import * as Util from '../../Util';
+import { ErrorResourcesContext } from '../../ErrorResourcesContext';
 import type { IConstructionSettings } from '../IConstructionSettings';
 import type { IArgumentConstructorHandler } from './IArgumentConstructorHandler';
 import type { IArgumentsConstructor } from './IArgumentsConstructor';
@@ -17,22 +17,18 @@ export class ArgumentConstructorHandlerHash implements IArgumentConstructorHandl
   }
 
   public async handle<Instance>(
-    value: Resource,
+    argument: Resource,
     settings: IConstructionSettings,
     argsCreator: IArgumentsConstructor<Instance>,
   ): Promise<Instance> {
     // Determine all key-value pairs
-    const entries = await Promise.all(value.properties.fields.map(async(entry: Resource) => {
+    const entries = await Promise.all(argument.properties.fields.map(async(entry: Resource) => {
       // Validate entry
       if (!entry.property.key) {
-        throw new Error(`Missing key in fields entry.
-Entry: ${Util.resourceToString(entry)}
-Fields: ${Util.resourceToString(value)}`);
+        throw new ErrorResourcesContext(`Missing key in fields entry`, { entry, argument });
       }
       if (entry.property.key.type !== 'Literal') {
-        throw new Error(`Illegal non-literal key (${Util.resourceIdToString(entry.property.key, argsCreator.objectLoader)} as ${entry.property.key.type}) in fields entry.
-Entry: ${Util.resourceToString(entry)}
-Fields: ${Util.resourceToString(value)}`);
+        throw new ErrorResourcesContext(`Illegal non-literal key (${entry.property.key.value} as ${entry.property.key.type}) in fields entry`, { entry, argument });
       }
 
       // Recursively get value arg value

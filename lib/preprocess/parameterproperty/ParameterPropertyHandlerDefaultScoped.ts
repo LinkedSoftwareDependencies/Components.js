@@ -1,5 +1,5 @@
 import type { RdfObjectLoader, Resource } from 'rdf-object';
-import { resourceIdToString, resourceToString } from '../../Util';
+import { ErrorResourcesContext } from '../../ErrorResourcesContext';
 import type { IParameterPropertyHandler } from './IParameterPropertyHandler';
 
 /**
@@ -21,16 +21,14 @@ export class ParameterPropertyHandlerDefaultScoped implements IParameterProperty
     for (const scoped of parameter.properties.defaultScoped) {
       // Require defaultScope
       if (!scoped.property.defaultScope) {
-        throw new Error(`Invalid defaultScoped for parameter '${resourceIdToString(parameter, this.objectLoader)}': Missing defaultScope.
-Parameter: ${resourceToString(parameter)}`);
+        throw new ErrorResourcesContext(`Invalid defaultScoped for parameter "${parameter.value}": Missing defaultScope`, { parameter });
       }
 
       // Multiple scope type references can be defined
       for (const scopeType of scoped.properties.defaultScope) {
         // Require defaultScopedValue
         if (!scoped.property.defaultScopedValue) {
-          throw new Error(`Invalid defaultScoped for parameter '${resourceIdToString(parameter, this.objectLoader)}': Missing defaultScopedValue.
-Parameter: ${resourceToString(parameter)}`);
+          throw new ErrorResourcesContext(`Invalid defaultScoped for parameter "${parameter.value}": Missing defaultScopedValue`, { parameter });
         }
 
         // Apply the scope if the config is of the required type (also considering sub-types)

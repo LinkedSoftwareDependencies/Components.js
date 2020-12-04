@@ -1,6 +1,6 @@
 import type { Resource, RdfObjectLoader } from 'rdf-object';
+import { ErrorResourcesContext } from '../ErrorResourcesContext';
 import type { IModuleState } from '../ModuleStateBuilder';
-import * as Util from '../Util';
 import { ArgumentConstructorHandlerArray } from './argument/ArgumentConstructorHandlerArray';
 import { ArgumentConstructorHandlerHash } from './argument/ArgumentConstructorHandlerHash';
 import { ArgumentConstructorHandlerPrimitive } from './argument/ArgumentConstructorHandlerPrimitive';
@@ -73,8 +73,7 @@ export class ConfigConstructor<Instance> implements IArgumentsConstructor<Instan
     }
 
     // Error if no handlers can handle this argument
-    throw new Error(`Unsupported argument value during config construction.
-Value: ${Util.resourceToString(value)}`);
+    throw new ErrorResourcesContext('Unsupported argument value during config construction', { value });
   }
 
   /**
@@ -89,8 +88,7 @@ Value: ${Util.resourceToString(value)}`);
   ): Promise<Instance[]> {
     if (config.property.arguments) {
       if (!config.property.arguments.list) {
-        throw new Error(`Detected non-RDF-list as value for config arguments.
-Config: ${Util.resourceToString(config)}`);
+        throw new ErrorResourcesContext('Detected non-RDF-list as value for config arguments', { config });
       }
       return await Promise.all(config.property.arguments.list
         .map((resource: Resource) => this.getArgumentValue(resource, settings)));

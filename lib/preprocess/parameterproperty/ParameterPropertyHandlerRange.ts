@@ -1,6 +1,6 @@
 import type { RdfObjectLoader, Resource } from 'rdf-object';
+import { ErrorResourcesContext } from '../../ErrorResourcesContext';
 import { IRIS_XSD } from '../../rdf/Iris';
-import { resourceIdToString } from '../../Util';
 import type { IParameterPropertyHandler } from './IParameterPropertyHandler';
 
 /**
@@ -76,7 +76,9 @@ export class ParameterPropertyHandlerRange implements IParameterPropertyHandler 
     return value;
   }
 
-  protected throwIncorrectTypeError(value: Resource, param: Resource): void {
-    throw new Error(`${value.value} is not of type ${param.property.range.value} for parameter ${resourceIdToString(param, this.objectLoader)}`);
+  protected throwIncorrectTypeError(value: Resource, parameter: Resource): void {
+    throw new ErrorResourcesContext(`Parameter value "${value.value}" is not of required range type "${parameter.property.range.value}"`, {
+      parameter,
+    });
   }
 }

@@ -1,7 +1,7 @@
 import type { Resource, RdfObjectLoader } from 'rdf-object';
+import { ErrorResourcesContext } from '../ErrorResourcesContext';
 import type { IModuleState } from '../ModuleStateBuilder';
 import type { IConfigPreprocessor } from '../preprocess/IConfigPreprocessor';
-import * as Util from '../Util';
 import { ConfigConstructor } from './ConfigConstructor';
 import type { IConfigConstructorPool } from './IConfigConstructorPool';
 import type { IConstructionSettings } from './IConstructionSettings';
@@ -98,23 +98,21 @@ export class ConfigConstructorPool<Instance> implements IConfigConstructorPool<I
 
   /**
    * Check if the given field of given type exists in the given resource.
-   * @param resource A resource to look in.
+   * @param config A resource to look in.
    * @param field A field name to look for.
    * @param type The term type to expect.
    * @param optional If the field is optional.
    */
-  public validateParam(resource: Resource, field: string, type: string, optional?: boolean): void {
-    if (!resource.property[field]) {
+  public validateParam(config: Resource, field: string, type: string, optional?: boolean): void {
+    if (!config.property[field]) {
       if (!optional) {
-        throw new Error(`Invalid config: Missing ${field}.
-Config: ${Util.resourceToString(resource)}`);
+        throw new ErrorResourcesContext(`Invalid config: Missing ${field}`, { config });
       } else {
         return;
       }
     }
-    if (resource.property[field].type !== type) {
-      throw new Error(`Invalid config: ${field} (${resource.property[field].value}) must be a ${type}, but got ${resource.property[field].type}.
-Config: ${Util.resourceToString(resource)}`);
+    if (config.property[field].type !== type) {
+      throw new ErrorResourcesContext(`Invalid config: ${field} "${config.property[field].value}" must be a ${type}, but got ${config.property[field].type}`, { config });
     }
   }
 }

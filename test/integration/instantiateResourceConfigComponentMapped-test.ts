@@ -318,7 +318,7 @@ describe('construction with mapped component configs as Resource', () => {
         types: 'http://example.org/n3#Lexer',
       });
       await expect(configConstructorPool.instantiate(config, settings)).rejects
-        .toThrowError(/^No value was set for required parameter '.*' in./u);
+        .toThrowError(/^No value was set for required parameter ".*"/u);
     });
   });
 

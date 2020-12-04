@@ -1,5 +1,5 @@
 import type { Resource } from 'rdf-object';
-import { resourceToString } from '../../Util';
+import { ErrorResourcesContext } from '../../ErrorResourcesContext';
 import type { IConstructorArgumentsElementMappingHandler } from './IConstructorArgumentsElementMappingHandler';
 import type { IConstructorArgumentsMapper } from './IConstructorArgumentsMapper';
 
@@ -24,21 +24,23 @@ export class ConstructorArgumentsElementMappingHandlerElements implements IConst
   ): Resource[] {
     // Elements must have RDF list values.
     if (!constructorArgs.property.elements.list) {
-      throw new Error(`Illegal non-RDF-list elements.
-Elements: ${resourceToString(constructorArgs.property.elements)}
-Constructor arguments: ${resourceToString(constructorArgs)}
-Parsed config: ${resourceToString(configRoot)}`);
+      throw new ErrorResourcesContext(`Illegal non-RDF-list elements`, {
+        elements: constructorArgs.property.elements,
+        constructorArgs,
+        config: configRoot,
+      });
     }
 
     // Recursively handle all values in the array
     const ret = mapper.objectLoader.createCompactedResource({});
     for (const element of constructorArgs.property.elements.list) {
       if (element.type !== 'NamedNode' && !element.property.value && !element.property.valueRawReference) {
-        throw new Error(`Illegal elements value, must be an IRI or resource with value/valueRawReference.
-Elements value: ${resourceToString(element)}
-Elements: ${resourceToString(constructorArgs.property.elements)}
-Constructor arguments: ${resourceToString(constructorArgs)}
-Parsed config: ${resourceToString(configRoot)}`);
+        throw new ErrorResourcesContext(`Illegal elements value, must be an IRI or resource with value/valueRawReference`, {
+          elementValue: element,
+          elements: constructorArgs.property.elements,
+          constructorArgs,
+          config: configRoot,
+        });
       }
       for (const value of mapper.getParameterValue(
         configRoot,

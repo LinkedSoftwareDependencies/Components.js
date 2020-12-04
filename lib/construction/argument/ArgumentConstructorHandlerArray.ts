@@ -1,5 +1,5 @@
 import type { Resource } from 'rdf-object';
-import * as Util from '../../Util';
+import { ErrorResourcesContext } from '../../ErrorResourcesContext';
 import type { IConstructionSettings } from '../IConstructionSettings';
 import type { IArgumentConstructorHandler } from './IArgumentConstructorHandler';
 import type { IArgumentsConstructor } from './IArgumentsConstructor';
@@ -17,16 +17,14 @@ export class ArgumentConstructorHandlerArray implements IArgumentConstructorHand
   }
 
   public async handle<Instance>(
-    value: Resource,
+    argument: Resource,
     settings: IConstructionSettings,
     argsCreator: IArgumentsConstructor<Instance>,
   ): Promise<Instance> {
     // Recursively handle all sub-args in the array
-    const elements = await Promise.all(value.properties.elements.map(async(entry: Resource) => {
+    const elements = await Promise.all(argument.properties.elements.map(async(entry: Resource) => {
       if (!entry.property.value) {
-        throw new Error(`Missing value in array elements entry.
-Entry: ${Util.resourceToString(entry)}
-Elements: ${Util.resourceToString(value)}`);
+        throw new ErrorResourcesContext(`Missing value in array elements entry`, { entry, argument });
       }
       return await argsCreator.getArgumentValue(entry.property.value, settings);
     }));

@@ -18,12 +18,6 @@ import { ConfigPreprocessorComponentMapped } from './preprocess/ConfigPreprocess
 import { ParameterHandler } from './preprocess/ParameterHandler';
 import { IRIS_OO } from './rdf/Iris';
 import { RdfParser } from './rdf/RdfParser';
-import { resourceIdToString } from './Util';
-
-/**
- * A Loader is able to take in module registrations,
- * after which components can be instantiated.
- */
 export class Loader<Instance> {
   private readonly objectLoader: RdfObjectLoader;
   private readonly mainModulePath?: string;
@@ -119,7 +113,7 @@ export class Loader<Instance> {
   public registerComponentResource(componentResource: Resource): void {
     try {
       if (this.registrationFinalized) {
-        throw new Error(`Tried registering a component ${resourceIdToString(componentResource, this.objectLoader)} after the loader has been finalized.`);
+        throw new Error(`Tried registering a component ${componentResource.value} after the loader has been finalized.`);
       }
       this.requireValidComponent(componentResource);
       this.componentResources[componentResource.value] = componentResource;
@@ -147,9 +141,9 @@ export class Loader<Instance> {
    */
   public requireValidComponent(componentResource: Resource, referencingComponent?: Resource): void {
     if (!this.isValidComponent(componentResource)) {
-      throw new Error(`The referenced resource ${resourceIdToString(componentResource, this.objectLoader)} is not a valid ` +
+      throw new Error(`The referenced resource ${componentResource.value} is not a valid ` +
                 `component resource, either it is not defined or incorrectly referenced${
-                  referencingComponent ? ` by ${resourceIdToString(referencingComponent, this.objectLoader)}.` : '.'}`);
+                  referencingComponent ? ` by ${referencingComponent.value}.` : '.'}`);
     }
   }
 
@@ -183,7 +177,7 @@ export class Loader<Instance> {
   public inheritConstructorParameters(componentResource: Resource): void {
     if (componentResource.property.constructorArguments) {
       if (!componentResource.property.constructorArguments.list) {
-        throw new Error(`Detected invalid constructor arguments for component "${resourceIdToString(componentResource, this.objectLoader)}": arguments are not an RDF list.`);
+        throw new Error(`Detected invalid constructor arguments for component "${componentResource.value}": arguments are not an RDF list.`);
       }
       for (const object of componentResource.property.constructorArguments.list) {
         if (object.property.inheritValues) {
@@ -210,8 +204,8 @@ export class Loader<Instance> {
         } else if (!superObject.isA('ObjectMapping') &&
           !superObject.property.inheritValues &&
           !superObject.property.onParameter) {
-          throw new Error(`The referenced constructor mappings object ${resourceIdToString(superObject, this.objectLoader)
-          } from ${resourceIdToString(object, this.objectLoader)} is not valid, i.e., it doesn't contain mapping fields ` +
+          throw new Error(`The referenced constructor mappings object ${superObject.value
+          } from ${object.value} is not valid, i.e., it doesn't contain mapping fields ` +
             `, has the om:ObjectMapping type or has a superclass. ` +
             `It possibly is incorrectly referenced or not defined at all.`);
         }
@@ -230,7 +224,7 @@ export class Loader<Instance> {
   public registerModuleResource(moduleResource: Resource): void {
     try {
       if (this.registrationFinalized) {
-        throw new Error(`Tried registering a module ${resourceIdToString(moduleResource, this.objectLoader)} after the loader has been finalized.`);
+        throw new Error(`Tried registering a module ${moduleResource.value} after the loader has been finalized.`);
       }
       if (moduleResource.property.components) {
         for (const component of moduleResource.properties.components) {
@@ -238,7 +232,7 @@ export class Loader<Instance> {
           this.registerComponentResource(component);
         }
       } else if (!moduleResource.property.imports) {
-        throw new Error(`Tried to register the module ${resourceIdToString(moduleResource, this.objectLoader)} that has no components.`);
+        throw new Error(`Tried to register the module ${moduleResource.value} that has no components.`);
       }
     } catch (error: unknown) {
       throw this.generateErrorLog(error);
