@@ -1,20 +1,5 @@
 import NodeUtil = require('util');
-import { DataFactory } from 'rdf-data-factory';
-import type * as RDF from 'rdf-js';
 import type { Resource, RdfObjectLoader } from 'rdf-object';
-
-export const PREFIXES: Record<string, string> = {
-  oo: 'https://linkedsoftwaredependencies.org/vocabularies/object-oriented#',
-  om: 'https://linkedsoftwaredependencies.org/vocabularies/object-mapping#',
-  rdf: 'http://www.w3.org/1999/02/22-rdf-syntax-ns#',
-  rdfs: 'http://www.w3.org/2000/01/rdf-schema#',
-  xsd: 'http://www.w3.org/2001/XMLSchema#',
-  doap: 'http://usefulinc.com/ns/doap#',
-  owl: 'http://www.w3.org/2002/07/owl#',
-};
-
-export const DF: DataFactory = new DataFactory<RDF.Quad>();
-export const IRI_MODULE: RDF.NamedNode = DF.namedNode(`${PREFIXES.oo}Module`);
 
 /**
  * Convert the given resource to a compact string.

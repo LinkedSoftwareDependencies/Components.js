@@ -1,6 +1,6 @@
 import type { Resource } from 'rdf-object';
+import { IRIS_RDF } from '../../rdf/Iris';
 import { resourceIdToString, resourceToString } from '../../Util';
-import * as Util from '../../Util';
 import type { ParameterHandler } from '../ParameterHandler';
 import type { IConstructorArgumentsElementMappingHandler } from './IConstructorArgumentsElementMappingHandler';
 import type { IConstructorArgumentsMapper } from './IConstructorArgumentsMapper';
@@ -61,9 +61,9 @@ Parsed config: ${resourceToString(configRoot)}`);
     let key: Resource | undefined;
     if (constructorArgs.property.key) {
       if (constructorArgs.property.key.type === 'NamedNode' &&
-        constructorArgs.property.key.value === `${Util.PREFIXES.rdf}subject`) {
+        constructorArgs.property.key.value === IRIS_RDF.subject) {
         // Key is the entry id as string
-        key = mapper.objectLoader.getOrMakeResource(Util.DF.literal(entryResource.value));
+        key = mapper.objectLoader.createCompactedResource(`"${entryResource.value}"`);
       } else if (entryResource.properties[constructorArgs.property.key.value].length !== 1) {
         // Error if we find more than one entry key value
         throw new Error(`Detected more than one key value in collectEntries.
@@ -81,11 +81,11 @@ Parsed config: ${resourceToString(configRoot)}`);
     // Determin the entry value
     let value: Resource;
     if (constructorArgs.property.value.type === 'NamedNode' &&
-      constructorArgs.property.value.value === `${Util.PREFIXES.rdf}subject`) {
+      constructorArgs.property.value.value === IRIS_RDF.subject) {
       // Value is the entry id as string
-      value = mapper.objectLoader.getOrMakeResource(Util.DF.literal(entryResource.value));
+      value = mapper.objectLoader.createCompactedResource(`"${entryResource.value}"`);
     } else if (constructorArgs.property.value.type === 'NamedNode' &&
-      constructorArgs.property.value.value === `${Util.PREFIXES.rdf}object`) {
+      constructorArgs.property.value.value === IRIS_RDF.object) {
       // Value is the entry value
       value = mapper.applyConstructorArgumentsParameters(configRoot, entryResource, configElement)[0];
     } else if (constructorArgs.property.value &&
@@ -106,7 +106,7 @@ Parsed config: ${resourceToString(configRoot)}`);
 
     // If we have a key, create a key-value mapping
     if (key) {
-      const ret = mapper.objectLoader.getOrMakeResource(Util.DF.blankNode());
+      const ret = mapper.objectLoader.createCompactedResource({});
       ret.property.key = key;
       value.property.unique = mapper.objectLoader.createCompactedResource('"true"');
       ret.property.value = value;

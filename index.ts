@@ -23,6 +23,7 @@ export * from './lib/preprocess/ConfigPreprocessorComponent';
 export * from './lib/preprocess/ConfigPreprocessorComponentMapped';
 export * from './lib/preprocess/IConfigPreprocessor';
 export * from './lib/preprocess/ParameterHandler';
+export * from './lib/rdf/Iris';
 export * from './lib/rdf/PrefetchedDocumentLoader';
 export * from './lib/rdf/RdfParser';
 export * from './lib/rdf/RdfStreamIncluder';

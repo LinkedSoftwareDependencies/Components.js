@@ -16,8 +16,8 @@ import { ModuleStateBuilder } from './ModuleStateBuilder';
 import { ConfigPreprocessorComponent } from './preprocess/ConfigPreprocessorComponent';
 import { ConfigPreprocessorComponentMapped } from './preprocess/ConfigPreprocessorComponentMapped';
 import { ParameterHandler } from './preprocess/ParameterHandler';
+import { IRIS_OO } from './rdf/Iris';
 import { RdfParser } from './rdf/RdfParser';
-import Util = require('./Util');
 import { resourceIdToString } from './Util';
 
 /**
@@ -301,7 +301,7 @@ export class Loader<Instance> {
 
     // Register all object-loaded modules
     for (const resource of Object.values(this.objectLoader.resources)) {
-      if (resource.isA('Module') && !resource.term.equals(Util.IRI_MODULE)) {
+      if (resource.isA('Module') && resource.value !== IRIS_OO.Module) {
         this.registerModuleResource(resource);
       }
     }

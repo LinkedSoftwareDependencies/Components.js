@@ -1,5 +1,5 @@
 import type { Resource } from 'rdf-object';
-import * as Util from '../Util';
+import { IRIS_RDF } from '../rdf/Iris';
 import type {
   IComponentConfigPreprocessorHandleResponse,
 } from './ConfigPreprocessorComponent';
@@ -83,7 +83,7 @@ export class ConfigPreprocessorComponentMapped extends ConfigPreprocessorCompone
   ): Resource[] {
     let valueOut: Resource[];
 
-    if (parameter.type === 'NamedNode' && parameter.value === `${Util.PREFIXES.rdf}subject`) {
+    if (parameter.type === 'NamedNode' && parameter.value === IRIS_RDF.subject) {
       valueOut = [ this.objectLoader.createCompactedResource(`"${configElement.value}"`) ];
       valueOut[0].property.unique = this.objectLoader.createCompactedResource('"true"');
     } else if (parameter.type === 'NamedNode') {

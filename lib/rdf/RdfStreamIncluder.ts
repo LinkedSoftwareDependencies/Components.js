@@ -3,7 +3,7 @@ import type { Readable, TransformCallback } from 'stream';
 import { Transform } from 'stream';
 import type * as RDF from 'rdf-js';
 import { getNamedNodes, getTerms } from 'rdf-terms';
-import Util = require('../Util');
+import { IRIS_OWL } from './Iris';
 import { RdfParser } from './RdfParser';
 import type { RdfParserOptions } from './RdfParser';
 
@@ -42,7 +42,7 @@ export class RdfStreamIncluder extends Transform {
    * @param quad A quad.
    */
   public handleImports(quad: RDF.Quad): void {
-    if (!this.parserOptions.ignoreImports && quad.predicate.value === `${Util.PREFIXES.owl}imports`) {
+    if (!this.parserOptions.ignoreImports && quad.predicate.value === IRIS_OWL.imports) {
       this.runningImporters++;
       let relativeFilePath = quad.object.value;
 

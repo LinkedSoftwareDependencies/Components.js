@@ -1,5 +1,6 @@
 import type { RdfObjectLoader, Resource } from 'rdf-object';
-import { PREFIXES, resourceIdToString } from '../../Util';
+import { IRIS_XSD } from '../../rdf/Iris';
+import { resourceIdToString } from '../../Util';
 import type { IParameterPropertyHandler } from './IParameterPropertyHandler';
 
 /**
@@ -35,7 +36,7 @@ export class ParameterPropertyHandlerRange implements IParameterPropertyHandler 
     if (value.type === 'Literal') {
       let parsed;
       switch (param.property.range.value) {
-        case `${PREFIXES.xsd}boolean`:
+        case IRIS_XSD.boolean:
           if (value.value === 'true') {
             (<any>value.term).valueRaw = true;
           } else if (value.value === 'false') {
@@ -44,11 +45,11 @@ export class ParameterPropertyHandlerRange implements IParameterPropertyHandler 
             this.throwIncorrectTypeError(value, param);
           }
           break;
-        case `${PREFIXES.xsd}integer`:
-        case `${PREFIXES.xsd}number`:
-        case `${PREFIXES.xsd}int`:
-        case `${PREFIXES.xsd}byte`:
-        case `${PREFIXES.xsd}long`:
+        case IRIS_XSD.integer:
+        case IRIS_XSD.number:
+        case IRIS_XSD.int:
+        case IRIS_XSD.byte:
+        case IRIS_XSD.long:
           parsed = Number.parseInt(value.value, 10);
           if (Number.isNaN(parsed)) {
             this.throwIncorrectTypeError(value, param);
@@ -60,9 +61,9 @@ export class ParameterPropertyHandlerRange implements IParameterPropertyHandler 
             (<any>value.term).valueRaw = parsed;
           }
           break;
-        case `${PREFIXES.xsd}float`:
-        case `${PREFIXES.xsd}decimal`:
-        case `${PREFIXES.xsd}double`:
+        case IRIS_XSD.float:
+        case IRIS_XSD.decimal:
+        case IRIS_XSD.double:
           parsed = Number.parseFloat(value.value);
           if (Number.isNaN(parsed)) {
             this.throwIncorrectTypeError(value, param);

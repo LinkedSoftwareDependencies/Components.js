@@ -3,7 +3,7 @@ import { mocked } from 'ts-jest/utils';
 import type { IConfigConstructorPool } from '../../lib/construction/IConfigConstructorPool';
 import type { IConstructionSettings } from '../../lib/construction/IConstructionSettings';
 import type { Loader } from '../../lib/Loader';
-import * as Util from '../../lib/Util';
+import { IRIS_OO } from '../../lib/rdf/Iris';
 import { LoaderMocked } from './LoaderMocked';
 
 const N3 = require('n3');
@@ -31,7 +31,7 @@ describe('construction with component configs as Resource', () => {
       (<any> loader).componentResources['http://example.org/n3#Util'] = objectLoader.createCompactedResource({
         '@id': 'http://example.org/n3#Util',
         requireElement: '"Util"',
-        types: `${Util.PREFIXES.oo}ComponentInstance`,
+        types: IRIS_OO.ComponentInstance,
         module: {
           '@id': 'http://example.org/n3',
           requireName: '"n3"',

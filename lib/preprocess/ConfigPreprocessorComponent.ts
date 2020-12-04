@@ -1,5 +1,6 @@
 import type { Resource, RdfObjectLoader } from 'rdf-object';
-import { PREFIXES, resourceIdToString, resourceToString } from '../Util';
+import { IRIS_OWL } from '../rdf/Iris';
+import { resourceIdToString, resourceToString } from '../Util';
 import type { IConfigPreprocessor } from './IConfigPreprocessor';
 import type { ParameterHandler } from './ParameterHandler';
 
@@ -141,7 +142,7 @@ Parsed config: ${resourceToString(config)}`);
       const inheritanceValueDefinitions: Resource[] = parameter.properties.inheritValues
         .reduce((acc: Resource[], clazz: Resource) => {
           if (clazz.properties.types.reduce((subAcc: boolean, type: Resource) => subAcc ||
-            type.value === `${PREFIXES.owl}Restriction`, false)) {
+            type.value === IRIS_OWL.Restriction, false)) {
             acc.push(clazz);
           }
           return acc;

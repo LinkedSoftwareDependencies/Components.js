@@ -5,8 +5,8 @@ import type * as RDF from 'rdf-js';
 import type { RdfObjectLoader, Resource } from 'rdf-object';
 import type { IConfigConstructorPool } from '../../lib/construction/IConfigConstructorPool';
 import { Loader } from '../../lib/Loader';
+import { IRIS_DOAP, IRIS_OO, IRIS_RDF } from '../../lib/rdf/Iris';
 import { RdfParser } from '../../lib/rdf/RdfParser';
-import * as Util from '../../lib/Util';
 const quad = require('rdf-quad');
 
 const Hello = require('../../__mocks__/helloworld').Hello;
@@ -32,15 +32,15 @@ describe('Loader', () => {
     it('components to be registered', () => {
       const component1 = objectLoader.createCompactedResource({
         '@id': 'ex:mycomponent1',
-        types: [ `${Util.PREFIXES.oo}Class` ],
+        types: [ IRIS_OO.Class ],
       });
       const component2 = objectLoader.createCompactedResource({
         '@id': 'ex:mycomponent2',
-        types: [ `${Util.PREFIXES.oo}Class` ],
+        types: [ IRIS_OO.Class ],
       });
       const component3 = objectLoader.createCompactedResource({
         '@id': 'ex:mycomponent3',
-        types: [ `${Util.PREFIXES.oo}Class` ],
+        types: [ IRIS_OO.Class ],
       });
 
       loader.registerComponentResource(component1);
@@ -55,15 +55,15 @@ describe('Loader', () => {
     it('module components to be registered', () => {
       const component1 = objectLoader.createCompactedResource({
         '@id': 'ex:mycomponent1',
-        types: [ `${Util.PREFIXES.oo}Class` ],
+        types: [ IRIS_OO.Class ],
       });
       const component2 = objectLoader.createCompactedResource({
         '@id': 'ex:mycomponent2',
-        types: [ `${Util.PREFIXES.oo}Class` ],
+        types: [ IRIS_OO.Class ],
       });
       const component3 = objectLoader.createCompactedResource({
         '@id': 'ex:mycomponent3',
-        types: [ `${Util.PREFIXES.oo}Class` ],
+        types: [ IRIS_OO.Class ],
       });
       const module = objectLoader.createCompactedResource({
         '@id': 'ex:mymodule',
@@ -89,21 +89,21 @@ describe('Loader', () => {
 
       beforeEach(async() => {
         const moduleStream = new Readable({ objectMode: true });
-        moduleStream.push(quad(module, `${Util.PREFIXES.rdf}type`, `${Util.PREFIXES.oo}Module`));
-        moduleStream.push(quad(module, `${Util.PREFIXES.oo}component`, component1));
-        moduleStream.push(quad(module, `${Util.PREFIXES.doap}name`, '"helloworld"'));
-        moduleStream.push(quad(component1, `${Util.PREFIXES.rdf}type`, `${Util.PREFIXES.oo}Class`));
-        moduleStream.push(quad(component1, `${Util.PREFIXES.oo}componentPath`, '"Hello"'));
-        moduleStream.push(quad(component1, `${Util.PREFIXES.oo}parameter`, 'http://example.org/myModule/params#param1'));
-        moduleStream.push(quad(component1, `${Util.PREFIXES.oo}parameter`, 'http://example.org/myModule/params#param3'));
-        moduleStream.push(quad(module, `${Util.PREFIXES.oo}component`, component2));
-        moduleStream.push(quad(component2, `${Util.PREFIXES.rdf}type`, `${Util.PREFIXES.oo}Class`));
-        moduleStream.push(quad(component2, `${Util.PREFIXES.oo}componentPath`, '"Hello"'));
-        moduleStream.push(quad(component2, `${Util.PREFIXES.oo}parameter`, 'http://example.org/myModule/params#param1'));
-        moduleStream.push(quad(module, `${Util.PREFIXES.oo}component`, component3));
-        moduleStream.push(quad(component3, `${Util.PREFIXES.rdf}type`, `${Util.PREFIXES.oo}Class`));
-        moduleStream.push(quad(component3, `${Util.PREFIXES.oo}componentPath`, '"Hello"'));
-        moduleStream.push(quad(component3, `${Util.PREFIXES.oo}parameter`, 'http://example.org/myModule/params#param2'));
+        moduleStream.push(quad(module, IRIS_RDF.type, IRIS_OO.Module));
+        moduleStream.push(quad(module, IRIS_OO.component, component1));
+        moduleStream.push(quad(module, IRIS_DOAP.name, '"helloworld"'));
+        moduleStream.push(quad(component1, IRIS_RDF.type, IRIS_OO.Class));
+        moduleStream.push(quad(component1, IRIS_OO.componentPath, '"Hello"'));
+        moduleStream.push(quad(component1, IRIS_OO.parameter, 'http://example.org/myModule/params#param1'));
+        moduleStream.push(quad(component1, IRIS_OO.parameter, 'http://example.org/myModule/params#param3'));
+        moduleStream.push(quad(module, IRIS_OO.component, component2));
+        moduleStream.push(quad(component2, IRIS_RDF.type, IRIS_OO.Class));
+        moduleStream.push(quad(component2, IRIS_OO.componentPath, '"Hello"'));
+        moduleStream.push(quad(component2, IRIS_OO.parameter, 'http://example.org/myModule/params#param1'));
+        moduleStream.push(quad(module, IRIS_OO.component, component3));
+        moduleStream.push(quad(component3, IRIS_RDF.type, IRIS_OO.Class));
+        moduleStream.push(quad(component3, IRIS_OO.componentPath, '"Hello"'));
+        moduleStream.push(quad(component3, IRIS_OO.parameter, 'http://example.org/myModule/params#param2'));
         moduleStream.push(null);
         await loader.registerModuleResourcesStream(moduleStream);
         loader.finalizeRegistration();
@@ -133,7 +133,7 @@ describe('Loader', () => {
       it('a config stream', async() => {
         const config1 = 'http://example.org/myModule#myconfig1';
         const configResourceStream = new Readable({ objectMode: true });
-        configResourceStream.push(quad(config1, `${Util.PREFIXES.rdf}type`, component1));
+        configResourceStream.push(quad(config1, IRIS_RDF.type, component1));
         configResourceStream.push(quad(config1, 'http://example.org/myModule/params#param1', '"ABC"'));
         configResourceStream.push(quad(config1, 'http://example.org/myModule/params#param2', '"DEF"'));
         configResourceStream.push(quad(config1, 'http://example.org/myModule/params#param3', '"GHI"'));
@@ -586,7 +586,7 @@ describe('Loader', () => {
       resource = objectLoader.createCompactedResource({
         '@id': 'http://example.org',
         'ex:a': 'ex:b',
-        types: `${Util.PREFIXES.oo}AbstractClass`,
+        types: IRIS_OO.AbstractClass,
       });
     });
 
@@ -601,7 +601,7 @@ describe('Loader', () => {
       resource = objectLoader.createCompactedResource({
         '@id': 'http://example.org',
         'ex:a': 'ex:b',
-        types: `${Util.PREFIXES.oo}Class`,
+        types: IRIS_OO.Class,
       });
     });
 
