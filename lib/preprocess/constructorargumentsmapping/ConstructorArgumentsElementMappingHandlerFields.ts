@@ -29,6 +29,8 @@ export class ConstructorArgumentsElementMappingHandlerFields implements IConstru
       }
     }
     ret.property.unique = mapper.objectLoader.createCompactedResource('"true"');
+    // Hack to enforce ArgumentConstructorHandlerHash
+    ret.property.hasFields = mapper.objectLoader.createCompactedResource('"true"');
     return [ ret ];
   }
 }

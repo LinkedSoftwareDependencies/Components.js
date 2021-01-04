@@ -110,7 +110,7 @@ export class ConfigPreprocessorComponent implements IConfigPreprocessor<ICompone
   ): Resource[] {
     // Create a single-arg hash constructor, and add all params as key-value pairs
     const param0 = this.objectLoader.createCompactedResource({
-      // Hack to make UnnamedComponentFactory.getArgumentValue go into fields branch
+      // Hack to enforce ArgumentConstructorHandlerHash
       hasFields: '"true"',
     });
     for (const fieldData of handleResponse.component.properties.parameters) {

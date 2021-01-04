@@ -491,6 +491,7 @@ describe('ConfigPreprocessorComponentMapped', () => {
               value: '"VALUE1"',
             },
             unique: '"true"',
+            hasFields: '"true"',
           },
         }),
       ];
@@ -584,6 +585,7 @@ describe('ConfigPreprocessorComponentMapped', () => {
             },
           ],
           unique: '"true"',
+          hasFields: '"true"',
         }),
       ];
       expectOutputProperties(preprocessor
@@ -612,6 +614,7 @@ describe('ConfigPreprocessorComponentMapped', () => {
             },
           ],
           unique: '"true"',
+          hasFields: '"true"',
         }),
       ];
       expectOutputProperties(preprocessor
@@ -640,6 +643,7 @@ describe('ConfigPreprocessorComponentMapped', () => {
             },
           ],
           unique: '"true"',
+          hasFields: '"true"',
         }),
       ];
       expectOutputProperties(preprocessor
@@ -677,6 +681,7 @@ describe('ConfigPreprocessorComponentMapped', () => {
             },
           ],
           unique: '"true"',
+          hasFields: '"true"',
         }),
       ];
       expectOutputProperties(preprocessor
@@ -1006,6 +1011,7 @@ describe('ConfigPreprocessorComponentMapped', () => {
                 value: '"VALUE1"',
               },
               unique: '"true"',
+              hasFields: '"true"',
             },
             {
               fields: {
@@ -1013,6 +1019,7 @@ describe('ConfigPreprocessorComponentMapped', () => {
                 value: '"VALUE2"',
               },
               unique: '"true"',
+              hasFields: '"true"',
             },
           ],
         }),
@@ -1145,6 +1152,7 @@ describe('ConfigPreprocessorComponentMapped', () => {
             },
           ],
           unique: '"true"',
+          hasFields: '"true"',
         }),
       ];
       expectOutputProperties(preprocessor.getParameterValue(configRoot, parameter, configElement, false), expected);
