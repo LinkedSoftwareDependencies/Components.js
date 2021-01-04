@@ -363,7 +363,7 @@ export class Loader<Instance> {
       if (!configResource) {
         throw new Error(`Could not find a component config with URI ${configResourceIri} in the triple stream.`);
       }
-      return (await this.getInstancePool()).instantiate(configResource, settings);
+      return await (await this.getInstancePool()).instantiate(configResource, settings);
     } catch (error: unknown) {
       throw this.generateErrorLog(error);
     }
@@ -396,7 +396,7 @@ export class Loader<Instance> {
         configResource.property[key] = this.objectLoader.createCompactedResource(`"${params[key]}"`);
       }
 
-      return (await this.getInstancePool()).instantiate(configResource, settings);
+      return await (await this.getInstancePool()).instantiate(configResource, settings);
     } catch (error: unknown) {
       throw this.generateErrorLog(error);
     }
