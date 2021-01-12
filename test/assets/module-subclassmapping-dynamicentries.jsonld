@@ -1,0 +1,81 @@
+{
+  "@context": [
+    "https://linkedsoftwaredependencies.org/bundles/npm/componentsjs/^3.0.0/components/context.jsonld",
+    {
+      "hello": "http://example.org/hello/",
+      "ex": "http://example.org/"
+    }
+  ],
+  "@graph": [
+    {
+      "@id": "ex:HelloWorldModule",
+      "@type": "Module",
+      "requireName": "helloworld",
+      "components": [
+        {
+          "@id": "ex:HelloWorldModule#SayHelloComponentAbstract",
+          "@type": "AbstractClass",
+          "parameters": [
+            { "@id": "hello:something" }
+          ],
+          "constructorArguments": [
+            {
+              "@id": "ex:HelloWorldModule#SayHelloComponentAbstract_constructorArgumentsObject",
+              "fields": [
+                {
+                  "collectEntries": "hello:something",
+                  "key": "hello:somethingKey",
+                  "value": "hello:somethingValue"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "@id": "ex:HelloWorldModule#SayHelloComponent1",
+          "@type": "Class",
+          "extends": "ex:HelloWorldModule#SayHelloComponentAbstract",
+          "requireElement": "Hello",
+          "parameters": [
+            { "@id": "hello:something1" }
+          ],
+          "constructorArguments": [
+            {
+              "@id": "ex:HelloWorldModule#SayHelloComponent1_constructorArgumentsObject",
+              "extends": "ex:HelloWorldModule#SayHelloComponentAbstract_constructorArgumentsObject",
+              "fields": [
+                {
+                  "collectEntries": "hello:something1",
+                  "key": "hello:somethingKey",
+                  "value": "hello:somethingValue"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "@id": "ex:HelloWorldModule#SayHelloComponent2",
+          "@type": "Class",
+          "extends": "ex:HelloWorldModule#SayHelloComponent1",
+          "requireElement": "Hello",
+          "parameters": [
+            { "@id": "hello:something2" }
+          ],
+          "constructorArguments": [
+            {
+              "@id": "ex:HelloWorldModule#SayHelloComponent2_constructorArgumentsObject",
+              "extends": "ex:HelloWorldModule#SayHelloComponent1_constructorArgumentsObject",
+              "fields": [
+                {
+                  "collectEntries": "hello:something2",
+                  "key": "hello:somethingKey",
+                  "value": "hello:somethingValue"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

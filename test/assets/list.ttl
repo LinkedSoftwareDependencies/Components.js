@@ -1,3 +1,0 @@
-@prefix ex: <http://example.org/>.
-
-<a> ex:withList ( <1> <2> <3> ).

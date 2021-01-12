@@ -1,0 +1,16 @@
+{
+  "@context": [
+    "https://linkedsoftwaredependencies.org/bundles/npm/componentsjs/^3.0.0/components/context.jsonld",
+    {
+      "hello": "http://example.org/hello/",
+      "ex": "http://example.org/"
+    }
+  ],
+  "@id": "ex:HelloWorldModule",
+  "@type": "Module",
+  "requireName": "helloworld",
+  "import": [
+    "http://example.org/assets/module-imported1.jsonld",
+    "http://example.org/assets/module-imported2.jsonld"
+  ]
+}

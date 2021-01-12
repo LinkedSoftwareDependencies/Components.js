@@ -1,0 +1,37 @@
+{
+  "@context": [
+    "https://linkedsoftwaredependencies.org/bundles/npm/componentsjs/^3.0.0/components/context.jsonld",
+    {
+      "hello": "http://example.org/hello/",
+      "ex": "http://example.org/"
+    }
+  ],
+  "@graph": [
+    {
+      "@id": "ex:HelloWorldModule",
+      "@type": "Module",
+      "requireName": "helloworld",
+      "components": [
+        {
+          "@id": "ex:HelloWorldModule#SayHelloComponent1",
+          "@type": "Class",
+          "requireElement": "Hello",
+          "parameters": [
+            { "@id": "hello:something" }
+          ],
+          "constructorArguments": [
+            {
+              "fields": [
+                {
+                  "collectEntries": "hello:something",
+                  "key": "hello:somethingKey",
+                  "value": "hello:somethingValue"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

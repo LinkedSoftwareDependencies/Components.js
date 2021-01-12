@@ -1,78 +1,104 @@
-import {PassThrough} from "stream";
-import N3 = require("n3");
-import Path = require("path");
-import {Stream} from "stream";
+import Path = require('path');
+import type { Readable, TransformCallback } from 'stream';
+import { Transform } from 'stream';
+import type * as RDF from 'rdf-js';
+import { getNamedNodes, getTerms } from 'rdf-terms';
+import { IRIS_OWL } from './Iris';
+import { RdfParser } from './RdfParser';
+import type { RdfParserOptions } from './RdfParser';
 
 /**
  * A RdfStreamIncluder takes a triple stream and detects owl:includes to automatically include other files.
  */
-export class RdfStreamIncluder extends PassThrough {
+export class RdfStreamIncluder extends Transform {
+  private runningImporters = 1;
+  private readonly parserOptions: RdfParserOptions;
+  private flushCallback: TransformCallback | undefined;
 
-    static RELATIVE_PATH_MATCHER: RegExp = /^"file:\/\/([^\/].*)".*$/;
+  public constructor(parserOptions: RdfParserOptions) {
+    super({ objectMode: true });
+    (<any> this)._readableState.objectMode = true;
+    this.parserOptions = parserOptions;
+  }
 
-    _runningImporters: number = 1;
-    _constants: any;
-    _fromPath: string;
-    _followImports: boolean;
-    _absolutizeRelativePaths: boolean;
-    _contexts?: {[id: string]: string};
-    _importPaths?: {[id: string]: string};
+  public _transform(quad: RDF.Quad, encoding: string, callback: TransformCallback): boolean {
+    this.handleImports(quad);
+    this.validateIris(quad);
+    callback(null, quad);
+    return true;
+  }
 
-    constructor(constants: any, fromPath: string, followImports: boolean, absolutizeRelativePaths: boolean,
-                contexts?: {[id: string]: string}, importPaths?: {[id: string]: string}) {
-        super({ objectMode: true });
-        (<any> this)._readableState.objectMode = true;
-        this._constants = constants;
-        this._fromPath = fromPath;
-        this._followImports = followImports;
-        this._absolutizeRelativePaths = absolutizeRelativePaths;
-        this._contexts = contexts;
-        this._importPaths = importPaths;
+  public _flush(callback: TransformCallback): void {
+    if (--this.runningImporters === 0) {
+      // eslint-disable-next-line callback-return
+      callback();
+    } else {
+      this.flushCallback = callback;
     }
+  }
 
-    push(data: any, encoding?: string): boolean {
-        if (data) {
-            if (this._followImports && data.predicate === this._constants.PREFIXES['owl'] + 'imports') {
-                this._runningImporters++;
-                var relativeFilePath = data.object;
+  /**
+   * Follow all import links in the given quad.
+   * @param quad A quad.
+   */
+  public handleImports(quad: RDF.Quad): void {
+    if (!this.parserOptions.ignoreImports && quad.predicate.value === IRIS_OWL.imports) {
+      this.runningImporters++;
+      let relativeFilePath = quad.object.value;
 
-                // Try overriding path using defined import paths
-                if (this._importPaths) {
-                    for (const prefix of Object.keys(this._importPaths)) {
-                        if (relativeFilePath.startsWith(prefix)) {
-                            relativeFilePath = this._importPaths[prefix] + relativeFilePath.substr(prefix.length);
-                            break;
-                        }
-                    }
-                }
-
-                this._constants.getContentsFromUrlOrPath(relativeFilePath, this._fromPath)
-                    .then((rawStream: Stream) => {
-                        let data: Stream = this._constants.parseRdf(rawStream, null, this._fromPath, true,
-                            this._absolutizeRelativePaths, this._contexts, this._importPaths);
-                        data.on('data', (subData: any) => this.push(subData))
-                            .on('error', (e: any) => this.emit('error', require("../Util").addFilePathToError(e, relativeFilePath, this._fromPath)))
-                            .on('end', () => this.push(null));
-                    }).catch((e: any) => this.emit('error', require("../Util").addFilePathToError(e, relativeFilePath, this._fromPath)));
-            }
-            if (this._absolutizeRelativePaths) {
-                data.subject = this._absolutize(data.subject);
-                data.predicate = this._absolutize(data.predicate);
-                data.object = this._absolutize(data.object);
-            }
-            return super.push(data);
+      // Try overriding path using defined import paths
+      if (this.parserOptions.importPaths) {
+        for (const prefix of Object.keys(this.parserOptions.importPaths)) {
+          if (relativeFilePath.startsWith(prefix)) {
+            relativeFilePath = Path.join(
+              this.parserOptions.importPaths[prefix],
+              relativeFilePath.slice(prefix.length),
+            );
+            break;
+          }
         }
-        else if (!--this._runningImporters) {
-            super.push(null);
-        }
+      }
+
+      // Recursively call the parser
+      RdfParser.fetchFileOrUrl(relativeFilePath)
+        .then((rawStream: Readable) => {
+          const data: Readable = new RdfParser().parse(rawStream, {
+            ...this.parserOptions,
+            path: relativeFilePath,
+            importedFromPath: this.parserOptions.path,
+          });
+          data
+            .on('data', (subData: RDF.Quad) => this.push(subData))
+            .on('error', (error: Error): boolean => this.emit('error', error))
+            .on('end', () => {
+              if (this.flushCallback && --this.runningImporters === 0) {
+                this.flushCallback();
+              }
+            });
+        })
+        .catch((error: Error) => this.emit('error', RdfParser.addPathToError(error, this.parserOptions.path)));
     }
+  }
 
-    _absolutize(uri: string): string {
-        // Make relative paths absolute
-        var match = RdfStreamIncluder.RELATIVE_PATH_MATCHER.exec(uri);
-        if (match) {
-            return '"file:///' + Path.join(this._fromPath, match[1]) + '"' + this._constants.PREFIXES['xsd'] + 'string';
+  /**
+   * Emit a warning for all named nodes in the given quad that may be invalid.
+   * @param quad A quad.
+   */
+  public validateIris(quad: RDF.Quad): void {
+    if (this.parserOptions.logger) {
+      for (const term of getNamedNodes(getTerms(quad))) {
+        if (!RdfStreamIncluder.isValidIri(term.value)) {
+          this.parserOptions.logger.warn(`Detected potentially invalid IRI '${term.value}' in ${this.parserOptions.path}`);
         }
-        return uri;
+      }
     }
+  }
+
+  /**
+   * Check if the given IRI is valid.
+   * @param iri A potential IRI.
+   */
+  public static isValidIri(iri: string): boolean {
+    return Boolean(/:((\/\/)|(.*:))/u.exec(iri));
+  }
 }

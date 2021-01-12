@@ -1,11 +1,1 @@
-language: node_js
-node_js:
- - "8"
- - "10"
- - "node"
-script:
-  - npm run prepare
-  - npm test
-cache:
-  directories:
-    - node_modules
+import: rubensworks/travis-presets:node.yml@master

@@ -9,3 +9,5 @@ bin/**/*.d.ts
 index.js
 index.js.map
 index.d.ts
+coverage
+.eslintcache
