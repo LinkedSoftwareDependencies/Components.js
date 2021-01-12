@@ -89,7 +89,7 @@
     "transformIgnorePatterns": [
       "[/\\\\]node_modules[/\\\\].+\\.(js|jsx)$"
     ],
-    "testRegex": "(/test/.*|(\\.|/)(test|spec))\\-test.ts$",
+    "testRegex": "/test/.*-test.ts$",
     "moduleFileExtensions": [
       "ts",
       "js"
