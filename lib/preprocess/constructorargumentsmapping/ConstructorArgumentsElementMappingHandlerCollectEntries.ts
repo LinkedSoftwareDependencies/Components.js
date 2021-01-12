@@ -61,6 +61,15 @@ implements IConstructorArgumentsElementMappingHandler {
     // Determine the (optional) entry key
     let key: Resource | undefined;
     if (constructorArgs.property.key) {
+      // At most one key definition is allowed
+      if (constructorArgs.properties.key.length > 1) {
+        throw new ErrorResourcesContext(`Detected more than one key definition in collectEntries`, {
+          constructorArgs,
+          collectEntry: entryResource,
+          config: configRoot,
+        });
+      }
+
       if (constructorArgs.property.key.type === 'NamedNode' &&
         constructorArgs.property.key.value === IRIS_RDF.subject) {
         // Key is the entry id as string
@@ -80,7 +89,16 @@ implements IConstructorArgumentsElementMappingHandler {
       }
     }
 
-    // Determin the entry value
+    // At most one value definition is allowed
+    if (constructorArgs.properties.value.length > 1) {
+      throw new ErrorResourcesContext(`Detected more than one value definition in collectEntries`, {
+        constructorArgs,
+        collectEntry: entryResource,
+        config: configRoot,
+      });
+    }
+
+    // Determine the entry value
     let value: Resource;
     if (constructorArgs.property.value.type === 'NamedNode' &&
       constructorArgs.property.value.value === IRIS_RDF.subject) {
@@ -93,7 +111,6 @@ implements IConstructorArgumentsElementMappingHandler {
     } else if (constructorArgs.property.value &&
       (constructorArgs.property.value.property.fields || constructorArgs.property.value.property.elements)) {
       // Nested mapping should reduce the parameter scope
-      // TODO: in the case of elements, perhaps we don't always just want the first
       value = mapper.getParameterValue(configRoot, constructorArgs.property.value, entryResource, false)[0];
     } else if (entryResource.properties[constructorArgs.property.value.value].length !== 1) {
       throw new ErrorResourcesContext(`Detected more than one value value in collectEntries`, {

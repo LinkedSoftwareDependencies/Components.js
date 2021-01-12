@@ -552,6 +552,44 @@ describe('ConfigPreprocessorComponentMapped', () => {
         .toThrowError(/^Detected more than one value value in collectEntries/u);
     });
 
+    it('should throw on collectEntries with multiple key definitions', () => {
+      const configRoot = objectLoader.createCompactedResource({});
+      const constructorArgs = objectLoader.createCompactedResource({
+        collectEntries: 'ex:param1',
+        key: [ 'ex:param1#k1', 'ex:param1#k2' ],
+        value: 'ex:param1#v',
+      });
+      const configElement = objectLoader.createCompactedResource({
+        'ex:param1': [
+          {
+            'ex:param1#k': '"KEY1"',
+            'ex:param1#v': '"VALUE1"',
+          },
+        ],
+      });
+      expect(() => preprocessor.applyConstructorArgumentsParameters(configRoot, constructorArgs, configElement))
+        .toThrowError(/^Detected more than one key definition in collectEntries/u);
+    });
+
+    it('should throw on collectEntries with multiple value definitions', () => {
+      const configRoot = objectLoader.createCompactedResource({});
+      const constructorArgs = objectLoader.createCompactedResource({
+        collectEntries: 'ex:param1',
+        key: 'ex:param1#k',
+        value: [ 'ex:param1#v1', 'ex:param1#v2' ],
+      });
+      const configElement = objectLoader.createCompactedResource({
+        'ex:param1': [
+          {
+            'ex:param1#k': '"KEY1"',
+            'ex:param1#v': '"VALUE1"',
+          },
+        ],
+      });
+      expect(() => preprocessor.applyConstructorArgumentsParameters(configRoot, constructorArgs, configElement))
+        .toThrowError(/^Detected more than one value definition in collectEntries/u);
+    });
+
     it('should pass args with empty fields', () => {
       const configRoot = objectLoader.createCompactedResource({});
       const constructorArgs = objectLoader.createCompactedResource({
