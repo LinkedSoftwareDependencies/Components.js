@@ -8,7 +8,7 @@ import { FetchDocumentLoader } from 'jsonld-context-parser';
  */
 export class PrefetchedDocumentLoader extends FetchDocumentLoader {
   private static readonly DEFAULT_CONTEXTS: Record<string, any> = {
-    'https://linkedsoftwaredependencies.org/bundles/npm/componentsjs/^3.0.0/components/context.jsonld':
+    'https://linkedsoftwaredependencies.org/bundles/npm/componentsjs/^4.0.0/components/context.jsonld':
     // eslint-disable-next-line no-sync
       JSON.parse(fs.readFileSync(`${__dirname}/../../components/context.jsonld`, 'utf8')),
   };
