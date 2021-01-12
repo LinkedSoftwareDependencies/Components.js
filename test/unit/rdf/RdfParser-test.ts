@@ -27,7 +27,7 @@ global.fetch = <any>jest.fn(async(url: string) => {
   }
   if (url === 'http://example.org/myfilenest.ttl') {
     return {
-      body: streamifyString(`<ex:s2> <http://www.w3.org/2002/07/owl#imports> <http://example.org/myfile1.ttl>.`),
+      body: streamifyString(`<ex:s2> <http://www.w3.org/2000/01/rdf-schema#seeAlso> <http://example.org/myfile1.ttl>.`),
       ok: true,
       headers: new Headers({ 'Content-Type': 'text/turtle' }),
       statusText: 'OK',
@@ -43,7 +43,7 @@ global.fetch = <any>jest.fn(async(url: string) => {
   }
   if (url === 'http://example.org/myfileunknownnest.ttl') {
     return {
-      body: streamifyString(`<ex:s2> <http://www.w3.org/2002/07/owl#imports> <http://example.org/myfileunknown.ttl>.`),
+      body: streamifyString(`<ex:s2> <http://www.w3.org/2000/01/rdf-schema#seeAlso> <http://example.org/myfileunknown.ttl>.`),
       ok: true,
       headers: new Headers({ 'Content-Type': 'text/turtle' }),
       statusText: 'OK',
@@ -51,7 +51,7 @@ global.fetch = <any>jest.fn(async(url: string) => {
   }
   if (url === 'http://example.org/myfileerrornest.ttl') {
     return {
-      body: streamifyString(`<ex:s2> <http://www.w3.org/2002/07/owl#imports> <http://example.org/myfileerror.ttl>.`),
+      body: streamifyString(`<ex:s2> <http://www.w3.org/2000/01/rdf-schema#seeAlso> <http://example.org/myfileerror.ttl>.`),
       ok: true,
       headers: new Headers({ 'Content-Type': 'text/turtle' }),
       statusText: 'OK',
@@ -190,13 +190,13 @@ describe('RdfParser', () => {
       };
       const doc = `
 <ex:s> <ex:p> <ex:o>.
-<ex:s> <http://www.w3.org/2002/07/owl#imports> <http://example.org/myfile1.ttl>, <http://example.org/myfile2.ttl>.
+<ex:s> <http://www.w3.org/2000/01/rdf-schema#seeAlso> <http://example.org/myfile1.ttl>, <http://example.org/myfile2.ttl>.
 `;
       expect(await arrayifyStream(parser.parse(streamifyString(doc), options)))
         .toBeRdfIsomorphic([
           quad('ex:s', 'ex:p', 'ex:o'),
-          quad('ex:s', 'http://www.w3.org/2002/07/owl#imports', 'http://example.org/myfile1.ttl'),
-          quad('ex:s', 'http://www.w3.org/2002/07/owl#imports', 'http://example.org/myfile2.ttl'),
+          quad('ex:s', 'http://www.w3.org/2000/01/rdf-schema#seeAlso', 'http://example.org/myfile1.ttl'),
+          quad('ex:s', 'http://www.w3.org/2000/01/rdf-schema#seeAlso', 'http://example.org/myfile2.ttl'),
           quad('ex:s1', 'ex:p1', 'ex:o1'),
           quad('ex:s2', 'ex:p2', 'ex:o2'),
         ]);
@@ -208,7 +208,7 @@ describe('RdfParser', () => {
       };
       const doc = `
 <ex:s> <ex:p> <ex:o>.
-<ex:s> <http://www.w3.org/2002/07/owl#imports> <http://example.org/myfileunknown.ttl>.
+<ex:s> <http://www.w3.org/2000/01/rdf-schema#seeAlso> <http://example.org/myfileunknown.ttl>.
 `;
       await expect(arrayifyStream(parser.parse(streamifyString(doc), options))).rejects
         .toThrow(new Error(`Error while parsing file "path/to/file.ttl": URL not found: http://example.org/myfileunknown.ttl`));
@@ -220,7 +220,7 @@ describe('RdfParser', () => {
       };
       const doc = `
 <ex:s> <ex:p> <ex:o>.
-<ex:s> <http://www.w3.org/2002/07/owl#imports> <http://example.org/myfileerror.ttl>.
+<ex:s> <http://www.w3.org/2000/01/rdf-schema#seeAlso> <http://example.org/myfileerror.ttl>.
 `;
       await expect(arrayifyStream(parser.parse(streamifyString(doc), options))).rejects
         .toThrow(new Error(`Error while parsing file "http://example.org/myfileerror.ttl": Unexpected "<..." on line 1.`));
@@ -232,7 +232,7 @@ describe('RdfParser', () => {
       };
       const doc = `
 <ex:s> <ex:p> <ex:o>.
-<ex:s> <http://www.w3.org/2002/07/owl#imports> <http://example.org/myfileunknownnest.ttl>.
+<ex:s> <http://www.w3.org/2000/01/rdf-schema#seeAlso> <http://example.org/myfileunknownnest.ttl>.
 `;
       await expect(arrayifyStream(parser.parse(streamifyString(doc), options))).rejects
         .toThrow(new Error(`Error while parsing file "http://example.org/myfileunknownnest.ttl": URL not found: http://example.org/myfileunknown.ttl`));
@@ -244,7 +244,7 @@ describe('RdfParser', () => {
       };
       const doc = `
 <ex:s> <ex:p> <ex:o>.
-<ex:s> <http://www.w3.org/2002/07/owl#imports> <http://example.org/myfileerrornest.ttl>.
+<ex:s> <http://www.w3.org/2000/01/rdf-schema#seeAlso> <http://example.org/myfileerrornest.ttl>.
 `;
       await expect(arrayifyStream(parser.parse(streamifyString(doc), options))).rejects
         .toThrow(new Error(`Error while parsing file "http://example.org/myfileerror.ttl": Unexpected "<..." on line 1.`));
@@ -256,13 +256,13 @@ describe('RdfParser', () => {
       };
       const doc = `
 <ex:s> <ex:p> <ex:o>.
-<ex:s> <http://www.w3.org/2002/07/owl#imports> <http://example.org/myfilenest.ttl>.
+<ex:s> <http://www.w3.org/2000/01/rdf-schema#seeAlso> <http://example.org/myfilenest.ttl>.
 `;
       expect(await arrayifyStream(parser.parse(streamifyString(doc), options)))
         .toBeRdfIsomorphic([
           quad('ex:s', 'ex:p', 'ex:o'),
-          quad('ex:s', 'http://www.w3.org/2002/07/owl#imports', 'http://example.org/myfilenest.ttl'),
-          quad('ex:s2', 'http://www.w3.org/2002/07/owl#imports', 'http://example.org/myfile1.ttl'),
+          quad('ex:s', 'http://www.w3.org/2000/01/rdf-schema#seeAlso', 'http://example.org/myfilenest.ttl'),
+          quad('ex:s2', 'http://www.w3.org/2000/01/rdf-schema#seeAlso', 'http://example.org/myfile1.ttl'),
           quad('ex:s1', 'ex:p1', 'ex:o1'),
         ]);
     });
@@ -274,13 +274,13 @@ describe('RdfParser', () => {
       };
       const doc = `
 <ex:s> <ex:p> <ex:o>.
-<ex:s> <http://www.w3.org/2002/07/owl#imports> <http://example.org/myfile1.ttl>, <http://example.org/myfile2.ttl>.
+<ex:s> <http://www.w3.org/2000/01/rdf-schema#seeAlso> <http://example.org/myfile1.ttl>, <http://example.org/myfile2.ttl>.
 `;
       expect(await arrayifyStream(parser.parse(streamifyString(doc), options)))
         .toBeRdfIsomorphic([
           quad('ex:s', 'ex:p', 'ex:o'),
-          quad('ex:s', 'http://www.w3.org/2002/07/owl#imports', 'http://example.org/myfile1.ttl'),
-          quad('ex:s', 'http://www.w3.org/2002/07/owl#imports', 'http://example.org/myfile2.ttl'),
+          quad('ex:s', 'http://www.w3.org/2000/01/rdf-schema#seeAlso', 'http://example.org/myfile1.ttl'),
+          quad('ex:s', 'http://www.w3.org/2000/01/rdf-schema#seeAlso', 'http://example.org/myfile2.ttl'),
         ]);
     });
 
@@ -293,13 +293,13 @@ describe('RdfParser', () => {
       };
       const doc = `
 <ex:s> <ex:p> <ex:o>.
-<ex:s> <http://www.w3.org/2002/07/owl#imports> <http://example.org/myfile1.ttl>, <http://example.org/myfile2.ttl>.
+<ex:s> <http://www.w3.org/2000/01/rdf-schema#seeAlso> <http://example.org/myfile1.ttl>, <http://example.org/myfile2.ttl>.
 `;
       expect(await arrayifyStream(parser.parse(streamifyString(doc), options)))
         .toBeRdfIsomorphic([
           quad('ex:s', 'ex:p', 'ex:o'),
-          quad('ex:s', 'http://www.w3.org/2002/07/owl#imports', 'http://example.org/myfile1.ttl'),
-          quad('ex:s', 'http://www.w3.org/2002/07/owl#imports', 'http://example.org/myfile2.ttl'),
+          quad('ex:s', 'http://www.w3.org/2000/01/rdf-schema#seeAlso', 'http://example.org/myfile1.ttl'),
+          quad('ex:s', 'http://www.w3.org/2000/01/rdf-schema#seeAlso', 'http://example.org/myfile2.ttl'),
           quad('ex:s1', 'ex:p1', 'ex:o1'),
           quad('ex:s2', 'ex:p2', 'ex:o2'),
         ]);
@@ -314,13 +314,13 @@ describe('RdfParser', () => {
       };
       const doc = `
 <ex:s> <ex:p> <ex:o>.
-<ex:s> <http://www.w3.org/2002/07/owl#imports> <http://example.org/a/myfile1.ttl>, <http://example.org/b/myfile2.ttl>.
+<ex:s> <http://www.w3.org/2000/01/rdf-schema#seeAlso> <http://example.org/a/myfile1.ttl>, <http://example.org/b/myfile2.ttl>.
 `;
       expect(await arrayifyStream(parser.parse(streamifyString(doc), options)))
         .toBeRdfIsomorphic([
           quad('ex:s', 'ex:p', 'ex:o'),
-          quad('ex:s', 'http://www.w3.org/2002/07/owl#imports', 'http://example.org/a/myfile1.ttl'),
-          quad('ex:s', 'http://www.w3.org/2002/07/owl#imports', 'http://example.org/b/myfile2.ttl'),
+          quad('ex:s', 'http://www.w3.org/2000/01/rdf-schema#seeAlso', 'http://example.org/a/myfile1.ttl'),
+          quad('ex:s', 'http://www.w3.org/2000/01/rdf-schema#seeAlso', 'http://example.org/b/myfile2.ttl'),
           quad('ex:sl1', 'ex:pl1', 'ex:ol1'),
           quad('ex:sl2', 'ex:pl2', 'ex:ol2'),
         ]);
@@ -335,7 +335,7 @@ describe('RdfParser', () => {
       };
       const doc = `
 <ex:s> <ex:p> <ex:o>.
-<ex:s> <http://www.w3.org/2002/07/owl#imports> <http://example.org/myfileunknown.ttl>.
+<ex:s> <http://www.w3.org/2000/01/rdf-schema#seeAlso> <http://example.org/myfileunknown.ttl>.
 `;
       await expect(arrayifyStream(parser.parse(streamifyString(doc), options)))
         .rejects.toThrowError(/^Error while parsing file/u);
@@ -350,7 +350,7 @@ describe('RdfParser', () => {
       };
       const doc = `
 <ex:s> <ex:p> <ex:o>.
-<ex:s> <http://www.w3.org/2002/07/owl#imports> <http://example.org/myfileerror.ttl>.
+<ex:s> <http://www.w3.org/2000/01/rdf-schema#seeAlso> <http://example.org/myfileerror.ttl>.
 `;
       await expect(arrayifyStream(parser.parse(streamifyString(doc), options)))
         .rejects.toThrowError(/^Error while parsing file/u);

@@ -21,6 +21,9 @@ export const IRIS_RDF = {
 };
 
 export const PREFIX_RDFS = definePrefix('http://www.w3.org/2000/01/rdf-schema#');
+export const IRIS_RDFS = {
+  imports: PREFIX_RDFS('seeAlso'),
+};
 
 export const PREFIX_XSD = definePrefix('http://www.w3.org/2001/XMLSchema#');
 export const IRIS_XSD = {
@@ -44,5 +47,4 @@ export const IRIS_DOAP = {
 export const PREFIX_OWL = definePrefix('http://www.w3.org/2002/07/owl#');
 export const IRIS_OWL = {
   Restriction: PREFIX_OWL('Restriction'),
-  imports: PREFIX_OWL('imports'),
 };

@@ -71,12 +71,12 @@
       "@id": "rdfs:range",
       "@type": "@id"
     },
-
-    "owl": "http://www.w3.org/2002/07/owl#",
     "import": {
-      "@id": "owl:imports",
+      "@id": "rdfs:seeAlso",
       "@type": "@id"
     },
+
+    "owl": "http://www.w3.org/2002/07/owl#",
     "InheritanceValue": {
       "@id": "owl:Restriction"
     },
