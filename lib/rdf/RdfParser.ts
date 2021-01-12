@@ -1,4 +1,3 @@
-import * as Path from 'path';
 import type { Readable } from 'stream';
 import type * as RDF from 'rdf-js';
 import type { ParseOptions } from 'rdf-parse';
@@ -20,7 +19,8 @@ export class RdfParser {
    * @param options Parsing options.
    */
   public parse(textStream: NodeJS.ReadableStream, options: RdfParserOptions): RDF.Stream & Readable {
-    options.path = options.path.includes('://') ? options.path : Path.normalize(options.path);
+    // Parsing libraries don't work as expected if path contains backslashes
+    options.path = options.path.replace(/\\+/gu, '/');
 
     if (!options.baseIRI) {
       options.baseIRI = options.path;
