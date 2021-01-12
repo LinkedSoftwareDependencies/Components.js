@@ -54,15 +54,16 @@ export class RdfParser {
    * @returns {Promise<T>} A promise resolving to the data stream.
    */
   public static async fetchFileOrUrl(pathOrUrl: string): Promise<Readable> {
-    const colonPos: number = pathOrUrl.indexOf(':');
-    if (colonPos < 0 || pathOrUrl.startsWith('file://')) {
-      const path = colonPos < 0 ? pathOrUrl : pathOrUrl.slice(7);
-      if (!(await fs.stat(path)).isFile()) {
-        throw new Error(`Path does not refer to a valid file: ${pathOrUrl}`);
-      }
-      return createReadStream(path);
+    if (pathOrUrl.startsWith('http://') || pathOrUrl.startsWith('https://')) {
+      return <any> (await fetch(pathOrUrl)).body;
     }
-    return <any> (await fetch(pathOrUrl)).body;
+    if (pathOrUrl.startsWith('file://')) {
+      pathOrUrl = pathOrUrl.slice(7);
+    }
+    if (!(await fs.stat(pathOrUrl)).isFile()) {
+      throw new Error(`Path does not refer to a valid file: ${pathOrUrl}`);
+    }
+    return createReadStream(pathOrUrl);
   }
 
   /**
