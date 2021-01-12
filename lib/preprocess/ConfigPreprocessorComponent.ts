@@ -79,8 +79,10 @@ export class ConfigPreprocessorComponent implements IConfigPreprocessor<ICompone
     if (config.isA('Instance')) {
       configRaw.properties.types.push(this.objectLoader.createCompactedResource('oo:ComponentInstance'));
     }
-    // TODO: following line is unneeded?
+
+    // Add reference to the original (config) instance, which we need to determine the instanceId @see ConfigConstructor
     configRaw.property.originalInstance = config;
+
     const requireName = handleResponse.component.property.requireName || handleResponse.module.property.requireName;
     if (!requireName) {
       throw new ErrorResourcesContext(`Could not find a requireName in either the config's module or component`, {
