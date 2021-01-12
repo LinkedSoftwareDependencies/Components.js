@@ -5,7 +5,7 @@ import type { Resource } from 'rdf-object';
  * An error that can include a context containing resources for display.
  */
 export class ErrorResourcesContext extends Error {
-  private readonly context: Record<string, Resource | string>;
+  public readonly context: Record<string, Resource | string>;
 
   public constructor(message: string, context: Record<string, Resource | string>) {
     super(`${message}\n${ErrorResourcesContext.contextToString(context)}`);
