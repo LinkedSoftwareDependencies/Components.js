@@ -91,10 +91,16 @@ export class ConfigPreprocessorComponentMapped extends ConfigPreprocessorCompone
     } else {
       valueOut = this.applyConstructorArgumentsParameters(configRoot, parameter, configElement);
     }
-    // TODO: check if we really want to singularize this here
+
+    // If the referenced IRI should become a plain string
     if (rawValue) {
+      const unique = valueOut[0].property.unique?.value === 'true';
       valueOut = [ this.objectLoader.createCompactedResource(`"${valueOut[0].value}"`) ];
-      valueOut[0].property.unique = this.objectLoader.createCompactedResource('"true"');
+
+      // Make sure to inherit the original param's unique flag
+      if (unique) {
+        valueOut[0].property.unique = this.objectLoader.createCompactedResource('"true"');
+      }
     }
     return valueOut;
   }

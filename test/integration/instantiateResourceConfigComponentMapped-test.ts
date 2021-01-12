@@ -953,7 +953,52 @@ describe('construction with mapped component configs as Resource', () => {
     });
   });
 
-  describe('for a component with raw reference param', () => {
+  describe('for a component with raw unique reference param', () => {
+    beforeEach(() => {
+      manager.componentResources['http://example.org/HelloWorldModule#SayHelloComponent'] = objectLoader
+        .createCompactedResource({
+          '@id': 'http://example.org/HelloWorldModule#SayHelloComponent',
+          requireElement: '"Hello"',
+          parameters: [
+            {
+              '@id': 'http://example.org/HelloWorldModule#dummyParam',
+              unique: '"true"',
+            },
+          ],
+          constructorArguments: {
+            list: [
+              {
+                fields: [
+                  {
+                    key: '"dummyParam"',
+                    valueRawReference: 'http://example.org/HelloWorldModule#dummyParam',
+                  },
+                ],
+              },
+            ],
+          },
+          module: {
+            '@id': 'http://example.org/HelloWorldModule',
+            requireName: '"helloworld"',
+          },
+        });
+    });
+
+    it('instantiated with a config', async() => {
+      const config = objectLoader.createCompactedResource({
+        '@id': 'http://example.org/myInstance',
+        types: 'http://example.org/HelloWorldModule#SayHelloComponent',
+        'http://example.org/HelloWorldModule#dummyParam': 'ex:abc',
+      });
+      const instance = await configConstructorPool.instantiate(config, settings);
+      expect(instance).toBeInstanceOf(Hello);
+      expect(instance._params).toEqual([{
+        dummyParam: 'ex:abc',
+      }]);
+    });
+  });
+
+  describe('for a component with raw non-unique reference param', () => {
     beforeEach(() => {
       manager.componentResources['http://example.org/HelloWorldModule#SayHelloComponent'] = objectLoader
         .createCompactedResource({
@@ -992,7 +1037,7 @@ describe('construction with mapped component configs as Resource', () => {
       const instance = await configConstructorPool.instantiate(config, settings);
       expect(instance).toBeInstanceOf(Hello);
       expect(instance._params).toEqual([{
-        dummyParam: 'ex:abc',
+        dummyParam: [ 'ex:abc' ],
       }]);
     });
   });
