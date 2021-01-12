@@ -56,7 +56,7 @@ describe('ConstructionStrategyCommonJsString', () => {
 
   describe('createInstance', () => {
     it('without requireElement and constructor in the current module', () => {
-      expect(constructionStrategy.createInstance({
+      const instance = constructionStrategy.createInstance({
         settings,
         moduleState,
         requireName: 'currentmodule',
@@ -64,15 +64,16 @@ describe('ConstructionStrategyCommonJsString', () => {
         callConstructor: false,
         args: [],
         instanceId: 'myinstance',
-      })).toEqual(`myinstance`);
-      expect(constructionStrategy.lines).toEqual([
-        `const myinstance = require('./main.js');`,
-      ]);
+      });
+      expect(instance).toEqual(`myinstance`);
+      expect(constructionStrategy.serializeDocument(instance)).toEqual(`const myinstance = require('./main.js');
+module.exports = myinstance;
+`);
     });
 
     it('without requireElement and constructor in the current module with defined require names', () => {
       constructionStrategy = new ConstructionStrategyCommonJsString({ req, overrideRequireNames: {}});
-      expect(constructionStrategy.createInstance({
+      const instance = constructionStrategy.createInstance({
         settings,
         moduleState,
         requireName: 'currentmodule',
@@ -80,10 +81,11 @@ describe('ConstructionStrategyCommonJsString', () => {
         callConstructor: false,
         args: [],
         instanceId: 'myinstance',
-      })).toEqual(`myinstance`);
-      expect(constructionStrategy.lines).toEqual([
-        `const myinstance = require('./main.js');`,
-      ]);
+      });
+      expect(instance).toEqual(`myinstance`);
+      expect(constructionStrategy.serializeDocument(instance)).toEqual(`const myinstance = require('./main.js');
+module.exports = myinstance;
+`);
     });
 
     it('without requireElement and constructor in the current module overridden require name', () => {
@@ -91,7 +93,7 @@ describe('ConstructionStrategyCommonJsString', () => {
         req,
         overrideRequireNames: { mainalias: 'currentmodule' },
       });
-      expect(constructionStrategy.createInstance({
+      const instance = constructionStrategy.createInstance({
         settings,
         moduleState,
         requireName: 'mainalias',
@@ -99,14 +101,15 @@ describe('ConstructionStrategyCommonJsString', () => {
         callConstructor: false,
         args: [],
         instanceId: 'myinstance',
-      })).toEqual(`myinstance`);
-      expect(constructionStrategy.lines).toEqual([
-        `const myinstance = require('./main.js');`,
-      ]);
+      });
+      expect(instance).toEqual(`myinstance`);
+      expect(constructionStrategy.serializeDocument(instance)).toEqual(`const myinstance = require('./main.js');
+module.exports = myinstance;
+`);
     });
 
     it('with requireElement of length 1 and without constructor in the current module', () => {
-      expect(constructionStrategy.createInstance({
+      const instance = constructionStrategy.createInstance({
         settings,
         moduleState,
         requireName: 'currentmodule',
@@ -114,14 +117,15 @@ describe('ConstructionStrategyCommonJsString', () => {
         callConstructor: false,
         args: [],
         instanceId: 'myinstance',
-      })).toEqual(`myinstance`);
-      expect(constructionStrategy.lines).toEqual([
-        `const myinstance = require('./main.js').a;`,
-      ]);
+      });
+      expect(instance).toEqual(`myinstance`);
+      expect(constructionStrategy.serializeDocument(instance)).toEqual(`const myinstance = require('./main.js').a;
+module.exports = myinstance;
+`);
     });
 
     it('with requireElement of length 2 and without constructor in the current module', () => {
-      expect(constructionStrategy.createInstance({
+      const instance = constructionStrategy.createInstance({
         settings,
         moduleState,
         requireName: 'currentmodule',
@@ -129,14 +133,15 @@ describe('ConstructionStrategyCommonJsString', () => {
         callConstructor: false,
         args: [],
         instanceId: 'myinstance',
-      })).toEqual(`myinstance`);
-      expect(constructionStrategy.lines).toEqual([
-        `const myinstance = require('./main.js').a.b;`,
-      ]);
+      });
+      expect(instance).toEqual(`myinstance`);
+      expect(constructionStrategy.serializeDocument(instance)).toEqual(`const myinstance = require('./main.js').a.b;
+module.exports = myinstance;
+`);
     });
 
     it('with requireElement to class and without constructor in the current module', () => {
-      expect(constructionStrategy.createInstance({
+      const instance = constructionStrategy.createInstance({
         settings,
         moduleState,
         requireName: 'currentmodule',
@@ -144,10 +149,11 @@ describe('ConstructionStrategyCommonJsString', () => {
         callConstructor: false,
         args: [],
         instanceId: 'myinstance',
-      })).toEqual(`myinstance`);
-      expect(constructionStrategy.lines).toEqual([
-        `const myinstance = require('./main.js').MyClass;`,
-      ]);
+      });
+      expect(instance).toEqual(`myinstance`);
+      expect(constructionStrategy.serializeDocument(instance)).toEqual(`const myinstance = require('./main.js').MyClass;
+module.exports = myinstance;
+`);
     });
 
     it('with requireElement to class and with constructor in the current module', () => {
@@ -161,9 +167,9 @@ describe('ConstructionStrategyCommonJsString', () => {
         instanceId: 'myinstance',
       });
       expect(instance).toEqual(`myinstance`);
-      expect(constructionStrategy.lines).toEqual([
-        `const myinstance = new (require('./main.js').MyClass)();`,
-      ]);
+      expect(constructionStrategy.serializeDocument(instance)).toEqual(`const myinstance = new (require('./main.js').MyClass)();
+module.exports = myinstance;
+`);
     });
 
     it('with requireElement to class and with constructor and args in the current module', () => {
@@ -177,13 +183,13 @@ describe('ConstructionStrategyCommonJsString', () => {
         instanceId: 'myinstance',
       });
       expect(instance).toEqual(`myinstance`);
-      expect(constructionStrategy.lines).toEqual([
-        `const myinstance = new (require('./main.js').MyClass)(a, b, c);`,
-      ]);
+      expect(constructionStrategy.serializeDocument(instance)).toEqual(`const myinstance = new (require('./main.js').MyClass)(a, b, c);
+module.exports = myinstance;
+`);
     });
 
     it('without requireElement and without constructor in another module', () => {
-      expect(constructionStrategy.createInstance({
+      const instance = constructionStrategy.createInstance({
         settings,
         moduleState,
         requireName: 'othermodule',
@@ -191,14 +197,15 @@ describe('ConstructionStrategyCommonJsString', () => {
         callConstructor: false,
         args: [],
         instanceId: 'myinstance',
-      })).toEqual(`myinstance`);
-      expect(constructionStrategy.lines).toEqual([
-        `const myinstance = require('othermodule');`,
-      ]);
+      });
+      expect(instance).toEqual(`myinstance`);
+      expect(constructionStrategy.serializeDocument(instance)).toEqual(`const myinstance = require('othermodule');
+module.exports = myinstance;
+`);
     });
 
     it('with requireElement and without constructor in another module', () => {
-      expect(constructionStrategy.createInstance({
+      const instance = constructionStrategy.createInstance({
         settings,
         moduleState,
         requireName: 'othermodule',
@@ -206,14 +213,15 @@ describe('ConstructionStrategyCommonJsString', () => {
         callConstructor: false,
         args: [],
         instanceId: 'myinstance',
-      })).toEqual(`myinstance`);
-      expect(constructionStrategy.lines).toEqual([
-        `const myinstance = require('othermodule').c.d;`,
-      ]);
+      });
+      expect(instance).toEqual(`myinstance`);
+      expect(constructionStrategy.serializeDocument(instance)).toEqual(`const myinstance = require('othermodule').c.d;
+module.exports = myinstance;
+`);
     });
 
     it('without requireElement and without constructor in a relative file', () => {
-      expect(constructionStrategy.createInstance({
+      const instance = constructionStrategy.createInstance({
         settings,
         moduleState,
         requireName: './myfile.js',
@@ -221,10 +229,52 @@ describe('ConstructionStrategyCommonJsString', () => {
         callConstructor: false,
         args: [],
         instanceId: 'myinstance',
-      })).toEqual(`myinstance`);
-      expect(constructionStrategy.lines).toEqual([
-        `const myinstance = require('./myfile.js');`,
-      ]);
+      });
+      expect(instance).toEqual(`myinstance`);
+      expect(constructionStrategy.serializeDocument(instance)).toEqual(`const myinstance = require('./myfile.js');
+module.exports = myinstance;
+`);
+    });
+
+    it('as function', () => {
+      constructionStrategy = new ConstructionStrategyCommonJsString({ req, asFunction: true });
+      const instance = constructionStrategy.createInstance({
+        settings,
+        moduleState,
+        requireName: 'currentmodule',
+        requireElement: undefined,
+        callConstructor: false,
+        args: [],
+        instanceId: 'myinstance',
+      });
+      expect(instance).toEqual(`myinstance`);
+      expect(constructionStrategy.serializeDocument(instance)).toEqual(`module.exports = function(variables) {
+function getVariableValue(name) {
+  if (!variables || !(name in variables)) {
+    throw new Error('Undefined variable: ' + name);
+  }
+  return variables[name];
+}
+const myinstance = require('./main.js');
+return myinstance;
+}
+`);
+    });
+
+    it('with overriden exported variable name', () => {
+      const instance = constructionStrategy.createInstance({
+        settings,
+        moduleState,
+        requireName: 'currentmodule',
+        requireElement: undefined,
+        callConstructor: false,
+        args: [],
+        instanceId: 'myinstance',
+      });
+      expect(instance).toEqual(`myinstance`);
+      expect(constructionStrategy.serializeDocument(instance, 'urn:comunica:sparqlinit')).toEqual(`const myinstance = require('./main.js');
+module.exports = urn_comunica_sparqlinit;
+`);
     });
   });
 

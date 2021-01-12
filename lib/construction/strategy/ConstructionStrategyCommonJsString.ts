@@ -2,24 +2,37 @@ import * as Path from 'path';
 import type { IModuleState } from '../../loading/ModuleStateBuilder';
 import type { ICreationStrategyCommonJsOptions } from './ConstructionStrategyCommonJs';
 import { ConstructionStrategyCommonJs } from './ConstructionStrategyCommonJs';
-import type { IConstructionStrategy,
+import type {
+  IConstructionStrategy,
   ICreationStrategyHashOptions,
   ICreationStrategyInstanceOptions,
-
   ICreationStrategyArrayOptions,
   ICreationStrategyPrimitiveOptions,
   ICreationStrategySupplierOptions,
-  ICreationStrategyVariableOptions } from './IConstructionStrategy';
+  ICreationStrategyVariableOptions,
+} from './IConstructionStrategy';
 
 /**
  * A creation strategy for a string representation of CommonJS.
+ *
+ * When this strategy is plugged into a {@link ComponentsManager},
+ * the manager will output a string that represents the name of the variable that has been instantiated.
+ * In order to retrieve a string representation of all Common JS logic to construct this variable,
+ * the {@link serializeDocument} method can be invoked with this variable string.
+ *
+ * A typical pattern for using this strategy looks as follows:
+ * ```
+   const serializationVariableName = await manager.instantiate(configIri);
+   const document = constructionStrategy.serializeDocument(serializationVariableName);
+ * ```
+ *
+ * @see compileConfig For a simplified abstraction for using this strategy.
  */
 export class ConstructionStrategyCommonJsString implements IConstructionStrategy<string> {
   private readonly overrideRequireNames: Record<string, string>;
   private readonly asFunction: boolean;
   private readonly strategyCommonJs: ConstructionStrategyCommonJs;
-
-  public readonly lines: string[] = [];
+  private readonly lines: string[] = [];
 
   // eslint-disable-next-line unicorn/no-object-as-default-parameter
   public constructor(options: ICreationStrategyCommonJsStringOptions = { req: require }) {
@@ -134,6 +147,42 @@ export class ConstructionStrategyCommonJsString implements IConstructionStrategy
    */
   public static uriToVariableName(uri: string): string {
     return uri.replace(/[#./:@\\^-]/gu, '_');
+  }
+
+  /**
+   * Serialize a full Common JS document to a string.
+   * @param serializationVariableName The resulting string when calling {@link ComponentsManager.instantiate}.
+   * @param exportVariableName An optional variable name that should be exported
+   *                           instead of the default (serializationVariableName).
+   */
+  public serializeDocument(serializationVariableName: string, exportVariableName?: string): string {
+    // Join all lines in the document
+    const document: string = this.lines.join('\n');
+
+    // Override main variable name if needed
+    exportVariableName = (exportVariableName ?
+      ConstructionStrategyCommonJsString.uriToVariableName(exportVariableName) :
+      exportVariableName) || serializationVariableName;
+
+    // Export as variable-based function
+    if (this.asFunction) {
+      return `module.exports = function(variables) {
+function getVariableValue(name) {
+  if (!variables || !(name in variables)) {
+    throw new Error('Undefined variable: ' + name);
+  }
+  return variables[name];
+}
+${document}
+return ${exportVariableName};
+}
+`;
+    }
+
+    // Direct export of instantiated component
+    return `${document}
+module.exports = ${exportVariableName};
+`;
   }
 }
 
