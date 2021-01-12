@@ -36,9 +36,8 @@ export class ArgumentConstructorHandlerHash implements IArgumentConstructorHandl
         const subValue = await argsCreator.getArgumentValues(entry.properties.value, settings);
         return { key: entry.property.key.value, value: subValue };
       }
-      // TODO: should we throw if value is missing?
-      // return Promise.reject(
-      // new Error('Parameter object entries must have values, but found: ' + JSON.stringify(entry, null, '  ')));
+
+      // Ignore cases where value may not be set, because params may be optional
     }));
 
     // Create a hash containing the key-value pairs
