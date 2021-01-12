@@ -37,7 +37,7 @@ describe('ComponentsManager', () => {
     moduleState = <any> {
       mainModulePath,
       componentModules: {
-        A: `${__dirname}/../../assets/module-hello-world.jsonld`,
+        A: `${__dirname}/../../assets/module.jsonld`,
       },
       nodeModulePaths: [],
     };
@@ -102,7 +102,7 @@ describe('ComponentsManager', () => {
   "moduleState": {
     "mainModulePath": "${mainModulePath}",
     "componentModules": {
-      "A": "${mainModulePath}/../../assets/module-hello-world.jsonld"
+      "A": "${mainModulePath}/../../assets/module.jsonld"
     },
     "nodeModulePaths": []
   }
@@ -110,7 +110,7 @@ describe('ComponentsManager', () => {
     });
 
     it('should instantiate an existing config without options', async() => {
-      await componentsManager.configRegistry.register(`${__dirname}/../../assets/config-hello-world.jsonld`);
+      await componentsManager.configRegistry.register(`${__dirname}/../../assets/config.jsonld`);
       expect(await componentsManager.instantiate('http://example.org/myconfig')).toEqual('INSTANCE');
       expect(configConstructorPool.instantiate).toHaveBeenCalledWith(
         componentsManager.objectLoader.resources['http://example.org/myconfig'],
@@ -119,7 +119,7 @@ describe('ComponentsManager', () => {
     });
 
     it('should instantiate an existing config with options', async() => {
-      await componentsManager.configRegistry.register(`${__dirname}/../../assets/config-hello-world.jsonld`);
+      await componentsManager.configRegistry.register(`${__dirname}/../../assets/config.jsonld`);
       expect(await componentsManager.instantiate('http://example.org/myconfig', { variables: { a: 1 }}))
         .toEqual('INSTANCE');
       expect(configConstructorPool.instantiate).toHaveBeenCalledWith(

@@ -33,7 +33,7 @@ jest.mock('winston', () => ({
 const dummyModuleState = {
   mainModulePath,
   componentModules: {
-    A: `${__dirname}/../../assets/module-hello-world.jsonld`,
+    A: `${__dirname}/../../assets/module.jsonld`,
   },
   nodeModulePaths: [],
 };
@@ -107,7 +107,7 @@ describe('ComponentsManagerBuilder', () => {
 
   it('should build with custom non-empty moduleLoader', async() => {
     const moduleLoader = jest.fn(async registry => {
-      await registry.registerModule(`${__dirname}/../../assets/module-hello-world.jsonld`);
+      await registry.registerModule(`${__dirname}/../../assets/module.jsonld`);
     });
     const componentsManagerBuilder = new ComponentsManagerBuilder({
       mainModulePath,
@@ -139,7 +139,7 @@ describe('ComponentsManagerBuilder', () => {
 
   it('should build with custom configLoader', async() => {
     const configLoader = jest.fn(async configRegistry => {
-      await configRegistry.register(`${__dirname}/../../assets/config-hello-world.jsonld`);
+      await configRegistry.register(`${__dirname}/../../assets/config.jsonld`);
     });
     const componentsManagerBuilder = new ComponentsManagerBuilder({
       mainModulePath,
@@ -248,7 +248,7 @@ describe('ComponentsManagerBuilder', () => {
     const customModuleState = <any> {
       mainModulePath,
       componentModules: {
-        B: `${__dirname}/../../assets/module-hello-world.jsonld`,
+        B: `${__dirname}/../../assets/module.jsonld`,
       },
       nodeModulePaths: [],
     };

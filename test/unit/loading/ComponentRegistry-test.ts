@@ -39,7 +39,7 @@ describe('ComponentRegistry', () => {
 
     it('should handle discovered modules', async() => {
       moduleState.componentModules = {
-        A: `${__dirname}/../../assets/module-hello-world.jsonld`,
+        A: `${__dirname}/../../assets/module.jsonld`,
       };
       await componentRegistry.registerAvailableModules();
       expect(Object.keys(objectLoader.resources)
@@ -51,7 +51,7 @@ describe('ComponentRegistry', () => {
 
   describe('registerModule', () => {
     it('should handle a valid module file', async() => {
-      await componentRegistry.registerModule(`${__dirname}/../../assets/module-hello-world.jsonld`);
+      await componentRegistry.registerModule(`${__dirname}/../../assets/module.jsonld`);
       expect(Object.keys(objectLoader.resources)
         .includes('http://example.org/HelloWorldModule#SayHelloComponent')).toBeTruthy();
       expect(Object.keys(objectLoader.resources)

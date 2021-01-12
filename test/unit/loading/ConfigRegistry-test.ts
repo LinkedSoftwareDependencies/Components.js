@@ -29,7 +29,7 @@ describe('ConfigRegistry', () => {
 
   describe('register', () => {
     it('should handle a valid module file', async() => {
-      await configRegistry.register(`${__dirname}/../../assets/config-hello-world.jsonld`);
+      await configRegistry.register(`${__dirname}/../../assets/config.jsonld`);
       expect(Object.keys(objectLoader.resources)
         .includes('http://example.org/myconfig')).toBeTruthy();
     });

@@ -111,13 +111,13 @@ describe('construction with component configs as files', () => {
         mainModulePath: __dirname,
         moduleState,
         async moduleLoader(registry) {
-          await registry.registerModule(Path.join(__dirname, '../assets/module-hello-world.jsonld'));
+          await registry.registerModule(Path.join(__dirname, '../assets/module.jsonld'));
         },
       });
     });
 
     it('instantiated from a config file', async() => {
-      await manager.configRegistry.register(Path.join(__dirname, '../assets/config-hello-world.jsonld'));
+      await manager.configRegistry.register(Path.join(__dirname, '../assets/config.jsonld'));
 
       const run = await manager.instantiate('http://example.org/myconfig');
       expect(run).toBeInstanceOf(Hello);
@@ -134,13 +134,13 @@ describe('construction with component configs as files', () => {
         mainModulePath: __dirname,
         moduleState,
         async moduleLoader(registry) {
-          await registry.registerModule(Path.join(__dirname, '../assets/module-hello-world.ttl'));
+          await registry.registerModule(Path.join(__dirname, '../assets/module.ttl'));
         },
       });
     });
 
     it('instantiated from a config file', async() => {
-      await manager.configRegistry.register(Path.join(__dirname, '../assets/config-hello-world.jsonld'));
+      await manager.configRegistry.register(Path.join(__dirname, '../assets/config.jsonld'));
 
       const run = await manager.instantiate('http://example.org/myconfig');
       expect(run).toBeInstanceOf(Hello);
@@ -156,7 +156,7 @@ describe('construction with component configs as files', () => {
       mainModulePath: __dirname,
       moduleState,
       async moduleLoader(registry) {
-        await registry.registerModule(Path.join(__dirname, '../assets/module-hello-world-unknown.ttl'));
+        await registry.registerModule(Path.join(__dirname, '../assets/module-unknown.ttl'));
       },
     })).rejects.toThrow(/^ENOENT: no such file or directory, stat/u);
   });
@@ -166,7 +166,7 @@ describe('construction with component configs as files', () => {
       mainModulePath: __dirname,
       moduleState,
       async moduleLoader(registry) {
-        await registry.registerModule(Path.join(__dirname, '../assets/module-hello-world-imports.jsonld'));
+        await registry.registerModule(Path.join(__dirname, '../assets/module-imports.jsonld'));
       },
     });
     expect(manager.componentResources)
@@ -181,10 +181,10 @@ describe('construction with component configs as files', () => {
         mainModulePath: __dirname,
         moduleState,
         async moduleLoader(registry) {
-          await registry.registerModule(Path.join(__dirname, '../assets/module-hello-world-mapping.jsonld'));
+          await registry.registerModule(Path.join(__dirname, '../assets/module-mapping.jsonld'));
         },
         async configLoader(registry) {
-          await registry.register(Path.join(__dirname, '../assets/config-hello-world-mapping.jsonld'));
+          await registry.register(Path.join(__dirname, '../assets/config-mapping.jsonld'));
         },
       });
     });
@@ -210,13 +210,13 @@ describe('construction with component configs as files', () => {
         mainModulePath: __dirname,
         moduleState,
         async moduleLoader(registry) {
-          await registry.registerModule(Path.join(__dirname, '../assets/module-hello-world.jsonld'));
+          await registry.registerModule(Path.join(__dirname, '../assets/module.jsonld'));
         },
       });
     });
 
     it('instantiated with equal param instances', async() => {
-      await manager.configRegistry.register(Path.join(__dirname, '../assets/config-hello-world-referenced.jsonld'));
+      await manager.configRegistry.register(Path.join(__dirname, '../assets/config-referenced.jsonld'));
 
       const run = await manager.instantiate('http://example.org/myHelloWorld1');
       expect(run).toBeInstanceOf(Hello);
@@ -229,7 +229,7 @@ describe('construction with component configs as files', () => {
     });
 
     it('instantiated with non-equal param instances', async() => {
-      await manager.configRegistry.register(Path.join(__dirname, '../assets/config-hello-world-unreferenced.jsonld'));
+      await manager.configRegistry.register(Path.join(__dirname, '../assets/config-unreferenced.jsonld'));
 
       const run = await manager.instantiate('http://example.org/myHelloWorld1');
       expect(run).toBeInstanceOf(Hello);
@@ -242,7 +242,7 @@ describe('construction with component configs as files', () => {
     });
 
     it('instantiated with itself as param instance should become undefined', async() => {
-      await manager.configRegistry.register(Path.join(__dirname, '../assets/config-hello-world-selfreferenced.jsonld'));
+      await manager.configRegistry.register(Path.join(__dirname, '../assets/config-selfreferenced.jsonld'));
 
       const run = await manager.instantiate('http://example.org/myHelloWorld1');
       expect(run).toBeInstanceOf(Hello);
@@ -258,14 +258,14 @@ describe('construction with component configs as files', () => {
         mainModulePath: __dirname,
         moduleState,
         async moduleLoader(registry) {
-          await registry.registerModule(Path.join(__dirname, '../assets/module-hello-world-inheritableparams.jsonld'));
+          await registry.registerModule(Path.join(__dirname, '../assets/module-inheritableparams.jsonld'));
         },
       });
     });
 
     it('instantiated should inherit param values', async() => {
       await manager.configRegistry
-        .register(Path.join(__dirname, '../assets/config-hello-world-inheritableparams.jsonld'));
+        .register(Path.join(__dirname, '../assets/config-inheritableparams.jsonld'));
 
       const run1 = await manager.instantiate('http://example.org/myHelloWorld1');
       expect(run1).toBeInstanceOf(Hello);
@@ -287,14 +287,14 @@ describe('construction with component configs as files', () => {
         mainModulePath: __dirname,
         moduleState,
         async moduleLoader(registry) {
-          await registry.registerModule(Path.join(__dirname, '../assets/module-hello-world-subclass.jsonld'));
+          await registry.registerModule(Path.join(__dirname, '../assets/module-subclass.jsonld'));
         },
       });
     });
 
     it('should be able to use params from the parent', async() => {
       await manager.configRegistry
-        .register(Path.join(__dirname, '../assets/config-hello-world-subclass.jsonld'));
+        .register(Path.join(__dirname, '../assets/config-subclass.jsonld'));
 
       const run1 = await manager.instantiate('http://example.org/myHelloWorld1');
       expect(run1).toBeInstanceOf(Hello);
@@ -305,7 +305,7 @@ describe('construction with component configs as files', () => {
 
     it('should be able to use params from the parent parent', async() => {
       await manager.configRegistry
-        .register(Path.join(__dirname, '../assets/config-hello-world-subclass.jsonld'));
+        .register(Path.join(__dirname, '../assets/config-subclass.jsonld'));
 
       const run1 = await manager.instantiate('http://example.org/myHelloWorld2');
       expect(run1).toBeInstanceOf(Hello);
@@ -321,14 +321,14 @@ describe('construction with component configs as files', () => {
         mainModulePath: __dirname,
         moduleState,
         async moduleLoader(registry) {
-          await registry.registerModule(Path.join(__dirname, '../assets/module-hello-world-subclassmapping.jsonld'));
+          await registry.registerModule(Path.join(__dirname, '../assets/module-subclassmapping.jsonld'));
         },
       });
     });
 
     it('should be able to use params from the parent', async() => {
       await manager.configRegistry
-        .register(Path.join(__dirname, '../assets/config-hello-world-subclassmapping.jsonld'));
+        .register(Path.join(__dirname, '../assets/config-subclassmapping.jsonld'));
 
       const run1 = await manager.instantiate('http://example.org/myHelloWorld1');
       expect(run1).toBeInstanceOf(Hello);
@@ -340,7 +340,7 @@ describe('construction with component configs as files', () => {
 
     it('should be able to use params from the parent parent', async() => {
       await manager.configRegistry
-        .register(Path.join(__dirname, '../assets/config-hello-world-subclassmapping.jsonld'));
+        .register(Path.join(__dirname, '../assets/config-subclassmapping.jsonld'));
 
       const run1 = await manager.instantiate('http://example.org/myHelloWorld2');
       expect(run1).toBeInstanceOf(Hello);
@@ -353,7 +353,7 @@ describe('construction with component configs as files', () => {
 
     it('should be able to use params from the parent parent parent', async() => {
       await manager.configRegistry
-        .register(Path.join(__dirname, '../assets/config-hello-world-subclassmapping.jsonld'));
+        .register(Path.join(__dirname, '../assets/config-subclassmapping.jsonld'));
 
       const run1 = await manager.instantiate('http://example.org/myHelloWorld3');
       expect(run1).toBeInstanceOf(Hello);
@@ -372,14 +372,14 @@ describe('construction with component configs as files', () => {
         moduleState,
         async moduleLoader(registry) {
           await registry.registerModule(Path.join(__dirname,
-            '../assets/module-hello-world-inheritableparams-subclassmapping.jsonld'));
+            '../assets/module-inheritableparams-subclassmapping.jsonld'));
         },
       });
     });
 
     it('should inherit param values from the parent', async() => {
       await manager.configRegistry
-        .register(Path.join(__dirname, '../assets/config-hello-world-inheritableparams.jsonld'));
+        .register(Path.join(__dirname, '../assets/config-inheritableparams.jsonld'));
 
       const run1 = await manager.instantiate('http://example.org/myHelloWorld1');
       expect(run1).toBeInstanceOf(Hello);
@@ -401,14 +401,14 @@ describe('construction with component configs as files', () => {
         mainModulePath: __dirname,
         moduleState,
         async moduleLoader(registry) {
-          await registry.registerModule(Path.join(__dirname, '../assets/module-hello-world-dynamicentries.jsonld'));
+          await registry.registerModule(Path.join(__dirname, '../assets/module-dynamicentries.jsonld'));
         },
       });
     });
 
     it('should collect entries for a first instance', async() => {
       await manager.configRegistry
-        .register(Path.join(__dirname, '../assets/config-hello-world-dynamicentries.jsonld'));
+        .register(Path.join(__dirname, '../assets/config-dynamicentries.jsonld'));
 
       const run1 = await manager.instantiate('http://example.org/myHelloWorld1');
       expect(run1).toBeInstanceOf(Hello);
@@ -420,7 +420,7 @@ describe('construction with component configs as files', () => {
 
     it('should collect entries for a second instance', async() => {
       await manager.configRegistry
-        .register(Path.join(__dirname, '../assets/config-hello-world-dynamicentries.jsonld'));
+        .register(Path.join(__dirname, '../assets/config-dynamicentries.jsonld'));
 
       const run1 = await manager.instantiate('http://example.org/myHelloWorld2');
       expect(run1).toBeInstanceOf(Hello);
@@ -438,14 +438,14 @@ describe('construction with component configs as files', () => {
         moduleState,
         async moduleLoader(registry) {
           await registry.registerModule(Path.join(__dirname,
-            '../assets/module-hello-world-subclassmapping-dynamicentries.jsonld'));
+            '../assets/module-subclassmapping-dynamicentries.jsonld'));
         },
       });
     });
 
     it('should collect entries for a first instance', async() => {
       await manager.configRegistry
-        .register(Path.join(__dirname, '../assets/config-hello-world-subclassmapping-dynamicentries.jsonld'));
+        .register(Path.join(__dirname, '../assets/config-subclassmapping-dynamicentries.jsonld'));
 
       const run1 = await manager.instantiate('http://example.org/myHelloWorld1');
       expect(run1).toBeInstanceOf(Hello);
@@ -459,7 +459,7 @@ describe('construction with component configs as files', () => {
 
     it('should collect entries for a second instance', async() => {
       await manager.configRegistry
-        .register(Path.join(__dirname, '../assets/config-hello-world-subclassmapping-dynamicentries.jsonld'));
+        .register(Path.join(__dirname, '../assets/config-subclassmapping-dynamicentries.jsonld'));
 
       const run1 = await manager.instantiate('http://example.org/myHelloWorld2');
       expect(run1).toBeInstanceOf(Hello);
@@ -481,14 +481,14 @@ describe('construction with component configs as files', () => {
         moduleState,
         async moduleLoader(registry) {
           await registry.registerModule(Path.join(__dirname,
-            '../assets/module-hello-world-inheritableparams-subclassmapping-dynamicentries.jsonld'));
+            '../assets/module-inheritableparams-subclassmapping-dynamicentries.jsonld'));
         },
       });
     });
 
     it('should collect entries for a first instance', async() => {
       await manager.configRegistry
-        .register(Path.join(__dirname, '../assets/config-hello-world-dynamicentries2.jsonld'));
+        .register(Path.join(__dirname, '../assets/config-dynamicentries2.jsonld'));
 
       const run1 = await manager.instantiate('http://example.org/myHelloWorld1');
       expect(run1).toBeInstanceOf(Hello);
@@ -502,7 +502,7 @@ describe('construction with component configs as files', () => {
 
     it('should collect entries for a second instance and inherit from the first', async() => {
       await manager.configRegistry
-        .register(Path.join(__dirname, '../assets/config-hello-world-dynamicentries2.jsonld'));
+        .register(Path.join(__dirname, '../assets/config-dynamicentries2.jsonld'));
 
       const run1 = await manager.instantiate('http://example.org/myHelloWorld1');
       expect(run1).toBeInstanceOf(Hello);
@@ -539,14 +539,14 @@ describe('construction with component configs as files', () => {
         moduleState,
         async moduleLoader(registry) {
           await registry.registerModule(Path.join(__dirname,
-            '../assets/module-hello-world-inheritableparams-dynamicentries.jsonld'));
+            '../assets/module-inheritableparams-dynamicentries.jsonld'));
         },
       });
     });
 
     it('should collect entries for a second instance and inherit from the first', async() => {
       await manager.configRegistry
-        .register(Path.join(__dirname, '../assets/config-hello-world-inheritableparams-dynamicentries.jsonld'));
+        .register(Path.join(__dirname, '../assets/config-inheritableparams-dynamicentries.jsonld'));
 
       const run1 = await manager.instantiate('http://example.org/myHelloWorld1');
       expect(run1).toBeInstanceOf(Hello);
@@ -570,14 +570,14 @@ describe('construction with component configs as files', () => {
         mainModulePath: __dirname,
         moduleState,
         async moduleLoader(registry) {
-          await registry.registerModule(Path.join(__dirname, '../assets/module-hello-world-paramranges.jsonld'));
+          await registry.registerModule(Path.join(__dirname, '../assets/module-paramranges.jsonld'));
         },
       });
     });
 
     it('should throw on invalid param values', async() => {
       await manager.configRegistry
-        .register(Path.join(__dirname, '../assets/config-hello-world.jsonld'));
+        .register(Path.join(__dirname, '../assets/config.jsonld'));
 
       await expect(manager.instantiate('http://example.org/myconfig')).rejects
         .toThrow(`Parameter value "HI" is not of required range type "http://www.w3.org/2001/XMLSchema#boolean"`);
@@ -585,7 +585,7 @@ describe('construction with component configs as files', () => {
 
     it('should cast valid param values', async() => {
       await manager.configRegistry
-        .register(Path.join(__dirname, '../assets/config-hello-world-paramranges.jsonld'));
+        .register(Path.join(__dirname, '../assets/config-paramranges.jsonld'));
 
       const run1 = await manager.instantiate('http://example.org/myconfig2');
       expect(run1).toBeInstanceOf(Hello);
@@ -603,14 +603,14 @@ describe('construction with component configs as files', () => {
         moduleState,
         async moduleLoader(registry) {
           await registry.registerModule(Path.join(__dirname,
-            '../assets/module-hello-world-dynamicentries-nested.jsonld'));
+            '../assets/module-dynamicentries-nested.jsonld'));
         },
       });
     });
 
     it('should collect entries for a first instance', async() => {
       await manager.configRegistry
-        .register(Path.join(__dirname, '../assets/config-hello-world-dynamicentries-nested.jsonld'));
+        .register(Path.join(__dirname, '../assets/config-dynamicentries-nested.jsonld'));
 
       const run1 = await manager.instantiate('http://example.org/myHelloWorld1');
       expect(run1).toBeInstanceOf(Hello);
@@ -627,7 +627,7 @@ describe('construction with component configs as files', () => {
 
     it('should collect entries for a second instance', async() => {
       await manager.configRegistry
-        .register(Path.join(__dirname, '../assets/config-hello-world-dynamicentries-nested.jsonld'));
+        .register(Path.join(__dirname, '../assets/config-dynamicentries-nested.jsonld'));
 
       const run1 = await manager.instantiate('http://example.org/myHelloWorld2');
       expect(run1).toBeInstanceOf(Hello);
@@ -653,7 +653,7 @@ describe('construction with component configs as files', () => {
 
     it('should collect entries for a double nested third instance', async() => {
       await manager.configRegistry
-        .register(Path.join(__dirname, '../assets/config-hello-world-dynamicentries-nested.jsonld'));
+        .register(Path.join(__dirname, '../assets/config-dynamicentries-nested.jsonld'));
 
       const run1 = await manager.instantiate('http://example.org/myHelloWorld3');
       expect(run1).toBeInstanceOf(Hello);
@@ -675,14 +675,14 @@ describe('construction with component configs as files', () => {
         mainModulePath: __dirname,
         moduleState,
         async moduleLoader(registry) {
-          await registry.registerModule(Path.join(__dirname, '../assets/module-hello-world-lazy.jsonld'));
+          await registry.registerModule(Path.join(__dirname, '../assets/module-lazy.jsonld'));
         },
       });
     });
 
     it('should result in lazy param values', async() => {
       await manager.configRegistry
-        .register(Path.join(__dirname, '../assets/config-hello-world-lazy.jsonld'));
+        .register(Path.join(__dirname, '../assets/config-lazy.jsonld'));
 
       const run1 = await manager.instantiate('http://example.org/myHelloWorldLazy1');
       expect(run1).toBeInstanceOf(Hello);

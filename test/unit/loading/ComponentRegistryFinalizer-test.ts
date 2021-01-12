@@ -48,7 +48,7 @@ describe('ComponentRegistryFinalizer', () => {
     });
 
     it('should handle registered modules', async() => {
-      await componentRegistry.registerModule(`${__dirname}/../../assets/module-hello-world.jsonld`);
+      await componentRegistry.registerModule(`${__dirname}/../../assets/module.jsonld`);
       finalizer.finalize();
       expect(Object.keys(componentResources)
         .includes('http://example.org/HelloWorldModule#SayHelloComponent')).toBeTruthy();
