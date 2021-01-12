@@ -1,6 +1,6 @@
 import type { Resource, RdfObjectLoader } from 'rdf-object';
-import { ErrorResourcesContext } from '../ErrorResourcesContext';
 import { IRIS_OWL } from '../rdf/Iris';
+import { ErrorResourcesContext } from '../util/ErrorResourcesContext';
 import type { IConfigPreprocessor } from './IConfigPreprocessor';
 import type { ParameterHandler } from './ParameterHandler';
 

@@ -1,5 +1,5 @@
-import { ComponentsManager } from './ComponentsManager';
-import { ConstructionStrategyCommonJsString } from './construction/strategy/ConstructionStrategyCommonJsString';
+import { ComponentsManager } from '../ComponentsManager';
+import { ConstructionStrategyCommonJsString } from '../construction/strategy/ConstructionStrategyCommonJsString';
 
 /**
  * Compile a configuration stream to a JavaScript source file.

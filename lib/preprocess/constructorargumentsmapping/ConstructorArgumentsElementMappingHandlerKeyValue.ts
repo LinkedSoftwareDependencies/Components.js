@@ -1,5 +1,5 @@
 import type { Resource } from 'rdf-object';
-import { ErrorResourcesContext } from '../../ErrorResourcesContext';
+import { ErrorResourcesContext } from '../../util/ErrorResourcesContext';
 import type { IConstructorArgumentsElementMappingHandler } from './IConstructorArgumentsElementMappingHandler';
 import type { IConstructorArgumentsMapper } from './IConstructorArgumentsMapper';
 

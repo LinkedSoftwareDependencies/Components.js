@@ -1,5 +1,5 @@
 import type { RdfObjectLoader, Resource } from 'rdf-object';
-import { ErrorResourcesContext } from '../../ErrorResourcesContext';
+import { ErrorResourcesContext } from '../../util/ErrorResourcesContext';
 import type { IParameterPropertyHandler } from './IParameterPropertyHandler';
 
 /**

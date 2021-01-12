@@ -1,5 +1,5 @@
 import type { Resource } from 'rdf-object';
-import { ErrorResourcesContext } from '../../ErrorResourcesContext';
+import { ErrorResourcesContext } from '../../util/ErrorResourcesContext';
 import type { IConstructionSettings } from '../IConstructionSettings';
 import type { IArgumentConstructorHandler } from './IArgumentConstructorHandler';
 import type { IArgumentsConstructor } from './IArgumentsConstructor';

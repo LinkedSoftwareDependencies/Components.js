@@ -1,6 +1,6 @@
 import type { Resource, RdfObjectLoader } from 'rdf-object';
-import { ErrorResourcesContext } from '../ErrorResourcesContext';
 import type { IModuleState } from '../loading/ModuleStateBuilder';
+import { ErrorResourcesContext } from '../util/ErrorResourcesContext';
 import { ArgumentConstructorHandlerArray } from './argument/ArgumentConstructorHandlerArray';
 import { ArgumentConstructorHandlerHash } from './argument/ArgumentConstructorHandlerHash';
 import { ArgumentConstructorHandlerPrimitive } from './argument/ArgumentConstructorHandlerPrimitive';

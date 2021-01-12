@@ -1,6 +1,6 @@
 import type { Resource } from 'rdf-object';
-import { ErrorResourcesContext } from '../../ErrorResourcesContext';
 import { IRIS_RDF } from '../../rdf/Iris';
+import { ErrorResourcesContext } from '../../util/ErrorResourcesContext';
 import type { ParameterHandler } from '../ParameterHandler';
 import type { IConstructorArgumentsElementMappingHandler } from './IConstructorArgumentsElementMappingHandler';
 import type { IConstructorArgumentsMapper } from './IConstructorArgumentsMapper';

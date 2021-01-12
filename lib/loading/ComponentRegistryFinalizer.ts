@@ -1,7 +1,7 @@
 import type { RdfObjectLoader, Resource } from 'rdf-object';
 import type { Logger } from 'winston';
-import { ErrorResourcesContext } from '../ErrorResourcesContext';
 import { IRIS_OO } from '../rdf/Iris';
+import { ErrorResourcesContext } from '../util/ErrorResourcesContext';
 import type { ComponentRegistry } from './ComponentRegistry';
 
 /**
