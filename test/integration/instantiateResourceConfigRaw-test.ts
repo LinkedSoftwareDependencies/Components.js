@@ -1,8 +1,7 @@
 import type { RdfObjectLoader } from 'rdf-object';
+import { ComponentsManager } from '../../lib/ComponentsManager';
 import type { IConfigConstructorPool } from '../../lib/construction/IConfigConstructorPool';
 import type { IConstructionSettings } from '../../lib/construction/IConstructionSettings';
-import type { Loader } from '../../lib/Loader';
-import { LoaderMocked } from './LoaderMocked';
 
 const N3 = require('n3');
 jest.mock('n3', () => ({
@@ -14,14 +13,20 @@ jest.mock('n3', () => ({
 const Hello = require('../../__mocks__/helloworld').Hello;
 
 describe('construction with component configs as Resource', () => {
-  let loader: Loader<any>;
+  let manager: ComponentsManager<any>;
   let configConstructorPool: IConfigConstructorPool<any>;
   let objectLoader: RdfObjectLoader;
   let settings: IConstructionSettings;
   beforeEach(async() => {
-    loader = new LoaderMocked();
-    configConstructorPool = await loader.getInstancePool();
-    objectLoader = (<any> loader).objectLoader;
+    manager = await ComponentsManager.build({
+      mainModulePath: __dirname,
+      moduleState: <any> {},
+      async moduleLoader() {
+        // Register nothing
+      },
+    });
+    configConstructorPool = manager.configConstructorPool;
+    objectLoader = manager.objectLoader;
     settings = {};
     jest.clearAllMocks();
   });

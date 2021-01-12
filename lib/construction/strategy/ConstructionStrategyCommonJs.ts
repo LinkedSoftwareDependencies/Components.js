@@ -1,5 +1,5 @@
 import * as Path from 'path';
-import type { IModuleState } from '../../ModuleStateBuilder';
+import type { IModuleState } from '../../loading/ModuleStateBuilder';
 import type {
   ICreationStrategyInstanceOptions,
   IConstructionStrategy,
@@ -16,7 +16,8 @@ export class ConstructionStrategyCommonJs implements IConstructionStrategy<any> 
   private readonly overrideRequireNames: Record<string, string>;
   private readonly req: NodeJS.Require;
 
-  public constructor(options: ICreationStrategyCommonJsOptions) {
+  // eslint-disable-next-line unicorn/no-object-as-default-parameter
+  public constructor(options: ICreationStrategyCommonJsOptions = { req: require }) {
     this.overrideRequireNames = options.overrideRequireNames || {};
     this.req = options.req;
   }

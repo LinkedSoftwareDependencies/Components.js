@@ -1,7 +1,7 @@
 import * as Path from 'path';
 import type { IConstructionSettings } from '../../../../lib/construction/IConstructionSettings';
 import { ConstructionStrategyCommonJs } from '../../../../lib/construction/strategy/ConstructionStrategyCommonJs';
-import type { IModuleState } from '../../../../lib/ModuleStateBuilder';
+import type { IModuleState } from '../../../../lib/loading/ModuleStateBuilder';
 
 class MyClass {
   public readonly arg1: string;
@@ -77,6 +77,12 @@ describe('ConstructionStrategyCommonJs', () => {
     };
     constructionStrategy = new ConstructionStrategyCommonJs({ req });
     settings = {};
+  });
+
+  describe('constructed without args', () => {
+    it('should use req: require', () => {
+      expect((<any> new ConstructionStrategyCommonJs()).req).toBeTruthy();
+    });
   });
 
   describe('createInstance', () => {

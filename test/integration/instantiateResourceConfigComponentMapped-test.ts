@@ -1,10 +1,9 @@
 import type { Resource, RdfObjectLoader } from 'rdf-object';
 import { mocked } from 'ts-jest/utils';
+import { ComponentsManager } from '../../lib/ComponentsManager';
 import type { IConfigConstructorPool } from '../../lib/construction/IConfigConstructorPool';
 import type { IConstructionSettings } from '../../lib/construction/IConstructionSettings';
-import type { Loader } from '../../lib/Loader';
 import { IRIS_OO } from '../../lib/rdf/Iris';
-import { LoaderMocked } from './LoaderMocked';
 
 const N3 = require('n3');
 jest.mock('n3', () => ({
@@ -16,21 +15,27 @@ jest.mock('n3', () => ({
 const Hello = require('../../__mocks__/helloworld').Hello;
 
 describe('construction with mapped component configs as Resource', () => {
-  let loader: Loader<any>;
+  let manager: ComponentsManager<any>;
   let configConstructorPool: IConfigConstructorPool<any>;
   let objectLoader: RdfObjectLoader;
   let settings: IConstructionSettings;
   beforeEach(async() => {
-    loader = new LoaderMocked();
-    configConstructorPool = await loader.getInstancePool();
-    objectLoader = (<any> loader).objectLoader;
+    manager = await ComponentsManager.build({
+      mainModulePath: __dirname,
+      moduleState: <any> {},
+      async moduleLoader() {
+        // Register nothing
+      },
+    });
+    configConstructorPool = manager.configConstructorPool;
+    objectLoader = manager.objectLoader;
     settings = {};
     jest.clearAllMocks();
   });
 
   describe('for a component that requires no construction', () => {
     beforeEach(() => {
-      (<any> loader).componentResources['http://example.org/n3#Util'] = objectLoader.createCompactedResource({
+      manager.componentResources['http://example.org/n3#Util'] = objectLoader.createCompactedResource({
         '@id': 'http://example.org/n3#Util',
         requireElement: '"Util"',
         types: IRIS_OO.ComponentInstance,
@@ -56,7 +61,7 @@ describe('construction with mapped component configs as Resource', () => {
 
   describe('for a component without parameters', () => {
     beforeEach(() => {
-      (<any> loader).componentResources['http://example.org/n3#Lexer'] = objectLoader.createCompactedResource({
+      manager.componentResources['http://example.org/n3#Lexer'] = objectLoader.createCompactedResource({
         '@id': 'http://example.org/n3#Lexer',
         requireElement: '"Lexer"',
         constructorArguments: {
@@ -81,7 +86,7 @@ describe('construction with mapped component configs as Resource', () => {
 
   describe('for a component with non-unique parameters', () => {
     beforeEach(() => {
-      (<any> loader).componentResources['http://example.org/n3#Lexer'] = objectLoader.createCompactedResource({
+      manager.componentResources['http://example.org/n3#Lexer'] = objectLoader.createCompactedResource({
         '@id': 'http://example.org/n3#Lexer',
         requireElement: '"Lexer"',
         parameters: [
@@ -151,7 +156,7 @@ describe('construction with mapped component configs as Resource', () => {
 
   describe('for a component with unique parameters', () => {
     beforeEach(() => {
-      (<any> loader).componentResources['http://example.org/n3#Lexer'] = objectLoader.createCompactedResource({
+      manager.componentResources['http://example.org/n3#Lexer'] = objectLoader.createCompactedResource({
         '@id': 'http://example.org/n3#Lexer',
         requireElement: '"Lexer"',
         parameters: [
@@ -262,7 +267,7 @@ describe('construction with mapped component configs as Resource', () => {
 
   describe('for a component with required parameters', () => {
     beforeEach(() => {
-      (<any> loader).componentResources['http://example.org/n3#Lexer'] = objectLoader.createCompactedResource({
+      manager.componentResources['http://example.org/n3#Lexer'] = objectLoader.createCompactedResource({
         '@id': 'http://example.org/n3#Lexer',
         requireElement: '"Lexer"',
         parameters: [
@@ -324,7 +329,7 @@ describe('construction with mapped component configs as Resource', () => {
 
   describe('for nested components', () => {
     beforeEach(() => {
-      (<any> loader).componentResources['http://example.org/n3#Lexer'] = objectLoader.createCompactedResource({
+      manager.componentResources['http://example.org/n3#Lexer'] = objectLoader.createCompactedResource({
         '@id': 'http://example.org/n3#Lexer',
         requireElement: '"Lexer"',
         parameters: [
@@ -357,7 +362,7 @@ describe('construction with mapped component configs as Resource', () => {
           requireName: '"n3"',
         },
       });
-      (<any> loader).componentResources['http://example.org/n3#Parser'] = objectLoader.createCompactedResource({
+      manager.componentResources['http://example.org/n3#Parser'] = objectLoader.createCompactedResource({
         '@id': 'http://example.org/n3#Parser',
         requireElement: '"Parser"',
         parameters: [
@@ -426,7 +431,7 @@ describe('construction with mapped component configs as Resource', () => {
 
   describe('for a component with parameters with default values', () => {
     beforeEach(() => {
-      (<any> loader).componentResources['http://example.org/n3#Lexer'] = objectLoader.createCompactedResource({
+      manager.componentResources['http://example.org/n3#Lexer'] = objectLoader.createCompactedResource({
         '@id': 'http://example.org/n3#Lexer',
         requireElement: '"Lexer"',
         parameters: [
@@ -492,7 +497,7 @@ describe('construction with mapped component configs as Resource', () => {
 
   describe('for a component with parameters with default scoped values', () => {
     beforeEach(() => {
-      (<any> loader).componentResources['http://example.org/n3#Lexer'] = objectLoader.createCompactedResource({
+      manager.componentResources['http://example.org/n3#Lexer'] = objectLoader.createCompactedResource({
         '@id': 'http://example.org/n3#Lexer',
         requireElement: '"Lexer"',
         parameters: [
@@ -584,7 +589,7 @@ describe('construction with mapped component configs as Resource', () => {
 
   describe('for a component with parameters with fixed values', () => {
     beforeEach(() => {
-      (<any> loader).componentResources['http://example.org/n3#Lexer'] = objectLoader.createCompactedResource({
+      manager.componentResources['http://example.org/n3#Lexer'] = objectLoader.createCompactedResource({
         '@id': 'http://example.org/n3#Lexer',
         requireElement: '"Lexer"',
         parameters: [
@@ -650,7 +655,7 @@ describe('construction with mapped component configs as Resource', () => {
 
   describe('for a component with parameters with fixed and unique values', () => {
     beforeEach(() => {
-      (<any> loader).componentResources['http://example.org/n3#Lexer'] = objectLoader.createCompactedResource({
+      manager.componentResources['http://example.org/n3#Lexer'] = objectLoader.createCompactedResource({
         '@id': 'http://example.org/n3#Lexer',
         requireElement: '"Lexer"',
         parameters: [
@@ -716,7 +721,7 @@ describe('construction with mapped component configs as Resource', () => {
 
   describe('for a component with lazy parameters', () => {
     beforeEach(() => {
-      (<any> loader).componentResources['http://example.org/n3#Lexer'] = objectLoader.createCompactedResource({
+      manager.componentResources['http://example.org/n3#Lexer'] = objectLoader.createCompactedResource({
         '@id': 'http://example.org/n3#Lexer',
         requireElement: '"Lexer"',
         parameters: [
@@ -777,7 +782,7 @@ describe('construction with mapped component configs as Resource', () => {
 
   describe('for an internal component', () => {
     beforeEach(() => {
-      (<any> loader).componentResources['http://example.org/HelloWorldModule#SayHelloComponent'] = objectLoader
+      manager.componentResources['http://example.org/HelloWorldModule#SayHelloComponent'] = objectLoader
         .createCompactedResource({
           '@id': 'http://example.org/HelloWorldModule#SayHelloComponent',
           requireElement: '"Hello"',
@@ -821,7 +826,7 @@ describe('construction with mapped component configs as Resource', () => {
 
   describe('for a component with rdf:subject param', () => {
     beforeEach(() => {
-      (<any> loader).componentResources['http://example.org/HelloWorldModule#SayHelloComponent'] = objectLoader
+      manager.componentResources['http://example.org/HelloWorldModule#SayHelloComponent'] = objectLoader
         .createCompactedResource({
           '@id': 'http://example.org/HelloWorldModule#SayHelloComponent',
           requireElement: '"Hello"',
@@ -860,7 +865,7 @@ describe('construction with mapped component configs as Resource', () => {
 
   describe('for a component with elements', () => {
     beforeEach(() => {
-      (<any> loader).componentResources['http://example.org/HelloWorldModule#SayHelloComponent'] = objectLoader
+      manager.componentResources['http://example.org/HelloWorldModule#SayHelloComponent'] = objectLoader
         .createCompactedResource({
           '@id': 'http://example.org/HelloWorldModule#SayHelloComponent',
           requireElement: '"Hello"',
@@ -908,7 +913,7 @@ describe('construction with mapped component configs as Resource', () => {
 
   describe('for a component with root elements', () => {
     beforeEach(() => {
-      (<any> loader).componentResources['http://example.org/HelloWorldModule#SayHelloComponent'] = objectLoader
+      manager.componentResources['http://example.org/HelloWorldModule#SayHelloComponent'] = objectLoader
         .createCompactedResource({
           '@id': 'http://example.org/HelloWorldModule#SayHelloComponent',
           requireElement: '"Hello"',
@@ -950,7 +955,7 @@ describe('construction with mapped component configs as Resource', () => {
 
   describe('for a component with raw reference param', () => {
     beforeEach(() => {
-      (<any> loader).componentResources['http://example.org/HelloWorldModule#SayHelloComponent'] = objectLoader
+      manager.componentResources['http://example.org/HelloWorldModule#SayHelloComponent'] = objectLoader
         .createCompactedResource({
           '@id': 'http://example.org/HelloWorldModule#SayHelloComponent',
           requireElement: '"Hello"',

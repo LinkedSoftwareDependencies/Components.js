@@ -1,11 +1,9 @@
+import { ComponentsManager } from './ComponentsManager';
 import { ConstructionStrategyCommonJsString } from './construction/strategy/ConstructionStrategyCommonJsString';
-import type { ILoaderProperties } from './Loader';
-import { Loader } from './Loader';
-import { RdfParser } from './rdf/RdfParser';
 
 /**
  * Compile a configuration stream to a JavaScript source file.
- * @param {ILoaderProperties} properties Properties for the loader.
+ * @param {string} mainModulePath The main module path.
  * @param {string} configPath Path of the config file.
  * @param {"stream".internal.Stream} configStreamRaw Stream of the config file contents.
  * @param {string} configResourceUri URI of the config element to compile.
@@ -15,28 +13,21 @@ import { RdfParser } from './rdf/RdfParser';
  * @return {Promise<string>} A string resolving to the JavaScript contents.
  */
 export async function compileConfig(
-  properties: ILoaderProperties & { mainModulePath: string },
+  mainModulePath: string,
   configPath: string,
-  configStreamRaw: NodeJS.ReadableStream,
   configResourceUri: string,
   exportVariableName?: string,
   asFunction?: boolean,
 ): Promise<string> {
-  // Load modules and config
   const constructionStrategy = new ConstructionStrategyCommonJsString({ asFunction, req: require });
-  const loader = new Loader(properties, constructionStrategy);
-  await loader.registerAvailableModuleResources();
-  const state = await loader.getModuleState();
-  const configStream = new RdfParser().parse(configStreamRaw, {
-    path: configPath,
-    contexts: state.contexts,
-    importPaths: state.importPaths,
-    logger: loader.logger,
+  const manager = await ComponentsManager.build({
+    mainModulePath,
+    constructionStrategy,
+    configLoader: async registry => registry.register(configPath),
   });
 
   // Serialize the config
-  await loader.registerConfigStream(configStream);
-  const serializationVariableName = await loader.getComponentInstance(configResourceUri);
+  const serializationVariableName = await manager.instantiate(configResourceUri);
   let document: string = constructionStrategy.lines.join('\n');
 
   // Override main variable name if needed

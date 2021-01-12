@@ -1,6 +1,6 @@
 import type { Resource, RdfObjectLoader } from 'rdf-object';
 import { ErrorResourcesContext } from '../ErrorResourcesContext';
-import type { IModuleState } from '../ModuleStateBuilder';
+import type { IModuleState } from '../loading/ModuleStateBuilder';
 import type { IConfigPreprocessor } from '../preprocess/IConfigPreprocessor';
 import { ConfigConstructor } from './ConfigConstructor';
 import type { IConfigConstructorPool } from './IConfigConstructorPool';

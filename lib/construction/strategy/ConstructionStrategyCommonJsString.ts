@@ -1,5 +1,5 @@
 import * as Path from 'path';
-import type { IModuleState } from '../../ModuleStateBuilder';
+import type { IModuleState } from '../../loading/ModuleStateBuilder';
 import type { ICreationStrategyCommonJsOptions } from './ConstructionStrategyCommonJs';
 import { ConstructionStrategyCommonJs } from './ConstructionStrategyCommonJs';
 import type { IConstructionStrategy,
@@ -21,7 +21,8 @@ export class ConstructionStrategyCommonJsString implements IConstructionStrategy
 
   public readonly lines: string[] = [];
 
-  public constructor(options: ICreationStrategyCommonJsStringOptions) {
+  // eslint-disable-next-line unicorn/no-object-as-default-parameter
+  public constructor(options: ICreationStrategyCommonJsStringOptions = { req: require }) {
     this.overrideRequireNames = options.overrideRequireNames || {};
     this.asFunction = Boolean(options.asFunction);
     this.strategyCommonJs = new ConstructionStrategyCommonJs(options);

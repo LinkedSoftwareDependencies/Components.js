@@ -1,10 +1,9 @@
 import type { Resource, RdfObjectLoader } from 'rdf-object';
 import { mocked } from 'ts-jest/utils';
+import { ComponentsManager } from '../../lib/ComponentsManager';
 import type { IConfigConstructorPool } from '../../lib/construction/IConfigConstructorPool';
 import type { IConstructionSettings } from '../../lib/construction/IConstructionSettings';
-import type { Loader } from '../../lib/Loader';
 import { IRIS_OO } from '../../lib/rdf/Iris';
-import { LoaderMocked } from './LoaderMocked';
 
 const N3 = require('n3');
 jest.mock('n3', () => ({
@@ -14,21 +13,27 @@ jest.mock('n3', () => ({
 }));
 
 describe('construction with component configs as Resource', () => {
-  let loader: Loader<any>;
+  let manager: ComponentsManager<any>;
   let configConstructorPool: IConfigConstructorPool<any>;
   let objectLoader: RdfObjectLoader;
   let settings: IConstructionSettings;
   beforeEach(async() => {
-    loader = new LoaderMocked();
-    configConstructorPool = await loader.getInstancePool();
-    objectLoader = (<any> loader).objectLoader;
+    manager = await ComponentsManager.build({
+      mainModulePath: __dirname,
+      moduleState: <any> {},
+      async moduleLoader() {
+        // Register nothing
+      },
+    });
+    configConstructorPool = manager.configConstructorPool;
+    objectLoader = manager.objectLoader;
     settings = {};
     jest.clearAllMocks();
   });
 
   describe('for a component that requires no construction', () => {
     beforeEach(() => {
-      (<any> loader).componentResources['http://example.org/n3#Util'] = objectLoader.createCompactedResource({
+      manager.componentResources['http://example.org/n3#Util'] = objectLoader.createCompactedResource({
         '@id': 'http://example.org/n3#Util',
         requireElement: '"Util"',
         types: IRIS_OO.ComponentInstance,
@@ -51,7 +56,7 @@ describe('construction with component configs as Resource', () => {
 
   describe('for a component without parameters', () => {
     beforeEach(() => {
-      (<any> loader).componentResources['http://example.org/n3#Lexer'] = objectLoader.createCompactedResource({
+      manager.componentResources['http://example.org/n3#Lexer'] = objectLoader.createCompactedResource({
         '@id': 'http://example.org/n3#Lexer',
         requireElement: '"Lexer"',
         module: {
@@ -73,7 +78,7 @@ describe('construction with component configs as Resource', () => {
 
   describe('for a component with non-unique parameters', () => {
     beforeEach(() => {
-      (<any> loader).componentResources['http://example.org/n3#Lexer'] = objectLoader.createCompactedResource({
+      manager.componentResources['http://example.org/n3#Lexer'] = objectLoader.createCompactedResource({
         '@id': 'http://example.org/n3#Lexer',
         requireElement: '"Lexer"',
         parameters: [
@@ -123,7 +128,7 @@ describe('construction with component configs as Resource', () => {
 
   describe('for a component with unique parameters', () => {
     beforeEach(() => {
-      (<any> loader).componentResources['http://example.org/n3#Lexer'] = objectLoader.createCompactedResource({
+      manager.componentResources['http://example.org/n3#Lexer'] = objectLoader.createCompactedResource({
         '@id': 'http://example.org/n3#Lexer',
         requireElement: '"Lexer"',
         parameters: [
@@ -214,7 +219,7 @@ describe('construction with component configs as Resource', () => {
 
   describe('for a component with required parameters', () => {
     beforeEach(() => {
-      (<any> loader).componentResources['http://example.org/n3#Lexer'] = objectLoader.createCompactedResource({
+      manager.componentResources['http://example.org/n3#Lexer'] = objectLoader.createCompactedResource({
         '@id': 'http://example.org/n3#Lexer',
         requireElement: '"Lexer"',
         parameters: [
@@ -256,7 +261,7 @@ describe('construction with component configs as Resource', () => {
 
   describe('for nested components', () => {
     beforeEach(() => {
-      (<any> loader).componentResources['http://example.org/n3#Lexer'] = objectLoader.createCompactedResource({
+      manager.componentResources['http://example.org/n3#Lexer'] = objectLoader.createCompactedResource({
         '@id': 'http://example.org/n3#Lexer',
         requireElement: '"Lexer"',
         parameters: [
@@ -269,7 +274,7 @@ describe('construction with component configs as Resource', () => {
           requireName: '"n3"',
         },
       });
-      (<any> loader).componentResources['http://example.org/n3#Parser'] = objectLoader.createCompactedResource({
+      manager.componentResources['http://example.org/n3#Parser'] = objectLoader.createCompactedResource({
         '@id': 'http://example.org/n3#Parser',
         requireElement: '"Parser"',
         parameters: [
@@ -314,7 +319,7 @@ describe('construction with component configs as Resource', () => {
 
   describe('for a component with parameters with default values', () => {
     beforeEach(() => {
-      (<any> loader).componentResources['http://example.org/n3#Lexer'] = objectLoader.createCompactedResource({
+      manager.componentResources['http://example.org/n3#Lexer'] = objectLoader.createCompactedResource({
         '@id': 'http://example.org/n3#Lexer',
         requireElement: '"Lexer"',
         parameters: [
@@ -360,7 +365,7 @@ describe('construction with component configs as Resource', () => {
 
   describe('for a component with parameters with default scoped values', () => {
     beforeEach(() => {
-      (<any> loader).componentResources['http://example.org/n3#Lexer'] = objectLoader.createCompactedResource({
+      manager.componentResources['http://example.org/n3#Lexer'] = objectLoader.createCompactedResource({
         '@id': 'http://example.org/n3#Lexer',
         requireElement: '"Lexer"',
         parameters: [
@@ -432,7 +437,7 @@ describe('construction with component configs as Resource', () => {
 
   describe('for a component with parameters with fixed values', () => {
     beforeEach(() => {
-      (<any> loader).componentResources['http://example.org/n3#Lexer'] = objectLoader.createCompactedResource({
+      manager.componentResources['http://example.org/n3#Lexer'] = objectLoader.createCompactedResource({
         '@id': 'http://example.org/n3#Lexer',
         requireElement: '"Lexer"',
         parameters: [
@@ -478,7 +483,7 @@ describe('construction with component configs as Resource', () => {
 
   describe('for a component with parameters with fixed and unique values', () => {
     beforeEach(() => {
-      (<any> loader).componentResources['http://example.org/n3#Lexer'] = objectLoader.createCompactedResource({
+      manager.componentResources['http://example.org/n3#Lexer'] = objectLoader.createCompactedResource({
         '@id': 'http://example.org/n3#Lexer',
         requireElement: '"Lexer"',
         parameters: [
@@ -524,7 +529,7 @@ describe('construction with component configs as Resource', () => {
 
   describe('for a component with lazy parameters', () => {
     beforeEach(() => {
-      (<any> loader).componentResources['http://example.org/n3#Lexer'] = objectLoader.createCompactedResource({
+      manager.componentResources['http://example.org/n3#Lexer'] = objectLoader.createCompactedResource({
         '@id': 'http://example.org/n3#Lexer',
         requireElement: '"Lexer"',
         parameters: [

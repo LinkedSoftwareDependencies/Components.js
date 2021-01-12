@@ -5,7 +5,7 @@ import { ConfigConstructor } from '../../../lib/construction/ConfigConstructor';
 import type { ConfigConstructorPool } from '../../../lib/construction/ConfigConstructorPool';
 import type { IConstructionSettings } from '../../../lib/construction/IConstructionSettings';
 import type { IConstructionStrategy } from '../../../lib/construction/strategy/IConstructionStrategy';
-import type { IModuleState } from '../../../lib/ModuleStateBuilder';
+import type { IModuleState } from '../../../lib/loading/ModuleStateBuilder';
 
 const DF = new DataFactory();
 

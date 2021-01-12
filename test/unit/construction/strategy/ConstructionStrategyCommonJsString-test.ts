@@ -2,7 +2,7 @@ import type { IConstructionSettings } from '../../../../lib/construction/IConstr
 import {
   ConstructionStrategyCommonJsString,
 } from '../../../../lib/construction/strategy/ConstructionStrategyCommonJsString';
-import type { IModuleState } from '../../../../lib/ModuleStateBuilder';
+import type { IModuleState } from '../../../../lib/loading/ModuleStateBuilder';
 
 describe('ConstructionStrategyCommonJsString', () => {
   let requireMain: any;
@@ -46,6 +46,12 @@ describe('ConstructionStrategyCommonJsString', () => {
     };
     constructionStrategy = new ConstructionStrategyCommonJsString({ req });
     settings = {};
+  });
+
+  describe('constructed without args', () => {
+    it('should use req: require', () => {
+      expect((<any> new ConstructionStrategyCommonJsString()).strategyCommonJs.req).toBeTruthy();
+    });
   });
 
   describe('createInstance', () => {

@@ -1,0 +1,131 @@
+import * as fs from 'fs';
+import type { Resource } from 'rdf-object';
+import { RdfObjectLoader } from 'rdf-object';
+import { mocked } from 'ts-jest/utils';
+import type { Logger } from 'winston';
+import { ComponentsManager } from '../../../lib/ComponentsManager';
+import type { IConfigConstructorPool } from '../../../lib/construction/IConfigConstructorPool';
+import { ConfigRegistry } from '../../../lib/loading/ConfigRegistry';
+import type { IModuleState } from '../../../lib/loading/ModuleStateBuilder';
+
+jest.spyOn(fs, 'writeFileSync');
+mocked(fs.writeFileSync).mockReturnValue();
+jest.mock('../../../lib/loading/ComponentsManagerBuilder', () => ({
+  // eslint-disable-next-line object-shorthand
+  ComponentsManagerBuilder: function(args: any) {
+    return {
+      build: jest.fn(() => ({
+        type: 'INSTANCE',
+        args,
+      })),
+    };
+  },
+}));
+
+describe('ComponentsManager', () => {
+  let mainModulePath: string;
+  let moduleState: IModuleState;
+  let objectLoader: RdfObjectLoader;
+  let componentResources: Record<string, Resource>;
+  let configRegistry: ConfigRegistry;
+  let dumpErrorState: boolean;
+  let configConstructorPool: IConfigConstructorPool<any>;
+  let logger: Logger;
+  let componentsManager: ComponentsManager<any>;
+  beforeEach(() => {
+    mainModulePath = __dirname;
+    moduleState = <any> {
+      mainModulePath,
+      componentModules: {
+        A: `${__dirname}/../../assets/module-hello-world.jsonld`,
+      },
+      nodeModulePaths: [],
+    };
+    objectLoader = new RdfObjectLoader({
+      context: JSON.parse(fs.readFileSync(`${__dirname}/../../../components/context.jsonld`, 'utf8')),
+    });
+    componentResources = {};
+    logger = <any> {
+      warn: jest.fn(),
+    };
+    configRegistry = new ConfigRegistry({
+      moduleState,
+      objectLoader,
+      logger,
+    });
+    dumpErrorState = false;
+    configConstructorPool = <any> {
+      instantiate: jest.fn(() => 'INSTANCE'),
+    };
+    componentsManager = new ComponentsManager({
+      moduleState,
+      objectLoader,
+      componentResources,
+      configRegistry,
+      dumpErrorState,
+      configConstructorPool,
+      logger,
+    });
+  });
+
+  describe('build', () => {
+    it('should pass options to the builder', async() => {
+      expect(await ComponentsManager.build({ mainModulePath: 'MMP' }))
+        .toEqual({
+          type: 'INSTANCE',
+          args: { mainModulePath: 'MMP' },
+        });
+    });
+  });
+
+  describe('instantiate', () => {
+    it('should throw for a non-registered config', async() => {
+      await expect(componentsManager.instantiate('ex:not:registered'))
+        .rejects.toThrow('No config instance with IRI ex:not:registered has been registered');
+      expect(fs.writeFileSync).not.toHaveBeenCalled();
+    });
+
+    it('should throw for a non-registered config and dump log', async() => {
+      componentsManager = new ComponentsManager({
+        moduleState,
+        objectLoader,
+        componentResources,
+        configRegistry,
+        dumpErrorState: true,
+        configConstructorPool,
+        logger,
+      });
+      await expect(componentsManager.instantiate('ex:not:registered'))
+        .rejects.toThrow('No config instance with IRI ex:not:registered has been registered');
+      expect(fs.writeFileSync).toHaveBeenCalledWith('componentsjs-error-state.json', `{
+  "componentResources": [],
+  "moduleState": {
+    "mainModulePath": "${mainModulePath}",
+    "componentModules": {
+      "A": "${mainModulePath}/../../assets/module-hello-world.jsonld"
+    },
+    "nodeModulePaths": []
+  }
+}`, 'utf8');
+    });
+
+    it('should instantiate an existing config without options', async() => {
+      await componentsManager.configRegistry.register(`${__dirname}/../../assets/config-hello-world.jsonld`);
+      expect(await componentsManager.instantiate('http://example.org/myconfig')).toEqual('INSTANCE');
+      expect(configConstructorPool.instantiate).toHaveBeenCalledWith(
+        componentsManager.objectLoader.resources['http://example.org/myconfig'],
+        {},
+      );
+    });
+
+    it('should instantiate an existing config with options', async() => {
+      await componentsManager.configRegistry.register(`${__dirname}/../../assets/config-hello-world.jsonld`);
+      expect(await componentsManager.instantiate('http://example.org/myconfig', { variables: { a: 1 }}))
+        .toEqual('INSTANCE');
+      expect(configConstructorPool.instantiate).toHaveBeenCalledWith(
+        componentsManager.objectLoader.resources['http://example.org/myconfig'],
+        { variables: { a: 1 }},
+      );
+    });
+  });
+});

@@ -1,4 +1,4 @@
-import type { IModuleState } from '../../ModuleStateBuilder';
+import type { IModuleState } from '../../loading/ModuleStateBuilder';
 import type { IConstructionSettings } from '../IConstructionSettings';
 
 /**

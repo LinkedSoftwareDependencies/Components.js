@@ -2,9 +2,7 @@
 // Compiles a configuration to a module (single file) that exports the instantiated instance,
 // where all dependencies are injected.
 
-import * as fs from 'fs';
 import * as Path from 'path';
-import type { Readable } from 'stream';
 import type { ParsedArgs } from 'minimist';
 import minimist = require('minimist');
 import { compileConfig } from '..';
@@ -15,7 +13,6 @@ if (args._.length !== 1 || args.h || args.help) {
 
 Usage:
   compile-config http://example.org/myInstance -c config.jsonld
-  cat config.jsonld | compile-config http://example.org/myInstance
 
 Options:
   -c      Path to a Components.js config file, if not provided, the config must be provided via stdin
@@ -28,30 +25,17 @@ Options:
 }
 
 const configResourceUri: string = args._[0];
-
-let configStreamRaw: Readable;
-let configPath: string;
-if (args.c) {
-  configStreamRaw = fs.createReadStream(args.c, { encoding: 'utf8' });
-  configPath = args.c;
-} else {
-  configStreamRaw = process.stdin;
-  configPath = '.';
-}
-
+const configPath: string = args.c;
 const mainModulePath: string = args.p ? Path.resolve(process.cwd(), args.p) : process.cwd();
-
 let exportVariableName: string | undefined;
 if (args.e) {
   exportVariableName = args.e;
 }
-
 const asFunction = !!args.f;
 
 compileConfig(
-  { mainModulePath },
+  mainModulePath,
   configPath,
-  configStreamRaw,
   configResourceUri,
   exportVariableName,
   asFunction,
