@@ -64,10 +64,13 @@ export class ModuleStateBuilder {
    * All paths that need to be considered when handling imports from the current main module path.
    */
   public buildNodeModuleImportPaths(mainModulePath: string): string[] {
-    const sections: string[] = mainModulePath.split(Path.sep);
+    // Since Windows paths can have `/` or `\` depending on the operations done so far
+    // it is safest to split on both possible separators.
+    const sections: string[] = mainModulePath.split(/[/\\]/u);
     const paths: string[] = [];
     for (let i = sections.length; i > 1; i--) {
-      paths.push(sections.slice(0, i).join(Path.sep));
+      // Slash is valid on both platforms and keeps results consistent
+      paths.push(sections.slice(0, i).join('/'));
     }
     return paths;
   }
@@ -106,20 +109,20 @@ export class ModuleStateBuilder {
 
     try {
       // Check if the path is a Node module
-      if ((await fs.stat(Path.join(path, 'package.json'))).isFile()) {
+      if ((await fs.stat(Path.posix.join(path, 'package.json'))).isFile()) {
         nodeModulePaths.push(path);
 
         // Recursively handle all the Node modules of this valid Node module
-        const dependenciesPath = Path.join(path, 'node_modules');
+        const dependenciesPath = Path.posix.join(path, 'node_modules');
         for (const dependency of await fs.readdir(dependenciesPath)) {
           // Ignore hidden folders, such as .bin
           if (!dependency.startsWith('.')) {
-            const dependencyPath = Path.join(dependenciesPath, dependency);
+            const dependencyPath = Path.posix.join(dependenciesPath, dependency);
             if (dependency.startsWith('@')) {
               // Iterate one level deeper when we find scoped Node modules
               const scopedModules: string[] = await fs.readdir(dependencyPath);
               await Promise.all(scopedModules.map(async scopedModule => this.buildNodeModulePathsInner(
-                Path.join(dependencyPath, scopedModule),
+                Path.posix.join(dependencyPath, scopedModule),
                 nodeModulePaths,
                 ignorePaths,
               )));
@@ -141,7 +144,7 @@ export class ModuleStateBuilder {
   public async buildPackageJsons(nodeModulePaths: string[]): Promise<Record<string, any>> {
     const packageJsons: Record<string, any> = {};
     await Promise.all(nodeModulePaths.map(async modulePath => {
-      packageJsons[modulePath] = JSON.parse(await fs.readFile(Path.join(modulePath, 'package.json'), 'utf8'));
+      packageJsons[modulePath] = JSON.parse(await fs.readFile(Path.posix.join(modulePath, 'package.json'), 'utf8'));
     }));
     return packageJsons;
   }
@@ -177,7 +180,7 @@ export class ModuleStateBuilder {
       const relativePath: string = pckg['lsd:components'];
       const version: string = pckg.version;
       if (version && currentModuleUri && relativePath && semverValid(version)) {
-        const absolutePath = Path.join(modulePath, relativePath);
+        const absolutePath = Path.posix.join(modulePath, relativePath);
         if (this.shouldOverrideVersion(
           version,
           currentModuleUri,
@@ -205,7 +208,7 @@ export class ModuleStateBuilder {
       const version: string = pckg.version;
       if (version && contexts && semverValid(version)) {
         for (const [ key, value ] of Object.entries(contexts)) {
-          const filePath: string = Path.join(modulePath, value);
+          const filePath: string = Path.posix.join(modulePath, value);
           const fileContents = JSON.parse(await fs.readFile(filePath, 'utf8'));
           if (this.shouldOverrideVersion(
             version,
@@ -235,7 +238,7 @@ export class ModuleStateBuilder {
       const version: string = pckg.version;
       if (version && importPaths && semverValid(version)) {
         for (const [ key, value ] of Object.entries(importPaths)) {
-          const filePath = Path.join(modulePath, value);
+          const filePath = Path.posix.join(modulePath, value);
           if (this.shouldOverrideVersion(
             version,
             key,

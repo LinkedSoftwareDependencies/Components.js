@@ -1,4 +1,3 @@
-import * as Path from 'path';
 import { mocked } from 'ts-jest/utils';
 import { ModuleStateBuilder } from '../../../lib/loading/ModuleStateBuilder';
 
@@ -264,11 +263,11 @@ describe('ModuleStateBuilder', () => {
 
   describe('buildNodeModuleImportPaths', () => {
     it('should return all parent directories', () => {
-      expect(builder.buildNodeModuleImportPaths([ '', 'a', 'b', 'c', 'd' ].join(Path.sep))).toEqual([
-        [ '', 'a', 'b', 'c', 'd' ].join(Path.sep),
-        [ '', 'a', 'b', 'c' ].join(Path.sep),
-        [ '', 'a', 'b' ].join(Path.sep),
-        [ '', 'a' ].join(Path.sep),
+      expect(builder.buildNodeModuleImportPaths([ '', 'a', 'b', 'c', 'd' ].join('/'))).toEqual([
+        [ '', 'a', 'b', 'c', 'd' ].join('/'),
+        [ '', 'a', 'b', 'c' ].join('/'),
+        [ '', 'a', 'b' ].join('/'),
+        [ '', 'a' ].join('/'),
       ]);
     });
   });
