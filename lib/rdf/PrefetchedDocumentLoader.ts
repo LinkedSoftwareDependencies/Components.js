@@ -8,12 +8,15 @@ import type { Logger } from 'winston';
  * and only then does an HTTP(S) lookup for the context.
  */
 export class PrefetchedDocumentLoader extends FetchDocumentLoader {
+  public static readonly CONTEXT_URL: string =
+  'https://linkedsoftwaredependencies.org/bundles/npm/componentsjs/^4.0.0/components/context.jsonld';
+
   // eslint-disable-next-line no-sync
   private static readonly DEFAULT_CONTEXT: any = JSON.parse(fs
     .readFileSync(`${__dirname}/../../components/context.jsonld`, 'utf8'));
 
   private static readonly DEFAULT_CONTEXTS: Record<string, any> = {
-    'https://linkedsoftwaredependencies.org/bundles/npm/componentsjs/^4.0.0/components/context.jsonld':
+    [PrefetchedDocumentLoader.CONTEXT_URL]:
     PrefetchedDocumentLoader.DEFAULT_CONTEXT,
     // TODO: temporarily also set old context version for backwards-compatible.
     'https://linkedsoftwaredependencies.org/bundles/npm/componentsjs/^3.0.0/components/context.jsonld':
