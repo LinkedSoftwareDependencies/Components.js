@@ -2,6 +2,7 @@ import 'jest-rdf';
 import * as fs from 'fs';
 import type { Resource } from 'rdf-object';
 import { RdfObjectLoader } from 'rdf-object';
+import type { Logger } from 'winston';
 import type {
   IComponentConfigPreprocessorHandleResponse,
 } from '../../../lib/preprocess/ConfigPreprocessorComponent';
@@ -13,6 +14,7 @@ import { ParameterHandler } from '../../../lib/preprocess/ParameterHandler';
 describe('ConfigPreprocessorComponent', () => {
   let objectLoader: RdfObjectLoader;
   let componentResources: Record<string, Resource>;
+  let logger: Logger;
   let preprocessor: ConfigPreprocessorComponent;
 
   beforeEach(async() => {
@@ -29,11 +31,15 @@ describe('ConfigPreprocessorComponent', () => {
         },
       }),
     };
+    logger = <any> {
+      warn: jest.fn(),
+    };
     preprocessor = new ConfigPreprocessorComponent({
       objectLoader,
       componentResources,
       runTypeConfigs: {},
       parameterHandler: new ParameterHandler({ objectLoader }),
+      logger,
     });
   });
 
@@ -836,6 +842,62 @@ describe('ConfigPreprocessorComponent', () => {
       });
       expect(() => preprocessor.inheritParameterValues(configIn, component))
         .toThrowError(/^Detected invalid onParameter term type "Literal" on parameter value inheritance definition/u);
+    });
+  });
+
+  describe('validateConfig', () => {
+    it('should log on an undefined param in scope', () => {
+      const config = objectLoader.createCompactedResource({
+        '@id': 'ex:myComponentInstance',
+        types: 'ex:ComponentThis',
+        'ex:ComponentThis#param2': 'I am invalid',
+      });
+      componentResources['ex:ComponentThis'] = objectLoader.createCompactedResource({
+        '@id': 'ex:ComponentThis',
+        module: 'ex:Module',
+        parameters: {
+          '@id': 'ex:ComponentThis#param1',
+        },
+      });
+      const hr = <IComponentConfigPreprocessorHandleResponse> preprocessor.canHandle(config);
+      preprocessor.validateConfig(config, hr);
+      expect(logger.warn).toHaveBeenCalledWith(`Detected potentially invalid component parameter 'ex:ComponentThis#param2' in a config`);
+    });
+
+    it('should not log on a defined param in scope', () => {
+      const config = objectLoader.createCompactedResource({
+        '@id': 'ex:myComponentInstance',
+        types: 'ex:ComponentThis',
+        'ex:ComponentThis#param1': 'I am valid',
+      });
+      componentResources['ex:ComponentThis'] = objectLoader.createCompactedResource({
+        '@id': 'ex:ComponentThis',
+        module: 'ex:Module',
+        parameters: {
+          '@id': 'ex:ComponentThis#param1',
+        },
+      });
+      const hr = <IComponentConfigPreprocessorHandleResponse> preprocessor.canHandle(config);
+      preprocessor.validateConfig(config, hr);
+      expect(logger.warn).not.toHaveBeenCalled();
+    });
+
+    it('should not log on an undefined param out of scope', () => {
+      const config = objectLoader.createCompactedResource({
+        '@id': 'ex:myComponentInstance',
+        types: 'ex:ComponentThis',
+        'ex:ComponentOther#param1': 'I am invalid',
+      });
+      componentResources['ex:ComponentThis'] = objectLoader.createCompactedResource({
+        '@id': 'ex:ComponentThis',
+        module: 'ex:Module',
+        parameters: {
+          '@id': 'ex:ComponentThis#param1',
+        },
+      });
+      const hr = <IComponentConfigPreprocessorHandleResponse> preprocessor.canHandle(config);
+      preprocessor.validateConfig(config, hr);
+      expect(logger.warn).not.toHaveBeenCalled();
     });
   });
 });

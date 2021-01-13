@@ -1,4 +1,5 @@
 import type { Resource, RdfObjectLoader } from 'rdf-object';
+import type { Logger } from 'winston';
 import { IRIS_OWL } from '../rdf/Iris';
 import { ErrorResourcesContext } from '../util/ErrorResourcesContext';
 import type { IConfigPreprocessor } from './IConfigPreprocessor';
@@ -13,12 +14,14 @@ export class ConfigPreprocessorComponent implements IConfigPreprocessor<ICompone
   protected readonly componentResources: Record<string, Resource>;
   protected readonly runTypeConfigs: Record<string, Resource[]>;
   protected readonly parameterHandler: ParameterHandler;
+  protected readonly logger: Logger;
 
   public constructor(options: IComponentConfigPreprocessorOptions) {
     this.objectLoader = options.objectLoader;
     this.componentResources = options.componentResources;
     this.runTypeConfigs = options.runTypeConfigs;
     this.parameterHandler = options.parameterHandler;
+    this.logger = options.logger;
   }
 
   public canHandle(config: Resource): IComponentConfigPreprocessorHandleResponse | undefined {
@@ -97,6 +100,9 @@ export class ConfigPreprocessorComponent implements IConfigPreprocessor<ICompone
       configRaw.property.requireElement = requireElement;
     }
     configRaw.properties.arguments = this.transformConstructorArguments(config, handleResponse);
+
+    // Validate the input config
+    this.validateConfig(config, handleResponse);
 
     return configRaw;
   }
@@ -221,6 +227,32 @@ export class ConfigPreprocessorComponent implements IConfigPreprocessor<ICompone
       }
     }
   }
+
+  /**
+   * Run checks to see if the given config is valid.
+   * @param config The original config.
+   * @param handleResponse The handle response.
+   */
+  public validateConfig(
+    config: Resource,
+    handleResponse: IComponentConfigPreprocessorHandleResponse,
+  ): void {
+    // Determine all valid parameter ids
+    const validParameters: Record<string, boolean> = {};
+    for (const param of handleResponse.component.properties.parameters) {
+      validParameters[param.value] = true;
+    }
+
+    // Emit warning on undefined parameters inside the component's scope
+    const prefix = handleResponse.component.value;
+    for (const property of Object.keys(config.property)) {
+      if (property.startsWith(prefix)) {
+        if (!validParameters[property]) {
+          this.logger.warn(`Detected potentially invalid component parameter '${property}' in a config`);
+        }
+      }
+    }
+  }
 }
 
 export interface IComponentConfigPreprocessorOptions {
@@ -228,6 +260,7 @@ export interface IComponentConfigPreprocessorOptions {
   componentResources: Record<string, Resource>;
   runTypeConfigs: Record<string, Resource[]>;
   parameterHandler: ParameterHandler;
+  logger: Logger;
 }
 
 export interface IComponentConfigPreprocessorHandleResponse {
