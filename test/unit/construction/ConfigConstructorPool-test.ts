@@ -116,12 +116,14 @@ describe('ConfigConstructorPool', () => {
         componentResources,
         runTypeConfigs,
         parameterHandler,
+        logger: <any> { warn: jest.fn() },
       }));
       rawConfigFactories.push(new ConfigPreprocessorComponent({
         objectLoader,
         componentResources,
         runTypeConfigs,
         parameterHandler,
+        logger: <any> { warn: jest.fn() },
       }));
     });
 
