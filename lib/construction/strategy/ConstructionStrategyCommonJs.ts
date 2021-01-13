@@ -77,7 +77,7 @@ export class ConstructionStrategyCommonJs implements IConstructionStrategy<any> 
     const pckg = moduleState.packageJsons[moduleState.mainModulePath];
     if (pckg) {
       if (requireName === pckg.name) {
-        const mainPath: string = Path.join(moduleState.mainModulePath, pckg.main);
+        const mainPath: string = Path.posix.join(moduleState.mainModulePath, pckg.main);
         const required = this.req(mainPath);
         if (required) {
           return required;
