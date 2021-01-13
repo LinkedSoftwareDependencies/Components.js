@@ -11,7 +11,7 @@ Full documentation on its usage can be found at http://componentsjs.readthedocs.
 
 ## Introduction
 
-Components.js is a [dependency injection] framework for JavaScript applications.
+Components.js is a [dependency injection] framework for TypeScript and JavaScript projects using JSON(-LD) files.
 
 Instead of hard-wiring software components together, Components.js allows these components to be _instantiated_ and _wired together_ declaratively using _semantic configuration files_.
 The advantage of these semantic configuration files is that software components can be uniquely and globally identified using [URIs].
@@ -20,81 +20,167 @@ Configurations can be written in any [RDF] serialization, such as [JSON-LD].
 
 This software is aimed for developers who want to build _modular_ and _easily configurable_ and _rewireable_ JavaScript applications.
 
-## Quick Start
+## Quick Start (TypeScript)
+
+#### 1. Install dependencies
 
 Components.js can be installed using npm:
 ```bash
-$ [sudo] npm install componentsjs
+$ npm install componentsjs
 ```
 
-#### 1. Define your module and its components
+Component and module files can be _automatically_ generated using [Components-Generator.js](https://github.com/LinkedSoftwareDependencies/Components-Generator.js)**:
+```bash
+$ npm install -D componentsjs-generator
+```
+
+#### 2. Mark your package as a Components.js module
+
+This will allow Components.js to find your module(s) when they are included from other packages.
+
+`package.json`:
+```json
+{
+  "name": "my-package",
+  "version": "2.3.4",
+  "lsd:module": true
+}
+```
+
+#### 3. Create a configuration file to instantiate our class
+
+Assuming a TypeScript class that is exported from the package:
+```typescript
+export class MyClass {
+  public readonly name: string;
+  constructor(name: string) {
+    this.name = name;  
+  }
+}
+```
+
+`config.jsonld`:
+```json
+{
+  "@context": [
+    "https://linkedsoftwaredependencies.org/bundles/npm/componentsjs/^4.0.0/components/context.jsonld",
+    {
+      "ex": "http://example.org/",
+      "name": "ex:MyPackage/MyClass#name"
+    }
+  ],
+  "@id": "http://example.org/myInstance",
+  "@type": "ex:MyPackage/MyClass",
+  "name": "John"
+}
+```
+
+This configuration is a semantic representation of the instantiation of `MyClass` with `name` set to `"John"`.
+
+#### 4. Instantiate from config file
+
+```javascript
+...
+import { ComponentsManager } from 'componentsjs';
+
+const manager = await ComponentsManager.build({
+  mainModulePath: __dirname, // Path to your npm package's root
+});
+await manager.configRegistry.register('config.jsonld');
+const myInstance = await manager.instantiate('http://example.org/myInstance');
+...
+```
+
+`myInstance` is an instance of type `MyClass`, as defined in the config file.
+
+## Quick Start (JavaScript)
+
+#### 1. Install dependencies
+
+Components.js can be installed using npm:
+```bash
+$ npm install componentsjs
+```
+
+#### 2. Define your module and its components
 
 **This step can happen _automatically_ in TypeScript projects using [Components-Generator.js](https://github.com/LinkedSoftwareDependencies/Components-Generator.js)**.
 
-`my-module.jsonld`:
+Assuming a JavaScript class that is exported from the package:
+```typescript
+export class MyClass {
+  public readonly name;
+  constructor(name) {
+    this.name = name;  
+  }
+}
+```
+
+`module.jsonld`:
 ```json
 {
   "@context": [
     "https://linkedsoftwaredependencies.org/bundles/npm/componentsjs/^3.0.0/components/context.jsonld",
     { "ex": "http://example.org/" }
   ],
-  "@id": "ex:MyModule",
+  "@id": "ex:MyPackage",
   "@type": "Module",
-  "requireName": "my-module",
+  "requireName": "my-package",
   "components": [
     {
-      "@id": "ex:MyModule/MyComponent",
+      "@id": "ex:MyPackage/MyClass",
       "@type": "Class",
-      "requireElement": "MyComponent",
+      "requireElement": "MyClass",
       "parameters": [
-        { "@id": "ex:MyModule/MyComponent#name", "unique": true }
+        { "@id": "ex:MyPackage/MyClass#name", "unique": true }
       ],
       "constructorArguments": [
-        { "@id": "ex:MyModule/MyComponent#name" }
+        { "@id": "ex:MyPackage/MyClass#name" }
       ]
     }
   ]
 }
 ```
 
-The npm module `my-module` exports a component with the name `MyComponent`.
+The npm module `my-package` exports a class with the name `MyClass`.
 
-The constructor of `MyComponent` takes a single `name` argument.
+The constructor of `MyClass` takes a single `name` argument.
 
-#### 2. Create a configuration file containing a component instantiation
+#### 3. Create a configuration file to instantiate our class
 
-`config-my-component.jsonld`:
+`config.jsonld`:
 ```json
 {
   "@context": [
-    "https://linkedsoftwaredependencies.org/bundles/npm/componentsjs/^3.0.0/components/context.jsonld",
+    "https://linkedsoftwaredependencies.org/bundles/npm/componentsjs/^4.0.0/components/context.jsonld",
     {
       "ex": "http://example.org/",
-      "name": "ex:MyModule/MyComponent#name"
+      "name": "ex:MyPackage/MyClass#name"
     }
   ],
   "@id": "http://example.org/myInstance",
-  "@type": "ex:MyModule/MyComponent",
+  "@type": "ex:MyPackage/MyClass",
   "name": "John"
 }
 ```
 
-This configuration is a semantic representation of the instantiation of `MyComponent` with `name` set to `"John"`.
+This configuration is a semantic representation of the instantiation of `MyClass` with `name` set to `"John"`.
 
-#### 3. Instantiate your component programmatically
+#### 4. Instantiate from config file
 
 ```javascript
 ...
-const Loader = require('componentsjs').Loader;
+import { ComponentsManager } from 'componentsjs';
 
-const loader = new Loader();
-await loader.registerModuleResourcesUrl('path/or/url/to/my-module.jsonld');
-const myComponent = await loader.instantiateFromUrl(
-    'http://example.org/myInstance', 'path/or/url/to/config-my-component.jsonld');
+const manager = await ComponentsManager.build({
+  mainModulePath: __dirname, // Path to your npm package's root
+});
+await manager.configRegistry.register('config.jsonld');
+const myInstance = await manager.instantiate('http://example.org/myInstance');
 ...
 ```
 
-`myComponent` is an instance of type `MyComponent`, as defined in the config file.
+`myInstance` is an instance of type `MyClass`, as defined in the config file.
 
 [Components.js]: https://github.com/LinkedSoftwareDependencies/Components.js
 [GitHub]: https://github.com/LinkedSoftwareDependencies/Documentation-Components.js
