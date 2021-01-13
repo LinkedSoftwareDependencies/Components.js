@@ -487,6 +487,160 @@ describe('ModuleStateBuilder', () => {
     });
   });
 
+  describe('preprocessPackageJsons', () => {
+    it('should handle an empty hash', async() => {
+      const input: any = {};
+      const output: any = {};
+      await builder.preprocessPackageJsons(input);
+      expect(input).toEqual(output);
+    });
+
+    it('should not modify lsd:module with a string', async() => {
+      const input: any = {
+        PACKAGE1: {
+          'lsd:module': 'abc',
+        },
+      };
+      const output: any = {
+        PACKAGE1: {
+          'lsd:module': 'abc',
+        },
+      };
+      await builder.preprocessPackageJsons(input);
+      expect(input).toEqual(output);
+    });
+
+    it('should modify lsd:module set to true', async() => {
+      const input: any = {
+        PACKAGE1: {
+          name: 'my-package',
+          version: '2.3.4',
+          'lsd:module': true,
+        },
+      };
+      files = [
+        'PACKAGE1/components',
+        'PACKAGE1/config',
+      ];
+      const output: any = {
+        PACKAGE1: {
+          'lsd:components': 'components/components.jsonld',
+          'lsd:contexts': {
+            'https://linkedsoftwaredependencies.org/bundles/npm/my-package/^2.0.0/components/context.jsonld':
+              'components/context.jsonld',
+          },
+          'lsd:importPaths': {
+            'https://linkedsoftwaredependencies.org/bundles/npm/my-package/^2.0.0/components/': 'components/',
+            'https://linkedsoftwaredependencies.org/bundles/npm/my-package/^2.0.0/config/': 'config/',
+          },
+          'lsd:module': 'https://linkedsoftwaredependencies.org/bundles/npm/my-package',
+          name: 'my-package',
+          version: '2.3.4',
+        },
+      };
+      await builder.preprocessPackageJsons(input);
+      expect(input).toEqual(output);
+    });
+
+    it('should modify lsd:module set to true with non-existing imported paths', async() => {
+      const input: any = {
+        PACKAGE1: {
+          name: 'my-package',
+          version: '2.3.4',
+          'lsd:module': true,
+        },
+      };
+      files = [];
+      const output: any = {
+        PACKAGE1: {
+          'lsd:components': 'components/components.jsonld',
+          'lsd:contexts': {
+            'https://linkedsoftwaredependencies.org/bundles/npm/my-package/^2.0.0/components/context.jsonld':
+              'components/context.jsonld',
+          },
+          'lsd:importPaths': {},
+          'lsd:module': 'https://linkedsoftwaredependencies.org/bundles/npm/my-package',
+          name: 'my-package',
+          version: '2.3.4',
+        },
+      };
+      await builder.preprocessPackageJsons(input);
+      expect(input).toEqual(output);
+    });
+
+    it('should modify lsd:module set to true with non-dir imported paths', async() => {
+      const input: any = {
+        PACKAGE1: {
+          name: 'my-package',
+          version: '2.3.4',
+          'lsd:module': true,
+        },
+      };
+      files = [
+        'PACKAGE1/components',
+        'PACKAGE1/config',
+      ];
+      mocked(fs.stat).mockImplementation(<any> (async(path: string) => {
+        if (!files.includes(path)) {
+          throw new Error(`File stat not found: ${path}`);
+        }
+        return {
+          isFile: () => true,
+          isDirectory: () => false,
+        };
+      }));
+      const output: any = {
+        PACKAGE1: {
+          'lsd:components': 'components/components.jsonld',
+          'lsd:contexts': {
+            'https://linkedsoftwaredependencies.org/bundles/npm/my-package/^2.0.0/components/context.jsonld':
+              'components/context.jsonld',
+          },
+          'lsd:importPaths': {},
+          'lsd:module': 'https://linkedsoftwaredependencies.org/bundles/npm/my-package',
+          name: 'my-package',
+          version: '2.3.4',
+        },
+      };
+      await builder.preprocessPackageJsons(input);
+      expect(input).toEqual(output);
+    });
+
+    it('should modify lsd:module set to true with lsd:basePath', async() => {
+      const input: any = {
+        PACKAGE1: {
+          name: 'my-package',
+          version: '2.3.4',
+          'lsd:module': true,
+          'lsd:basePath': 'dist/',
+        },
+      };
+      files = [
+        'PACKAGE1/dist/components',
+        'PACKAGE1/dist/config',
+      ];
+      const output: any = {
+        PACKAGE1: {
+          'lsd:basePath': 'dist/',
+          'lsd:components': 'dist/components/components.jsonld',
+          'lsd:contexts': {
+            'https://linkedsoftwaredependencies.org/bundles/npm/my-package/^2.0.0/components/context.jsonld':
+              'dist/components/context.jsonld',
+          },
+          'lsd:importPaths': {
+            'https://linkedsoftwaredependencies.org/bundles/npm/my-package/^2.0.0/components/': 'dist/components/',
+            'https://linkedsoftwaredependencies.org/bundles/npm/my-package/^2.0.0/config/': 'dist/config/',
+          },
+          'lsd:module': 'https://linkedsoftwaredependencies.org/bundles/npm/my-package',
+          name: 'my-package',
+          version: '2.3.4',
+        },
+      };
+      await builder.preprocessPackageJsons(input);
+      expect(input).toEqual(output);
+    });
+  });
+
   describe('buildComponentModules', () => {
     it('should handle an empty hash', async() => {
       expect(await builder.buildComponentModules({})).toEqual({});
