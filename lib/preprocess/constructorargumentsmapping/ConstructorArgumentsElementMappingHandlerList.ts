@@ -25,11 +25,23 @@ export class ConstructorArgumentsElementMappingHandlerList implements IConstruct
     const ret = mapper.objectLoader.createCompactedResource({});
     ret.list = [];
     for (const argument of (<Resource[]> constructorArgs.list)) {
-      const mappeds = argument.property.fields || argument.property.elements ?
-        mapper.applyConstructorArgumentsParameters(configRoot, argument, configElement) :
-        mapper.getParameterValue(configRoot, argument, configElement, false);
-      for (const mapped of mappeds) {
-        ret.list.push(mapped);
+      if (argument.property.fields || argument.property.elements) {
+        for (const mapped of mapper.applyConstructorArgumentsParameters(configRoot, argument, configElement)) {
+          ret.list.push(mapped);
+        }
+      } else {
+        const mappeds = mapper.getParameterValue(configRoot, argument, configElement, false);
+        if (mappeds.length > 0) {
+          if (mappeds[0].property.unique?.value === 'true') {
+            // Only add a single value if param was unique
+            ret.list.push(mappeds[0]);
+          } else {
+            // Add all values as an array if param was not unique
+            ret.list.push(mapper.objectLoader.createCompactedResource({
+              elements: mappeds.map(value => mapper.objectLoader.createCompactedResource({ value })),
+            }));
+          }
+        }
       }
     }
     return [ ret ];

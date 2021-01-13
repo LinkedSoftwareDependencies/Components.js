@@ -969,7 +969,25 @@ describe('ConfigPreprocessorComponentMapped', () => {
         .applyConstructorArgumentsParameters(configRoot, constructorArgs, configElement), expected);
     });
 
-    it('should pass args with a list with direct params', () => {
+    it('should pass args with a list with direct params without values', () => {
+      const configRoot = objectLoader.createCompactedResource({});
+      const constructorArgs = objectLoader.createCompactedResource({
+        list: [
+          'ex:param1',
+          'ex:param2',
+        ],
+      });
+      const configElement = objectLoader.createCompactedResource({});
+      const expected = [
+        objectLoader.createCompactedResource({
+          list: [],
+        }),
+      ];
+      expectOutputProperties(preprocessor
+        .applyConstructorArgumentsParameters(configRoot, constructorArgs, configElement), expected);
+    });
+
+    it('should pass args with a list with direct params that are not unique', () => {
       const configRoot = objectLoader.createCompactedResource({});
       const constructorArgs = objectLoader.createCompactedResource({
         list: [
@@ -984,8 +1002,16 @@ describe('ConfigPreprocessorComponentMapped', () => {
       const expected = [
         objectLoader.createCompactedResource({
           list: [
-            '"VALUE1"',
-            '"VALUE2"',
+            {
+              elements: [
+                { value: '"VALUE1"' },
+              ],
+            },
+            {
+              elements: [
+                { value: '"VALUE2"' },
+              ],
+            },
           ],
         }),
       ];
@@ -993,7 +1019,39 @@ describe('ConfigPreprocessorComponentMapped', () => {
         .applyConstructorArgumentsParameters(configRoot, constructorArgs, configElement), expected);
     });
 
-    it('should pass args with a list with direct params with multiple values', () => {
+    it('should pass args with a list with direct params that are unique', () => {
+      const configRoot = objectLoader.createCompactedResource({});
+      const constructorArgs = objectLoader.createCompactedResource({
+        list: [
+          {
+            '@id': 'ex:param1',
+            unique: '"true"',
+          },
+          {
+            '@id': 'ex:param2',
+            unique: '"true"',
+          },
+        ],
+      });
+      const configElement = objectLoader.createCompactedResource({
+        'ex:param1': '"VALUE1"',
+        'ex:param2': '"VALUE2"',
+      });
+      const expected = [
+        objectLoader.createCompactedResource({
+          list: [
+            '"VALUE1"',
+            '"VALUE2"',
+          ],
+        }),
+      ];
+      expected[0].list![0].property.unique = objectLoader.createCompactedResource('"true"');
+      expected[0].list![1].property.unique = objectLoader.createCompactedResource('"true"');
+      expectOutputProperties(preprocessor
+        .applyConstructorArgumentsParameters(configRoot, constructorArgs, configElement), expected);
+    });
+
+    it('should pass args with a list with direct params that are not unique with multiple values', () => {
       const configRoot = objectLoader.createCompactedResource({});
       const constructorArgs = objectLoader.createCompactedResource({
         list: [
@@ -1008,13 +1066,53 @@ describe('ConfigPreprocessorComponentMapped', () => {
       const expected = [
         objectLoader.createCompactedResource({
           list: [
-            '"VALUE1.1"',
-            '"VALUE1.2"',
-            '"VALUE2.1"',
-            '"VALUE2.2"',
+            {
+              elements: [
+                { value: '"VALUE1.1"' },
+                { value: '"VALUE1.2"' },
+              ],
+            },
+            {
+              elements: [
+                { value: '"VALUE2.1"' },
+                { value: '"VALUE2.2"' },
+              ],
+            },
           ],
         }),
       ];
+      expectOutputProperties(preprocessor
+        .applyConstructorArgumentsParameters(configRoot, constructorArgs, configElement), expected);
+    });
+
+    it('should pass args with a list with direct params that are unique with multiple values', () => {
+      const configRoot = objectLoader.createCompactedResource({});
+      const constructorArgs = objectLoader.createCompactedResource({
+        list: [
+          {
+            '@id': 'ex:param1',
+            unique: '"true"',
+          },
+          {
+            '@id': 'ex:param2',
+            unique: '"true"',
+          },
+        ],
+      });
+      const configElement = objectLoader.createCompactedResource({
+        'ex:param1': [ '"VALUE1.1"', '"VALUE1.2"' ],
+        'ex:param2': [ '"VALUE2.1"', '"VALUE2.2"' ],
+      });
+      const expected = [
+        objectLoader.createCompactedResource({
+          list: [
+            '"VALUE1.1"',
+            '"VALUE2.1"',
+          ],
+        }),
+      ];
+      expected[0].list![0].property.unique = objectLoader.createCompactedResource('"true"');
+      expected[0].list![1].property.unique = objectLoader.createCompactedResource('"true"');
       expectOutputProperties(preprocessor
         .applyConstructorArgumentsParameters(configRoot, constructorArgs, configElement), expected);
     });

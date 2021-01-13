@@ -947,8 +947,8 @@ describe('construction with mapped component configs as Resource', () => {
       const instance = await configConstructorPool.instantiate(config, settings);
       expect(instance).toBeInstanceOf(Hello);
       expect(instance._params).toEqual([
-        'A',
-        'B',
+        [ 'A' ],
+        [ 'B' ],
       ]);
     });
   });
