@@ -12,7 +12,10 @@ describe('PrefetchedDocumentLoader', () => {
   let loader: PrefetchedDocumentLoader;
   beforeEach(() => {
     loader = new PrefetchedDocumentLoader({
-      'http://example.org/context': { a: 'b' },
+      contexts: {
+        'http://example.org/context': { a: 'b' },
+      },
+      path: 'PATH',
     });
   });
 
@@ -25,6 +28,25 @@ describe('PrefetchedDocumentLoader', () => {
     it('for the built-in prefetched context', async() => {
       expect(await loader.load(`https://linkedsoftwaredependencies.org/bundles/npm/componentsjs/^4.0.0/components/context.jsonld`))
         .toEqual(JSON.parse(fs.readFileSync(`${__dirname}/../../../components/context.jsonld`, 'utf8')));
+    });
+
+    it('for the built-in prefetched context that is deprecated', async() => {
+      expect(await loader.load(`https://linkedsoftwaredependencies.org/bundles/npm/componentsjs/^3.0.0/components/context.jsonld`))
+        .toEqual(JSON.parse(fs.readFileSync(`${__dirname}/../../../components/context.jsonld`, 'utf8')));
+    });
+
+    it('for the built-in prefetched context that is deprecated with a logger', async() => {
+      const logger: any = {
+        warn: jest.fn(),
+      };
+      loader = new PrefetchedDocumentLoader({
+        contexts: {},
+        logger,
+        path: 'PATH',
+      });
+      expect(await loader.load(`https://linkedsoftwaredependencies.org/bundles/npm/componentsjs/^3.0.0/components/context.jsonld`))
+        .toEqual(JSON.parse(fs.readFileSync(`${__dirname}/../../../components/context.jsonld`, 'utf8')));
+      expect(logger.warn).toHaveBeenCalledWith(`Detected deprecated context URL 'https://linkedsoftwaredependencies.org/bundles/npm/componentsjs/^3.0.0/components/context.jsonld' in PATH. Prefer using version '^4.0.0' instead.`);
     });
 
     it('for a non-prefetched context', async() => {

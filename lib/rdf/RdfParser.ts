@@ -31,7 +31,11 @@ export class RdfParser {
 
     // Override the JSON-LD document loader
     (<any> options)['@comunica/actor-rdf-parse-jsonld:documentLoader'] =
-      new PrefetchedDocumentLoader(options.contexts || {});
+      new PrefetchedDocumentLoader({
+        contexts: options.contexts || {},
+        logger: options.logger,
+        path: options.path,
+      });
 
     // Enable strict parsing of JSON-LD to error on potential user config errors
     (<any> options)['@comunica/actor-rdf-parse-jsonld:strictValues'] = true;
