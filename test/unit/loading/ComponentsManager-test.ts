@@ -97,16 +97,16 @@ describe('ComponentsManager', () => {
       });
       await expect(componentsManager.instantiate('ex:not:registered'))
         .rejects.toThrow('No config instance with IRI ex:not:registered has been registered');
-      expect(fs.writeFileSync).toHaveBeenCalledWith('componentsjs-error-state.json', `{
-  "componentResources": [],
-  "moduleState": {
-    "mainModulePath": "${mainModulePath}",
-    "componentModules": {
-      "A": "${mainModulePath}/../../assets/module.jsonld"
-    },
-    "nodeModulePaths": []
-  }
-}`, 'utf8');
+      expect(fs.writeFileSync).toHaveBeenCalledWith('componentsjs-error-state.json', JSON.stringify({
+        componentResources: [],
+        moduleState: {
+          mainModulePath,
+          componentModules: {
+            A: `${mainModulePath}/../../assets/module.jsonld`,
+          },
+          nodeModulePaths: [],
+        },
+      }, null, '  '), 'utf8');
     });
 
     it('should instantiate an existing config without options', async() => {
