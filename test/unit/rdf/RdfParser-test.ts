@@ -115,6 +115,16 @@ describe('RdfParser', () => {
         ]);
     });
 
+    it('for a Turtle stream with relative IRIs should resolve to default baseIRI with abs windows path', async() => {
+      const options: RdfParserOptions = {
+        path: 'C:/path/to/file.ttl',
+      };
+      expect(await arrayifyStream(parser.parse(streamifyString(`<s> <ex:p> <ex:o>.`), options)))
+        .toBeRdfIsomorphic([
+          quad('file://C:/path/to/s', 'ex:p', 'ex:o'),
+        ]);
+    });
+
     it('for a Turtle stream with relative IRIs should resolve to default baseIRI with IRI path', async() => {
       const options: RdfParserOptions = {
         path: 'http://example.org/file.ttl',
