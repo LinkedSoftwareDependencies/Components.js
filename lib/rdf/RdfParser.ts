@@ -24,7 +24,8 @@ export class RdfParser {
 
     if (!options.baseIRI) {
       options.baseIRI = options.path;
-      if (!options.baseIRI.includes(':')) {
+      // Windows paths always contain a ':'
+      if (!options.baseIRI.includes(':') || /^[A-Za-z]:[/\\][^/]/u.test(options.baseIRI)) {
         options.baseIRI = `file://${options.baseIRI}`;
       }
     }
