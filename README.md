@@ -3,6 +3,7 @@
 _A semantic dependency injection framework_
 
 ![Build status](https://github.com/LinkedSoftwareDependencies/Components.js/workflows/CI/badge.svg)
+[![Coverage Status](https://coveralls.io/repos/github/LinkedSoftwareDependencies/Components.js/badge.svg)](https://coveralls.io/github/LinkedSoftwareDependencies/Components.js)
 [![npm version](https://badge.fury.io/js/componentsjs.svg)](https://www.npmjs.com/package/componentsjs)
 [![DOI](https://zenodo.org/badge/90724301.svg)](https://zenodo.org/badge/latestdoi/90724301)
 
