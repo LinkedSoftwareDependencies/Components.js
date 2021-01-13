@@ -2,7 +2,7 @@
 
 _A semantic dependency injection framework_
 
-[![Build Status](https://travis-ci.org/LinkedSoftwareDependencies/Components.js.svg?branch=master)](https://travis-ci.org/LinkedSoftwareDependencies/Components.js)
+![Build status](https://github.com/LinkedSoftwareDependencies/Components.js/workflows/CI/badge.svg)
 [![npm version](https://badge.fury.io/js/componentsjs.svg)](https://www.npmjs.com/package/componentsjs)
 [![DOI](https://zenodo.org/badge/90724301.svg)](https://zenodo.org/badge/latestdoi/90724301)
 
