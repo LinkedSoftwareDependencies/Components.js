@@ -67,14 +67,14 @@ export class ComponentsManager<Instance> {
   private generateErrorLog(error: unknown): Error {
     if (this.dumpErrorState) {
       const contents = JSON.stringify({
-        componentResources: Object.keys(this.componentResources),
+        componentTypes: Object.keys(this.componentResources),
         moduleState: {
           mainModulePath: this.moduleState.mainModulePath,
           componentModules: this.moduleState.componentModules,
           importPaths: this.moduleState.importPaths,
+          contexts: this.moduleState.contexts,
           nodeModuleImportPaths: this.moduleState.nodeModuleImportPaths,
           nodeModulePaths: this.moduleState.nodeModulePaths,
-          contexts: this.moduleState.contexts,
         },
       }, null, '  ');
       fs.writeFileSync('componentsjs-error-state.json', contents, 'utf8');

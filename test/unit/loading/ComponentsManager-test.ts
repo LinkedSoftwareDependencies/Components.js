@@ -99,7 +99,7 @@ describe('ComponentsManager', () => {
       await expect(componentsManager.instantiate('ex:not:registered'))
         .rejects.toThrow('No config instance with IRI ex:not:registered has been registered');
       expect(fs.writeFileSync).toHaveBeenCalledWith('componentsjs-error-state.json', JSON.stringify({
-        componentResources: [],
+        componentTypes: [],
         moduleState: {
           mainModulePath,
           componentModules: {
