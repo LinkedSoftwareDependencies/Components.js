@@ -1,3 +1,4 @@
+import * as fs from 'fs';
 import * as Path from 'path';
 import { Readable } from 'stream';
 import { ComponentsManager } from '../../lib/ComponentsManager';
@@ -52,6 +53,7 @@ describe('construction with component configs as files', () => {
           await registry.registerModuleStream(moduleStream);
         },
       });
+      manager.logger.error = jest.fn();
     });
 
     it('instantiated with a resource-based config', async() => {
@@ -581,6 +583,8 @@ describe('construction with component configs as files', () => {
 
       await expect(manager.instantiate('http://example.org/myconfig')).rejects
         .toThrow(`Parameter value "HI" is not of required range type "http://www.w3.org/2001/XMLSchema#boolean"`);
+      expect(fs.existsSync('componentsjs-error-state.json')).toBeTruthy();
+      fs.unlinkSync('componentsjs-error-state.json');
     });
 
     it('should cast valid param values', async() => {

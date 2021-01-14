@@ -47,6 +47,7 @@ describe('ComponentsManager', () => {
     componentResources = {};
     logger = <any> {
       warn: jest.fn(),
+      error: jest.fn(),
     };
     configRegistry = new ConfigRegistry({
       moduleState,
@@ -107,6 +108,7 @@ describe('ComponentsManager', () => {
           nodeModulePaths: [],
         },
       }, null, '  '), 'utf8');
+      expect(logger.error).toHaveBeenCalledWith(`Detected fatal error. Generated 'componentsjs-error-state.json' with more information.`);
     });
 
     it('should instantiate an existing config without options', async() => {

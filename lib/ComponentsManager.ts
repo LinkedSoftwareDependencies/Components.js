@@ -78,6 +78,7 @@ export class ComponentsManager<Instance> {
         },
       }, null, '  ');
       fs.writeFileSync('componentsjs-error-state.json', contents, 'utf8');
+      this.logger.error(`Detected fatal error. Generated 'componentsjs-error-state.json' with more information.`);
     }
     return <Error> error;
   }
