@@ -1,3 +1,4 @@
+import * as Path from 'path';
 import type { Resource, RdfObjectLoader } from 'rdf-object';
 import { mocked } from 'ts-jest/utils';
 import { ComponentsManager } from '../../lib/ComponentsManager';
@@ -21,8 +22,10 @@ describe('construction with mapped component configs as Resource', () => {
   let settings: IConstructionSettings;
   beforeEach(async() => {
     manager = await ComponentsManager.build({
-      mainModulePath: __dirname,
-      moduleState: <any> {},
+      mainModulePath: Path.posix.join(__dirname, '../../__mocks__'),
+      moduleState: <any> {
+        mainModulePath: Path.posix.join(__dirname, '../../__mocks__'),
+      },
       async moduleLoader() {
         // Register nothing
       },

@@ -48,19 +48,15 @@ describe('ConstructionStrategyCommonJs', () => {
       if (path === 'mainmodulepath/unknown.js') {
         return;
       }
-      return true;
+      if (path === 'othermodule') {
+        return requireOther;
+      }
+      if (Path.join(process.cwd(), 'myfile.js')) {
+        return requireFile;
+      }
+      throw new Error(`Require not found for ${path}`);
     });
-    req.main = <any> {
-      require(path: string) {
-        if (path === 'othermodule') {
-          return requireOther;
-        }
-        if (Path.join(process.cwd(), 'myfile.js')) {
-          return requireFile;
-        }
-        throw new Error(`Main require not found for ${path}`);
-      },
-    };
+    req.resolve = <any> ((arg: string) => arg);
     moduleState = {
       componentModules: {},
       contexts: {},
@@ -173,19 +169,6 @@ describe('ConstructionStrategyCommonJs', () => {
         args: [],
         instanceId: 'myinstance',
       })).toThrow(new Error('Failed to get module element a.X from module currentmodule'));
-    });
-
-    it('without requireElement and constructor in another module with undefined req.main should throw', () => {
-      req.main = undefined;
-      expect(() => constructionStrategy.createInstance({
-        settings,
-        moduleState,
-        requireName: 'othermodule',
-        requireElement: undefined,
-        callConstructor: false,
-        args: [],
-        instanceId: 'myinstance',
-      })).toThrow(new Error(`Corrupt Node.js state: Could not find a main module.`));
     });
 
     it('with requireElement to class and without constructor in the current module', () => {
