@@ -12,7 +12,7 @@ Full documentation on its usage can be found at http://componentsjs.readthedocs.
 
 ## Introduction
 
-Components.js is a [dependency injection] framework for TypeScript and JavaScript projects using JSON(-LD) files.
+Components.js is a [dependency injection] framework for _TypeScript_ and _JavaScript_ projects using JSON(-LD) files.
 
 Instead of hard-wiring software components together, Components.js allows these components to be _instantiated_ and _wired together_ declaratively using _semantic configuration files_.
 The advantage of these semantic configuration files is that software components can be uniquely and globally identified using [URIs].
@@ -20,6 +20,8 @@ The advantage of these semantic configuration files is that software components 
 Configurations can be written in any [RDF] serialization, such as [JSON-LD].
 
 This software is aimed for developers who want to build _modular_ and _easily configurable_ and _rewireable_ JavaScript applications.
+
+Get started with the TypeScript or JavaScript quick start guide below!
 
 ## Quick Start (TypeScript)
 
@@ -30,7 +32,7 @@ Components.js can be installed using npm:
 $ npm install componentsjs
 ```
 
-Component and module files can be _automatically_ generated using [Components-Generator.js](https://github.com/LinkedSoftwareDependencies/Components-Generator.js)**:
+Component and module files can be _automatically_ generated using [Components-Generator.js](https://github.com/LinkedSoftwareDependencies/Components-Generator.js):
 ```bash
 $ npm install -D componentsjs-generator
 ```
@@ -104,8 +106,6 @@ $ npm install componentsjs
 ```
 
 #### 2. Define your module and its components
-
-**This step can happen _automatically_ in TypeScript projects using [Components-Generator.js](https://github.com/LinkedSoftwareDependencies/Components-Generator.js)**.
 
 Assuming a JavaScript class that is exported from the package:
 ```typescript
