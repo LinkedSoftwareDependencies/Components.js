@@ -14,7 +14,7 @@ describe('construction with component configs as files', () => {
   let manager: ComponentsManager<any>;
   beforeEach(async() => {
     moduleState = <any> {
-      mainModulePath: Path.posix.join(__dirname, '../../__mocks__'),
+      mainModulePath: `${__dirname}/../../__mocks__`,
       importPaths: {
         'http://example.org/': `${__dirname}/../`,
       },

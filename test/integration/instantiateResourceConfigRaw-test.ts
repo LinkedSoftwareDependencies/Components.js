@@ -1,4 +1,3 @@
-import * as Path from 'path';
 import type { RdfObjectLoader } from 'rdf-object';
 import { ComponentsManager } from '../../lib/ComponentsManager';
 import type { IConfigConstructorPool } from '../../lib/construction/IConfigConstructorPool';
@@ -20,9 +19,9 @@ describe('construction with component configs as Resource', () => {
   let settings: IConstructionSettings;
   beforeEach(async() => {
     manager = await ComponentsManager.build({
-      mainModulePath: Path.posix.join(__dirname, '../../__mocks__'),
+      mainModulePath: `${__dirname}/../../__mocks__`,
       moduleState: <any> {
-        mainModulePath: Path.posix.join(__dirname, '../../__mocks__'),
+        mainModulePath: `${__dirname}/../../__mocks__`,
       },
       async moduleLoader() {
         // Register nothing
