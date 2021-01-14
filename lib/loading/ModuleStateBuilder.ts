@@ -155,32 +155,55 @@ export class ModuleStateBuilder {
    * @param packageJsons Package.json files.
    */
   public async preprocessPackageJsons(packageJsons: Record<string, any>): Promise<void> {
-    for (const [ packagePath, packageJson ] of Object.entries(packageJsons)) {
-      if (packageJson['lsd:module'] === true) {
-        packageJson['lsd:module'] = `https://linkedsoftwaredependencies.org/bundles/npm/${packageJson.name}`;
-        const basePath = packageJson['lsd:basePath'] || '';
-        packageJson['lsd:components'] = `${basePath}components/components.jsonld`;
-        const baseIri = `${packageJson['lsd:module']}/^${semverMajor(packageJson.version)}.0.0/`;
-        packageJson['lsd:contexts'] = {
-          [`${baseIri}components/context.jsonld`]: `${basePath}components/context.jsonld`,
-        };
-        packageJson['lsd:importPaths'] = {};
-        try {
-          if ((await fs.stat(Path.posix.join(packagePath, basePath, 'components'))).isDirectory()) {
-            packageJson['lsd:importPaths'][`${baseIri}components/`] = `${basePath}components/`;
-          }
-        } catch {
-          // Ignore errors
+    await Promise.all(Object.entries(packageJsons)
+      .map(([ packagePath, packageJson ]) => ModuleStateBuilder.preprocessPackageJson(packagePath, packageJson)));
+  }
+
+  /**
+   * Expand `lsd:module` inside the given package.json.
+   * @param packagePath Full path to the given package root.
+   * @param packageJson Package.json contents.
+   * @returns If the package has been preprocessed.
+   */
+  public static async preprocessPackageJson(packagePath: string, packageJson: Record<string, any>): Promise<boolean> {
+    if (packageJson['lsd:module'] === true) {
+      packageJson['lsd:module'] = `https://linkedsoftwaredependencies.org/bundles/npm/${packageJson.name}`;
+      const basePath = packageJson['lsd:basePath'] || '';
+      try {
+        if ((await fs.stat(Path.posix.join(packagePath, basePath, 'components/components.jsonld'))).isFile()) {
+          packageJson['lsd:components'] = `${basePath}components/components.jsonld`;
         }
-        try {
-          if ((await fs.stat(Path.posix.join(packagePath, basePath, 'config'))).isDirectory()) {
-            packageJson['lsd:importPaths'][`${baseIri}config/`] = `${basePath}config/`;
-          }
-        } catch {
-          // Ignore errors
-        }
+      } catch {
+        // Ignore errors
       }
+      const baseIri = `${packageJson['lsd:module']}/^${semverMajor(packageJson.version)}.0.0/`;
+      try {
+        if ((await fs.stat(Path.posix.join(packagePath, basePath, 'components/context.jsonld'))).isFile()) {
+          packageJson['lsd:contexts'] = {
+            [`${baseIri}components/context.jsonld`]: `${basePath}components/context.jsonld`,
+          };
+        }
+      } catch {
+        // Ignore errors
+      }
+      packageJson['lsd:importPaths'] = {};
+      try {
+        if ((await fs.stat(Path.posix.join(packagePath, basePath, 'components'))).isDirectory()) {
+          packageJson['lsd:importPaths'][`${baseIri}components/`] = `${basePath}components/`;
+        }
+      } catch {
+        // Ignore errors
+      }
+      try {
+        if ((await fs.stat(Path.posix.join(packagePath, basePath, 'config'))).isDirectory()) {
+          packageJson['lsd:importPaths'][`${baseIri}config/`] = `${basePath}config/`;
+        }
+      } catch {
+        // Ignore errors
+      }
+      return true;
     }
+    return false;
   }
 
   protected shouldOverrideVersion(

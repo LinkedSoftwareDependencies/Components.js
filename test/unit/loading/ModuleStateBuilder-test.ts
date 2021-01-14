@@ -519,6 +519,8 @@ describe('ModuleStateBuilder', () => {
         },
       };
       files = [
+        'PACKAGE1/components/components.jsonld',
+        'PACKAGE1/components/context.jsonld',
         'PACKAGE1/components',
         'PACKAGE1/config',
       ];
@@ -553,12 +555,45 @@ describe('ModuleStateBuilder', () => {
       files = [];
       const output: any = {
         PACKAGE1: {
-          'lsd:components': 'components/components.jsonld',
-          'lsd:contexts': {
-            'https://linkedsoftwaredependencies.org/bundles/npm/my-package/^2.0.0/components/context.jsonld':
-              'components/context.jsonld',
-          },
           'lsd:importPaths': {},
+          'lsd:module': 'https://linkedsoftwaredependencies.org/bundles/npm/my-package',
+          name: 'my-package',
+          version: '2.3.4',
+        },
+      };
+      await builder.preprocessPackageJsons(input);
+      expect(input).toEqual(output);
+    });
+
+    it('should modify lsd:module set to true with non-file imported paths', async() => {
+      const input: any = {
+        PACKAGE1: {
+          name: 'my-package',
+          version: '2.3.4',
+          'lsd:module': true,
+        },
+      };
+      files = [
+        'PACKAGE1/components/components.jsonld',
+        'PACKAGE1/components/context.jsonld',
+        'PACKAGE1/components',
+        'PACKAGE1/config',
+      ];
+      mocked(fs.stat).mockImplementation(<any> (async(path: string) => {
+        if (!files.includes(path)) {
+          throw new Error(`File stat not found: ${path}`);
+        }
+        return {
+          isFile: () => false,
+          isDirectory: () => true,
+        };
+      }));
+      const output: any = {
+        PACKAGE1: {
+          'lsd:importPaths': {
+            'https://linkedsoftwaredependencies.org/bundles/npm/my-package/^2.0.0/components/': 'components/',
+            'https://linkedsoftwaredependencies.org/bundles/npm/my-package/^2.0.0/config/': 'config/',
+          },
           'lsd:module': 'https://linkedsoftwaredependencies.org/bundles/npm/my-package',
           name: 'my-package',
           version: '2.3.4',
@@ -577,6 +612,8 @@ describe('ModuleStateBuilder', () => {
         },
       };
       files = [
+        'PACKAGE1/components/components.jsonld',
+        'PACKAGE1/components/context.jsonld',
         'PACKAGE1/components',
         'PACKAGE1/config',
       ];
@@ -616,6 +653,8 @@ describe('ModuleStateBuilder', () => {
         },
       };
       files = [
+        'PACKAGE1/dist/components/components.jsonld',
+        'PACKAGE1/dist/components/context.jsonld',
         'PACKAGE1/dist/components',
         'PACKAGE1/dist/config',
       ];
