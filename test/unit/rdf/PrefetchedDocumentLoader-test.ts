@@ -49,6 +49,19 @@ describe('PrefetchedDocumentLoader', () => {
       expect(logger.warn).toHaveBeenCalledWith(`Detected deprecated context URL 'https://linkedsoftwaredependencies.org/bundles/npm/componentsjs/^3.0.0/components/context.jsonld' in PATH. Prefer using version '^4.0.0' instead.`);
     });
 
+    it('for the built-in prefetched context that is deprecated with a logger without path', async() => {
+      const logger: any = {
+        warn: jest.fn(),
+      };
+      loader = new PrefetchedDocumentLoader({
+        contexts: {},
+        logger,
+      });
+      expect(await loader.load(`https://linkedsoftwaredependencies.org/bundles/npm/componentsjs/^3.0.0/components/context.jsonld`))
+        .toEqual(JSON.parse(fs.readFileSync(`${__dirname}/../../../components/context.jsonld`, 'utf8')));
+      expect(logger.warn).toHaveBeenCalledWith(`Detected deprecated context URL 'https://linkedsoftwaredependencies.org/bundles/npm/componentsjs/^3.0.0/components/context.jsonld'. Prefer using version '^4.0.0' instead.`);
+    });
+
     it('for a non-prefetched context', async() => {
       expect(await loader.load('http://remote.org/context'))
         .toEqual({ x: 'y' });

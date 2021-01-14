@@ -24,7 +24,7 @@ export class PrefetchedDocumentLoader extends FetchDocumentLoader {
   };
 
   private readonly contexts: Record<string, any>;
-  private readonly path: string;
+  private readonly path?: string;
   private readonly logger?: Logger;
 
   public constructor(options: IPrefetchedDocumentLoaderOptions) {
@@ -37,7 +37,7 @@ export class PrefetchedDocumentLoader extends FetchDocumentLoader {
   public async load(url: string): Promise<IJsonLdContext> {
     if (this.logger &&
       url === 'https://linkedsoftwaredependencies.org/bundles/npm/componentsjs/^3.0.0/components/context.jsonld') {
-      this.logger.warn(`Detected deprecated context URL '${url}' in ${this.path}. Prefer using version '^4.0.0' instead.`);
+      this.logger.warn(`Detected deprecated context URL '${url}'${this.path ? ` in ${this.path}` : ''}. Prefer using version '^4.0.0' instead.`);
     }
     if (url in this.contexts) {
       return this.contexts[url];
@@ -49,5 +49,5 @@ export class PrefetchedDocumentLoader extends FetchDocumentLoader {
 export interface IPrefetchedDocumentLoaderOptions {
   contexts: Record<string, any>;
   logger?: Logger;
-  path: string;
+  path?: string;
 }
