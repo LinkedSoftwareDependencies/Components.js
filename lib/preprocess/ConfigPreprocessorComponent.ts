@@ -45,7 +45,6 @@ export class ConfigPreprocessorComponent implements IConfigPreprocessor<ICompone
       if (componentTypes.length === 0) {
         throw new ErrorResourcesContext(`Could not find (valid) component types for config "${config.value}" among its types, or a requireName`, {
           configTypes: `${config.properties.types.map(resource => resource.value)}`,
-          availableComponentTypes: `[\n${Object.keys(this.componentResources).join(',\n')}\n]`,
           config,
         });
       }
