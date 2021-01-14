@@ -580,6 +580,7 @@ describe('construction with component configs as files', () => {
     it('should throw on invalid param values', async() => {
       await manager.configRegistry
         .register(Path.join(__dirname, '../assets/config.jsonld'));
+      manager.logger.error = jest.fn();
 
       await expect(manager.instantiate('http://example.org/myconfig')).rejects
         .toThrow(`Parameter value "HI" is not of required range type "http://www.w3.org/2001/XMLSchema#boolean"`);
