@@ -1,6 +1,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v4.0.1"></a>
+## [v4.0.1](https://github.com/LinkedSoftwareDependencies/Components.js/compare/v4.0.0...v4.0.1) - 2021-01-14
+
+### Fixed
+* [Fix module resolution failure when outside main module](https://github.com/LinkedSoftwareDependencies/Components.js/commit/2fb4de8abda5d5e91d39942edcc0bafd29acd8ce)
+
 <a name="v4.0.0"></a>
 ## [v4.0.0](https://github.com/LinkedSoftwareDependencies/Components.js/compare/v3.6.0...v4.0.0) - 2021-01-14
 
