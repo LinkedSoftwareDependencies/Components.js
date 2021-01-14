@@ -66,7 +66,7 @@ describe('ComponentsManagerBuilder', () => {
     expect(Object.keys(mgr.componentResources)
       .includes('http://example.org/HelloWorldModule#SayHelloComponentNested')).toBeTruthy();
     expect(mgr.configRegistry).toBeInstanceOf(ConfigRegistry);
-    expect(mgr.dumpErrorState).toBe(false);
+    expect(mgr.dumpErrorState).toBe(true);
     expect(mgr.configConstructorPool).toBeInstanceOf(ConfigConstructorPool);
     expect((<any> mgr.configConstructorPool).constructionStrategy).toBeInstanceOf(ConstructionStrategyCommonJs);
     expect((<any> mgr.configConstructorPool).configPreprocessors.length).toBe(2);
@@ -92,7 +92,7 @@ describe('ComponentsManagerBuilder', () => {
     expect(mgr.objectLoader).toBeInstanceOf(RdfObjectLoader);
     expect(Object.keys(mgr.componentResources).length).toBe(0);
     expect(mgr.configRegistry).toBeInstanceOf(ConfigRegistry);
-    expect(mgr.dumpErrorState).toBe(false);
+    expect(mgr.dumpErrorState).toBe(true);
     expect(mgr.configConstructorPool).toBeInstanceOf(ConfigConstructorPool);
     expect((<any> mgr.configConstructorPool).constructionStrategy).toBeInstanceOf(ConstructionStrategyCommonJs);
     expect((<any> mgr.configConstructorPool).configPreprocessors.length).toBe(2);
@@ -124,7 +124,7 @@ describe('ComponentsManagerBuilder', () => {
     expect(Object.keys(mgr.componentResources)
       .includes('http://example.org/HelloWorldModule#SayHelloComponentNested')).toBeTruthy();
     expect(mgr.configRegistry).toBeInstanceOf(ConfigRegistry);
-    expect(mgr.dumpErrorState).toBe(false);
+    expect(mgr.dumpErrorState).toBe(true);
     expect(mgr.configConstructorPool).toBeInstanceOf(ConfigConstructorPool);
     expect((<any> mgr.configConstructorPool).constructionStrategy).toBeInstanceOf(ConstructionStrategyCommonJs);
     expect((<any> mgr.configConstructorPool).configPreprocessors.length).toBe(2);
@@ -154,7 +154,7 @@ describe('ComponentsManagerBuilder', () => {
     expect(mgr.configRegistry).toBeInstanceOf(ConfigRegistry);
     expect(Object.keys(mgr.objectLoader.resources)
       .includes('http://example.org/myconfig')).toBeTruthy();
-    expect(mgr.dumpErrorState).toBe(false);
+    expect(mgr.dumpErrorState).toBe(true);
     expect(mgr.configConstructorPool).toBeInstanceOf(ConfigConstructorPool);
     expect((<any> mgr.configConstructorPool).constructionStrategy).toBeInstanceOf(ConstructionStrategyCommonJs);
     expect((<any> mgr.configConstructorPool).configPreprocessors.length).toBe(2);
@@ -180,7 +180,7 @@ describe('ComponentsManagerBuilder', () => {
     expect(mgr.objectLoader).toBeInstanceOf(RdfObjectLoader);
     expect(Object.keys(mgr.componentResources).length).toBe(2);
     expect(mgr.configRegistry).toBeInstanceOf(ConfigRegistry);
-    expect(mgr.dumpErrorState).toBe(false);
+    expect(mgr.dumpErrorState).toBe(true);
     expect(mgr.configConstructorPool).toBeInstanceOf(ConfigConstructorPool);
     expect((<any> mgr.configConstructorPool).constructionStrategy).toBe(constructionStrategy);
     expect((<any> mgr.configConstructorPool).configPreprocessors.length).toBe(2);
@@ -193,7 +193,7 @@ describe('ComponentsManagerBuilder', () => {
     });
   });
 
-  it('should build with custom dumpErrorState', async() => {
+  it('should build with true dumpErrorState', async() => {
     const componentsManagerBuilder = new ComponentsManagerBuilder({
       mainModulePath,
       dumpErrorState: true,
@@ -218,6 +218,31 @@ describe('ComponentsManagerBuilder', () => {
     });
   });
 
+  it('should build with false dumpErrorState', async() => {
+    const componentsManagerBuilder = new ComponentsManagerBuilder({
+      mainModulePath,
+      dumpErrorState: false,
+    });
+    const mgr = await componentsManagerBuilder.build();
+
+    expect(mgr).toBeTruthy();
+    expect(mgr.moduleState).toBe(dummyModuleState);
+    expect(mgr.objectLoader).toBeInstanceOf(RdfObjectLoader);
+    expect(Object.keys(mgr.componentResources).length).toBe(2);
+    expect(mgr.configRegistry).toBeInstanceOf(ConfigRegistry);
+    expect(mgr.dumpErrorState).toBe(false);
+    expect(mgr.configConstructorPool).toBeInstanceOf(ConfigConstructorPool);
+    expect((<any> mgr.configConstructorPool).constructionStrategy).toBeInstanceOf(ConstructionStrategyCommonJs);
+    expect((<any> mgr.configConstructorPool).configPreprocessors.length).toBe(2);
+    expect((<any> mgr.configConstructorPool).configPreprocessors[0]).toBeInstanceOf(ConfigPreprocessorComponentMapped);
+    expect((<any> mgr.configConstructorPool).configPreprocessors[1]).toBeInstanceOf(ConfigPreprocessorComponent);
+    expect(mgr.logger).toBeTruthy();
+    expect(createLogger).toHaveBeenCalledWith({
+      level: 'warn',
+      transports: expect.anything(),
+    });
+  });
+
   it('should build with custom logLevel', async() => {
     const componentsManagerBuilder = new ComponentsManagerBuilder({
       mainModulePath,
@@ -230,7 +255,7 @@ describe('ComponentsManagerBuilder', () => {
     expect(mgr.objectLoader).toBeInstanceOf(RdfObjectLoader);
     expect(Object.keys(mgr.componentResources).length).toBe(2);
     expect(mgr.configRegistry).toBeInstanceOf(ConfigRegistry);
-    expect(mgr.dumpErrorState).toBe(false);
+    expect(mgr.dumpErrorState).toBe(true);
     expect(mgr.configConstructorPool).toBeInstanceOf(ConfigConstructorPool);
     expect((<any> mgr.configConstructorPool).constructionStrategy).toBeInstanceOf(ConstructionStrategyCommonJs);
     expect((<any> mgr.configConstructorPool).configPreprocessors.length).toBe(2);
@@ -263,7 +288,7 @@ describe('ComponentsManagerBuilder', () => {
     expect(mgr.objectLoader).toBeInstanceOf(RdfObjectLoader);
     expect(Object.keys(mgr.componentResources).length).toBe(2);
     expect(mgr.configRegistry).toBeInstanceOf(ConfigRegistry);
-    expect(mgr.dumpErrorState).toBe(false);
+    expect(mgr.dumpErrorState).toBe(true);
     expect(mgr.configConstructorPool).toBeInstanceOf(ConfigConstructorPool);
     expect((<any> mgr.configConstructorPool).constructionStrategy).toBeInstanceOf(ConstructionStrategyCommonJs);
     expect((<any> mgr.configConstructorPool).configPreprocessors.length).toBe(2);

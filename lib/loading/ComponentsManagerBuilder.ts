@@ -37,7 +37,7 @@ export class ComponentsManagerBuilder<Instance = any> {
       // Do nothing
     });
     this.constructionStrategy = options.constructionStrategy || new ConstructionStrategyCommonJs({ req: require });
-    this.dumpErrorState = Boolean(options.dumpErrorState);
+    this.dumpErrorState = options.dumpErrorState === undefined ? true : Boolean(options.dumpErrorState);
     this.logger = ComponentsManagerBuilder.createLogger(options.logLevel);
     this.moduleState = options.moduleState;
   }
@@ -172,7 +172,7 @@ export interface IComponentsManagerBuilderOptions<Instance> {
   /**
    * If the error state should be dumped into `componentsjs-error-state.json`
    * after failed instantiations.
-   * Defaults to `false`.
+   * Defaults to `true`.
    */
   dumpErrorState?: boolean;
   /**
