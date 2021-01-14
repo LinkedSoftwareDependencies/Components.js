@@ -35,12 +35,20 @@ export class PrefetchedDocumentLoader extends FetchDocumentLoader {
   }
 
   public async load(url: string): Promise<IJsonLdContext> {
+    // Warn on deprecated context usage
     if (this.logger &&
       url === 'https://linkedsoftwaredependencies.org/bundles/npm/componentsjs/^3.0.0/components/context.jsonld') {
       this.logger.warn(`Detected deprecated context URL '${url}'${this.path ? ` in ${this.path}` : ''}. Prefer using version '^4.0.0' instead.`);
     }
+
+    // Load prefetched contexts
     if (url in this.contexts) {
       return this.contexts[url];
+    }
+
+    // Warn before doing a remote context lookup
+    if (this.logger) {
+      this.logger.warn(`Detected remote context lookup for '${url}'${this.path ? ` in ${this.path}` : ''}. This may indicate a missing or invalid dependency, or an invalid context URL.`);
     }
     return super.load(url);
   }

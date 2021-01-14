@@ -66,5 +66,32 @@ describe('PrefetchedDocumentLoader', () => {
       expect(await loader.load('http://remote.org/context'))
         .toEqual({ x: 'y' });
     });
+
+    it('for a non-prefetched context with a logger', async() => {
+      const logger: any = {
+        warn: jest.fn(),
+      };
+      loader = new PrefetchedDocumentLoader({
+        contexts: {},
+        logger,
+        path: 'PATH',
+      });
+      expect(await loader.load('http://remote.org/context'))
+        .toEqual({ x: 'y' });
+      expect(logger.warn).toHaveBeenCalledWith(`Detected remote context lookup for 'http://remote.org/context' in PATH. This may indicate a missing or invalid dependency, or an invalid context URL.`);
+    });
+
+    it('for a non-prefetched context with a logger without path', async() => {
+      const logger: any = {
+        warn: jest.fn(),
+      };
+      loader = new PrefetchedDocumentLoader({
+        contexts: {},
+        logger,
+      });
+      expect(await loader.load('http://remote.org/context'))
+        .toEqual({ x: 'y' });
+      expect(logger.warn).toHaveBeenCalledWith(`Detected remote context lookup for 'http://remote.org/context'. This may indicate a missing or invalid dependency, or an invalid context URL.`);
+    });
   });
 });
