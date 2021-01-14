@@ -38,8 +38,13 @@ export class ComponentsManagerBuilder<Instance = any> {
     });
     this.constructionStrategy = options.constructionStrategy || new ConstructionStrategyCommonJs({ req: require });
     this.dumpErrorState = Boolean(options.dumpErrorState);
-    this.logger = createLogger({
-      level: options.logLevel || 'warn',
+    this.logger = ComponentsManagerBuilder.createLogger(options.logLevel);
+    this.moduleState = options.moduleState;
+  }
+
+  public static createLogger(logLevel: LogLevel = 'warn'): Logger {
+    return createLogger({
+      level: logLevel,
       format: format.combine(
         format.label({ label: 'Components.js' }),
         format.colorize(),
@@ -51,7 +56,6 @@ export class ComponentsManagerBuilder<Instance = any> {
         stderrLevels: [ 'error', 'warn', 'info', 'verbose', 'debug', 'silly' ],
       }) ],
     });
-    this.moduleState = options.moduleState;
   }
 
   /**
