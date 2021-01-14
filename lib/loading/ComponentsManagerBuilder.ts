@@ -95,10 +95,8 @@ export class ComponentsManagerBuilder<Instance = any> {
       componentRegistry,
     });
     componentFinalizer.finalize();
-    this.logger.info(`Loaded ${Object.keys(componentResources).length} components`);
 
     // Load configs
-    this.logger.info(`Initiating config loading`);
     const configRegistry = new ConfigRegistry({
       moduleState,
       objectLoader,
