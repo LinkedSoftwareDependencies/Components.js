@@ -217,7 +217,7 @@ describe('ConfigConstructorPool', () => {
       let createInstance: any;
       beforeEach(() => {
         let i = 0;
-        createInstance = jest.fn(() => `INSTANCE${i++}`);
+        createInstance = jest.fn(async() => `INSTANCE${i++}`);
         (<any> pool).configConstructor = {
           createInstance,
         };
@@ -298,15 +298,13 @@ describe('ConfigConstructorPool', () => {
       });
 
       it('should return the same instances by equal id when fetched in parallel', async() => {
+        const config = objectLoader.createCompactedResource({
+          '@id': 'ex:myComponentInstance1',
+          types: 'ex:Component',
+        });
         const [ instance1, instance2 ] = await Promise.all([
-          pool.instantiate(objectLoader.createCompactedResource({
-            '@id': 'ex:myComponentInstance1',
-            types: 'ex:Component',
-          }), creationSettings),
-          pool.instantiate(objectLoader.createCompactedResource({
-            '@id': 'ex:myComponentInstance1',
-            types: 'ex:Component',
-          }), creationSettings),
+          pool.instantiate(config, creationSettings),
+          pool.instantiate(config, creationSettings),
         ]);
         expect(instance1).toBe(instance2);
       });

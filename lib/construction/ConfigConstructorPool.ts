@@ -33,7 +33,7 @@ export class ConfigConstructorPool<Instance> implements IConfigConstructorPool<I
     this.constructionStrategy = options.constructionStrategy;
   }
 
-  public async instantiate(
+  public instantiate(
     configResource: Resource,
     settings: IConstructionSettings,
   ): Promise<Instance> {
@@ -41,12 +41,13 @@ export class ConfigConstructorPool<Instance> implements IConfigConstructorPool<I
     // if so, return a dummy value, to avoid infinite recursion.
     const resourceBlacklist = settings.resourceBlacklist || {};
     if (resourceBlacklist[configResource.value]) {
-      return this.constructionStrategy.createUndefined();
+      return Promise.resolve(this.constructionStrategy.createUndefined());
     }
 
     // Before instantiating, first check if the resource is a variable
     if (configResource.isA('Variable')) {
-      return this.constructionStrategy.getVariableValue({ settings, variableName: configResource.value });
+      return Promise.resolve(this.constructionStrategy
+        .getVariableValue({ settings, variableName: configResource.value }));
     }
 
     // Instantiate only once
@@ -54,12 +55,29 @@ export class ConfigConstructorPool<Instance> implements IConfigConstructorPool<I
       // The blacklist avoids infinite recursion for self-referencing configs
       const subBlackList: Record<string, boolean> = { ...resourceBlacklist };
       subBlackList[configResource.value] = true;
+
+      // Prepare instance parameters
+      let rawConfig: Resource;
+      try {
+        rawConfig = this.getRawConfig(configResource);
+      } catch (syncError: unknown) {
+        this.instances[configResource.value] = Promise.reject(syncError);
+        return this.instances[configResource.value];
+      }
+      const subSettings = { resourceBlacklist: subBlackList, ...settings };
+
+      // Invoke instance creation
+      // DISCLAIMER: The next line is to avoid race conditions for creating the same instance.
+      // Since this method is non-async, it should actually not be needed,
+      // but we (very rarely) run into problems if we don't.
+      // This may be a Node issue (same behaviour across all Node versions <= 15)
+      this.instances[configResource.value] = <any> true;
       this.instances[configResource.value] = this.configConstructor.createInstance(
-        this.getRawConfig(configResource),
-        { resourceBlacklist: subBlackList, ...settings },
+        rawConfig,
+        subSettings,
       );
     }
-    return await this.instances[configResource.value];
+    return this.instances[configResource.value];
   }
 
   /**
