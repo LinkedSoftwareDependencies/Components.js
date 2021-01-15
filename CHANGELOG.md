@@ -1,6 +1,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v4.0.3"></a>
+## [v4.0.3](https://github.com/LinkedSoftwareDependencies/Components.js/compare/v4.0.2...v4.0.3) - 2021-01-15
+
+### Fixed
+* [Fix broken infinite recursion workaround, #31](https://github.com/LinkedSoftwareDependencies/Components.js/commit/e9f2fdc78eca77f3070663c4dc360e93b1f4c0bb)
+
 <a name="v4.0.2"></a>
 ## [v4.0.2](https://github.com/LinkedSoftwareDependencies/Components.js/compare/v4.0.1...v4.0.2) - 2021-01-15
 
