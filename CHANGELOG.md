@@ -1,6 +1,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v4.0.4"></a>
+## [v4.0.4](https://github.com/LinkedSoftwareDependencies/Components.js/compare/v4.0.3...v4.0.4) - 2021-01-15
+
+### Changed
+* [Bump rdf-parse with updated components.js context URL](https://github.com/LinkedSoftwareDependencies/Components.js/commit/7525a027c683890f30f4e47402c89dcca7dd89d7)
+
 <a name="v4.0.3"></a>
 ## [v4.0.3](https://github.com/LinkedSoftwareDependencies/Components.js/compare/v4.0.2...v4.0.3) - 2021-01-15
 
