@@ -121,7 +121,7 @@ export class MyClass {
 ```json
 {
   "@context": [
-    "https://linkedsoftwaredependencies.org/bundles/npm/componentsjs/^3.0.0/components/context.jsonld",
+    "https://linkedsoftwaredependencies.org/bundles/npm/componentsjs/^4.0.0/components/context.jsonld",
     { "ex": "http://example.org/" }
   ],
   "@id": "ex:MyPackage",
