@@ -625,6 +625,7 @@ describe('ConfigPreprocessorComponent', () => {
       });
       preprocessor.inheritParameterValues(configIn, componentIn);
       expect(configIn.toQuads()).toBeRdfIsomorphic(configOut.toQuads());
+      expect(configIn.toQuads().length).toBe(configOut.toQuads().length);
       expect(componentIn.toQuads()).toBeRdfIsomorphic(componentOut.toQuads());
     });
 
@@ -665,6 +666,44 @@ describe('ConfigPreprocessorComponent', () => {
       });
       preprocessor.inheritParameterValues(configIn, component);
       expect(configIn.toQuads()).toBeRdfIsomorphic(configOut.toQuads());
+    });
+
+    it('should only inherit parameter values once when invoking multiple times', () => {
+      const configIn = objectLoader.createCompactedResource({});
+      const configOut = objectLoader.createCompactedResource({
+        'ex:OtherComponent#param1': '"ABC"',
+      });
+      const componentIn = objectLoader.createCompactedResource({
+        '@id': 'ex:Component',
+        parameters: {
+          '@id': 'ex:param1',
+          inheritValues: {
+            types: 'owl:Restriction',
+            onParameter: 'ex:OtherComponent#param1',
+            from: 'ex:OtherComponent',
+          },
+        },
+      });
+      const componentOut = objectLoader.createCompactedResource({
+        '@id': 'ex:Component',
+        parameters: [
+          {
+            '@id': 'ex:param1',
+            inheritValues: {
+              types: 'owl:Restriction',
+              onParameter: 'ex:OtherComponent#param1',
+              from: 'ex:OtherComponent',
+            },
+          },
+          'ex:OtherComponent#param1',
+        ],
+      });
+      preprocessor.inheritParameterValues(configIn, componentIn);
+      preprocessor.inheritParameterValues(configIn, componentIn);
+      preprocessor.inheritParameterValues(configIn, componentIn);
+      expect(configIn.toQuads()).toBeRdfIsomorphic(configOut.toQuads());
+      expect(configIn.toQuads().length).toBe(configOut.toQuads().length);
+      expect(componentIn.toQuads()).toBeRdfIsomorphic(componentOut.toQuads());
     });
 
     it('should not change a config for component with parameter without restrictions', () => {

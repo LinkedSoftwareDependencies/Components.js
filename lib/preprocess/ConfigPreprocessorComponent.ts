@@ -203,7 +203,9 @@ export class ConfigPreprocessorComponent implements IConfigPreprocessor<ICompone
                   if (instance.property[parentParameter.value]) {
                     // Copy the parameters
                     for (const value of instance.properties[parentParameter.value]) {
-                      config.properties[parentParameter.value].push(value);
+                      if (!config.properties[parentParameter.value].includes(value)) {
+                        config.properties[parentParameter.value].push(value);
+                      }
                     }
 
                     // Also add the parameter to the parameter type list
