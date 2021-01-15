@@ -1,6 +1,13 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v4.0.2"></a>
+## [v4.0.2](https://github.com/LinkedSoftwareDependencies/Components.js/compare/v4.0.1...v4.0.2) - 2021-01-15
+
+### Fixed
+* [Fix instances being created multiple times, Closes #31](https://github.com/LinkedSoftwareDependencies/Components.js/commit/94ce08874b24bf9c64d7f722beb2d5556aa9c7e9)
+* [Fix value inheritance happening multiple times](https://github.com/LinkedSoftwareDependencies/Components.js/commit/1855178930d2babd2c3a4c6cdad66087c1db79cd)
+
 <a name="v4.0.1"></a>
 ## [v4.0.1](https://github.com/LinkedSoftwareDependencies/Components.js/compare/v4.0.0...v4.0.1) - 2021-01-14
 
