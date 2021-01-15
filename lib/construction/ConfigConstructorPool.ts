@@ -64,14 +64,9 @@ export class ConfigConstructorPool<Instance> implements IConfigConstructorPool<I
         this.instances[configResource.value] = Promise.reject(syncError);
         return this.instances[configResource.value];
       }
-      const subSettings = { resourceBlacklist: subBlackList, ...settings };
+      const subSettings = { ...settings, resourceBlacklist: subBlackList };
 
       // Invoke instance creation
-      // DISCLAIMER: The next line is to avoid race conditions for creating the same instance.
-      // Since this method is non-async, it should actually not be needed,
-      // but we (very rarely) run into problems if we don't.
-      // This may be a Node issue (same behaviour across all Node versions <= 15)
-      this.instances[configResource.value] = <any> true;
       this.instances[configResource.value] = this.configConstructor.createInstance(
         rawConfig,
         subSettings,

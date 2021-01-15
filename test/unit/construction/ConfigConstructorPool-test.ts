@@ -266,10 +266,10 @@ describe('ConfigConstructorPool', () => {
         expect(pool.getRawConfig).toHaveBeenNthCalledWith(1, configIn);
         expect(createInstance).toHaveBeenCalledTimes(1);
         expect(createInstance).toHaveBeenNthCalledWith(1, expect.anything(), {
+          ...creationSettings,
           resourceBlacklist: {
             'ex:myComponentInstance': true,
           },
-          ...creationSettings,
         });
       });
 
