@@ -10,6 +10,9 @@ _A semantic dependency injection framework_
 This repository contains the source code of Components.js.
 Full documentation on its usage can be found at http://componentsjs.readthedocs.io/.
 
+Interested in contributing to this project?
+Have a look at this [contribution guide](https://github.com/LinkedSoftwareDependencies/Components.js/blob/master/.github/CONTRIBUTING.md).
+
 ## Introduction
 
 Components.js is a [dependency injection] framework for _TypeScript_ and _JavaScript_ projects using JSON(-LD) files.
