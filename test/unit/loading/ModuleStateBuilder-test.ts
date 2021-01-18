@@ -465,6 +465,43 @@ describe('ModuleStateBuilder', () => {
         '/',
       ]);
     });
+
+    it('should handle packages without node_modules but with package.json', async() => {
+      files = [
+        '/a/package.json',
+        '/package.json',
+      ];
+      expect((await builder.buildNodeModulePaths([
+        '/a',
+        '/',
+      ])).sort()).toEqual([
+        '/a',
+        '/',
+      ].sort());
+    });
+
+    it('should handle packages without package.json but with node_modules', async() => {
+      files = [
+        '/a/node_modules',
+        '/a/node_modules/x',
+        '/a/node_modules/x/package.json',
+        '/a/node_modules/y',
+        '/a/node_modules/y/package.json',
+        '/node_modules',
+        '/node_modules/x',
+        '/node_modules/x/package.json',
+      ];
+      expect((await builder.buildNodeModulePaths([
+        '/a',
+        '/',
+      ])).sort()).toEqual([
+        '/a',
+        '/',
+        '/a/node_modules/x',
+        '/a/node_modules/y',
+        '/node_modules/x',
+      ].sort());
+    });
   });
 
   describe('buildPackageJsons', () => {
@@ -473,6 +510,10 @@ describe('ModuleStateBuilder', () => {
     });
 
     it('should handle a non-empty array', async() => {
+      files = [
+        '/a/package.json',
+        '/package.json',
+      ];
       fileContents = {
         '/a/package.json': `{ "name": "a" }`,
         '/package.json': `{ "name": "" }`,
@@ -483,6 +524,21 @@ describe('ModuleStateBuilder', () => {
       ])).toEqual({
         '/a': { name: 'a' },
         '/': { name: '' },
+      });
+    });
+
+    it('should skip non-existing files', async() => {
+      files = [
+        '/a/package.json',
+      ];
+      fileContents = {
+        '/a/package.json': `{ "name": "a" }`,
+      };
+      expect(await builder.buildPackageJsons([
+        '/a',
+        '/',
+      ])).toEqual({
+        '/a': { name: 'a' },
       });
     });
   });

@@ -110,7 +110,8 @@ export class ModuleStateBuilder {
 
     try {
       // Check if the path is a Node module
-      if ((await fs.stat(Path.posix.join(path, 'package.json'))).isFile()) {
+      if (await this.fileExists(Path.posix.join(path, 'package.json')) ||
+        await this.fileExists(Path.posix.join(path, 'node_modules'), false)) {
         nodeModulePaths.push(path);
 
         // Recursively handle all the Node modules of this valid Node module
@@ -138,6 +139,15 @@ export class ModuleStateBuilder {
     }
   }
 
+  protected async fileExists(path: string, file = true): Promise<boolean> {
+    try {
+      const stat = await fs.stat(path);
+      return file ? stat.isFile() : stat.isDirectory();
+    } catch {
+      return false;
+    }
+  }
+
   /**
    * Read the package.json files from all the given Node modules.
    * @param nodeModulePaths An array of node module paths.
@@ -145,7 +155,10 @@ export class ModuleStateBuilder {
   public async buildPackageJsons(nodeModulePaths: string[]): Promise<Record<string, any>> {
     const packageJsons: Record<string, any> = {};
     await Promise.all(nodeModulePaths.map(async modulePath => {
-      packageJsons[modulePath] = JSON.parse(await fs.readFile(Path.posix.join(modulePath, 'package.json'), 'utf8'));
+      const path = Path.posix.join(modulePath, 'package.json');
+      if (await this.fileExists(path)) {
+        packageJsons[modulePath] = JSON.parse(await fs.readFile(path, 'utf8'));
+      }
     }));
     return packageJsons;
   }
