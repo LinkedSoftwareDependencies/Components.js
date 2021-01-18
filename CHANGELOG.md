@@ -1,6 +1,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v4.0.5"></a>
+## [v4.0.5](https://github.com/LinkedSoftwareDependencies/Components.js/compare/v4.0.4...v4.0.5) - 2021-01-18
+
+### Fixed
+* [Allow module discovery in packages without package.json](https://github.com/LinkedSoftwareDependencies/Components.js/commit/a0ac0cb47b2ed07ef7a88619133af15ba71f3577)
+
 <a name="v4.0.4"></a>
 ## [v4.0.4](https://github.com/LinkedSoftwareDependencies/Components.js/compare/v4.0.3...v4.0.4) - 2021-01-15
 
