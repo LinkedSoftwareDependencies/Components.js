@@ -21,3 +21,4 @@ ____
 #### Crash log:
 
 <!--Only required for crashes.-->
+<!--If applicable, include your `componentsjs-error-state.json` file-->
