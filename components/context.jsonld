@@ -58,6 +58,9 @@
       "@id": "oo:arguments",
       "@container": "@list"
     },
+    "undefined": {
+      "@id": "oo:isUndefined"
+    },
 
     "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
     "comment": {

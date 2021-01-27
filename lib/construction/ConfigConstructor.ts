@@ -5,6 +5,7 @@ import { ArgumentConstructorHandlerArray } from './argument/ArgumentConstructorH
 import { ArgumentConstructorHandlerHash } from './argument/ArgumentConstructorHandlerHash';
 import { ArgumentConstructorHandlerPrimitive } from './argument/ArgumentConstructorHandlerPrimitive';
 import { ArgumentConstructorHandlerReference } from './argument/ArgumentConstructorHandlerReference';
+import { ArgumentConstructorHandlerUndefined } from './argument/ArgumentConstructorHandlerUndefined';
 import { ArgumentConstructorHandlerValue } from './argument/ArgumentConstructorHandlerValue';
 import type { IArgumentConstructorHandler } from './argument/IArgumentConstructorHandler';
 import type { IArgumentsConstructor } from './argument/IArgumentsConstructor';
@@ -28,6 +29,7 @@ import type { IConstructionStrategy } from './strategy/IConstructionStrategy';
  */
 export class ConfigConstructor<Instance> implements IArgumentsConstructor<Instance> {
   private static readonly ARGS_HANDLERS: IArgumentConstructorHandler[] = [
+    new ArgumentConstructorHandlerUndefined(),
     new ArgumentConstructorHandlerHash(),
     new ArgumentConstructorHandlerArray(),
     new ArgumentConstructorHandlerValue(),

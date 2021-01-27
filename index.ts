@@ -2,6 +2,7 @@ export * from './lib/construction/argument/ArgumentConstructorHandlerArray';
 export * from './lib/construction/argument/ArgumentConstructorHandlerHash';
 export * from './lib/construction/argument/ArgumentConstructorHandlerPrimitive';
 export * from './lib/construction/argument/ArgumentConstructorHandlerReference';
+export * from './lib/construction/argument/ArgumentConstructorHandlerUndefined';
 export * from './lib/construction/argument/ArgumentConstructorHandlerValue';
 export * from './lib/construction/argument/IArgumentConstructorHandler';
 export * from './lib/construction/argument/IArgumentsConstructor';

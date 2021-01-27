@@ -980,7 +980,10 @@ describe('ConfigPreprocessorComponentMapped', () => {
       const configElement = objectLoader.createCompactedResource({});
       const expected = [
         objectLoader.createCompactedResource({
-          list: [],
+          list: [
+            { undefined: '"true"' },
+            { undefined: '"true"' },
+          ],
         }),
       ];
       expectOutputProperties(preprocessor

@@ -41,6 +41,11 @@ export class ConstructorArgumentsElementMappingHandlerList implements IConstruct
               elements: mappeds.map(value => mapper.objectLoader.createCompactedResource({ value })),
             }));
           }
+        } else {
+          // Explicitly pass a single undefined value if no param value was set
+          ret.list.push(mapper.objectLoader.createCompactedResource({
+            undefined: true,
+          }));
         }
       }
     }

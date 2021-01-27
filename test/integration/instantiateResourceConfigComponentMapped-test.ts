@@ -911,6 +911,18 @@ describe('construction with mapped component configs as Resource', () => {
         'B',
       ]]);
     });
+
+    it('instantiated without first parameter', async() => {
+      const config = objectLoader.createCompactedResource({
+        types: 'http://example.org/HelloWorldModule#SayHelloComponent',
+        'http://example.org/HelloWorldModule#dummyParam2': '"B"',
+      });
+      const instance = await configConstructorPool.instantiate(config, settings);
+      expect(instance).toBeInstanceOf(Hello);
+      expect(instance._params).toEqual([[
+        'B',
+      ]]);
+    });
   });
 
   describe('for a component with root elements', () => {
@@ -951,6 +963,44 @@ describe('construction with mapped component configs as Resource', () => {
       expect(instance._params).toEqual([
         [ 'A' ],
         [ 'B' ],
+      ]);
+    });
+
+    it('instantiated without first parameter', async() => {
+      const config = objectLoader.createCompactedResource({
+        types: 'http://example.org/HelloWorldModule#SayHelloComponent',
+        'http://example.org/HelloWorldModule#dummyParam2': '"B"',
+      });
+      const instance = await configConstructorPool.instantiate(config, settings);
+      expect(instance).toBeInstanceOf(Hello);
+      expect(instance._params).toEqual([
+        undefined,
+        [ 'B' ],
+      ]);
+    });
+
+    it('instantiated without second parameter', async() => {
+      const config = objectLoader.createCompactedResource({
+        types: 'http://example.org/HelloWorldModule#SayHelloComponent',
+        'http://example.org/HelloWorldModule#dummyParam1': '"A"',
+      });
+      const instance = await configConstructorPool.instantiate(config, settings);
+      expect(instance).toBeInstanceOf(Hello);
+      expect(instance._params).toEqual([
+        [ 'A' ],
+        undefined,
+      ]);
+    });
+
+    it('instantiated without first and second parameter', async() => {
+      const config = objectLoader.createCompactedResource({
+        types: 'http://example.org/HelloWorldModule#SayHelloComponent',
+      });
+      const instance = await configConstructorPool.instantiate(config, settings);
+      expect(instance).toBeInstanceOf(Hello);
+      expect(instance._params).toEqual([
+        undefined,
+        undefined,
       ]);
     });
   });

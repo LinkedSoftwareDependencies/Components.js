@@ -104,6 +104,16 @@ describe('ConfigConstructor', () => {
   });
 
   describe('getArgumentValue', () => {
+    describe('for undefined', () => {
+      it('should handle undefined values', async() => {
+        const resource = objectLoader.createCompactedResource({
+          undefined: '"true"',
+        });
+        expect(await constructor.getArgumentValue(resource, settings)).toEqual(undefined);
+        expect(constructionStrategy.createUndefined).toHaveBeenCalled();
+      });
+    });
+
     describe('for fields', () => {
       it('should handle empty fields', async() => {
         const resource = objectLoader.createCompactedResource({
