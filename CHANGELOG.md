@@ -1,6 +1,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v4.0.6"></a>
+## [v4.0.6](https://github.com/LinkedSoftwareDependencies/Components.js/compare/v4.0.5...v4.0.6) - 2021-01-27
+
+### Fixed
+* [Fix undefined root constructor args missing instead of being undefined](https://github.com/LinkedSoftwareDependencies/Components.js/commit/de14c611122ddb031d2973d4e667efa5b13bdf45)
+
 <a name="v4.0.5"></a>
 ## [v4.0.5](https://github.com/LinkedSoftwareDependencies/Components.js/compare/v4.0.4...v4.0.5) - 2021-01-18
 
