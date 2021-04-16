@@ -28,6 +28,7 @@ describe('ComponentRegistry', () => {
       objectLoader,
       logger,
       componentResources,
+      skipContextValidation: false,
     });
   });
 

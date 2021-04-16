@@ -24,6 +24,7 @@ describe('ConfigRegistry', () => {
       moduleState,
       objectLoader,
       logger,
+      skipContextValidation: false,
     });
   });
 

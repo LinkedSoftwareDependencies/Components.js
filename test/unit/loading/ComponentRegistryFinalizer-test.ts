@@ -31,6 +31,7 @@ describe('ComponentRegistryFinalizer', () => {
       objectLoader,
       logger,
       componentResources,
+      skipContextValidation: false,
     });
     finalizer = new ComponentRegistryFinalizer({
       objectLoader,

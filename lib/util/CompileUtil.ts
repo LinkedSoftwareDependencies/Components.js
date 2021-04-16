@@ -9,6 +9,7 @@ import { ConstructionStrategyCommonJsString } from '../construction/strategy/Con
  * @param {string} exportVariableName An optional variable name to export instead of the default runner.
  * @param {boolean} asFunction If the exported instance should be exposed as a function,
  *                             which accepts an optional hash of variables.
+ * @param {boolean} skipContextValidation If JSON-LD context validation should be skipped.
  * @return {Promise<string>} A string resolving to the JavaScript contents.
  */
 export async function compileConfig(
@@ -17,6 +18,7 @@ export async function compileConfig(
   configIri: string,
   exportVariableName?: string,
   asFunction?: boolean,
+  skipContextValidation?: boolean,
 ): Promise<string> {
   // Set up the components manager
   const constructionStrategy = new ConstructionStrategyCommonJsString({ asFunction, req: require });
@@ -24,6 +26,7 @@ export async function compileConfig(
     mainModulePath,
     constructionStrategy,
     configLoader: async registry => registry.register(configPath),
+    skipContextValidation: Boolean(skipContextValidation),
   });
 
   // Serialize the config

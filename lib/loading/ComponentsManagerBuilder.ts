@@ -29,6 +29,7 @@ export class ComponentsManagerBuilder<Instance = any> {
   private readonly dumpErrorState: boolean;
   private readonly logger: Logger;
   private readonly moduleState?: IModuleState;
+  private readonly skipContextValidation: boolean;
 
   public constructor(options: IComponentsManagerBuilderOptions<Instance>) {
     this.mainModulePath = options.mainModulePath;
@@ -40,6 +41,7 @@ export class ComponentsManagerBuilder<Instance = any> {
     this.dumpErrorState = options.dumpErrorState === undefined ? true : Boolean(options.dumpErrorState);
     this.logger = ComponentsManagerBuilder.createLogger(options.logLevel);
     this.moduleState = options.moduleState;
+    this.skipContextValidation = Boolean(options.skipContextValidation);
   }
 
   public static createLogger(logLevel: LogLevel = 'warn'): Logger {
@@ -86,6 +88,7 @@ export class ComponentsManagerBuilder<Instance = any> {
       objectLoader,
       logger: this.logger,
       componentResources,
+      skipContextValidation: this.skipContextValidation,
     });
     await this.componentLoader(componentRegistry);
     const componentFinalizer = new ComponentRegistryFinalizer({
@@ -101,6 +104,7 @@ export class ComponentsManagerBuilder<Instance = any> {
       moduleState,
       objectLoader,
       logger: this.logger,
+      skipContextValidation: this.skipContextValidation,
     });
     await this.configLoader(configRegistry);
     this.logger.info(`Loaded configs`);
@@ -183,4 +187,8 @@ export interface IComponentsManagerBuilderOptions<Instance> {
    * Defaults to a newly created instances on the {@link mainModulePath}.
    */
   moduleState?: IModuleState;
+  /**
+   * If JSON-LD context validation should be skipped.
+   */
+  skipContextValidation?: boolean;
 }

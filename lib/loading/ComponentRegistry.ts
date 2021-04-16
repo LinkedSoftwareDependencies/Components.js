@@ -18,12 +18,14 @@ export class ComponentRegistry {
   private readonly objectLoader: RdfObjectLoader;
   private readonly logger: Logger;
   private readonly componentResources: Record<string, Resource>;
+  private readonly skipContextValidation: boolean;
 
   public constructor(options: IComponentLoaderRegistryOptions) {
     this.moduleState = options.moduleState;
     this.objectLoader = options.objectLoader;
     this.logger = options.logger;
     this.componentResources = options.componentResources;
+    this.skipContextValidation = options.skipContextValidation;
   }
 
   /**
@@ -47,6 +49,7 @@ export class ComponentRegistry {
       contexts: this.moduleState.contexts,
       importPaths: this.moduleState.importPaths,
       logger: this.logger,
+      skipContextValidation: this.skipContextValidation,
     }));
   }
 
@@ -114,4 +117,5 @@ export interface IComponentLoaderRegistryOptions {
   objectLoader: RdfObjectLoader;
   logger: Logger;
   componentResources: Record<string, Resource>;
+  skipContextValidation: boolean;
 }

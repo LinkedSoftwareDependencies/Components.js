@@ -12,11 +12,13 @@ export class ConfigRegistry {
   private readonly moduleState: IModuleState;
   private readonly objectLoader: RdfObjectLoader;
   private readonly logger: Logger;
+  private readonly skipContextValidation: boolean;
 
   public constructor(options: IConfigLoaderRegistryOptions) {
     this.moduleState = options.moduleState;
     this.objectLoader = options.objectLoader;
     this.logger = options.logger;
+    this.skipContextValidation = options.skipContextValidation;
   }
 
   /**
@@ -31,6 +33,7 @@ export class ConfigRegistry {
       importPaths: this.moduleState.importPaths,
       ignoreImports: false,
       logger: this.logger,
+      skipContextValidation: this.skipContextValidation,
     }));
   }
 
@@ -68,4 +71,5 @@ export interface IConfigLoaderRegistryOptions {
   moduleState: IModuleState;
   objectLoader: RdfObjectLoader;
   logger: Logger;
+  skipContextValidation: boolean;
 }

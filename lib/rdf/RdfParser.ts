@@ -30,16 +30,19 @@ export class RdfParser {
       }
     }
 
-    // Override the JSON-LD document loader
-    (<any> options)['@comunica/actor-rdf-parse-jsonld:documentLoader'] =
-      new PrefetchedDocumentLoader({
+    // Set JSON-LD parser options
+    (<any> options)['@comunica/actor-rdf-parse-jsonld:parserOptions'] = {
+      // Override the JSON-LD document loader
+      documentLoader: new PrefetchedDocumentLoader({
         contexts: options.contexts || {},
         logger: options.logger,
         path: options.path,
-      });
-
-    // Enable strict parsing of JSON-LD to error on potential user config errors
-    (<any> options)['@comunica/actor-rdf-parse-jsonld:strictValues'] = true;
+      }),
+      // Enable strict parsing of JSON-LD to error on potential user config errors
+      strictValues: true,
+      // If JSON-LD context validation should be skipped
+      skipContextValidation: options.skipContextValidation,
+    };
 
     // Execute parsing
     const quadStream = rdfParser.parse(textStream, options);
@@ -104,4 +107,8 @@ export type RdfParserOptions = ParseOptions & {
    * An optional logger.
    */
   logger?: Logger;
+  /**
+   * If JSON-LD context validation should be skipped.
+   */
+  skipContextValidation?: boolean;
 };
