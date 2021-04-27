@@ -1,6 +1,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v4.1.0"></a>
+## [v4.1.0](https://github.com/LinkedSoftwareDependencies/Components.js/compare/v4.0.6...v4.1.0) - 2021-04-27
+
+### Added
+* [Allow JSON-LD context validation to be skipped](https://github.com/LinkedSoftwareDependencies/Components.js/commit/40931625dc0a577800c60e0cb4aa12393eb26bab)
+
 <a name="v4.0.6"></a>
 ## [v4.0.6](https://github.com/LinkedSoftwareDependencies/Components.js/compare/v4.0.5...v4.0.6) - 2021-01-27
 
