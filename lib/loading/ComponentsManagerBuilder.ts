@@ -41,7 +41,9 @@ export class ComponentsManagerBuilder<Instance = any> {
     this.dumpErrorState = options.dumpErrorState === undefined ? true : Boolean(options.dumpErrorState);
     this.logger = ComponentsManagerBuilder.createLogger(options.logLevel);
     this.moduleState = options.moduleState;
-    this.skipContextValidation = Boolean(options.skipContextValidation);
+    this.skipContextValidation = options.skipContextValidation === undefined ?
+      true :
+      Boolean(options.skipContextValidation);
   }
 
   public static createLogger(logLevel: LogLevel = 'warn'): Logger {
@@ -189,6 +191,7 @@ export interface IComponentsManagerBuilderOptions<Instance> {
   moduleState?: IModuleState;
   /**
    * If JSON-LD context validation should be skipped.
+   * Defaults to `true`.
    */
   skipContextValidation?: boolean;
 }
