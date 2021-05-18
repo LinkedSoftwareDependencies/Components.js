@@ -62,6 +62,12 @@ export class ComponentsManagerBuilder<Instance = any> {
     });
   }
 
+  public static createObjectLoader(): RdfObjectLoader {
+    return new RdfObjectLoader({
+      context: JSON.parse(fs.readFileSync(`${__dirname}/../../components/context.jsonld`, 'utf8')),
+    });
+  }
+
   /**
    * @return A new instance of {@link ComponentsManager}.
    */
@@ -78,9 +84,7 @@ export class ComponentsManagerBuilder<Instance = any> {
     }
 
     // Initialize object loader with built-in context
-    const objectLoader: RdfObjectLoader = new RdfObjectLoader({
-      context: JSON.parse(fs.readFileSync(`${__dirname}/../../components/context.jsonld`, 'utf8')),
-    });
+    const objectLoader: RdfObjectLoader = ComponentsManagerBuilder.createObjectLoader();
 
     // Load modules
     this.logger.info(`Initiating component loading`);
