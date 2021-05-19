@@ -1,6 +1,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v4.2.0"></a>
+## [v4.2.0](https://github.com/LinkedSoftwareDependencies/Components.js/compare/v4.1.0...v4.2.0) - 2021-05-19
+
+### Added
+* [Expose RdfObjectLoader ctor from ComponentsManagerBuilder](https://github.com/LinkedSoftwareDependencies/Components.js/commit/1b1c85adb50855eed5b628788ccea3609aa841ca)
+
 <a name="v4.1.0"></a>
 ## [v4.1.0](https://github.com/LinkedSoftwareDependencies/Components.js/compare/v4.0.6...v4.1.0) - 2021-04-27
 
