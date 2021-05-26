@@ -1,6 +1,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v4.2.1"></a>
+## [v4.2.1](https://github.com/LinkedSoftwareDependencies/Components.js/compare/v4.2.0...v4.2.1) - 2021-05-26
+
+### Fixed
+* [Allow configs to have multiple identical types, comunica/examples#11](https://github.com/LinkedSoftwareDependencies/Components.js/commit/5285f8e68fefb13d46538c6949238200055a2047)
+
 <a name="v4.2.0"></a>
 ## [v4.2.0](https://github.com/LinkedSoftwareDependencies/Components.js/compare/v4.1.0...v4.2.0) - 2021-05-19
 
