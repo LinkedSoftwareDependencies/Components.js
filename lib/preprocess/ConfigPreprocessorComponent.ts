@@ -27,13 +27,14 @@ export class ConfigPreprocessorComponent implements IConfigPreprocessor<ICompone
   public canHandle(config: Resource): IComponentConfigPreprocessorHandleResponse | undefined {
     if (!config.property.requireName) {
       // Collect all component types from the resource
-      const componentTypes: Resource[] = [];
+      const componentTypesIndex: Record<string, Resource> = {};
       for (const type of config.properties.types) {
         const componentResource: Resource = this.componentResources[type.value];
         if (componentResource) {
-          componentTypes.push(componentResource);
+          componentTypesIndex[componentResource.value] = componentResource;
         }
       }
+      const componentTypes: Resource[] = Object.values(componentTypesIndex);
 
       // Require either exactly one component type, or a requireName
       if (componentTypes.length > 1) {

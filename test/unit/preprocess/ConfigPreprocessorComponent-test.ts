@@ -115,6 +115,14 @@ describe('ConfigPreprocessorComponent', () => {
         .toThrowError(/^Detected more than one component types for config "ex:myComponentInstance"/u);
     });
 
+    it('should handle for a config with two identical component types', () => {
+      const config = objectLoader.createCompactedResource({
+        '@id': 'ex:myComponentInstance',
+        types: [ 'ex:Component', 'ex:Component' ],
+      });
+      expect(preprocessor.canHandle(config)).toBeTruthy();
+    });
+
     it('should throw for a config with zero component types', () => {
       const config = objectLoader.createCompactedResource({
         '@id': 'ex:myComponentInstance',
