@@ -58,7 +58,7 @@
     "eslint-plugin-jest": "^24.1.0",
     "eslint-plugin-tsdoc": "^0.2.7",
     "eslint-plugin-unused-imports": "^1.0.0",
-    "jest": "^26.5.3",
+    "jest": "^27.0.0",
     "jest-rdf": "^1.6.0",
     "jshint": "^2.1.10",
     "manual-git-changelog": "^1.0.1",
