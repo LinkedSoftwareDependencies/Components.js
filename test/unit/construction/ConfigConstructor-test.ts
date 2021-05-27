@@ -31,7 +31,7 @@ describe('ConfigConstructor', () => {
       createArray: jest.fn(options => options.elements),
       createHash: jest.fn(options => ({ entries: options.entries })),
       createInstance: jest.fn(() => 'INSTANCESTRAT'),
-      createLazySupplier: jest.fn(options => <any> options.supplier),
+      createLazySupplier: <any> jest.fn(options => options.supplier),
       createPrimitive: jest.fn(options => options.value),
       createUndefined: jest.fn(),
       getVariableValue: jest.fn(),
