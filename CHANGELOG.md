@@ -1,6 +1,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v4.3.0"></a>
+## [v4.3.0](https://github.com/LinkedSoftwareDependencies/Components.js/compare/v4.2.1...v4.3.0) - 2021-06-14
+
+### Added
+* [Support JSON param ranges via rdf:JSON, Closes #37](https://github.com/LinkedSoftwareDependencies/Components.js/commit/339d2219915bc618991a42adcd8b63a3d6caa9b5)
+
 <a name="v4.2.1"></a>
 ## [v4.2.1](https://github.com/LinkedSoftwareDependencies/Components.js/compare/v4.2.0...v4.2.1) - 2021-05-26
 
