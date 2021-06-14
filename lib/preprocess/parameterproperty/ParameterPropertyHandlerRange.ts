@@ -1,5 +1,5 @@
 import type { RdfObjectLoader, Resource } from 'rdf-object';
-import { IRIS_XSD } from '../../rdf/Iris';
+import { IRIS_RDF, IRIS_XSD } from '../../rdf/Iris';
 import { ErrorResourcesContext } from '../../util/ErrorResourcesContext';
 import type { IParameterPropertyHandler } from './IParameterPropertyHandler';
 
@@ -69,6 +69,14 @@ export class ParameterPropertyHandlerRange implements IParameterPropertyHandler 
             this.throwIncorrectTypeError(value, param);
           } else {
             (<any>value.term).valueRaw = parsed;
+          }
+          break;
+        case IRIS_RDF.JSON:
+          try {
+            parsed = JSON.parse(value.value);
+            (<any>value.term).valueRaw = parsed;
+          } catch {
+            this.throwIncorrectTypeError(value, param);
           }
           break;
       }

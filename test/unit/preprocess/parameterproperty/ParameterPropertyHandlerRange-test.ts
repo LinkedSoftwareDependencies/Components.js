@@ -5,7 +5,7 @@ import 'jest-rdf';
 import {
   ParameterPropertyHandlerRange,
 } from '../../../../lib/preprocess/parameterproperty/ParameterPropertyHandlerRange';
-import { IRIS_XSD } from '../../../../lib/rdf/Iris';
+import { IRIS_RDF, IRIS_XSD } from '../../../../lib/rdf/Iris';
 
 const DF = new DataFactory();
 
@@ -136,6 +136,20 @@ describe('ParameterPropertyHandlerRange', () => {
       expect((<any> handler.captureType(objectLoader.createCompactedResource('"256.36"'),
         objectLoader.createCompactedResource({ range: IRIS_XSD.double }))).term.valueRaw)
         .toEqual(256.36);
+    });
+
+    it('should capture JSON', () => {
+      expect((<any> handler.captureType(objectLoader.createCompactedResource('"1"'),
+        objectLoader.createCompactedResource({ range: IRIS_RDF.JSON }))).term.valueRaw)
+        .toEqual(1);
+      expect((<any> handler.captureType(objectLoader.createCompactedResource('"{"a":"b"}"'),
+        objectLoader.createCompactedResource({ range: IRIS_RDF.JSON }))).term.valueRaw)
+        .toEqual({ a: 'b' });
+    });
+    it('should error on invalid JSON', () => {
+      expect(() => handler.captureType(objectLoader.createCompactedResource('"{a:\\"b\\"}"'),
+        objectLoader.createCompactedResource({ range: IRIS_RDF.JSON, '@id': 'param' })))
+        .toThrowError(/^Parameter value .* is not of required range type/u);
     });
   });
 });
