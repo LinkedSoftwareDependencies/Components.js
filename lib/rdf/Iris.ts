@@ -18,6 +18,7 @@ export const IRIS_RDF = {
   subject: PREFIX_RDF('subject'),
   object: PREFIX_RDF('object'),
   type: PREFIX_RDF('type'),
+  JSON: PREFIX_RDF('JSON'),
 };
 
 export const PREFIX_RDFS = definePrefix('http://www.w3.org/2000/01/rdf-schema#');
