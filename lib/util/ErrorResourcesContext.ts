@@ -5,17 +5,22 @@ import type { Resource } from 'rdf-object';
  * An error that can include a context containing resources for display.
  */
 export class ErrorResourcesContext extends Error {
-  public readonly context: Record<string, Resource | string>;
+  public readonly context: Record<string, Resource | Resource[] | string>;
 
-  public constructor(message: string, context: Record<string, Resource | string>) {
+  public constructor(message: string, context: Record<string, Resource | Resource[] | string>) {
     super(`${message}\n${ErrorResourcesContext.contextToString(context)}`);
     this.name = 'ErrorResourcesContext';
     this.context = context;
   }
 
-  public static contextToString(context: Record<string, Resource | string>): string {
+  public static contextToString(context: Record<string, Resource | Resource[] | string>): string {
     return Object.entries(context)
-      .map(([ key, value ]) => `${key}: ${typeof value === 'string' ? value : ErrorResourcesContext.resourceToString(value)}`)
+      .map(([ key, value ]) => `${key}: ${typeof value === 'string' ?
+        value :
+        // eslint-disable-next-line @typescript-eslint/no-extra-parens
+        (Array.isArray(value) ?
+          value.map(valueSub => ErrorResourcesContext.resourceToString(valueSub)) :
+          ErrorResourcesContext.resourceToString(value))}`)
       .join('\n');
   }
 

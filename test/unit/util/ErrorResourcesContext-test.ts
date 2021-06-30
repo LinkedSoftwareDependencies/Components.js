@@ -33,6 +33,10 @@ describe('ErrorResourcesContext', () => {
           '"2"',
         ],
       }),
+      e: [
+        objectLoader.createCompactedResource({}),
+        objectLoader.createCompactedResource({}),
+      ],
     };
     const error = new ErrorResourcesContext('message', ctx);
     expect(error.name).toEqual('ErrorResourcesContext');
