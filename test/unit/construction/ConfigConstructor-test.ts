@@ -101,6 +101,39 @@ describe('ConfigConstructor', () => {
       expect(constructionStrategy.createPrimitive).toHaveBeenCalledWith({ settings, value: 'DEF' });
       expect(constructionStrategy.createPrimitive).toHaveBeenCalledWith({ settings, value: 'GHI' });
     });
+
+    it('should handle an RDF list', async() => {
+      const values = [
+        objectLoader.createCompactedResource({
+          list: [
+            '"ABC"',
+            '"DEF"',
+            '"GHI"',
+          ],
+        }),
+      ];
+      expect(await constructor.getArgumentValues(values, settings)).toEqual([
+        'ABC',
+        'DEF',
+        'GHI',
+      ]);
+      expect(constructionStrategy.createArray).toHaveBeenCalledWith({ settings, elements: [ 'ABC', 'DEF', 'GHI' ]});
+    });
+
+    it('should throw on an RDF list and anything else', async() => {
+      const values = [
+        objectLoader.createCompactedResource({
+          list: [
+            '"ABC"',
+            '"DEF"',
+            '"GHI"',
+          ],
+        }),
+        objectLoader.createCompactedResource('"ABC"'),
+      ];
+      await expect(constructor.getArgumentValues(values, settings)).rejects
+        .toThrowError(`Detected multiple values for an argument while only a single RDF list is allowed`);
+    });
   });
 
   describe('getArgumentValue', () => {
@@ -305,6 +338,48 @@ describe('ConfigConstructor', () => {
         });
         await expect(constructor.getArgumentValue(resource, settings)).rejects
           .toThrowError(/^Missing value in array elements entry/u);
+      });
+    });
+
+    describe('for RDF lists', () => {
+      it('should handle one element', async() => {
+        const resource = objectLoader.createCompactedResource({
+          list: [
+            '"ABC"',
+          ],
+        });
+        expect(await constructor.getArgumentValue(resource, settings)).toEqual([
+          'ABC',
+        ]);
+        expect(constructionStrategy.createArray).toHaveBeenCalledWith({
+          settings,
+          elements: [
+            'ABC',
+          ],
+        });
+      });
+
+      it('should handle multiple elements', async() => {
+        const resource = objectLoader.createCompactedResource({
+          list: [
+            '"ABC"',
+            '"DEF"',
+            '"GHI"',
+          ],
+        });
+        expect(await constructor.getArgumentValue(resource, settings)).toEqual([
+          'ABC',
+          'DEF',
+          'GHI',
+        ]);
+        expect(constructionStrategy.createArray).toHaveBeenCalledWith({
+          settings,
+          elements: [
+            'ABC',
+            'DEF',
+            'GHI',
+          ],
+        });
       });
     });
 

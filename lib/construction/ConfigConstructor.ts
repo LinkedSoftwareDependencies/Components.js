@@ -3,6 +3,7 @@ import type { IModuleState } from '../loading/ModuleStateBuilder';
 import { ErrorResourcesContext } from '../util/ErrorResourcesContext';
 import { ArgumentConstructorHandlerArray } from './argument/ArgumentConstructorHandlerArray';
 import { ArgumentConstructorHandlerHash } from './argument/ArgumentConstructorHandlerHash';
+import { ArgumentConstructorHandlerList } from './argument/ArgumentConstructorHandlerList';
 import { ArgumentConstructorHandlerPrimitive } from './argument/ArgumentConstructorHandlerPrimitive';
 import { ArgumentConstructorHandlerReference } from './argument/ArgumentConstructorHandlerReference';
 import { ArgumentConstructorHandlerUndefined } from './argument/ArgumentConstructorHandlerUndefined';
@@ -32,6 +33,7 @@ export class ConfigConstructor<Instance> implements IArgumentsConstructor<Instan
     new ArgumentConstructorHandlerUndefined(),
     new ArgumentConstructorHandlerHash(),
     new ArgumentConstructorHandlerArray(),
+    new ArgumentConstructorHandlerList(),
     new ArgumentConstructorHandlerValue(),
     new ArgumentConstructorHandlerReference(),
     new ArgumentConstructorHandlerPrimitive(),
@@ -55,6 +57,16 @@ export class ConfigConstructor<Instance> implements IArgumentsConstructor<Instan
   ): Promise<Instance> {
     // Unwrap unique values out of the array
     if (values.length > 0 && values[0].property.unique && values[0].property.unique.value === 'true') {
+      return this.getArgumentValue(values[0], settings);
+    }
+
+    // Unwrap RDF list-based values out of the array
+    if (values.length > 0 && values.some(value => value.list)) {
+      if (values.length > 1) {
+        throw new ErrorResourcesContext(`Detected multiple values for an argument while only a single RDF list is allowed`, {
+          arguments: values.flatMap(value => value.list ? value.list : [ value ]),
+        });
+      }
       return this.getArgumentValue(values[0], settings);
     }
 
