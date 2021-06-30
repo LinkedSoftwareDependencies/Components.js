@@ -1,6 +1,15 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v4.4.0"></a>
+## [v4.4.0](https://github.com/LinkedSoftwareDependencies/Components.js/compare/v4.2.1...v4.4.0) - 2021-06-30
+
+### Added
+* [Accept RDF lists as argument values, #47](https://github.com/LinkedSoftwareDependencies/Components.js/commit/3501a0fe676d1bc43c2d3ad329fca0adef48c8cd)
+
+### Changed
+* [Allow arrays of resources to be passed to ErrorResourcesContext](https://github.com/LinkedSoftwareDependencies/Components.js/commit/aedd53a3e923e030bf0d8433c27f1259183a0a14)
+
 <a name="v4.3.0"></a>
 ## [v4.3.0](https://github.com/LinkedSoftwareDependencies/Components.js/compare/v4.2.1...v4.3.0) - 2021-06-14
 
