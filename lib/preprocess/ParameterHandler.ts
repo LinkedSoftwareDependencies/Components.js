@@ -40,8 +40,17 @@ export class ParameterHandler {
     parameter: Resource,
     configElement: Resource,
   ): Resource[] {
-    // Obtain the parameter's value in the given config
-    let value: Resource[] = configElement.properties[parameter.value];
+    // Obtain the parameter's value in the given config, and flatten RDF lists
+    let value: Resource[] = [];
+    for (const element of configElement.properties[parameter.value]) {
+      if (element.list) {
+        for (const subElement of element.list) {
+          value.push(subElement);
+        }
+      } else {
+        value.push(element);
+      }
+    }
 
     // Run the value through all applicable parameters property handlers.
     for (const handler of this.parameterPropertyHandlers) {

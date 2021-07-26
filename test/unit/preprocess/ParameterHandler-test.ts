@@ -77,6 +77,70 @@ describe('ParameterHandler', () => {
         ];
         expectOutputOnlyTerm(handler.applyParameterValues(configRoot, param, configElement), expected);
       });
+
+      it('should handle list values', () => {
+        configElement = objectLoader.createCompactedResource({
+          'ex:myParam': [
+            {
+              list: [
+                '"A"',
+                '"B"',
+                '"C"',
+              ],
+            },
+          ],
+        });
+        const expected: Resource[] = [
+          objectLoader.createCompactedResource('"A"'),
+          objectLoader.createCompactedResource('"B"'),
+          objectLoader.createCompactedResource('"C"'),
+        ];
+        expectOutputOnlyTerm(handler.applyParameterValues(configRoot, param, configElement), expected);
+      });
+
+      it('should handle multiple list values', () => {
+        configElement = objectLoader.createCompactedResource({
+          'ex:myParam': [
+            {
+              list: [
+                '"A"',
+                '"B"',
+              ],
+            },
+            {
+              list: [
+                '"C"',
+              ],
+            },
+          ],
+        });
+        const expected: Resource[] = [
+          objectLoader.createCompactedResource('"A"'),
+          objectLoader.createCompactedResource('"B"'),
+          objectLoader.createCompactedResource('"C"'),
+        ];
+        expectOutputOnlyTerm(handler.applyParameterValues(configRoot, param, configElement), expected);
+      });
+
+      it('should handle list and set values', () => {
+        configElement = objectLoader.createCompactedResource({
+          'ex:myParam': [
+            '"A"',
+            {
+              list: [
+                '"B"',
+              ],
+            },
+            '"C"',
+          ],
+        });
+        const expected: Resource[] = [
+          objectLoader.createCompactedResource('"A"'),
+          objectLoader.createCompactedResource('"B"'),
+          objectLoader.createCompactedResource('"C"'),
+        ];
+        expectOutputOnlyTerm(handler.applyParameterValues(configRoot, param, configElement), expected);
+      });
     });
 
     describe('for parameter with defaults', () => {
