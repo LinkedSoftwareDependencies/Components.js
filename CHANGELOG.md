@@ -1,6 +1,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v4.4.1"></a>
+## [v4.4.1](https://github.com/LinkedSoftwareDependencies/Components.js/compare/v4.4.0...v4.4.1) - 2021-07-26
+
+### Fixed
+* [Fix RDF lists not being accepted for all params](https://github.com/LinkedSoftwareDependencies/Components.js/commit/a01e3c80a3a5ce28180f57e8358327c53774b9ba)
+
 <a name="v4.4.0"></a>
 ## [v4.4.0](https://github.com/LinkedSoftwareDependencies/Components.js/compare/v4.2.1...v4.4.0) - 2021-06-30
 
