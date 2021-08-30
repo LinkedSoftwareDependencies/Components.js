@@ -1,7 +1,7 @@
 import Path = require('path');
 import type { Readable, TransformCallback } from 'stream';
 import { Transform } from 'stream';
-import type * as RDF from 'rdf-js';
+import type * as RDF from '@rdfjs/types';
 import { getNamedNodes, getTerms } from 'rdf-terms';
 import { IRIS_RDFS } from './Iris';
 import { RdfParser } from './RdfParser';

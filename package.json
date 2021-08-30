@@ -33,17 +33,17 @@
     "version": "manual-git-changelog onversion"
   },
   "dependencies": {
+    "@rdfjs/types": "*",
     "@types/minimist": "^1.2.0",
     "@types/node": "^14.14.7",
-    "@types/rdf-js": "*",
     "@types/semver": "^7.3.4",
     "jsonld-context-parser": "^2.1.1",
     "minimist": "^1.2.0",
-    "rdf-data-factory": "^1.0.4",
-    "rdf-object": "^1.8.0",
-    "rdf-parse": "^1.8.1",
+    "rdf-data-factory": "^1.1.0",
+    "rdf-object": "^1.11.1",
+    "rdf-parse": "^1.9.1",
     "rdf-quad": "^1.5.0",
-    "rdf-terms": "^1.6.2",
+    "rdf-terms": "^1.7.0",
     "semver": "^7.3.2",
     "winston": "^3.3.3"
   },
@@ -60,14 +60,14 @@
     "eslint-plugin-tsdoc": "^0.2.7",
     "eslint-plugin-unused-imports": "^1.0.0",
     "jest": "^27.0.1",
-    "jest-rdf": "^1.6.0",
+    "jest-rdf": "^1.7.0",
     "jshint": "^2.1.10",
     "manual-git-changelog": "^1.0.1",
-    "n3": "^1.6.3",
+    "n3": "^1.11.1",
     "pre-commit": "^1.2.2",
     "streamify-string": "^1.0.1",
     "ts-jest": "^27.0.1",
-    "typescript": "^4.0.3"
+    "typescript": "^4.3.5"
   },
   "files": [
     "components",
