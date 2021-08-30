@@ -1,6 +1,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v4.5.0"></a>
+## [v4.5.0](https://github.com/LinkedSoftwareDependencies/Components.js/compare/v4.4.1...v4.5.0) - 2021-08-30
+
+### Changed
+* [Migrate to @rdfjs/types](https://github.com/LinkedSoftwareDependencies/Components.js/commit/b2f9f2e0c5512e743b324f48f332d96e4214ec84)
+
 <a name="v4.4.1"></a>
 ## [v4.4.1](https://github.com/LinkedSoftwareDependencies/Components.js/compare/v4.4.0...v4.4.1) - 2021-07-26
 
