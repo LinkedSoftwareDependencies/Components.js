@@ -80,12 +80,21 @@ export class ParameterPropertyHandlerRange implements IParameterPropertyHandler 
           }
           break;
       }
+    } else if (!value.isA('Variable') && param.property.range && !value.isA(param.property.range.term)) {
+      // Check if this param defines a field with sub-params
+      if (param.property.range.properties.parameters.length > 0) {
+        // TODO: Add support for type-checking nested fields with collectEntries
+      } else {
+        this.throwIncorrectTypeError(value, param);
+      }
     }
     return value;
   }
 
   protected throwIncorrectTypeError(value: Resource, parameter: Resource): void {
-    throw new ErrorResourcesContext(`Parameter value "${value.value}" is not of required range type "${parameter.property.range.value}"`, {
+    const withTypes = value.properties.types.length > 0 ? ` with types "${value.properties.types.map(resource => resource.value)}"` : '';
+    throw new ErrorResourcesContext(`The value "${value.value}"${withTypes} for parameter "${parameter.value}" is not of required range type "${parameter.property.range.value}"`, {
+      value,
       parameter,
     });
   }

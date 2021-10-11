@@ -583,7 +583,7 @@ describe('construction with component configs as files', () => {
       manager.logger.error = jest.fn();
 
       await expect(manager.instantiate('http://example.org/myconfig')).rejects
-        .toThrow(`Parameter value "HI" is not of required range type "http://www.w3.org/2001/XMLSchema#boolean"`);
+        .toThrow(`The value "HI" for parameter "http://example.org/hello/say" is not of required range type "http://www.w3.org/2001/XMLSchema#boolean"`);
       expect(fs.existsSync('componentsjs-error-state.json')).toBeTruthy();
       fs.unlinkSync('componentsjs-error-state.json');
     });

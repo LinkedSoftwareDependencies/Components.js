@@ -21,135 +21,281 @@ describe('ParameterPropertyHandlerRange', () => {
   });
 
   describe('captureType', () => {
-    it('should ignore non-literals', () => {
-      expect((<any> handler.captureType(objectLoader.createCompactedResource('ex:abc'),
-        objectLoader.createCompactedResource({ range: `ex:bla` }))).term)
-        .toEqualRdfTerm(DF.namedNode('ex:abc'));
-      expect((<any> handler.captureType(objectLoader.createCompactedResource('_:abc'),
-        objectLoader.createCompactedResource({ range: `ex:bla` }))).term)
-        .toEqualRdfTerm(DF.blankNode('abc'));
+    describe('for literals', () => {
+      it('should capture strings', () => {
+        expect((<any>handler.captureType(objectLoader.createCompactedResource('"aaa"'),
+          objectLoader.createCompactedResource({ range: IRIS_XSD.string }))).term.valueRaw)
+          .toBeUndefined();
+        expect((<any>handler.captureType(objectLoader.createCompactedResource('"qqseqfqefefù$^"'),
+          objectLoader.createCompactedResource({ range: IRIS_XSD.string }))).term.valueRaw)
+          .toBeUndefined();
+      });
+
+      it('should capture booleans', () => {
+        expect((<any>handler.captureType(objectLoader.createCompactedResource('"true"'),
+          objectLoader.createCompactedResource({ range: IRIS_XSD.boolean }))).term.valueRaw)
+          .toEqual(true);
+        expect((<any>handler.captureType(objectLoader.createCompactedResource('"false"'),
+          objectLoader.createCompactedResource({ range: IRIS_XSD.boolean }))).term.valueRaw)
+          .toEqual(false);
+      });
+      it('should error on invalid booleans', () => {
+        expect(() => handler.captureType(objectLoader.createCompactedResource('"1"'),
+          objectLoader.createCompactedResource({ range: IRIS_XSD.boolean, '@id': 'param' })))
+          // eslint-disable-next-line max-len
+          .toThrowError(/^The value "1" for parameter "param" is not of required range type "http:\/\/www.w3.org\/2001\/XMLSchema#boolean"/u);
+      });
+
+      it('should capture integers', () => {
+        expect((<any>handler.captureType(objectLoader.createCompactedResource('"1"'),
+          objectLoader.createCompactedResource({ range: IRIS_XSD.integer }))).term.valueRaw)
+          .toEqual(1);
+        expect((<any>handler.captureType(objectLoader.createCompactedResource('"1456789876"'),
+          objectLoader.createCompactedResource({ range: IRIS_XSD.integer }))).term.valueRaw)
+          .toEqual(1_456_789_876);
+      });
+      it('should error on invalid integers', () => {
+        expect(() => handler.captureType(objectLoader.createCompactedResource('"a"'),
+          objectLoader.createCompactedResource({ range: IRIS_XSD.integer, '@id': 'param' })))
+          // eslint-disable-next-line max-len
+          .toThrowError(/^The value "a" for parameter "param" is not of required range type "http:\/\/www.w3.org\/2001\/XMLSchema#integer"/u);
+      });
+      it('should error on invalid integers that are numbers', () => {
+        expect(() => handler.captureType(objectLoader.createCompactedResource('"1.12"'),
+          objectLoader.createCompactedResource({ range: IRIS_XSD.integer, '@id': 'param' })))
+          // eslint-disable-next-line max-len
+          .toThrowError(/^The value "1.12" for parameter "param" is not of required range type "http:\/\/www.w3.org\/2001\/XMLSchema#integer"/u);
+      });
+      it('should capture numbers', () => {
+        expect((<any>handler.captureType(objectLoader.createCompactedResource('"1"'),
+          objectLoader.createCompactedResource({ range: IRIS_XSD.number }))).term.valueRaw)
+          .toEqual(1);
+        expect((<any>handler.captureType(objectLoader.createCompactedResource('"456789876"'),
+          objectLoader.createCompactedResource({ range: IRIS_XSD.number }))).term.valueRaw)
+          .toEqual(456_789_876);
+      });
+      it('should capture ints', () => {
+        expect((<any>handler.captureType(objectLoader.createCompactedResource('"1"'),
+          objectLoader.createCompactedResource({ range: IRIS_XSD.int }))).term.valueRaw)
+          .toEqual(1);
+        expect((<any>handler.captureType(objectLoader.createCompactedResource('"456789876"'),
+          objectLoader.createCompactedResource({ range: IRIS_XSD.int }))).term.valueRaw)
+          .toEqual(456_789_876);
+      });
+      it('should capture bytes', () => {
+        expect((<any>handler.captureType(objectLoader.createCompactedResource('"1"'),
+          objectLoader.createCompactedResource({ range: IRIS_XSD.byte }))).term.valueRaw)
+          .toEqual(1);
+        expect((<any>handler.captureType(objectLoader.createCompactedResource('"456789876"'),
+          objectLoader.createCompactedResource({ range: IRIS_XSD.byte }))).term.valueRaw)
+          .toEqual(456_789_876);
+      });
+      it('should capture longs', () => {
+        expect((<any>handler.captureType(objectLoader.createCompactedResource('"1"'),
+          objectLoader.createCompactedResource({ range: IRIS_XSD.long }))).term.valueRaw)
+          .toEqual(1);
+        expect((<any>handler.captureType(objectLoader.createCompactedResource('"456789876"'),
+          objectLoader.createCompactedResource({ range: IRIS_XSD.long }))).term.valueRaw)
+          .toEqual(456_789_876);
+      });
+
+      it('should capture floats', () => {
+        expect((<any>handler.captureType(objectLoader.createCompactedResource('"1"'),
+          objectLoader.createCompactedResource({ range: IRIS_XSD.float }))).term.valueRaw)
+          .toEqual(1);
+        expect((<any>handler.captureType(objectLoader.createCompactedResource('"256.36"'),
+          objectLoader.createCompactedResource({ range: IRIS_XSD.float }))).term.valueRaw)
+          .toEqual(256.36);
+      });
+      it('should error on invalid floats', () => {
+        expect(() => handler.captureType(objectLoader.createCompactedResource('"a"'),
+          objectLoader.createCompactedResource({ range: IRIS_XSD.float, '@id': 'param' })))
+          // eslint-disable-next-line max-len
+          .toThrowError(/^The value "a" for parameter "param" is not of required range type "http:\/\/www.w3.org\/2001\/XMLSchema#float"/u);
+      });
+      it('should capture decimals', () => {
+        expect((<any>handler.captureType(objectLoader.createCompactedResource('"1"'),
+          objectLoader.createCompactedResource({ range: IRIS_XSD.decimal }))).term.valueRaw)
+          .toEqual(1);
+        expect((<any>handler.captureType(objectLoader.createCompactedResource('"256.36"'),
+          objectLoader.createCompactedResource({ range: IRIS_XSD.decimal }))).term.valueRaw)
+          .toEqual(256.36);
+      });
+      it('should capture doubles', () => {
+        expect((<any>handler.captureType(objectLoader.createCompactedResource('"1"'),
+          objectLoader.createCompactedResource({ range: IRIS_XSD.double }))).term.valueRaw)
+          .toEqual(1);
+        expect((<any>handler.captureType(objectLoader.createCompactedResource('"256.36"'),
+          objectLoader.createCompactedResource({ range: IRIS_XSD.double }))).term.valueRaw)
+          .toEqual(256.36);
+      });
+
+      it('should capture JSON', () => {
+        expect((<any>handler.captureType(objectLoader.createCompactedResource('"1"'),
+          objectLoader.createCompactedResource({ range: IRIS_RDF.JSON }))).term.valueRaw)
+          .toEqual(1);
+        expect((<any>handler.captureType(objectLoader.createCompactedResource('"{"a":"b"}"'),
+          objectLoader.createCompactedResource({ range: IRIS_RDF.JSON }))).term.valueRaw)
+          .toEqual({ a: 'b' });
+      });
+      it('should error on invalid JSON', () => {
+        expect(() => handler.captureType(objectLoader.createCompactedResource('"{a:\\"b\\"}"'),
+          objectLoader.createCompactedResource({ range: IRIS_RDF.JSON, '@id': 'param' })))
+          .toThrowError(/^The value .* for parameter "param" is not of required range type/u);
+      });
     });
 
-    it('should capture strings', () => {
-      expect((<any> handler.captureType(objectLoader.createCompactedResource('"aaa"'),
-        objectLoader.createCompactedResource({ range: IRIS_XSD.string }))).term.valueRaw)
-        .toBeUndefined();
-      expect((<any> handler.captureType(objectLoader.createCompactedResource('"qqseqfqefefù$^"'),
-        objectLoader.createCompactedResource({ range: IRIS_XSD.string }))).term.valueRaw)
-        .toBeUndefined();
-    });
+    describe('for non-literals', () => {
+      it('should ignore params without range', () => {
+        expect(handler.captureType(
+          objectLoader.createCompactedResource({
+            '@id': 'ex:abc',
+          }),
+          objectLoader.createCompactedResource({}),
+        )).toBeTruthy();
 
-    it('should capture booleans', () => {
-      expect((<any> handler.captureType(objectLoader.createCompactedResource('"true"'),
-        objectLoader.createCompactedResource({ range: IRIS_XSD.boolean }))).term.valueRaw)
-        .toEqual(true);
-      expect((<any> handler.captureType(objectLoader.createCompactedResource('"false"'),
-        objectLoader.createCompactedResource({ range: IRIS_XSD.boolean }))).term.valueRaw)
-        .toEqual(false);
-    });
-    it('should error on invalid booleans', () => {
-      expect(() => handler.captureType(objectLoader.createCompactedResource('"1"'),
-        objectLoader.createCompactedResource({ range: IRIS_XSD.boolean, '@id': 'param' })))
-        // eslint-disable-next-line max-len
-        .toThrowError(/^Parameter value "1" is not of required range type "http:\/\/www.w3.org\/2001\/XMLSchema#boolean"/u);
-    });
+        expect(handler.captureType(
+          objectLoader.createCompactedResource({
+            '@id': 'ex:abc',
+            '@type': 'ex:Type',
+          }),
+          objectLoader.createCompactedResource({}),
+        )).toBeTruthy();
+      });
 
-    it('should capture integers', () => {
-      expect((<any> handler.captureType(objectLoader.createCompactedResource('"1"'),
-        objectLoader.createCompactedResource({ range: IRIS_XSD.integer }))).term.valueRaw)
-        .toEqual(1);
-      expect((<any> handler.captureType(objectLoader.createCompactedResource('"1456789876"'),
-        objectLoader.createCompactedResource({ range: IRIS_XSD.integer }))).term.valueRaw)
-        .toEqual(1_456_789_876);
-    });
-    it('should error on invalid integers', () => {
-      expect(() => handler.captureType(objectLoader.createCompactedResource('"a"'),
-        objectLoader.createCompactedResource({ range: IRIS_XSD.integer, '@id': 'param' })))
-        // eslint-disable-next-line max-len
-        .toThrowError(/^Parameter value "a" is not of required range type "http:\/\/www.w3.org\/2001\/XMLSchema#integer"/u);
-    });
-    it('should error on invalid integers that are numbers', () => {
-      expect(() => handler.captureType(objectLoader.createCompactedResource('"1.12"'),
-        objectLoader.createCompactedResource({ range: IRIS_XSD.integer, '@id': 'param' })))
-        // eslint-disable-next-line max-len
-        .toThrowError(/^Parameter value "1.12" is not of required range type "http:\/\/www.w3.org\/2001\/XMLSchema#integer"/u);
-    });
-    it('should capture numbers', () => {
-      expect((<any> handler.captureType(objectLoader.createCompactedResource('"1"'),
-        objectLoader.createCompactedResource({ range: IRIS_XSD.number }))).term.valueRaw)
-        .toEqual(1);
-      expect((<any> handler.captureType(objectLoader.createCompactedResource('"456789876"'),
-        objectLoader.createCompactedResource({ range: IRIS_XSD.number }))).term.valueRaw)
-        .toEqual(456_789_876);
-    });
-    it('should capture ints', () => {
-      expect((<any> handler.captureType(objectLoader.createCompactedResource('"1"'),
-        objectLoader.createCompactedResource({ range: IRIS_XSD.int }))).term.valueRaw)
-        .toEqual(1);
-      expect((<any> handler.captureType(objectLoader.createCompactedResource('"456789876"'),
-        objectLoader.createCompactedResource({ range: IRIS_XSD.int }))).term.valueRaw)
-        .toEqual(456_789_876);
-    });
-    it('should capture bytes', () => {
-      expect((<any> handler.captureType(objectLoader.createCompactedResource('"1"'),
-        objectLoader.createCompactedResource({ range: IRIS_XSD.byte }))).term.valueRaw)
-        .toEqual(1);
-      expect((<any> handler.captureType(objectLoader.createCompactedResource('"456789876"'),
-        objectLoader.createCompactedResource({ range: IRIS_XSD.byte }))).term.valueRaw)
-        .toEqual(456_789_876);
-    });
-    it('should capture longs', () => {
-      expect((<any> handler.captureType(objectLoader.createCompactedResource('"1"'),
-        objectLoader.createCompactedResource({ range: IRIS_XSD.long }))).term.valueRaw)
-        .toEqual(1);
-      expect((<any> handler.captureType(objectLoader.createCompactedResource('"456789876"'),
-        objectLoader.createCompactedResource({ range: IRIS_XSD.long }))).term.valueRaw)
-        .toEqual(456_789_876);
-    });
+      it('should throw on param with range and missing value @type', () => {
+        expect(() => handler.captureType(
+          objectLoader.createCompactedResource({
+            '@id': 'ex:abc',
+          }),
+          objectLoader.createCompactedResource({
+            range: 'ex:RangeType',
+          }),
+        )).toThrow(/^The value "ex:abc" for parameter ".*" is not of required range type "ex:RangeType"/u);
+      });
 
-    it('should capture floats', () => {
-      expect((<any> handler.captureType(objectLoader.createCompactedResource('"1"'),
-        objectLoader.createCompactedResource({ range: IRIS_XSD.float }))).term.valueRaw)
-        .toEqual(1);
-      expect((<any> handler.captureType(objectLoader.createCompactedResource('"256.36"'),
-        objectLoader.createCompactedResource({ range: IRIS_XSD.float }))).term.valueRaw)
-        .toEqual(256.36);
-    });
-    it('should error on invalid floats', () => {
-      expect(() => handler.captureType(objectLoader.createCompactedResource('"a"'),
-        objectLoader.createCompactedResource({ range: IRIS_XSD.float, '@id': 'param' })))
-        // eslint-disable-next-line max-len
-        .toThrowError(/^Parameter value "a" is not of required range type "http:\/\/www.w3.org\/2001\/XMLSchema#float"/u);
-    });
-    it('should capture decimals', () => {
-      expect((<any> handler.captureType(objectLoader.createCompactedResource('"1"'),
-        objectLoader.createCompactedResource({ range: IRIS_XSD.decimal }))).term.valueRaw)
-        .toEqual(1);
-      expect((<any> handler.captureType(objectLoader.createCompactedResource('"256.36"'),
-        objectLoader.createCompactedResource({ range: IRIS_XSD.decimal }))).term.valueRaw)
-        .toEqual(256.36);
-    });
-    it('should capture doubles', () => {
-      expect((<any> handler.captureType(objectLoader.createCompactedResource('"1"'),
-        objectLoader.createCompactedResource({ range: IRIS_XSD.double }))).term.valueRaw)
-        .toEqual(1);
-      expect((<any> handler.captureType(objectLoader.createCompactedResource('"256.36"'),
-        objectLoader.createCompactedResource({ range: IRIS_XSD.double }))).term.valueRaw)
-        .toEqual(256.36);
-    });
+      it('should throw on param with range and unequal value @type', () => {
+        expect(() => handler.captureType(
+          objectLoader.createCompactedResource({
+            '@id': 'ex:abc',
+            range: 'ex:OtherType',
+          }),
+          objectLoader.createCompactedResource({
+            range: 'ex:RangeType',
+          }),
+        )).toThrow(/The value "ex:abc" for parameter ".*" is not of required range type "ex:RangeType"/u);
+      });
 
-    it('should capture JSON', () => {
-      expect((<any> handler.captureType(objectLoader.createCompactedResource('"1"'),
-        objectLoader.createCompactedResource({ range: IRIS_RDF.JSON }))).term.valueRaw)
-        .toEqual(1);
-      expect((<any> handler.captureType(objectLoader.createCompactedResource('"{"a":"b"}"'),
-        objectLoader.createCompactedResource({ range: IRIS_RDF.JSON }))).term.valueRaw)
-        .toEqual({ a: 'b' });
-    });
-    it('should error on invalid JSON', () => {
-      expect(() => handler.captureType(objectLoader.createCompactedResource('"{a:\\"b\\"}"'),
-        objectLoader.createCompactedResource({ range: IRIS_RDF.JSON, '@id': 'param' })))
-        .toThrowError(/^Parameter value .* is not of required range type/u);
+      it('should handle param with range and equal value @type', () => {
+        expect(handler.captureType(
+          objectLoader.createCompactedResource({
+            '@id': 'ex:abc',
+            '@type': 'ex:RangeType',
+          }),
+          objectLoader.createCompactedResource({
+            range: 'ex:RangeType',
+          }),
+        )).toBeTruthy();
+      });
+
+      it('should handle param with range and a value @type that is a sub-type', () => {
+        expect(handler.captureType(
+          objectLoader.createCompactedResource({
+            '@id': 'ex:abc',
+            '@type': {
+              '@id': 'ex:SubRangeType',
+              '@type': 'ex:RangeType',
+            },
+          }),
+          objectLoader.createCompactedResource({
+            range: 'ex:RangeType',
+          }),
+        )).toBeTruthy();
+      });
+
+      it('should throw on param with range and a value @type that is an incompatible sub-type', () => {
+        expect(() => handler.captureType(
+          objectLoader.createCompactedResource({
+            '@id': 'ex:abc',
+            '@type': {
+              '@id': 'ex:SubRangeType',
+              '@type': 'ex:RangeTypeOther',
+            },
+          }),
+          objectLoader.createCompactedResource({
+            range: 'ex:RangeType',
+          }),
+          // eslint-disable-next-line max-len
+        )).toThrow(/^The value "ex:abc" with types "ex:SubRangeType" for parameter ".*" is not of required range type "ex:RangeType"/u);
+      });
+
+      it('should handle param with range and a value @type that is a sub-sub-type', () => {
+        expect(handler.captureType(
+          objectLoader.createCompactedResource({
+            '@id': 'ex:abc',
+            '@type': {
+              '@id': 'ex:SubSubRangeType',
+              '@type': {
+                '@id': 'ex:SubRangeType',
+                '@type': 'ex:RangeType',
+              },
+            },
+          }),
+          objectLoader.createCompactedResource({
+            range: 'ex:RangeType',
+          }),
+        )).toBeTruthy();
+      });
+
+      it('should handle param with range and a value @type that is a sub-class', () => {
+        expect(handler.captureType(
+          objectLoader.createCompactedResource({
+            '@id': 'ex:abc',
+            'http://www.w3.org/2000/01/rdf-schema#subClassOf': {
+              '@id': 'ex:SubRangeType',
+              '@type': 'ex:RangeType',
+            },
+          }),
+          objectLoader.createCompactedResource({
+            range: 'ex:RangeType',
+          }),
+        )).toBeTruthy();
+      });
+
+      it('should throw on param with range and a value @type that is an incompatible sub-class', () => {
+        expect(() => handler.captureType(
+          objectLoader.createCompactedResource({
+            '@id': 'ex:abc',
+            'http://www.w3.org/2000/01/rdf-schema#subClassOf': {
+              '@id': 'ex:SubRangeType',
+              '@type': 'ex:RangeTypeOther',
+            },
+          }),
+          objectLoader.createCompactedResource({
+            range: 'ex:RangeType',
+          }),
+          // eslint-disable-next-line max-len
+        )).toThrow(/^The value "ex:abc" for parameter ".*" is not of required range type "ex:RangeType"/u);
+      });
+
+      it('should handle ignore param with range with sub-parameters and a value @type that is a sub-class', () => {
+        expect(handler.captureType(
+          objectLoader.createCompactedResource({
+            '@id': 'ex:abc',
+            '@type': 'ex:SomeType',
+          }),
+          objectLoader.createCompactedResource({
+            range: {
+              '@id': 'ex:RangeType',
+              parameters: [
+                {
+                  '@id': 'ex:SubParam',
+                },
+              ],
+            },
+          }),
+        )).toBeTruthy();
+      });
     });
   });
 });
