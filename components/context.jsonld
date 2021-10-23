@@ -61,6 +61,22 @@
     "undefined": {
       "@id": "oo:isUndefined"
     },
+    "ParameterRange": {
+      "@id": "oo:ParameterRange"
+    },
+    "ParameterRangeComposed": {
+      "@id": "oo:ParameterRangeComposed"
+    },
+    "ParameterRangeComposedUnion": {
+      "@id": "oo:ParameterRangeComposedUnion"
+    },
+    "ParameterRangeComposedIntersection": {
+      "@id": "oo:ParameterRangeComposedIntersection"
+    },
+    "parameterRangeComposedChildren": {
+      "@id": "oo:parameterRangeComposedChildren",
+      "@type": "@id"
+    },
 
     "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
     "comment": {

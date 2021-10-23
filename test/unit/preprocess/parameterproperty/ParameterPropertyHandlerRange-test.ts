@@ -296,6 +296,141 @@ describe('ParameterPropertyHandlerRange', () => {
           }),
         )).toBeTruthy();
       });
+
+      it('should handle union types with all valid types', () => {
+        expect(handler.captureType(
+          objectLoader.createCompactedResource({
+            '@id': 'ex:abc',
+            '@type': [ 'ex:SomeType1', 'ex:SomeType2' ],
+          }),
+          objectLoader.createCompactedResource({
+            range: {
+              '@type': 'ParameterRangeComposedUnion',
+              parameterRangeComposedChildren: [
+                {
+                  '@id': 'ex:SomeType1',
+                },
+                {
+                  '@id': 'ex:SomeType2',
+                },
+              ],
+            },
+          }),
+        )).toBeTruthy();
+      });
+
+      it('should handle union types with one valid type', () => {
+        expect(handler.captureType(
+          objectLoader.createCompactedResource({
+            '@id': 'ex:abc',
+            '@type': 'ex:SomeType',
+          }),
+          objectLoader.createCompactedResource({
+            range: {
+              '@type': 'ParameterRangeComposedUnion',
+              parameterRangeComposedChildren: [
+                {
+                  '@id': 'ex:SomeTypeInvalid',
+                },
+                {
+                  '@id': 'ex:SomeType',
+                },
+              ],
+            },
+          }),
+        )).toBeTruthy();
+      });
+
+      it('should throw on union types with no valid type', () => {
+        expect(() => handler.captureType(
+          objectLoader.createCompactedResource({
+            '@id': 'ex:abc',
+            '@type': 'ex:SomeType',
+          }),
+          objectLoader.createCompactedResource({
+            range: {
+              '@type': 'ParameterRangeComposedUnion',
+              parameterRangeComposedChildren: [
+                {
+                  '@id': 'ex:SomeTypeInvalid1',
+                },
+                {
+                  '@id': 'ex:SomeTypeInvalid2',
+                },
+              ],
+            },
+          }),
+          // eslint-disable-next-line max-len
+        )).toThrow(/^The value "ex:abc" with types "ex:SomeType" for parameter ".*" is not of required range type "ex:SomeTypeInvalid1 \| ex:SomeTypeInvalid2"/u);
+      });
+
+      it('should handle intersection types with all valid types', () => {
+        expect(handler.captureType(
+          objectLoader.createCompactedResource({
+            '@id': 'ex:abc',
+            '@type': [ 'ex:SomeType1', 'ex:SomeType2' ],
+          }),
+          objectLoader.createCompactedResource({
+            range: {
+              '@type': 'ParameterRangeComposedIntersection',
+              parameterRangeComposedChildren: [
+                {
+                  '@id': 'ex:SomeType1',
+                },
+                {
+                  '@id': 'ex:SomeType2',
+                },
+              ],
+            },
+          }),
+        )).toBeTruthy();
+      });
+
+      it('should throw on intersection types with one valid type', () => {
+        expect(() => handler.captureType(
+          objectLoader.createCompactedResource({
+            '@id': 'ex:abc',
+            '@type': 'ex:SomeType',
+          }),
+          objectLoader.createCompactedResource({
+            range: {
+              '@type': 'ParameterRangeComposedIntersection',
+              parameterRangeComposedChildren: [
+                {
+                  '@id': 'ex:SomeType1',
+                },
+                {
+                  '@id': 'ex:SomeType2',
+                },
+              ],
+            },
+          }),
+          // eslint-disable-next-line max-len
+        )).toThrow(/^The value "ex:abc" with types "ex:SomeType" for parameter ".*" is not of required range type "ex:SomeType1 & ex:SomeType2"/u);
+      });
+
+      it('should throw on intersection types with no valid type', () => {
+        expect(() => handler.captureType(
+          objectLoader.createCompactedResource({
+            '@id': 'ex:abc',
+            '@type': 'ex:SomeType',
+          }),
+          objectLoader.createCompactedResource({
+            range: {
+              '@type': 'ParameterRangeComposedIntersection',
+              parameterRangeComposedChildren: [
+                {
+                  '@id': 'ex:SomeTypeInvalid1',
+                },
+                {
+                  '@id': 'ex:SomeTypeInvalid2',
+                },
+              ],
+            },
+          }),
+          // eslint-disable-next-line max-len
+        )).toThrow(/^The value "ex:abc" with types "ex:SomeType" for parameter ".*" is not of required range type "ex:SomeTypeInvalid1 & ex:SomeTypeInvalid2"/u);
+      });
     });
   });
 });
