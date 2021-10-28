@@ -19,7 +19,7 @@ export class ParameterHandler {
     this.objectLoader = options.objectLoader;
     this.parameterPropertyHandlers = [
       new ParameterPropertyHandlerDefaultScoped(this.objectLoader),
-      new ParameterPropertyHandlerDefault(),
+      new ParameterPropertyHandlerDefault(this.objectLoader),
       new ParameterPropertyHandlerRequired(this.objectLoader),
       new ParameterPropertyHandlerFixed(),
       new ParameterPropertyHandlerUnique(this.objectLoader),

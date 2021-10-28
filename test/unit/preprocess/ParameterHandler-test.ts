@@ -231,6 +231,22 @@ describe('ParameterHandler', () => {
           expectOutputOnlyTerm(handler.applyParameterValues(configRoot, param, configElement), expected);
         });
       });
+
+      describe('with rdf:subject as default', () => {
+        beforeEach(() => {
+          param = objectLoader.createCompactedResource({
+            '@id': 'ex:myParam',
+            default: 'rdf:subject',
+          });
+        });
+
+        it('should be the default for an undefined value', () => {
+          const expected: Resource[] = [
+            objectLoader.createCompactedResource('"ex:myConfig"'),
+          ];
+          expectOutputOnlyTerm(handler.applyParameterValues(configRoot, param, configElement), expected);
+        });
+      });
     });
 
     describe('for parameter with default scoped', () => {
