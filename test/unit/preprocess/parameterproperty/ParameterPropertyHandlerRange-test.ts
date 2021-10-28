@@ -146,6 +146,17 @@ describe('ParameterPropertyHandlerRange', () => {
     });
 
     describe('for non-literals', () => {
+      it('should handle IRIs as values for params with string range', () => {
+        expect(handler.captureType(
+          objectLoader.createCompactedResource({
+            '@id': 'ex:abc',
+          }),
+          objectLoader.createCompactedResource({
+            range: IRIS_XSD.string,
+          }),
+        )).toBeTruthy();
+      });
+
       it('should ignore params without range', () => {
         expect(handler.captureType(
           objectLoader.createCompactedResource({

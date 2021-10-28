@@ -98,6 +98,11 @@ export class ParameterPropertyHandlerRange implements IParameterPropertyHandler 
       }
     }
 
+    // Allow IRIs to be casted to strings
+    if (paramRange && paramRange.value === IRIS_XSD.string && value.type === 'NamedNode') {
+      return true;
+    }
+
     if (!value.isA('Variable') && paramRange && !value.isA(paramRange.term)) {
       // Check if the param type is a composed type
       if (paramRange.isA('ParameterRangeComposedUnion')) {
