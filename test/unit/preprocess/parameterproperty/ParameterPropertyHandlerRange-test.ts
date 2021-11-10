@@ -316,8 +316,8 @@ describe('ParameterPropertyHandlerRange', () => {
           }),
           objectLoader.createCompactedResource({
             range: {
-              '@type': 'ParameterRangeComposedUnion',
-              parameterRangeComposedChildren: [
+              '@type': 'ParameterRangeUnion',
+              parameterRangeElements: [
                 {
                   '@id': 'ex:SomeType1',
                 },
@@ -338,8 +338,8 @@ describe('ParameterPropertyHandlerRange', () => {
           }),
           objectLoader.createCompactedResource({
             range: {
-              '@type': 'ParameterRangeComposedUnion',
-              parameterRangeComposedChildren: [
+              '@type': 'ParameterRangeUnion',
+              parameterRangeElements: [
                 {
                   '@id': 'ex:SomeTypeInvalid',
                 },
@@ -360,8 +360,8 @@ describe('ParameterPropertyHandlerRange', () => {
           }),
           objectLoader.createCompactedResource({
             range: {
-              '@type': 'ParameterRangeComposedUnion',
-              parameterRangeComposedChildren: [
+              '@type': 'ParameterRangeUnion',
+              parameterRangeElements: [
                 {
                   '@id': 'ex:SomeTypeInvalid1',
                 },
@@ -383,8 +383,8 @@ describe('ParameterPropertyHandlerRange', () => {
           }),
           objectLoader.createCompactedResource({
             range: {
-              '@type': 'ParameterRangeComposedIntersection',
-              parameterRangeComposedChildren: [
+              '@type': 'ParameterRangeIntersection',
+              parameterRangeElements: [
                 {
                   '@id': 'ex:SomeType1',
                 },
@@ -405,8 +405,8 @@ describe('ParameterPropertyHandlerRange', () => {
           }),
           objectLoader.createCompactedResource({
             range: {
-              '@type': 'ParameterRangeComposedIntersection',
-              parameterRangeComposedChildren: [
+              '@type': 'ParameterRangeIntersection',
+              parameterRangeElements: [
                 {
                   '@id': 'ex:SomeType1',
                 },
@@ -428,8 +428,8 @@ describe('ParameterPropertyHandlerRange', () => {
           }),
           objectLoader.createCompactedResource({
             range: {
-              '@type': 'ParameterRangeComposedIntersection',
-              parameterRangeComposedChildren: [
+              '@type': 'ParameterRangeIntersection',
+              parameterRangeElements: [
                 {
                   '@id': 'ex:SomeTypeInvalid1',
                 },

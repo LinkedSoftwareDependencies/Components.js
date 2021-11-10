@@ -64,17 +64,14 @@
     "ParameterRange": {
       "@id": "oo:ParameterRange"
     },
-    "ParameterRangeComposed": {
-      "@id": "oo:ParameterRangeComposed"
+    "ParameterRangeUnion": {
+      "@id": "oo:ParameterRangeUnion"
     },
-    "ParameterRangeComposedUnion": {
-      "@id": "oo:ParameterRangeComposedUnion"
+    "ParameterRangeIntersection": {
+      "@id": "oo:ParameterRangeIntersection"
     },
-    "ParameterRangeComposedIntersection": {
-      "@id": "oo:ParameterRangeComposedIntersection"
-    },
-    "parameterRangeComposedChildren": {
-      "@id": "oo:parameterRangeComposedChildren",
+    "parameterRangeElements": {
+      "@id": "oo:parameterRangeElements",
       "@type": "@id"
     },
 

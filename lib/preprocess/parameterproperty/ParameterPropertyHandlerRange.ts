@@ -105,12 +105,12 @@ export class ParameterPropertyHandlerRange implements IParameterPropertyHandler 
 
     if (!value.isA('Variable') && paramRange && !value.isA(paramRange.term)) {
       // Check if the param type is a composed type
-      if (paramRange.isA('ParameterRangeComposedUnion')) {
-        return paramRange.properties.parameterRangeComposedChildren
+      if (paramRange.isA('ParameterRangeUnion')) {
+        return paramRange.properties.parameterRangeElements
           .some(child => this.hasParamValueValidType(value, param, child));
       }
-      if (paramRange.isA('ParameterRangeComposedIntersection')) {
-        return paramRange.properties.parameterRangeComposedChildren
+      if (paramRange.isA('ParameterRangeIntersection')) {
+        return paramRange.properties.parameterRangeElements
           .every(child => this.hasParamValueValidType(value, param, child));
       }
 
@@ -134,13 +134,13 @@ export class ParameterPropertyHandlerRange implements IParameterPropertyHandler 
   }
 
   protected rangeToDisplayString(paramRange: Resource): string {
-    if (paramRange.isA('ParameterRangeComposedUnion')) {
-      return paramRange.properties.parameterRangeComposedChildren
+    if (paramRange.isA('ParameterRangeUnion')) {
+      return paramRange.properties.parameterRangeElements
         .map(child => this.rangeToDisplayString(child))
         .join(' | ');
     }
-    if (paramRange.isA('ParameterRangeComposedIntersection')) {
-      return paramRange.properties.parameterRangeComposedChildren
+    if (paramRange.isA('ParameterRangeIntersection')) {
+      return paramRange.properties.parameterRangeElements
         .map(child => this.rangeToDisplayString(child))
         .join(' & ');
     }
