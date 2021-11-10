@@ -125,6 +125,27 @@ describe('ComponentRegistry', () => {
       componentRegistry.registerModuleResource(module);
       expect(logger.warn).toHaveBeenCalledWith(`Registered a module ex:MyModule without components.`);
     });
+
+    it('should handle a module with one component that already has another module', () => {
+      const module = objectLoader.createCompactedResource({
+        '@id': 'ex:MyModule',
+        components: [
+          {
+            '@id': 'ex:MyComponent',
+            types: 'oo:Class',
+            module: {
+              '@id': 'ex:MyOtherModule',
+            },
+          },
+        ],
+      });
+      componentRegistry.registerModuleResource(module);
+      expect(componentResources['ex:MyComponent']).toBe(module.properties.components[0]);
+      expect(componentResources['ex:MyComponent'].properties.module.map(mod => mod.value)).toEqual([
+        'ex:MyOtherModule',
+        'ex:MyModule',
+      ]);
+    });
   });
 
   describe('registerComponent', () => {

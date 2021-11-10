@@ -68,7 +68,7 @@ export class ComponentRegistry {
   public registerModuleResource(moduleResource: Resource): void {
     if (moduleResource.property.components) {
       for (const component of moduleResource.properties.components) {
-        component.property.module = moduleResource;
+        component.properties.module.push(moduleResource);
         this.registerComponent(component);
       }
     } else {
