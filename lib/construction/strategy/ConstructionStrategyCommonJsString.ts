@@ -126,6 +126,9 @@ export class ConstructionStrategyCommonJsString implements IConstructionStrategy
   }
 
   public createPrimitive(options: ICreationStrategyPrimitiveOptions<string>): string {
+    if (typeof options.value === 'object') {
+      return JSON.stringify(options.value);
+    }
     return typeof options.value === 'string' ? `'${options.value}'` : `${options.value}`;
   }
 

@@ -114,9 +114,9 @@ export interface ICreationStrategyPrimitiveOptions<Instance> {
    */
   settings: IConstructionSettings;
   /**
-   * A string or number value.
+   * A string, number or object value.
    */
-  value: string | number;
+  value: string | number | any;
 }
 
 export interface ICreationStrategyVariableOptions<Instance> {

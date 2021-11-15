@@ -383,6 +383,13 @@ module.exports = urn_comunica_sparqlinit;
         value: 123,
       })).toEqual(`123`);
     });
+
+    it('for an object', () => {
+      expect(constructionStrategy.createPrimitive({
+        settings,
+        value: { a: 'true' },
+      })).toEqual(`{"a":"true"}`);
+    });
   });
 
   describe('getVariableValue', () => {
