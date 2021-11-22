@@ -398,6 +398,24 @@ describe('RdfParser', () => {
         ]);
       expect(logger.warn).not.toHaveBeenCalled();
     });
+
+    it('for a Turtle stream with relative IRIs for defined importPaths', async() => {
+      const logger: any = {
+        warn: jest.fn(),
+      };
+      const options: RdfParserOptions = {
+        path: 'path/to/file.ttl',
+        importPaths: {
+          'http://example.org/': 'path/to/',
+        },
+        logger,
+      };
+      expect(await arrayifyStream(parser.parse(streamifyString(`<s> <p> <o>.`), options)))
+        .toBeRdfIsomorphic([
+          quad('http://example.org/s', 'http://example.org/p', 'http://example.org/o'),
+        ]);
+      expect(logger.warn).not.toHaveBeenCalled();
+    });
   });
 
   describe('fetchFileOrUrl', () => {

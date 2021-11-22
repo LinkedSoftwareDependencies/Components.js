@@ -23,10 +23,23 @@ export class RdfParser {
     options.path = options.path.replace(/\\+/gu, '/');
 
     if (!options.baseIRI) {
-      options.baseIRI = options.path;
-      // Windows paths always contain a ':'
-      if (!options.baseIRI.includes(':') || /^[A-Za-z]:[/\\][^/]/u.test(options.baseIRI)) {
-        options.baseIRI = `file://${options.baseIRI}`;
+      // Try converting path to URL using defined import paths
+      if (options.importPaths) {
+        for (const [ url, file ] of Object.entries(options.importPaths)) {
+          if (options.path.startsWith(file)) {
+            options.baseIRI = `${url}${options.path.slice(file.length)}`;
+            break;
+          }
+        }
+      }
+
+      // Fallback to a baseIRI using the file scheme
+      if (!options.baseIRI) {
+        options.baseIRI = options.path;
+        // Windows paths always contain a ':'
+        if (!options.baseIRI.includes(':') || /^[A-Za-z]:[/\\][^/]/u.test(options.baseIRI)) {
+          options.baseIRI = `file://${options.baseIRI}`;
+        }
       }
     }
 
@@ -95,7 +108,7 @@ export type RdfParserOptions = ParseOptions & {
    */
   contexts?: Record<string, any>;
   /**
-   * The cached import paths.
+   * The cached import paths. (URL -> file)
    */
   importPaths?: Record<string, string>;
   /**

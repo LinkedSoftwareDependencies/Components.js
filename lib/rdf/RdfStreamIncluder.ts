@@ -64,6 +64,7 @@ export class RdfStreamIncluder extends Transform {
         .then((rawStream: Readable) => {
           const data: Readable = new RdfParser().parse(rawStream, {
             ...this.parserOptions,
+            baseIRI: undefined,
             path: relativeFilePath,
             importedFromPath: this.parserOptions.path,
           });
