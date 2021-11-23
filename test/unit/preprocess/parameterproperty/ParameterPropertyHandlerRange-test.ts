@@ -502,6 +502,301 @@ describe('ParameterPropertyHandlerRange', () => {
           // eslint-disable-next-line max-len
         )).toThrow(/^The value "\[ex:abc\]" for parameter ".*" is not of required range type "ex:SomeType1\[\]"/u);
       });
+
+      it('should handle tuple type with single entry', () => {
+        expect(handler.captureType(
+          objectLoader.createCompactedResource({
+            list: [
+              {
+                '@id': 'ex:abc',
+                '@type': [ 'ex:SomeType1' ],
+              },
+            ],
+          }),
+          objectLoader.createCompactedResource({
+            range: {
+              '@type': 'ParameterRangeTuple',
+              parameterRangeElements: [
+                { '@id': 'ex:SomeType1' },
+              ],
+            },
+          }),
+        )).toBeTruthy();
+      });
+
+      it('should throw on tuple type with invalid single entry', () => {
+        expect(() => handler.captureType(
+          objectLoader.createCompactedResource({
+            list: [
+              {
+                '@id': 'ex:abc',
+                '@type': [ 'ex:SomeType1' ],
+              },
+            ],
+          }),
+          objectLoader.createCompactedResource({
+            range: {
+              '@type': 'ParameterRangeTuple',
+              parameterRangeElements: [
+                { '@id': 'ex:SomeType' },
+              ],
+            },
+          }),
+        )).toThrow(/^The value "\[ex:abc\]" for parameter ".*" is not of required range type "\[ex:SomeType\]"/u);
+      });
+
+      it('should throw on tuple type without list', () => {
+        expect(() => handler.captureType(
+          objectLoader.createCompactedResource({}),
+          objectLoader.createCompactedResource({
+            range: {
+              '@type': 'ParameterRangeTuple',
+              parameterRangeElements: [
+                { '@id': 'ex:SomeType' },
+              ],
+            },
+          }),
+        )).toThrow(/^The value ".*" for parameter ".*" is not of required range type "\[ex:SomeType\]"/u);
+      });
+
+      it('should handle tuple type with multiple entries', () => {
+        expect(handler.captureType(
+          objectLoader.createCompactedResource({
+            list: [
+              {
+                '@id': 'ex:abc1',
+                '@type': [ 'ex:SomeType1' ],
+              },
+              {
+                '@id': 'ex:abc2',
+                '@type': [ 'ex:SomeType2' ],
+              },
+              {
+                '@id': 'ex:abc3',
+                '@type': [ 'ex:SomeType3' ],
+              },
+            ],
+          }),
+          objectLoader.createCompactedResource({
+            range: {
+              '@type': 'ParameterRangeTuple',
+              parameterRangeElements: [
+                { '@id': 'ex:SomeType1' },
+                { '@id': 'ex:SomeType2' },
+                { '@id': 'ex:SomeType3' },
+              ],
+            },
+          }),
+        )).toBeTruthy();
+      });
+
+      it('should throw on tuple type with invalid multiple entries', () => {
+        expect(() => handler.captureType(
+          objectLoader.createCompactedResource({
+            list: [
+              {
+                '@id': 'ex:abc1',
+                '@type': [ 'ex:SomeType1' ],
+              },
+              {
+                '@id': 'ex:abc2',
+                '@type': [ 'ex:SomeType2' ],
+              },
+              {
+                '@id': 'ex:abc3',
+                '@type': [ 'ex:SomeType' ],
+              },
+            ],
+          }),
+          objectLoader.createCompactedResource({
+            range: {
+              '@type': 'ParameterRangeTuple',
+              parameterRangeElements: [
+                { '@id': 'ex:SomeType1' },
+                { '@id': 'ex:SomeType2' },
+                { '@id': 'ex:SomeType3' },
+              ],
+            },
+          }),
+          // eslint-disable-next-line max-len
+        )).toThrow(/^The value "\[ex:abc1, ex:abc2, ex:abc3\]" for parameter ".*" is not of required range type "\[ex:SomeType1, ex:SomeType2, ex:SomeType3\]"/u);
+      });
+
+      it('should handle tuple type with single rest entry', () => {
+        expect(handler.captureType(
+          objectLoader.createCompactedResource({
+            list: [
+              {
+                '@id': 'ex:abc1',
+                '@type': [ 'ex:SomeType1' ],
+              },
+              {
+                '@id': 'ex:abc2',
+                '@type': [ 'ex:SomeType1' ],
+              },
+            ],
+          }),
+          objectLoader.createCompactedResource({
+            range: {
+              '@type': 'ParameterRangeTuple',
+              parameterRangeElements: [
+                {
+                  '@type': 'ParameterRangeRest',
+                  parameterRangeValue: { '@id': 'ex:SomeType1' },
+                },
+              ],
+            },
+          }),
+        )).toBeTruthy();
+      });
+
+      it('should throw on tuple type with invalid single rest entry', () => {
+        expect(() => handler.captureType(
+          objectLoader.createCompactedResource({
+            list: [
+              {
+                '@id': 'ex:abc1',
+                '@type': [ 'ex:SomeType1' ],
+              },
+              {
+                '@id': 'ex:abc2',
+                '@type': [ 'ex:SomeType2' ],
+              },
+            ],
+          }),
+          objectLoader.createCompactedResource({
+            range: {
+              '@type': 'ParameterRangeTuple',
+              parameterRangeElements: [
+                {
+                  '@type': 'ParameterRangeRest',
+                  parameterRangeValue: { '@id': 'ex:SomeType1' },
+                },
+              ],
+            },
+          }),
+          // eslint-disable-next-line max-len
+        )).toThrow(/^The value "\[ex:abc1, ex:abc2\]" for parameter ".*" is not of required range type "\[...ex:SomeType1\]"/u);
+      });
+
+      it('should handle tuple type with multiple rest entries', () => {
+        expect(handler.captureType(
+          objectLoader.createCompactedResource({
+            list: [
+              {
+                '@id': 'ex:abc1',
+                '@type': [ 'ex:SomeType1' ],
+              },
+              {
+                '@id': 'ex:abc2',
+                '@type': [ 'ex:SomeType1' ],
+              },
+              {
+                '@id': 'ex:abc3',
+                '@type': [ 'ex:SomeType2' ],
+              },
+              {
+                '@id': 'ex:abc4',
+                '@type': [ 'ex:SomeType2' ],
+              },
+            ],
+          }),
+          objectLoader.createCompactedResource({
+            range: {
+              '@type': 'ParameterRangeTuple',
+              parameterRangeElements: [
+                {
+                  '@type': 'ParameterRangeRest',
+                  parameterRangeValue: { '@id': 'ex:SomeType1' },
+                },
+                {
+                  '@type': 'ParameterRangeRest',
+                  parameterRangeValue: { '@id': 'ex:SomeType2' },
+                },
+              ],
+            },
+          }),
+        )).toBeTruthy();
+      });
+
+      it('should throw on tuple type with invalid multiple rest entries', () => {
+        expect(() => handler.captureType(
+          objectLoader.createCompactedResource({
+            list: [
+              {
+                '@id': 'ex:abc1',
+                '@type': [ 'ex:SomeType1' ],
+              },
+              {
+                '@id': 'ex:abc2',
+                '@type': [ 'ex:SomeType1' ],
+              },
+              {
+                '@id': 'ex:abc3',
+                '@type': [ 'ex:SomeTypeX' ],
+              },
+              {
+                '@id': 'ex:abc4',
+                '@type': [ 'ex:SomeType2' ],
+              },
+            ],
+          }),
+          objectLoader.createCompactedResource({
+            range: {
+              '@type': 'ParameterRangeTuple',
+              parameterRangeElements: [
+                {
+                  '@type': 'ParameterRangeRest',
+                  parameterRangeValue: { '@id': 'ex:SomeType1' },
+                },
+                {
+                  '@type': 'ParameterRangeRest',
+                  parameterRangeValue: { '@id': 'ex:SomeType2' },
+                },
+              ],
+            },
+          }),
+          // eslint-disable-next-line max-len
+        )).toThrow(/^The value "\[ex:abc1, ex:abc2, ex:abc3, ex:abc4\]" for parameter ".*" is not of required range type "\[...ex:SomeType1, ...ex:SomeType2\]"/u);
+      });
+
+      it('should handle tuple type with complex entries', () => {
+        expect(handler.captureType(
+          objectLoader.createCompactedResource({
+            list: [
+              {
+                '@id': 'ex:abc1',
+                '@type': [ 'ex:SomeType1' ],
+              },
+              {
+                '@id': 'ex:abc2',
+                '@type': [ 'ex:SomeType1' ],
+              },
+              {
+                '@id': 'ex:abc3',
+                '@type': [ 'ex:SomeType2' ],
+              },
+              {
+                '@id': 'ex:abc4',
+                '@type': [ 'ex:SomeType3' ],
+              },
+            ],
+          }),
+          objectLoader.createCompactedResource({
+            range: {
+              '@type': 'ParameterRangeTuple',
+              parameterRangeElements: [
+                {
+                  '@type': 'ParameterRangeRest',
+                  parameterRangeValue: { '@id': 'ex:SomeType1' },
+                },
+                { '@id': 'ex:SomeType2' },
+                { '@id': 'ex:SomeType3' },
+              ],
+            },
+          }),
+        )).toBeTruthy();
+      });
     });
   });
 

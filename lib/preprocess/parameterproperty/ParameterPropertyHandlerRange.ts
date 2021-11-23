@@ -132,6 +132,41 @@ export class ParameterPropertyHandlerRange implements IParameterPropertyHandler 
         return paramRange.properties.parameterRangeElements
           .every(child => this.hasParamValueValidType(value, param, child));
       }
+      if (paramRange.isA('ParameterRangeTuple')) {
+        if (!value || !value.list) {
+          return false;
+        }
+
+        // Iterate over list elements and try to match with tuple types
+        const listElements = value.list;
+        const tupleTypes = paramRange.properties.parameterRangeElements;
+        let listIndex = 0;
+        let tupleIndex = 0;
+        while (listIndex < listElements.length && tupleIndex < tupleTypes.length) {
+          if (tupleTypes[tupleIndex].isA('ParameterRangeRest')) {
+            // Rest types can match multiple list elements, so only increment index if no match is found.
+            if (!this.hasParamValueValidType(
+              listElements[listIndex],
+              param,
+              tupleTypes[tupleIndex].property.parameterRangeValue,
+            )) {
+              tupleIndex++;
+            } else {
+              listIndex++;
+            }
+          } else {
+            if (!this.hasParamValueValidType(listElements[listIndex], param, tupleTypes[tupleIndex])) {
+              return false;
+            }
+            tupleIndex++;
+            listIndex++;
+          }
+        }
+
+        return listIndex === listElements.length &&
+          (tupleIndex === tupleTypes.length ||
+            (tupleIndex === tupleTypes.length - 1 && tupleTypes[tupleIndex].isA('ParameterRangeRest')));
+      }
 
       // Check if this param defines a field with sub-params
       if (paramRange.isA('ParameterRangeCollectEntries')) {
@@ -148,7 +183,7 @@ export class ParameterPropertyHandlerRange implements IParameterPropertyHandler 
   protected throwIncorrectTypeError(value: Resource | undefined, parameter: Resource): never {
     const withTypes = value && value.properties.types.length > 0 ? ` with types "${value.properties.types.map(resource => resource.value)}"` : '';
     // eslint-disable-next-line @typescript-eslint/no-extra-parens
-    const valueString = value ? (value.list ? `[${value.list.map(subValue => subValue.value).join(',')}]` : value.value) : 'undefined';
+    const valueString = value ? (value.list ? `[${value.list.map(subValue => subValue.value).join(', ')}]` : value.value) : 'undefined';
     throw new ErrorResourcesContext(`The value "${valueString}"${withTypes} for parameter "${parameter.value}" is not of required range type "${this.rangeToDisplayString(parameter.property.range)}"`, {
       value: value || 'undefined',
       parameter,
@@ -165,6 +200,9 @@ export class ParameterPropertyHandlerRange implements IParameterPropertyHandler 
     if (paramRange.isA('ParameterRangeArray')) {
       return `${this.rangeToDisplayString(paramRange.property.parameterRangeValue)}[]`;
     }
+    if (paramRange.isA('ParameterRangeRest')) {
+      return `...${this.rangeToDisplayString(paramRange.property.parameterRangeValue)}`;
+    }
     if (paramRange.isA('ParameterRangeUnion')) {
       return paramRange.properties.parameterRangeElements
         .map(child => this.rangeToDisplayString(child))
@@ -174,6 +212,11 @@ export class ParameterPropertyHandlerRange implements IParameterPropertyHandler 
       return paramRange.properties.parameterRangeElements
         .map(child => this.rangeToDisplayString(child))
         .join(' & ');
+    }
+    if (paramRange.isA('ParameterRangeTuple')) {
+      return `[${paramRange.properties.parameterRangeElements
+        .map(child => this.rangeToDisplayString(child))
+        .join(', ')}]`;
     }
     return paramRange.value;
   }
