@@ -316,6 +316,76 @@ describe('construction with mapped component configs as Resource', () => {
     });
   });
 
+  describe('for a component with nested array parameters', () => {
+    beforeEach(() => {
+      manager.componentResources['http://example.org/n3#Lexer'] = objectLoader.createCompactedResource({
+        '@id': 'http://example.org/n3#Lexer',
+        requireElement: '"Lexer"',
+        parameters: [
+          {
+            '@id': 'http://example.org/n3#lineMode',
+            range: {
+              '@type': 'ParameterRangeArray',
+              parameterRangeValue: {
+                '@type': 'ParameterRangeArray',
+                parameterRangeValue: 'xsd:string',
+              },
+            },
+          },
+        ],
+        constructorArguments: {
+          list: [
+            {
+              fields: {
+                list: [
+                  {
+                    key: '"lineMode"',
+                    value: 'http://example.org/n3#lineMode',
+                  },
+                ],
+              },
+            },
+          ],
+        },
+        module: {
+          '@id': 'http://example.org/n3',
+          requireName: '"n3"',
+        },
+      });
+    });
+
+    it('instantiated with a config with all parameters as singular value', async() => {
+      const config = objectLoader.createCompactedResource({
+        types: 'http://example.org/n3#Lexer',
+        'http://example.org/n3#lineMode': '"true"',
+      });
+      await expect(configConstructorPool.instantiate(config, settings)).rejects
+        .toThrowError(/The value "true" for parameter ".*lineMode" is not of required range type ".*string\[\]\[\]"/u);
+    });
+
+    it('instantiated with a config with all parameters as list', async() => {
+      const config = objectLoader.createCompactedResource({
+        types: 'http://example.org/n3#Lexer',
+        'http://example.org/n3#lineMode': { list: [ '"true"' ]},
+      });
+      await expect(configConstructorPool.instantiate(config, settings)).rejects
+        // eslint-disable-next-line max-len
+        .toThrowError(/The value "\[true\]" for parameter ".*lineMode" is not of required range type ".*string\[\]\[\]"/u);
+    });
+
+    it('instantiated with a config with all parameters as nested list', async() => {
+      const config = objectLoader.createCompactedResource({
+        types: 'http://example.org/n3#Lexer',
+        'http://example.org/n3#lineMode': { list: [{ list: [ '"true"' ]}]},
+      });
+      const instance = await configConstructorPool.instantiate(config, settings);
+      expect(instance.type).toEqual('LEXER');
+      expect(N3.Lexer).toHaveBeenCalledWith({
+        lineMode: [[ 'true' ]],
+      });
+    });
+  });
+
   describe('for a component with unique parameters', () => {
     beforeEach(() => {
       manager.componentResources['http://example.org/n3#Lexer'] = objectLoader.createCompactedResource({
