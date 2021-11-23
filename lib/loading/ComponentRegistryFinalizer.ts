@@ -87,11 +87,27 @@ export class ComponentRegistryFinalizer {
    * @param extendingConstructorArgs The constructor argument resources to inherit from.
    */
   public inheritConstructorArgumentsEntry(constructorArg: Resource, extendingConstructorArgs: Resource[]): void {
+    // Make sure that we have fields in list-form
+    if (constructorArg.property.fields && !constructorArg.property.fields.list) {
+      if (constructorArg.properties.fields.length > 1) {
+        throw new ErrorResourcesContext(`Invalid fields: Only one value can be defined, or an RDF list must be provided`, {
+          constructorArg,
+        });
+      }
+      constructorArg.property.fields = this.objectLoader.createCompactedResource({
+        list: constructorArg.properties.fields,
+      });
+    }
+
     for (const extendingConstructorArg of extendingConstructorArgs) {
       if (extendingConstructorArg.property.fields) {
-        for (const field of extendingConstructorArg.properties.fields) {
-          if (!constructorArg.properties.fields.includes(field)) {
-            constructorArg.properties.fields.push(field);
+        // Inherit fields
+        for (const field of extendingConstructorArg.property.fields.list || extendingConstructorArg.properties.fields) {
+          if (!constructorArg.property.fields) {
+            constructorArg.property.fields = this.objectLoader.createCompactedResource({ list: []});
+          }
+          if (!constructorArg.property.fields.list!.includes(field)) {
+            constructorArg.property.fields.list!.push(field);
           }
         }
       } else if (!extendingConstructorArg.isA('ObjectMapping') && !extendingConstructorArg.property.extends) {

@@ -29,14 +29,8 @@
       "@id": "oo:constructorArguments",
       "@container": "@list"
     },
-    "unique": {
-      "@id": "oo:uniqueValue"
-    },
     "lazy": {
       "@id": "oo:lazyValue"
-    },
-    "required": {
-      "@id": "oo:required"
     },
     "default": {
       "@id": "oo:defaultValue"
@@ -64,6 +58,16 @@
     "ParameterRange": {
       "@id": "oo:ParameterRange"
     },
+    "ParameterRangeUndefined": {
+      "@id": "oo:ParameterRangeUndefined"
+    },
+    "ParameterRangeArray": {
+      "@id": "oo:ParameterRangeArray"
+    },
+    "parameterRangeValue": {
+      "@id": "oo:parameterRangeValue",
+      "@type": "@id"
+    },
     "ParameterRangeUnion": {
       "@id": "oo:ParameterRangeUnion"
     },
@@ -72,6 +76,13 @@
     },
     "parameterRangeElements": {
       "@id": "oo:parameterRangeElements",
+      "@type": "@id"
+    },
+    "ParameterRangeCollectEntries": {
+      "@id": "oo:ParameterRangeCollectEntries"
+    },
+    "parameterRangeCollectEntriesParameters": {
+      "@id": "oo:parameterRangeCollectEntriesParameters",
       "@type": "@id"
     },
 
@@ -129,7 +140,8 @@
     },
     "fields": {
       "@id": "om:field",
-      "@type": "om:ObjectMapEntry"
+      "@type": "om:ObjectMapEntry",
+      "@container": "@list"
     },
     "elements": {
       "@id": "om:elements",
@@ -138,7 +150,8 @@
     },
     "collectEntries": {
       "@id": "om:collectsEntriesFrom",
-      "@type": "@id"
+      "@type": "@id",
+      "@container": "@list"
     },
     "keyRaw": {
       "@id": "om:fieldName"

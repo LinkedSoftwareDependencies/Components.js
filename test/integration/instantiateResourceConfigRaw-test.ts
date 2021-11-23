@@ -40,7 +40,28 @@ describe('construction with component configs as Resource', () => {
       arguments: {
         list: [
           {
-            fields: [{ key: '"comments"', value: '"true"' }],
+            fields: {
+              list: [{ key: '"comments"', value: '"true"' }],
+            },
+          },
+        ],
+      },
+    });
+    const instance = await configConstructorPool.instantiate(config, settings);
+    expect(instance.type).toEqual('LEXER');
+    expect(N3.Lexer).toHaveBeenCalledWith({ comments: 'true' });
+  });
+
+  it('for a config instantiated with an argument with list value', async() => {
+    const config = objectLoader.createCompactedResource({
+      requireName: '"n3"',
+      requireElement: '"Lexer"',
+      arguments: {
+        list: [
+          {
+            fields: {
+              list: [{ key: '"comments"', value: { list: [ '"true"' ]}}],
+            },
           },
         ],
       },
@@ -75,7 +96,9 @@ describe('construction with component configs as Resource', () => {
       arguments: {
         list: [
           {
-            fields: [{ key: '"comments"', value: '"true"' }],
+            fields: {
+              list: [{ key: '"comments"', value: '"true"' }],
+            },
           },
         ],
       },
@@ -86,10 +109,12 @@ describe('construction with component configs as Resource', () => {
       arguments: {
         list: [
           {
-            fields: [
-              { key: '"format"', value: '"application/trig"' },
-              { key: '"lexer"', value: n3LexerConfig },
-            ],
+            fields: {
+              list: [
+                { key: '"format"', value: '"application/trig"' },
+                { key: '"lexer"', value: n3LexerConfig },
+              ],
+            },
           },
         ],
       },
@@ -97,13 +122,11 @@ describe('construction with component configs as Resource', () => {
     const instance = await configConstructorPool.instantiate(config, settings);
     expect(instance.type).toEqual('PARSER');
     expect(N3.Parser).toHaveBeenCalledWith({
-      format: [ 'application/trig' ],
-      lexer: [
-        {
-          type: 'LEXER',
-          args: { comments: [ 'true' ]},
-        },
-      ],
+      format: 'application/trig',
+      lexer: {
+        type: 'LEXER',
+        args: { comments: 'true' },
+      },
     });
   });
 

@@ -8,7 +8,7 @@
     {
       "@id": "ex:myHelloWorld1",
       "@type": "ex:HelloWorldModule#SayHelloComponent1",
-      "hello:something": [
+      "hello:something": { "@list": [
         {
           "hello:somethingKey": "KEY1",
           "hello:somethingValue": "VALUE1"
@@ -17,7 +17,7 @@
           "hello:somethingKey": "KEY2",
           "hello:somethingValue": "VALUE2"
         }
-      ]
+      ] }
     },
     {
       "@id": "ex:myHelloWorld2",

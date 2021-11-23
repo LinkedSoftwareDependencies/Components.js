@@ -13,7 +13,7 @@ export class ArgumentConstructorHandlerHash implements IArgumentConstructorHandl
     settings: IConstructionSettings,
     argsCreator: IArgumentsConstructor<Instance>,
   ): boolean {
-    return Boolean(value.property.fields || value.property.hasFields);
+    return Boolean(value.property.fields);
   }
 
   public async handle<Instance>(
@@ -21,8 +21,10 @@ export class ArgumentConstructorHandlerHash implements IArgumentConstructorHandl
     settings: IConstructionSettings,
     argsCreator: IArgumentsConstructor<Instance>,
   ): Promise<Instance> {
+    const fields = argument.property.fields.list || [];
+
     // Determine all key-value pairs
-    const entries = await Promise.all(argument.properties.fields.map(async(entry: Resource) => {
+    const entries = await Promise.all(fields.map(async(entry: Resource) => {
       // Validate entry
       if (!entry.property.key) {
         throw new ErrorResourcesContext(`Missing key in fields entry`, { entry, argument });

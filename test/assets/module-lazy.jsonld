@@ -17,7 +17,7 @@
           "@type": "Class",
           "requireElement": "Hello",
           "parameters": [
-            { "@id": "hello:somethingLazy", "unique": true, "lazy": true }
+            { "@id": "hello:somethingLazy", "lazy": true }
           ],
           "constructorArguments": [
             {

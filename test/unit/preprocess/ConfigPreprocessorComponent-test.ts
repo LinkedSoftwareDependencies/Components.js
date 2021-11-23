@@ -160,8 +160,7 @@ describe('ConfigPreprocessorComponent', () => {
     function expectTransformOutput(config: Resource, expectedArgs: Resource) {
       const hr = <IComponentConfigPreprocessorHandleResponse> preprocessor.canHandle(config);
       const ret = preprocessor.transformConstructorArguments(config, hr);
-      expect(ret).toHaveLength(1);
-      expect(expectedArgs.toQuads()).toBeRdfIsomorphic(ret[0].toQuads());
+      expect(expectedArgs.toQuads()).toBeRdfIsomorphic(ret.toQuads());
     }
 
     it('should handle no parameters', () => {
@@ -176,7 +175,9 @@ describe('ConfigPreprocessorComponent', () => {
       const expectedArgs = objectLoader.createCompactedResource({
         list: [
           {
-            hasFields: '"true"',
+            fields: {
+              list: [],
+            },
           },
         ],
       });
@@ -200,12 +201,13 @@ describe('ConfigPreprocessorComponent', () => {
       const expectedArgs = objectLoader.createCompactedResource({
         list: [
           {
-            hasFields: '"true"',
-            fields: [
-              {
-                key: '"ex:myComponentInstance#param1"',
-              },
-            ],
+            fields: {
+              list: [
+                {
+                  key: '"ex:myComponentInstance#param1"',
+                },
+              ],
+            },
           },
         ],
       });
@@ -230,20 +232,21 @@ describe('ConfigPreprocessorComponent', () => {
       const expectedArgs = objectLoader.createCompactedResource({
         list: [
           {
-            hasFields: '"true"',
-            fields: [
-              {
-                key: '"ex:myComponentInstance#param1"',
-                value: '"A"',
-              },
-            ],
+            fields: {
+              list: [
+                {
+                  key: '"ex:myComponentInstance#param1"',
+                  value: '"A"',
+                },
+              ],
+            },
           },
         ],
       });
       expectTransformOutput(config, expectedArgs);
     });
 
-    it('should handle one parameter with multiple values', () => {
+    it('should reject one parameter with multiple values as non-list', () => {
       const config = objectLoader.createCompactedResource({
         '@id': 'ex:myComponentInstance',
         types: 'ex:ComponentThis',
@@ -262,20 +265,49 @@ describe('ConfigPreprocessorComponent', () => {
           },
         ],
       });
+      const expectedArgs = objectLoader.createCompactedResource({});
+      expect(() => expectTransformOutput(config, expectedArgs))
+        .toThrowError(`Detected multiple values for parameter ex:myComponentInstance#param1. RDF lists should be used for defining multiple values.`);
+    });
+
+    it('should handle one parameter with multiple values as list', () => {
+      const config = objectLoader.createCompactedResource({
+        '@id': 'ex:myComponentInstance',
+        types: 'ex:ComponentThis',
+        'ex:myComponentInstance#param1': {
+          list: [
+            '"A"',
+            '"B"',
+            '"C"',
+          ],
+        },
+      });
+      componentResources['ex:ComponentThis'] = objectLoader.createCompactedResource({
+        '@id': 'ex:ComponentThis',
+        module: 'ex:Module',
+        parameters: [
+          {
+            '@id': 'ex:myComponentInstance#param1',
+          },
+        ],
+      });
       const expectedArgs = objectLoader.createCompactedResource({
         list: [
           {
-            hasFields: '"true"',
-            fields: [
-              {
-                key: '"ex:myComponentInstance#param1"',
-                value: [
-                  '"A"',
-                  '"B"',
-                  '"C"',
-                ],
-              },
-            ],
+            fields: {
+              list: [
+                {
+                  key: '"ex:myComponentInstance#param1"',
+                  value: {
+                    list: [
+                      '"A"',
+                      '"B"',
+                      '"C"',
+                    ],
+                  },
+                },
+              ],
+            },
           },
         ],
       });
@@ -308,21 +340,22 @@ describe('ConfigPreprocessorComponent', () => {
       const expectedArgs = objectLoader.createCompactedResource({
         list: [
           {
-            hasFields: '"true"',
-            fields: [
-              {
-                key: '"ex:myComponentInstance#param1"',
-                value: '"A"',
-              },
-              {
-                key: '"ex:myComponentInstance#param2"',
-                value: '"B"',
-              },
-              {
-                key: '"ex:myComponentInstance#param3"',
-                value: '"C"',
-              },
-            ],
+            fields: {
+              list: [
+                {
+                  key: '"ex:myComponentInstance#param1"',
+                  value: '"A"',
+                },
+                {
+                  key: '"ex:myComponentInstance#param2"',
+                  value: '"B"',
+                },
+                {
+                  key: '"ex:myComponentInstance#param3"',
+                  value: '"C"',
+                },
+              ],
+            },
           },
         ],
       });
@@ -356,7 +389,9 @@ describe('ConfigPreprocessorComponent', () => {
           {
             list: [
               {
-                hasFields: '"true"',
+                fields: {
+                  list: [],
+                },
               },
             ],
           },
@@ -398,21 +433,22 @@ describe('ConfigPreprocessorComponent', () => {
           {
             list: [
               {
-                hasFields: '"true"',
-                fields: [
-                  {
-                    key: '"ex:myComponentInstance#param1"',
-                    value: '"A"',
-                  },
-                  {
-                    key: '"ex:myComponentInstance#param2"',
-                    value: '"B"',
-                  },
-                  {
-                    key: '"ex:myComponentInstance#param3"',
-                    value: '"C"',
-                  },
-                ],
+                fields: {
+                  list: [
+                    {
+                      key: '"ex:myComponentInstance#param1"',
+                      value: '"A"',
+                    },
+                    {
+                      key: '"ex:myComponentInstance#param2"',
+                      value: '"B"',
+                    },
+                    {
+                      key: '"ex:myComponentInstance#param3"',
+                      value: '"C"',
+                    },
+                  ],
+                },
               },
             ],
           },
@@ -441,7 +477,9 @@ describe('ConfigPreprocessorComponent', () => {
           {
             list: [
               {
-                hasFields: '"true"',
+                fields: {
+                  list: [],
+                },
               },
             ],
           },
@@ -486,7 +524,9 @@ describe('ConfigPreprocessorComponent', () => {
           {
             list: [
               {
-                hasFields: '"true"',
+                fields: {
+                  list: [],
+                },
               },
             ],
           },
@@ -516,7 +556,9 @@ describe('ConfigPreprocessorComponent', () => {
           {
             list: [
               {
-                hasFields: '"true"',
+                fields: {
+                  list: [],
+                },
               },
             ],
           },
@@ -560,16 +602,17 @@ describe('ConfigPreprocessorComponent', () => {
           {
             list: [
               {
-                hasFields: '"true"',
-                fields: [
-                  {
-                    key: '"ex:ComponentInherit#param1"',
-                  },
-                  {
-                    key: '"ex:OtherComponent#param1"',
-                    value: '"ABC"',
-                  },
-                ],
+                fields: {
+                  list: [
+                    {
+                      key: '"ex:ComponentInherit#param1"',
+                    },
+                    {
+                      key: '"ex:OtherComponent#param1"',
+                      value: '"ABC"',
+                    },
+                  ],
+                },
               },
             ],
           },

@@ -289,7 +289,7 @@ describe('ParameterPropertyHandlerRange', () => {
         )).toThrow(/^The value "ex:abc" for parameter ".*" is not of required range type "ex:RangeType"/u);
       });
 
-      it('should handle ignore param with range with sub-parameters and a value @type that is a sub-class', () => {
+      it('should handle ignore param with range ParameterRangeCollectEntries', () => {
         expect(handler.captureType(
           objectLoader.createCompactedResource({
             '@id': 'ex:abc',
@@ -298,11 +298,7 @@ describe('ParameterPropertyHandlerRange', () => {
           objectLoader.createCompactedResource({
             range: {
               '@id': 'ex:RangeType',
-              parameters: [
-                {
-                  '@id': 'ex:SubParam',
-                },
-              ],
+              '@type': 'ParameterRangeCollectEntries',
             },
           }),
         )).toBeTruthy();
@@ -442,6 +438,83 @@ describe('ParameterPropertyHandlerRange', () => {
           // eslint-disable-next-line max-len
         )).toThrow(/^The value "ex:abc" with types "ex:SomeType" for parameter ".*" is not of required range type "ex:SomeTypeInvalid1 & ex:SomeTypeInvalid2"/u);
       });
+
+      it('should handle param with undefined range and undefined value', () => {
+        expect(handler.captureType(
+          undefined,
+          objectLoader.createCompactedResource({
+            range: { '@type': 'ParameterRangeUndefined' },
+          }),
+        )).toBeUndefined();
+      });
+
+      it('should handle array type with valid types', () => {
+        expect(handler.captureType(
+          objectLoader.createCompactedResource({
+            list: [
+              {
+                '@id': 'ex:abc',
+                '@type': [ 'ex:SomeType1', 'ex:SomeType2' ],
+              },
+            ],
+          }),
+          objectLoader.createCompactedResource({
+            range: {
+              '@type': 'ParameterRangeArray',
+              parameterRangeValue: { '@id': 'ex:SomeType1' },
+            },
+          }),
+        )).toBeTruthy();
+      });
+
+      it('should throw on array type without list', () => {
+        expect(() => handler.captureType(
+          objectLoader.createCompactedResource({
+            '@id': 'ex:abc',
+            '@type': 'ex:SomeType1',
+          }),
+          objectLoader.createCompactedResource({
+            range: {
+              '@type': 'ParameterRangeArray',
+              parameterRangeValue: { '@id': 'ex:SomeType1' },
+            },
+          }),
+          // eslint-disable-next-line max-len
+        )).toThrow(/^The value "ex:abc" with types "ex:SomeType1" for parameter ".*" is not of required range type "ex:SomeType1\[\]"/u);
+      });
+
+      it('should throw on array type with invalid list element type', () => {
+        expect(() => handler.captureType(
+          objectLoader.createCompactedResource({
+            list: [
+              {
+                '@id': 'ex:abc',
+                '@type': 'ex:SomeType',
+              },
+            ],
+          }),
+          objectLoader.createCompactedResource({
+            range: {
+              '@type': 'ParameterRangeArray',
+              parameterRangeValue: { '@id': 'ex:SomeType1' },
+            },
+          }),
+          // eslint-disable-next-line max-len
+        )).toThrow(/^The value "\[ex:abc\]" for parameter ".*" is not of required range type "ex:SomeType1\[\]"/u);
+      });
+    });
+  });
+
+  describe('rangeToDisplayString', () => {
+    it('handles undefined range', () => {
+      // eslint-disable-next-line unicorn/no-useless-undefined
+      expect(handler.rangeToDisplayString(undefined)).toEqual('any');
+    });
+
+    it('handles ParameterRangeUndefined range', () => {
+      expect(handler.rangeToDisplayString(objectLoader.createCompactedResource({
+        '@type': 'ParameterRangeUndefined',
+      }))).toEqual('undefined');
     });
   });
 });

@@ -13,14 +13,17 @@ export class ParameterPropertyHandlerRange implements IParameterPropertyHandler 
     this.objectLoader = objectLoader;
   }
 
-  public canHandle(value: Resource[], configRoot: Resource, parameter: Resource, configElement: Resource): boolean {
+  public canHandle(value: Resource | undefined, configRoot: Resource, parameter: Resource): boolean {
     return Boolean(parameter.property.range);
   }
 
-  public handle(value: Resource[], configRoot: Resource, parameter: Resource, configElement: Resource): Resource[] {
-    for (const subValue of value) {
-      this.captureType(subValue, parameter);
-    }
+  public handle(
+    value: Resource | undefined,
+    configRoot: Resource,
+    parameter: Resource,
+    configElement: Resource,
+  ): Resource | undefined {
+    this.captureType(value, parameter);
     return value;
   }
 
@@ -32,7 +35,7 @@ export class ParameterPropertyHandlerRange implements IParameterPropertyHandler 
    * @param value The value.
    * @param param The parameter.
    */
-  public captureType(value: Resource, param: Resource): Resource {
+  public captureType(value: Resource | undefined, param: Resource): Resource | undefined {
     if (this.hasParamValueValidType(value, param, param.property.range)) {
       return value;
     }
@@ -48,8 +51,16 @@ export class ParameterPropertyHandlerRange implements IParameterPropertyHandler 
    * @param param The parameter.
    * @param paramRange The parameter's range.
    */
-  public hasParamValueValidType(value: Resource, param: Resource, paramRange: Resource): boolean {
-    if (value.type === 'Literal') {
+  public hasParamValueValidType(value: Resource | undefined, param: Resource, paramRange: Resource): boolean {
+    if (!paramRange) {
+      return true;
+    }
+
+    if (!value && paramRange.isA('ParameterRangeUndefined')) {
+      return true;
+    }
+
+    if (value && value.type === 'Literal') {
       let parsed;
       switch (paramRange.value) {
         case IRIS_XSD.string:
@@ -99,11 +110,19 @@ export class ParameterPropertyHandlerRange implements IParameterPropertyHandler 
     }
 
     // Allow IRIs to be casted to strings
-    if (paramRange && paramRange.value === IRIS_XSD.string && value.type === 'NamedNode') {
+    if (value && paramRange && paramRange.value === IRIS_XSD.string && value.type === 'NamedNode') {
       return true;
     }
 
-    if (!value.isA('Variable') && paramRange && !value.isA(paramRange.term)) {
+    if (paramRange && (!value || (!value.isA('Variable') && !value.isA(paramRange.term)))) {
+      if (value && paramRange.isA('ParameterRangeArray')) {
+        if (!value.list) {
+          return false;
+        }
+        return value.list.every(listElement => this
+          .hasParamValueValidType(listElement, param, paramRange.property.parameterRangeValue));
+      }
+
       // Check if the param type is a composed type
       if (paramRange.isA('ParameterRangeUnion')) {
         return paramRange.properties.parameterRangeElements
@@ -115,25 +134,37 @@ export class ParameterPropertyHandlerRange implements IParameterPropertyHandler 
       }
 
       // Check if this param defines a field with sub-params
-      if (paramRange.properties.parameters.length > 0) {
+      if (paramRange.isA('ParameterRangeCollectEntries')) {
         // TODO: Add support for type-checking nested fields with collectEntries
-      } else {
-        return false;
+        return true;
       }
+
+      return false;
     }
 
     return true;
   }
 
-  protected throwIncorrectTypeError(value: Resource, parameter: Resource): never {
-    const withTypes = value.properties.types.length > 0 ? ` with types "${value.properties.types.map(resource => resource.value)}"` : '';
-    throw new ErrorResourcesContext(`The value "${value.value}"${withTypes} for parameter "${parameter.value}" is not of required range type "${this.rangeToDisplayString(parameter.property.range)}"`, {
-      value,
+  protected throwIncorrectTypeError(value: Resource | undefined, parameter: Resource): never {
+    const withTypes = value && value.properties.types.length > 0 ? ` with types "${value.properties.types.map(resource => resource.value)}"` : '';
+    // eslint-disable-next-line @typescript-eslint/no-extra-parens
+    const valueString = value ? (value.list ? `[${value.list.map(subValue => subValue.value).join(',')}]` : value.value) : 'undefined';
+    throw new ErrorResourcesContext(`The value "${valueString}"${withTypes} for parameter "${parameter.value}" is not of required range type "${this.rangeToDisplayString(parameter.property.range)}"`, {
+      value: value || 'undefined',
       parameter,
     });
   }
 
-  protected rangeToDisplayString(paramRange: Resource): string {
+  public rangeToDisplayString(paramRange: Resource | undefined): string {
+    if (!paramRange) {
+      return `any`;
+    }
+    if (paramRange.isA('ParameterRangeUndefined')) {
+      return `undefined`;
+    }
+    if (paramRange.isA('ParameterRangeArray')) {
+      return `${this.rangeToDisplayString(paramRange.property.parameterRangeValue)}[]`;
+    }
     if (paramRange.isA('ParameterRangeUnion')) {
       return paramRange.properties.parameterRangeElements
         .map(child => this.rangeToDisplayString(child))

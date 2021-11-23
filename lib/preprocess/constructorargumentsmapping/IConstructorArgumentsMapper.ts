@@ -22,7 +22,7 @@ export interface IConstructorArgumentsMapper {
     configRoot: Resource,
     constructorArgs: Resource,
     configElement: Resource,
-  ) => Resource[];
+  ) => Resource;
 
   /**
    * Obtain the value(s) of the given parameter in the given config.
@@ -36,5 +36,5 @@ export interface IConstructorArgumentsMapper {
     parameter: Resource,
     configElement: Resource,
     rawValue: boolean,
-  ) => Resource[];
+  ) => Resource | undefined;
 }

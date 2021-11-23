@@ -86,33 +86,41 @@ describe('construction with mapped component configs as Resource', () => {
     });
   });
 
-  describe('for a component with non-unique parameters', () => {
+  describe('for a component with parameters without range', () => {
     beforeEach(() => {
       manager.componentResources['http://example.org/n3#Lexer'] = objectLoader.createCompactedResource({
         '@id': 'http://example.org/n3#Lexer',
         requireElement: '"Lexer"',
         parameters: [
-          { '@id': 'http://example.org/n3#lineMode' },
-          { '@id': 'http://example.org/n3#n3' },
-          { '@id': 'http://example.org/n3#comments' },
+          {
+            '@id': 'http://example.org/n3#lineMode',
+          },
+          {
+            '@id': 'http://example.org/n3#n3',
+          },
+          {
+            '@id': 'http://example.org/n3#comments',
+          },
         ],
         constructorArguments: {
           list: [
             {
-              fields: [
-                {
-                  key: '"lineMode"',
-                  value: 'http://example.org/n3#lineMode',
-                },
-                {
-                  key: '"n3"',
-                  value: 'http://example.org/n3#n3',
-                },
-                {
-                  key: '"comments"',
-                  value: 'http://example.org/n3#comments',
-                },
-              ],
+              fields: {
+                list: [
+                  {
+                    key: '"lineMode"',
+                    value: 'http://example.org/n3#lineMode',
+                  },
+                  {
+                    key: '"n3"',
+                    value: 'http://example.org/n3#n3',
+                  },
+                  {
+                    key: '"comments"',
+                    value: 'http://example.org/n3#comments',
+                  },
+                ],
+              },
             },
           ],
         },
@@ -123,12 +131,41 @@ describe('construction with mapped component configs as Resource', () => {
       });
     });
 
-    it('instantiated with a config with all parameters', async() => {
+    it('instantiated with a config without all parameters', async() => {
+      const config = objectLoader.createCompactedResource({
+        types: 'http://example.org/n3#Lexer',
+      });
+      const instance = await configConstructorPool.instantiate(config, settings);
+      expect(instance.type).toEqual('LEXER');
+      expect(N3.Lexer).toHaveBeenCalledWith({
+        lineMode: undefined,
+        n3: undefined,
+        comments: undefined,
+      });
+    });
+
+    it('instantiated with a config with all parameters as singular value', async() => {
       const config = objectLoader.createCompactedResource({
         types: 'http://example.org/n3#Lexer',
         'http://example.org/n3#lineMode': '"true"',
         'http://example.org/n3#n3': '"true"',
         'http://example.org/n3#comments': '"true"',
+      });
+      const instance = await configConstructorPool.instantiate(config, settings);
+      expect(instance.type).toEqual('LEXER');
+      expect(N3.Lexer).toHaveBeenCalledWith({
+        lineMode: 'true',
+        n3: 'true',
+        comments: 'true',
+      });
+    });
+
+    it('instantiated with a config with all parameters as singular value in list', async() => {
+      const config = objectLoader.createCompactedResource({
+        types: 'http://example.org/n3#Lexer',
+        'http://example.org/n3#lineMode': { list: [ '"true"' ]},
+        'http://example.org/n3#n3': { list: [ '"true"' ]},
+        'http://example.org/n3#comments': { list: [ '"true"' ]},
       });
       const instance = await configConstructorPool.instantiate(config, settings);
       expect(instance.type).toEqual('LEXER');
@@ -139,12 +176,135 @@ describe('construction with mapped component configs as Resource', () => {
       });
     });
 
-    it('instantiated with a config with all parameters with multiple values', async() => {
+    it('instantiated with a config with all parameters with multiple values as non-list', async() => {
       const config = objectLoader.createCompactedResource({
         types: 'http://example.org/n3#Lexer',
         'http://example.org/n3#lineMode': [ '"A1"', '"A2"' ],
         'http://example.org/n3#n3': [ '"B1"', '"B2"' ],
         'http://example.org/n3#comments': [ '"C1"', '"C2"' ],
+      });
+      await expect(configConstructorPool.instantiate(config, settings)).rejects
+        .toThrowError(`Detected multiple values for parameter http://example.org/n3#lineMode. RDF lists should be used for defining multiple values.`);
+    });
+
+    it('instantiated with a config with all parameters with multiple values as list', async() => {
+      const config = objectLoader.createCompactedResource({
+        types: 'http://example.org/n3#Lexer',
+        'http://example.org/n3#lineMode': { list: [ '"A1"', '"A2"' ]},
+        'http://example.org/n3#n3': { list: [ '"B1"', '"B2"' ]},
+        'http://example.org/n3#comments': { list: [ '"C1"', '"C2"' ]},
+      });
+      const instance = await configConstructorPool.instantiate(config, settings);
+      expect(instance.type).toEqual('LEXER');
+      expect(N3.Lexer).toHaveBeenCalledWith({
+        lineMode: [ 'A1', 'A2' ],
+        n3: [ 'B1', 'B2' ],
+        comments: [ 'C1', 'C2' ],
+      });
+    });
+  });
+
+  describe('for a component with non-unique parameters', () => {
+    beforeEach(() => {
+      manager.componentResources['http://example.org/n3#Lexer'] = objectLoader.createCompactedResource({
+        '@id': 'http://example.org/n3#Lexer',
+        requireElement: '"Lexer"',
+        parameters: [
+          {
+            '@id': 'http://example.org/n3#lineMode',
+            range: {
+              '@type': 'ParameterRangeArray',
+              parameterRangeValue: 'xsd:string',
+            },
+          },
+          {
+            '@id': 'http://example.org/n3#n3',
+            range: {
+              '@type': 'ParameterRangeArray',
+              parameterRangeValue: 'xsd:string',
+            },
+          },
+          {
+            '@id': 'http://example.org/n3#comments',
+            range: {
+              '@type': 'ParameterRangeArray',
+              parameterRangeValue: 'xsd:string',
+            },
+          },
+        ],
+        constructorArguments: {
+          list: [
+            {
+              fields: {
+                list: [
+                  {
+                    key: '"lineMode"',
+                    value: 'http://example.org/n3#lineMode',
+                  },
+                  {
+                    key: '"n3"',
+                    value: 'http://example.org/n3#n3',
+                  },
+                  {
+                    key: '"comments"',
+                    value: 'http://example.org/n3#comments',
+                  },
+                ],
+              },
+            },
+          ],
+        },
+        module: {
+          '@id': 'http://example.org/n3',
+          requireName: '"n3"',
+        },
+      });
+    });
+
+    it('instantiated with a config with all parameters as singular value', async() => {
+      const config = objectLoader.createCompactedResource({
+        types: 'http://example.org/n3#Lexer',
+        'http://example.org/n3#lineMode': '"true"',
+        'http://example.org/n3#n3': '"true"',
+        'http://example.org/n3#comments': '"true"',
+      });
+      await expect(configConstructorPool.instantiate(config, settings)).rejects
+        .toThrowError(/The value "true" for parameter ".*lineMode" is not of required range type ".*string\[\]"/u);
+    });
+
+    it('instantiated with a config with all parameters as singular value in list', async() => {
+      const config = objectLoader.createCompactedResource({
+        types: 'http://example.org/n3#Lexer',
+        'http://example.org/n3#lineMode': { list: [ '"true"' ]},
+        'http://example.org/n3#n3': { list: [ '"true"' ]},
+        'http://example.org/n3#comments': { list: [ '"true"' ]},
+      });
+      const instance = await configConstructorPool.instantiate(config, settings);
+      expect(instance.type).toEqual('LEXER');
+      expect(N3.Lexer).toHaveBeenCalledWith({
+        lineMode: [ 'true' ],
+        n3: [ 'true' ],
+        comments: [ 'true' ],
+      });
+    });
+
+    it('instantiated with a config with all parameters with multiple values as non-list', async() => {
+      const config = objectLoader.createCompactedResource({
+        types: 'http://example.org/n3#Lexer',
+        'http://example.org/n3#lineMode': [ '"A1"', '"A2"' ],
+        'http://example.org/n3#n3': [ '"B1"', '"B2"' ],
+        'http://example.org/n3#comments': [ '"C1"', '"C2"' ],
+      });
+      await expect(configConstructorPool.instantiate(config, settings)).rejects
+        .toThrowError(`Detected multiple values for parameter http://example.org/n3#lineMode. RDF lists should be used for defining multiple values.`);
+    });
+
+    it('instantiated with a config with all parameters with multiple values as list', async() => {
+      const config = objectLoader.createCompactedResource({
+        types: 'http://example.org/n3#Lexer',
+        'http://example.org/n3#lineMode': { list: [ '"A1"', '"A2"' ]},
+        'http://example.org/n3#n3': { list: [ '"B1"', '"B2"' ]},
+        'http://example.org/n3#comments': { list: [ '"C1"', '"C2"' ]},
       });
       const instance = await configConstructorPool.instantiate(config, settings);
       expect(instance.type).toEqual('LEXER');
@@ -162,27 +322,29 @@ describe('construction with mapped component configs as Resource', () => {
         '@id': 'http://example.org/n3#Lexer',
         requireElement: '"Lexer"',
         parameters: [
-          { '@id': 'http://example.org/n3#lineMode', unique: '"true"' },
-          { '@id': 'http://example.org/n3#n3', unique: '"true"' },
-          { '@id': 'http://example.org/n3#comments', unique: '"true"' },
+          { '@id': 'http://example.org/n3#lineMode', range: 'xsd:string' },
+          { '@id': 'http://example.org/n3#n3', range: 'xsd:string' },
+          { '@id': 'http://example.org/n3#comments', range: 'xsd:string' },
         ],
         constructorArguments: {
           list: [
             {
-              fields: [
-                {
-                  key: '"lineMode"',
-                  value: 'http://example.org/n3#lineMode',
-                },
-                {
-                  key: '"n3"',
-                  value: 'http://example.org/n3#n3',
-                },
-                {
-                  key: '"comments"',
-                  value: 'http://example.org/n3#comments',
-                },
-              ],
+              fields: {
+                list: [
+                  {
+                    key: '"lineMode"',
+                    value: 'http://example.org/n3#lineMode',
+                  },
+                  {
+                    key: '"n3"',
+                    value: 'http://example.org/n3#n3',
+                  },
+                  {
+                    key: '"comments"',
+                    value: 'http://example.org/n3#comments',
+                  },
+                ],
+              },
             },
           ],
         },
@@ -209,20 +371,26 @@ describe('construction with mapped component configs as Resource', () => {
       });
     });
 
-    it('instantiated with a config with all parameters with multiple values', async() => {
+    it('instantiated with a config with all parameters with multiple values as non-list', async() => {
       const config = objectLoader.createCompactedResource({
         types: 'http://example.org/n3#Lexer',
         'http://example.org/n3#lineMode': [ '"A1"', '"A2"' ],
         'http://example.org/n3#n3': [ '"B1"', '"B2"' ],
         'http://example.org/n3#comments': [ '"C1"', '"C2"' ],
       });
-      const instance = await configConstructorPool.instantiate(config, settings);
-      expect(instance.type).toEqual('LEXER');
-      expect(N3.Lexer).toHaveBeenCalledWith({
-        lineMode: 'A1',
-        n3: 'B1',
-        comments: 'C1',
+      await expect(configConstructorPool.instantiate(config, settings)).rejects
+        .toThrowError(`Detected multiple values for parameter http://example.org/n3#lineMode. RDF lists should be used for defining multiple values.`);
+    });
+
+    it('instantiated with a config with all parameters with multiple values as list', async() => {
+      const config = objectLoader.createCompactedResource({
+        types: 'http://example.org/n3#Lexer',
+        'http://example.org/n3#lineMode': { list: [ '"A1"', '"A2"' ]},
+        'http://example.org/n3#n3': { list: [ '"B1"', '"B2"' ]},
+        'http://example.org/n3#comments': { list: [ '"C1"', '"C2"' ]},
       });
+      await expect(configConstructorPool.instantiate(config, settings)).rejects
+        .toThrowError(/The value ".*" for parameter ".*lineMode" is not of required range type ".*string"/u);
     });
 
     describe('instantiated with a config with variables', () => {
@@ -273,27 +441,29 @@ describe('construction with mapped component configs as Resource', () => {
         '@id': 'http://example.org/n3#Lexer',
         requireElement: '"Lexer"',
         parameters: [
-          { '@id': 'http://example.org/n3#lineMode', unique: '"true"', required: '"true"' },
-          { '@id': 'http://example.org/n3#n3', unique: '"true"', required: '"true"' },
-          { '@id': 'http://example.org/n3#comments', unique: '"true"', required: '"true"' },
+          { '@id': 'http://example.org/n3#lineMode', range: 'xsd:string' },
+          { '@id': 'http://example.org/n3#n3', range: 'xsd:string' },
+          { '@id': 'http://example.org/n3#comments', range: 'xsd:string' },
         ],
         constructorArguments: {
           list: [
             {
-              fields: [
-                {
-                  key: '"lineMode"',
-                  value: 'http://example.org/n3#lineMode',
-                },
-                {
-                  key: '"n3"',
-                  value: 'http://example.org/n3#n3',
-                },
-                {
-                  key: '"comments"',
-                  value: 'http://example.org/n3#comments',
-                },
-              ],
+              fields: {
+                list: [
+                  {
+                    key: '"lineMode"',
+                    value: 'http://example.org/n3#lineMode',
+                  },
+                  {
+                    key: '"n3"',
+                    value: 'http://example.org/n3#n3',
+                  },
+                  {
+                    key: '"comments"',
+                    value: 'http://example.org/n3#comments',
+                  },
+                ],
+              },
             },
           ],
         },
@@ -325,7 +495,99 @@ describe('construction with mapped component configs as Resource', () => {
         types: 'http://example.org/n3#Lexer',
       });
       await expect(configConstructorPool.instantiate(config, settings)).rejects
-        .toThrowError(/^No value was set for required parameter ".*"/u);
+        .toThrowError(/^The value "undefined" for parameter ".*lineMode" is not of required range type ".*string"/u);
+    });
+  });
+
+  describe('for a component with optional parameters', () => {
+    beforeEach(() => {
+      manager.componentResources['http://example.org/n3#Lexer'] = objectLoader.createCompactedResource({
+        '@id': 'http://example.org/n3#Lexer',
+        requireElement: '"Lexer"',
+        parameters: [
+          {
+            '@id': 'http://example.org/n3#lineMode',
+            range: {
+              '@type': 'ParameterRangeUnion',
+              parameterRangeElements: [
+                'xsd:string',
+                { '@type': 'ParameterRangeUndefined' },
+              ],
+            },
+          },
+          {
+            '@id': 'http://example.org/n3#n3',
+            range: {
+              '@type': 'ParameterRangeUnion',
+              parameterRangeElements: [
+                'xsd:string',
+                { '@type': 'ParameterRangeUndefined' },
+              ],
+            },
+          },
+          {
+            '@id': 'http://example.org/n3#comments',
+            range: {
+              '@type': 'ParameterRangeUnion',
+              parameterRangeElements: [
+                'xsd:string',
+                { '@type': 'ParameterRangeUndefined' },
+              ],
+            },
+          },
+        ],
+        constructorArguments: {
+          list: [
+            {
+              fields: {
+                list: [
+                  {
+                    key: '"lineMode"',
+                    value: 'http://example.org/n3#lineMode',
+                  },
+                  {
+                    key: '"n3"',
+                    value: 'http://example.org/n3#n3',
+                  },
+                  {
+                    key: '"comments"',
+                    value: 'http://example.org/n3#comments',
+                  },
+                ],
+              },
+            },
+          ],
+        },
+        module: {
+          '@id': 'http://example.org/n3',
+          requireName: '"n3"',
+        },
+      });
+    });
+
+    it('instantiated with a config with all parameters', async() => {
+      const config = objectLoader.createCompactedResource({
+        types: 'http://example.org/n3#Lexer',
+        'http://example.org/n3#lineMode': '"true"',
+        'http://example.org/n3#n3': '"true"',
+        'http://example.org/n3#comments': '"true"',
+      });
+      const instance = await configConstructorPool.instantiate(config, settings);
+      expect(instance.type).toEqual('LEXER');
+      expect(N3.Lexer).toHaveBeenCalledWith({
+        lineMode: 'true',
+        n3: 'true',
+        comments: 'true',
+      });
+    });
+
+    it('instantiated with a config with no parameters', async() => {
+      const config = objectLoader.createCompactedResource({
+        types: 'http://example.org/n3#Lexer',
+      });
+      const instance = await configConstructorPool.instantiate(config, settings);
+      expect(instance.type).toEqual('LEXER');
+      expect(N3.Lexer).toHaveBeenCalledWith({});
     });
   });
 
@@ -335,27 +597,29 @@ describe('construction with mapped component configs as Resource', () => {
         '@id': 'http://example.org/n3#Lexer',
         requireElement: '"Lexer"',
         parameters: [
-          { '@id': 'http://example.org/n3#lineMode', unique: '"true"' },
-          { '@id': 'http://example.org/n3#n3', unique: '"true"' },
-          { '@id': 'http://example.org/n3#comments', unique: '"true"' },
+          { '@id': 'http://example.org/n3#lineMode' },
+          { '@id': 'http://example.org/n3#n3' },
+          { '@id': 'http://example.org/n3#comments' },
         ],
         constructorArguments: {
           list: [
             {
-              fields: [
-                {
-                  key: '"lineMode"',
-                  value: 'http://example.org/n3#lineMode',
-                },
-                {
-                  key: '"n3"',
-                  value: 'http://example.org/n3#n3',
-                },
-                {
-                  key: '"comments"',
-                  value: 'http://example.org/n3#comments',
-                },
-              ],
+              fields: {
+                list: [
+                  {
+                    key: '"lineMode"',
+                    value: 'http://example.org/n3#lineMode',
+                  },
+                  {
+                    key: '"n3"',
+                    value: 'http://example.org/n3#n3',
+                  },
+                  {
+                    key: '"comments"',
+                    value: 'http://example.org/n3#comments',
+                  },
+                ],
+              },
             },
           ],
         },
@@ -368,32 +632,34 @@ describe('construction with mapped component configs as Resource', () => {
         '@id': 'http://example.org/n3#Parser',
         requireElement: '"Parser"',
         parameters: [
-          { '@id': 'http://example.org/n3#format', unique: '"true"' },
-          { '@id': 'http://example.org/n3#blankNodePrefix', unique: '"true"' },
-          { '@id': 'http://example.org/n3#lexer', unique: '"true"' },
-          { '@id': 'http://example.org/n3#explicitQuantifiers', unique: '"true"' },
+          { '@id': 'http://example.org/n3#format' },
+          { '@id': 'http://example.org/n3#blankNodePrefix' },
+          { '@id': 'http://example.org/n3#lexer' },
+          { '@id': 'http://example.org/n3#explicitQuantifiers' },
         ],
         constructorArguments: {
           list: [
             {
-              fields: [
-                {
-                  key: '"format"',
-                  value: 'http://example.org/n3#format',
-                },
-                {
-                  key: '"blankNodePrefix"',
-                  value: 'http://example.org/n3#blankNodePrefix',
-                },
-                {
-                  key: '"lexer"',
-                  value: 'http://example.org/n3#lexer',
-                },
-                {
-                  key: '"explicitQuantifiers"',
-                  value: 'http://example.org/n3#explicitQuantifiers',
-                },
-              ],
+              fields: {
+                list: [
+                  {
+                    key: '"format"',
+                    value: 'http://example.org/n3#format',
+                  },
+                  {
+                    key: '"blankNodePrefix"',
+                    value: 'http://example.org/n3#blankNodePrefix',
+                  },
+                  {
+                    key: '"lexer"',
+                    value: 'http://example.org/n3#lexer',
+                  },
+                  {
+                    key: '"explicitQuantifiers"',
+                    value: 'http://example.org/n3#explicitQuantifiers',
+                  },
+                ],
+              },
             },
           ],
         },
@@ -437,27 +703,29 @@ describe('construction with mapped component configs as Resource', () => {
         '@id': 'http://example.org/n3#Lexer',
         requireElement: '"Lexer"',
         parameters: [
-          { '@id': 'http://example.org/n3#lineMode', unique: '"true"', default: '"A"' },
-          { '@id': 'http://example.org/n3#n3', unique: '"true"', default: [ '"B"', '"C"' ]},
-          { '@id': 'http://example.org/n3#comments', unique: '"true"' },
+          { '@id': 'http://example.org/n3#lineMode', default: '"A"' },
+          { '@id': 'http://example.org/n3#n3', default: { list: [ '"B"', '"C"' ]}},
+          { '@id': 'http://example.org/n3#comments' },
         ],
         constructorArguments: {
           list: [
             {
-              fields: [
-                {
-                  key: '"lineMode"',
-                  value: 'http://example.org/n3#lineMode',
-                },
-                {
-                  key: '"n3"',
-                  value: 'http://example.org/n3#n3',
-                },
-                {
-                  key: '"comments"',
-                  value: 'http://example.org/n3#comments',
-                },
-              ],
+              fields: {
+                list: [
+                  {
+                    key: '"lineMode"',
+                    value: 'http://example.org/n3#lineMode',
+                  },
+                  {
+                    key: '"n3"',
+                    value: 'http://example.org/n3#n3',
+                  },
+                  {
+                    key: '"comments"',
+                    value: 'http://example.org/n3#comments',
+                  },
+                ],
+              },
             },
           ],
         },
@@ -492,7 +760,7 @@ describe('construction with mapped component configs as Resource', () => {
       expect(instance.type).toEqual('LEXER');
       expect(N3.Lexer).toHaveBeenCalledWith({
         lineMode: 'A',
-        n3: 'B',
+        n3: [ 'B', 'C' ],
       });
     });
   });
@@ -505,7 +773,6 @@ describe('construction with mapped component configs as Resource', () => {
         parameters: [
           {
             '@id': 'http://example.org/n3#lineMode',
-            unique: '"true"',
             defaultScoped: [
               {
                 defaultScope: 'http://example.org/n3#Lexer',
@@ -517,39 +784,41 @@ describe('construction with mapped component configs as Resource', () => {
           },
           {
             '@id': 'http://example.org/n3#n3',
-            unique: '"true"',
             defaultScoped: [
               {
                 defaultScope: 'http://example.org/n3#Lexer',
-                defaultScopedValue: [
-                  '"B"',
-                  '"C"',
-                ],
+                defaultScopedValue: {
+                  list: [
+                    '"B"',
+                    '"C"',
+                  ],
+                },
               },
             ],
           },
           {
             '@id': 'http://example.org/n3#comments',
-            unique: '"true"',
           },
         ],
         constructorArguments: {
           list: [
             {
-              fields: [
-                {
-                  key: '"lineMode"',
-                  value: 'http://example.org/n3#lineMode',
-                },
-                {
-                  key: '"n3"',
-                  value: 'http://example.org/n3#n3',
-                },
-                {
-                  key: '"comments"',
-                  value: 'http://example.org/n3#comments',
-                },
-              ],
+              fields: {
+                list: [
+                  {
+                    key: '"lineMode"',
+                    value: 'http://example.org/n3#lineMode',
+                  },
+                  {
+                    key: '"n3"',
+                    value: 'http://example.org/n3#n3',
+                  },
+                  {
+                    key: '"comments"',
+                    value: 'http://example.org/n3#comments',
+                  },
+                ],
+              },
             },
           ],
         },
@@ -584,38 +853,40 @@ describe('construction with mapped component configs as Resource', () => {
       expect(instance.type).toEqual('LEXER');
       expect(N3.Lexer).toHaveBeenCalledWith({
         lineMode: 'A',
-        n3: 'B',
+        n3: [ 'B', 'C' ],
       });
     });
   });
 
-  describe('for a component with parameters with fixed values', () => {
+  describe('for a component with parameters without range with fixed values', () => {
     beforeEach(() => {
       manager.componentResources['http://example.org/n3#Lexer'] = objectLoader.createCompactedResource({
         '@id': 'http://example.org/n3#Lexer',
         requireElement: '"Lexer"',
         parameters: [
           { '@id': 'http://example.org/n3#lineMode', fixed: '"A"' },
-          { '@id': 'http://example.org/n3#n3', fixed: [ '"B"', '"C"' ]},
+          { '@id': 'http://example.org/n3#n3', fixed: { list: [ '"B"', '"C"' ]}},
           { '@id': 'http://example.org/n3#comments' },
         ],
         constructorArguments: {
           list: [
             {
-              fields: [
-                {
-                  key: '"lineMode"',
-                  value: 'http://example.org/n3#lineMode',
-                },
-                {
-                  key: '"n3"',
-                  value: 'http://example.org/n3#n3',
-                },
-                {
-                  key: '"comments"',
-                  value: 'http://example.org/n3#comments',
-                },
-              ],
+              fields: {
+                list: [
+                  {
+                    key: '"lineMode"',
+                    value: 'http://example.org/n3#lineMode',
+                  },
+                  {
+                    key: '"n3"',
+                    value: 'http://example.org/n3#n3',
+                  },
+                  {
+                    key: '"comments"',
+                    value: 'http://example.org/n3#comments',
+                  },
+                ],
+              },
             },
           ],
         },
@@ -632,6 +903,123 @@ describe('construction with mapped component configs as Resource', () => {
         'http://example.org/n3#lineMode': '"true"',
         'http://example.org/n3#n3': '"true"',
         'http://example.org/n3#comments': '"true"',
+      });
+      const instance = await configConstructorPool.instantiate(config, settings);
+      expect(instance.type).toEqual('LEXER');
+      expect(N3.Lexer).toHaveBeenCalledWith({
+        lineMode: [ 'A', 'true' ],
+        n3: [ 'B', 'C', 'true' ],
+        comments: 'true',
+      });
+    });
+
+    it('instantiated with a config without parameters', async() => {
+      const config = objectLoader.createCompactedResource({
+        types: 'http://example.org/n3#Lexer',
+      });
+      const instance = await configConstructorPool.instantiate(config, settings);
+      expect(instance.type).toEqual('LEXER');
+      expect(N3.Lexer).toHaveBeenCalledWith({
+        lineMode: 'A',
+        n3: [ 'B', 'C' ],
+      });
+    });
+  });
+
+  describe('for a component with parameters with array range with fixed values', () => {
+    beforeEach(() => {
+      manager.componentResources['http://example.org/n3#Lexer'] = objectLoader.createCompactedResource({
+        '@id': 'http://example.org/n3#Lexer',
+        requireElement: '"Lexer"',
+        parameters: [
+          {
+            '@id': 'http://example.org/n3#lineMode',
+            range: {
+              '@type': 'ParameterRangeArray',
+              parameterRangeValue: 'xsd:string',
+            },
+            fixed: { list: [ '"A"' ]},
+          },
+          {
+            '@id': 'http://example.org/n3#n3',
+            range: {
+              '@type': 'ParameterRangeArray',
+              parameterRangeValue: 'xsd:string',
+            },
+            fixed: { list: [ '"B"', '"C"' ]},
+          },
+          {
+            '@id': 'http://example.org/n3#comments',
+            range: {
+              '@type': 'ParameterRangeUnion',
+              parameterRangeElements: [
+                {
+                  '@type': 'ParameterRangeArray',
+                  parameterRangeValue: 'xsd:string',
+                },
+                { '@type': 'ParameterRangeUndefined' },
+              ],
+            },
+          },
+        ],
+        constructorArguments: {
+          list: [
+            {
+              fields: {
+                list: [
+                  {
+                    key: '"lineMode"',
+                    value: 'http://example.org/n3#lineMode',
+                  },
+                  {
+                    key: '"n3"',
+                    value: 'http://example.org/n3#n3',
+                  },
+                  {
+                    key: '"comments"',
+                    value: 'http://example.org/n3#comments',
+                  },
+                ],
+              },
+            },
+          ],
+        },
+        module: {
+          '@id': 'http://example.org/n3',
+          requireName: '"n3"',
+        },
+      });
+    });
+
+    it('instantiated with a config with all parameters as singular value', async() => {
+      const config = objectLoader.createCompactedResource({
+        types: 'http://example.org/n3#Lexer',
+        'http://example.org/n3#lineMode': '"true"',
+        'http://example.org/n3#n3': '"true"',
+        'http://example.org/n3#comments': '"true"',
+      });
+      await expect(configConstructorPool.instantiate(config, settings)).rejects
+        // eslint-disable-next-line max-len
+        .toThrowError(/The value "true" for parameter ".*comments" is not of required range type ".*string\[\] | undefined"/u);
+    });
+
+    it('instantiated with a config with all parameters as multiple values in list', async() => {
+      const config = objectLoader.createCompactedResource({
+        types: 'http://example.org/n3#Lexer',
+        'http://example.org/n3#lineMode': [ '"true1"', '"true2"' ],
+        'http://example.org/n3#n3': [ '"true"' ],
+        'http://example.org/n3#comments': [ '"true"' ],
+      });
+      await expect(configConstructorPool.instantiate(config, settings)).rejects
+        .toThrowError(`Detected multiple values for parameter http://example.org/n3#lineMode. RDF lists should be used for defining multiple values.`);
+    });
+
+    it('instantiated with a config with all parameters as singular value in RDF list', async() => {
+      const config = objectLoader.createCompactedResource({
+        types: 'http://example.org/n3#Lexer',
+        'http://example.org/n3#lineMode': { list: [ '"true"' ]},
+        'http://example.org/n3#n3': { list: [ '"true"' ]},
+        'http://example.org/n3#comments': { list: [ '"true"' ]},
       });
       const instance = await configConstructorPool.instantiate(config, settings);
       expect(instance.type).toEqual('LEXER');
@@ -655,33 +1043,35 @@ describe('construction with mapped component configs as Resource', () => {
     });
   });
 
-  describe('for a component with parameters with fixed and unique values', () => {
+  describe('for a component with parameters with multiple fixed and unique values', () => {
     beforeEach(() => {
       manager.componentResources['http://example.org/n3#Lexer'] = objectLoader.createCompactedResource({
         '@id': 'http://example.org/n3#Lexer',
         requireElement: '"Lexer"',
         parameters: [
-          { '@id': 'http://example.org/n3#lineMode', unique: '"true"', fixed: '"A"' },
-          { '@id': 'http://example.org/n3#n3', unique: '"true"', fixed: [ '"B"', '"C"' ]},
-          { '@id': 'http://example.org/n3#comments', unique: '"true"' },
+          { '@id': 'http://example.org/n3#lineMode', range: 'xsd:string', fixed: '"A"' },
+          { '@id': 'http://example.org/n3#n3', range: 'xsd:string', fixed: { list: [ '"B"', '"C"' ]}},
+          { '@id': 'http://example.org/n3#comments', range: 'xsd:string' },
         ],
         constructorArguments: {
           list: [
             {
-              fields: [
-                {
-                  key: '"lineMode"',
-                  value: 'http://example.org/n3#lineMode',
-                },
-                {
-                  key: '"n3"',
-                  value: 'http://example.org/n3#n3',
-                },
-                {
-                  key: '"comments"',
-                  value: 'http://example.org/n3#comments',
-                },
-              ],
+              fields: {
+                list: [
+                  {
+                    key: '"lineMode"',
+                    value: 'http://example.org/n3#lineMode',
+                  },
+                  {
+                    key: '"n3"',
+                    value: 'http://example.org/n3#n3',
+                  },
+                  {
+                    key: '"comments"',
+                    value: 'http://example.org/n3#comments',
+                  },
+                ],
+              },
             },
           ],
         },
@@ -699,54 +1089,48 @@ describe('construction with mapped component configs as Resource', () => {
         'http://example.org/n3#n3': '"true"',
         'http://example.org/n3#comments': '"true"',
       });
-      const instance = await configConstructorPool.instantiate(config, settings);
-      expect(instance.type).toEqual('LEXER');
-      expect(N3.Lexer).toHaveBeenCalledWith({
-        lineMode: 'A',
-        n3: 'B',
-        comments: 'true',
-      });
+      await expect(configConstructorPool.instantiate(config, settings)).rejects
+        .toThrowError(/The value ".*" for parameter ".*lineMode" is not of required range type ".*string"/u);
     });
 
     it('instantiated with a config without parameters', async() => {
       const config = objectLoader.createCompactedResource({
         types: 'http://example.org/n3#Lexer',
       });
-      const instance = await configConstructorPool.instantiate(config, settings);
-      expect(instance.type).toEqual('LEXER');
-      expect(N3.Lexer).toHaveBeenCalledWith({
-        lineMode: 'A',
-        n3: 'B',
-      });
+      await expect(configConstructorPool.instantiate(config, settings)).rejects
+        .toThrowError(/The value ".*" for parameter ".*n3" is not of required range type ".*string"/u);
     });
   });
 
-  describe('for a component with lazy parameters', () => {
+  describe('for a component with parameters with fixed and unique values', () => {
     beforeEach(() => {
       manager.componentResources['http://example.org/n3#Lexer'] = objectLoader.createCompactedResource({
         '@id': 'http://example.org/n3#Lexer',
         requireElement: '"Lexer"',
         parameters: [
-          { '@id': 'http://example.org/n3#lineMode', unique: '"true"', lazy: '"true"' },
-          { '@id': 'http://example.org/n3#n3', lazy: '"true"' },
+          { '@id': 'http://example.org/n3#lineMode', range: 'xsd:string', fixed: '"A"' },
+          { '@id': 'http://example.org/n3#n3', range: 'xsd:string', fixed: '"B"' },
+          { '@id': 'http://example.org/n3#comments', range: 'xsd:string', fixed: '"C"' },
         ],
         constructorArguments: {
           list: [
             {
-              fields: [
-                {
-                  key: '"lineMode"',
-                  value: 'http://example.org/n3#lineMode',
-                },
-                {
-                  key: '"n3"',
-                  value: 'http://example.org/n3#n3',
-                },
-                {
-                  key: '"comments"',
-                  value: 'http://example.org/n3#comments',
-                },
-              ],
+              fields: {
+                list: [
+                  {
+                    key: '"lineMode"',
+                    value: 'http://example.org/n3#lineMode',
+                  },
+                  {
+                    key: '"n3"',
+                    value: 'http://example.org/n3#n3',
+                  },
+                  {
+                    key: '"comments"',
+                    value: 'http://example.org/n3#comments',
+                  },
+                ],
+              },
             },
           ],
         },
@@ -762,6 +1146,69 @@ describe('construction with mapped component configs as Resource', () => {
         types: 'http://example.org/n3#Lexer',
         'http://example.org/n3#lineMode': '"true"',
         'http://example.org/n3#n3': '"true"',
+        'http://example.org/n3#comments': '"true"',
+      });
+      await expect(configConstructorPool.instantiate(config, settings)).rejects
+        .toThrowError(/The value ".*" for parameter ".*lineMode" is not of required range type ".*string"/u);
+    });
+
+    it('instantiated with a config without parameters', async() => {
+      const config = objectLoader.createCompactedResource({
+        types: 'http://example.org/n3#Lexer',
+      });
+      const instance = await configConstructorPool.instantiate(config, settings);
+      expect(instance.type).toEqual('LEXER');
+      expect(N3.Lexer).toHaveBeenCalledWith({
+        lineMode: 'A',
+        n3: 'B',
+        comments: 'C',
+      });
+    });
+  });
+
+  describe('for a component with lazy parameters', () => {
+    beforeEach(() => {
+      manager.componentResources['http://example.org/n3#Lexer'] = objectLoader.createCompactedResource({
+        '@id': 'http://example.org/n3#Lexer',
+        requireElement: '"Lexer"',
+        parameters: [
+          { '@id': 'http://example.org/n3#lineMode', lazy: '"true"' },
+          { '@id': 'http://example.org/n3#n3', lazy: '"true"' },
+        ],
+        constructorArguments: {
+          list: [
+            {
+              fields: {
+                list: [
+                  {
+                    key: '"lineMode"',
+                    value: 'http://example.org/n3#lineMode',
+                  },
+                  {
+                    key: '"n3"',
+                    value: 'http://example.org/n3#n3',
+                  },
+                  {
+                    key: '"comments"',
+                    value: 'http://example.org/n3#comments',
+                  },
+                ],
+              },
+            },
+          ],
+        },
+        module: {
+          '@id': 'http://example.org/n3',
+          requireName: '"n3"',
+        },
+      });
+    });
+
+    it('instantiated with a config with all parameters', async() => {
+      const config = objectLoader.createCompactedResource({
+        types: 'http://example.org/n3#Lexer',
+        'http://example.org/n3#lineMode': '"true"',
+        'http://example.org/n3#n3': { list: [ '"true"' ]},
       });
       const instance = await configConstructorPool.instantiate(config, settings);
       expect(instance.type).toEqual('LEXER');
@@ -772,13 +1219,15 @@ describe('construction with mapped component configs as Resource', () => {
     it('instantiated with a config with all parameters with multiple values', async() => {
       const config = objectLoader.createCompactedResource({
         types: 'http://example.org/n3#Lexer',
-        'http://example.org/n3#lineMode': [ '"A1"', '"A2"' ],
-        'http://example.org/n3#n3': [ '"B1"', '"B2"' ],
+        'http://example.org/n3#lineMode': { list: [ '"A1"', '"A2"' ]},
+        'http://example.org/n3#n3': { list: [ '"B1"', '"B2"' ]},
       });
       const instance = await configConstructorPool.instantiate(config, settings);
       expect(instance.type).toEqual('LEXER');
-      expect(await mocked(N3.Lexer).mock.calls[0][0].lineMode()).toEqual('A1');
+      expect(await mocked(N3.Lexer).mock.calls[0][0].lineMode[0]()).toEqual('A1');
+      expect(await mocked(N3.Lexer).mock.calls[0][0].lineMode[1]()).toEqual('A2');
       expect(await mocked(N3.Lexer).mock.calls[0][0].n3[0]()).toEqual('B1');
+      expect(await mocked(N3.Lexer).mock.calls[0][0].n3[1]()).toEqual('B2');
     });
   });
 
@@ -791,7 +1240,6 @@ describe('construction with mapped component configs as Resource', () => {
           parameters: [
             {
               '@id': 'http://example.org/HelloWorldModule#dummyParam',
-              unique: '"true"',
             },
           ],
           constructorArguments: {
@@ -961,6 +1409,20 @@ describe('construction with mapped component configs as Resource', () => {
       const instance = await configConstructorPool.instantiate(config, settings);
       expect(instance).toBeInstanceOf(Hello);
       expect(instance._params).toEqual([
+        'A',
+        'B',
+      ]);
+    });
+
+    it('instantiated with a config with array values', async() => {
+      const config = objectLoader.createCompactedResource({
+        types: 'http://example.org/HelloWorldModule#SayHelloComponent',
+        'http://example.org/HelloWorldModule#dummyParam1': { list: [ '"A"' ]},
+        'http://example.org/HelloWorldModule#dummyParam2': { list: [ '"B"' ]},
+      });
+      const instance = await configConstructorPool.instantiate(config, settings);
+      expect(instance).toBeInstanceOf(Hello);
+      expect(instance._params).toEqual([
         [ 'A' ],
         [ 'B' ],
       ]);
@@ -975,7 +1437,7 @@ describe('construction with mapped component configs as Resource', () => {
       expect(instance).toBeInstanceOf(Hello);
       expect(instance._params).toEqual([
         undefined,
-        [ 'B' ],
+        'B',
       ]);
     });
 
@@ -987,7 +1449,7 @@ describe('construction with mapped component configs as Resource', () => {
       const instance = await configConstructorPool.instantiate(config, settings);
       expect(instance).toBeInstanceOf(Hello);
       expect(instance._params).toEqual([
-        [ 'A' ],
+        'A',
         undefined,
       ]);
     });
@@ -1014,7 +1476,6 @@ describe('construction with mapped component configs as Resource', () => {
           parameters: [
             {
               '@id': 'http://example.org/HelloWorldModule#dummyParam',
-              unique: '"true"',
             },
           ],
           constructorArguments: {
@@ -1059,6 +1520,9 @@ describe('construction with mapped component configs as Resource', () => {
           parameters: [
             {
               '@id': 'http://example.org/HelloWorldModule#dummyParam',
+              range: {
+                '@type': 'ParameterRangeArray',
+              },
             },
           ],
           constructorArguments: {
@@ -1084,7 +1548,7 @@ describe('construction with mapped component configs as Resource', () => {
       const config = objectLoader.createCompactedResource({
         '@id': 'http://example.org/myInstance',
         types: 'http://example.org/HelloWorldModule#SayHelloComponent',
-        'http://example.org/HelloWorldModule#dummyParam': 'ex:abc',
+        'http://example.org/HelloWorldModule#dummyParam': { list: [ 'ex:abc' ]},
       });
       const instance = await configConstructorPool.instantiate(config, settings);
       expect(instance).toBeInstanceOf(Hello);

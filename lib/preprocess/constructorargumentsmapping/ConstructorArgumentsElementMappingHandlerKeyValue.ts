@@ -22,7 +22,7 @@ export class ConstructorArgumentsElementMappingHandlerKeyValue implements IConst
     constructorArgs: Resource,
     configElement: Resource,
     mapper: IConstructorArgumentsMapper,
-  ): Resource[] {
+  ): Resource {
     if (constructorArgs.property.key) {
       // Throw if our key is not a literal
       if (constructorArgs.property.key.type !== 'Literal') {
@@ -45,18 +45,17 @@ export class ConstructorArgumentsElementMappingHandlerKeyValue implements IConst
     constructorArgs: Resource,
     configElement: Resource,
     mapper: IConstructorArgumentsMapper,
-  ): Resource[] {
-    const ret = mapper.objectLoader.createCompactedResource({});
-    ret.property.key = constructorArgs.property.key;
-    for (const value of mapper.getParameterValue(
+  ): Resource {
+    const value = mapper.getParameterValue(
       configRoot,
       constructorArgs.property.value || constructorArgs.property.valueRawReference,
       configElement,
       Boolean(constructorArgs.property.valueRawReference),
-    )) {
-      ret.properties.value.push(value);
-    }
-    return [ ret ];
+    );
+    return mapper.objectLoader.createCompactedResource({
+      key: constructorArgs.property.key,
+      ...value ? { value } : {},
+    });
   }
 
   public handleValue(
@@ -64,12 +63,16 @@ export class ConstructorArgumentsElementMappingHandlerKeyValue implements IConst
     constructorArgs: Resource,
     configElement: Resource,
     mapper: IConstructorArgumentsMapper,
-  ): Resource[] {
-    return mapper.getParameterValue(
+  ): Resource {
+    const value = mapper.getParameterValue(
       configRoot,
       constructorArgs.property.value || constructorArgs.property.valueRawReference,
       configElement,
       Boolean(constructorArgs.property.valueRawReference),
     );
+    if (!value) {
+      return mapper.objectLoader.createCompactedResource({ undefined: true });
+    }
+    return value;
   }
 }

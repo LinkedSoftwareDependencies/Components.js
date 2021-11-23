@@ -55,24 +55,15 @@ export class ConfigConstructor<Instance> implements IArgumentsConstructor<Instan
     values: Resource[],
     settings: IConstructionSettings,
   ): Promise<Instance> {
-    // Unwrap unique values out of the array
-    if (values.length > 0 && values[0].property.unique && values[0].property.unique.value === 'true') {
-      return this.getArgumentValue(values[0], settings);
+    if (values.length === 0) {
+      return this.constructionStrategy.createUndefined();
     }
-
-    // Unwrap RDF list-based values out of the array
-    if (values.length > 0 && values.some(value => value.list)) {
-      if (values.length > 1) {
-        throw new ErrorResourcesContext(`Detected multiple values for an argument while only a single RDF list is allowed`, {
-          arguments: values.flatMap(value => value.list ? value.list : [ value ]),
-        });
-      }
-      return this.getArgumentValue(values[0], settings);
+    if (values.length > 1) {
+      throw new ErrorResourcesContext(`Detected multiple values for an argument. RDF lists should be used for defining multiple values.`, {
+        arguments: values,
+      });
     }
-
-    // Otherwise, keep the array form
-    const elements = await Promise.all(values.map(element => this.getArgumentValue(element, settings)));
-    return this.constructionStrategy.createArray({ settings, elements });
+    return this.getArgumentValue(values[0], settings);
   }
 
   public async getArgumentValue(

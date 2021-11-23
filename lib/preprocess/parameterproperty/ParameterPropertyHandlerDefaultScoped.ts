@@ -12,12 +12,17 @@ export class ParameterPropertyHandlerDefaultScoped implements IParameterProperty
     this.objectLoader = objectLoader;
   }
 
-  public canHandle(value: Resource[], configRoot: Resource, parameter: Resource, configElement: Resource): boolean {
-    return Boolean(value.length === 0 && parameter.property.defaultScoped);
+  public canHandle(value: Resource | undefined, configRoot: Resource, parameter: Resource): boolean {
+    return Boolean(!value && parameter.property.defaultScoped);
   }
 
-  public handle(value: Resource[], configRoot: Resource, parameter: Resource, configElement: Resource): Resource[] {
-    // Multiple scopes can be defined
+  public handle(
+    value: Resource | undefined,
+    configRoot: Resource,
+    parameter: Resource,
+    configElement: Resource,
+  ): Resource | undefined {
+    let applyingValue: Resource | undefined;
     for (const scoped of parameter.properties.defaultScoped) {
       // Require defaultScope
       if (!scoped.property.defaultScope) {
@@ -31,12 +36,24 @@ export class ParameterPropertyHandlerDefaultScoped implements IParameterProperty
           throw new ErrorResourcesContext(`Invalid defaultScoped for parameter "${parameter.value}": Missing defaultScopedValue`, { parameter });
         }
 
+        // Require RDF list or single value
+        if (scoped.properties.defaultScopedValue.length > 1) {
+          throw new ErrorResourcesContext(`Invalid defaultScoped value for parameter "${parameter.value}": Only one defaultScopedValue can be defined, or an RDF list must be provided`, { parameter });
+        }
+
         // Apply the scope if the config is of the required type (also considering sub-types)
         if (configRoot.isA(scopeType.term)) {
-          value.push(...scoped.properties.defaultScopedValue);
+          applyingValue = !applyingValue ?
+            scoped.property.defaultScopedValue :
+            this.objectLoader.createCompactedResource({
+              list: [
+                ...applyingValue.list || [ applyingValue ],
+                ...scoped.property.defaultScopedValue.list || [ scoped.property.defaultScopedValue ],
+              ],
+            });
         }
       }
     }
-    return value;
+    return applyingValue;
   }
 }

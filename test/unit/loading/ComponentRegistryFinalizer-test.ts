@@ -89,14 +89,16 @@ describe('ComponentRegistryFinalizer', () => {
           list: [
             {
               '@id': 'ex:MyComponent2#constructorArgs',
-              fields: [
-                {
-                  '@id': 'ex:MyComponent2#constructorArgs-field1',
-                },
-                {
-                  '@id': 'ex:MyComponent2#constructorArgs-field2',
-                },
-              ],
+              fields: {
+                list: [
+                  {
+                    '@id': 'ex:MyComponent2#constructorArgs-field1',
+                  },
+                  {
+                    '@id': 'ex:MyComponent2#constructorArgs-field2',
+                  },
+                ],
+              },
             },
           ],
         },
@@ -105,7 +107,7 @@ describe('ComponentRegistryFinalizer', () => {
       componentRegistry.registerComponent(component2);
       finalizer.finalize();
       expect(component1.properties.parameters.length).toBe(2);
-      expect(component1.properties.constructorArguments[0].list![0].properties.fields.length).toBe(2);
+      expect(component1.properties.constructorArguments[0].list![0].property.fields.list!.length).toBe(2);
     });
   });
 
@@ -354,14 +356,16 @@ describe('ComponentRegistryFinalizer', () => {
           list: [
             {
               '@id': 'ex:MyComponent2#constructorArgs',
-              fields: [
-                {
-                  '@id': 'ex:MyComponent2#constructorArgs-field1',
-                },
-                {
-                  '@id': 'ex:MyComponent2#constructorArgs-field2',
-                },
-              ],
+              fields: {
+                list: [
+                  {
+                    '@id': 'ex:MyComponent2#constructorArgs-field1',
+                  },
+                  {
+                    '@id': 'ex:MyComponent2#constructorArgs-field2',
+                  },
+                ],
+              },
             },
           ],
         },
@@ -373,30 +377,32 @@ describe('ComponentRegistryFinalizer', () => {
           list: [
             {
               '@id': 'ex:MyComponent3#constructorArgs',
-              fields: [
-                {
-                  '@id': 'ex:MyComponent3#constructorArgs-field1',
-                },
-                {
-                  '@id': 'ex:MyComponent3#constructorArgs-field2',
-                },
-              ],
+              fields: {
+                list: [
+                  {
+                    '@id': 'ex:MyComponent3#constructorArgs-field1',
+                  },
+                  {
+                    '@id': 'ex:MyComponent3#constructorArgs-field2',
+                  },
+                ],
+              },
             },
           ],
         },
       });
       finalizer.inheritConstructorArguments(component1);
       expect(component1.property.constructorArguments.list!.length).toBe(2);
-      expect(component1.property.constructorArguments.list![0].properties.fields.length).toBe(2);
-      expect(component1.property.constructorArguments.list![0].properties.fields[0])
-        .toBe(component2.property.constructorArguments.list![0].properties.fields[0]);
-      expect(component1.property.constructorArguments.list![0].properties.fields[1])
-        .toBe(component2.property.constructorArguments.list![0].properties.fields[1]);
-      expect(component1.property.constructorArguments.list![1].properties.fields.length).toBe(2);
-      expect(component1.property.constructorArguments.list![1].properties.fields[0])
-        .toBe(component3.property.constructorArguments.list![0].properties.fields[0]);
-      expect(component1.property.constructorArguments.list![1].properties.fields[1])
-        .toBe(component3.property.constructorArguments.list![0].properties.fields[1]);
+      expect(component1.property.constructorArguments.list![0].property.fields.list!.length).toBe(2);
+      expect(component1.property.constructorArguments.list![0].property.fields.list![0])
+        .toBe(component2.property.constructorArguments.list![0].property.fields.list![0]);
+      expect(component1.property.constructorArguments.list![0].property.fields.list![1])
+        .toBe(component2.property.constructorArguments.list![0].property.fields.list![1]);
+      expect(component1.property.constructorArguments.list![1].property.fields.list!.length).toBe(2);
+      expect(component1.property.constructorArguments.list![1].property.fields.list![0])
+        .toBe(component3.property.constructorArguments.list![0].property.fields.list![0]);
+      expect(component1.property.constructorArguments.list![1].property.fields.list![1])
+        .toBe(component3.property.constructorArguments.list![0].property.fields.list![1]);
     });
   });
 
@@ -404,7 +410,7 @@ describe('ComponentRegistryFinalizer', () => {
     it('should handle empty extending args', async() => {
       const cargs = objectLoader.createCompactedResource({});
       finalizer.inheritConstructorArgumentsEntry(cargs, []);
-      expect(cargs.properties.fields.length).toBe(0);
+      expect(cargs.property.fields).toBeUndefined();
     });
 
     it('should throw on extending args without fields', async() => {
@@ -416,6 +422,14 @@ describe('ComponentRegistryFinalizer', () => {
         .toThrowError(/^Invalid or undefined constructor argument entry/u);
     });
 
+    it('should throw on extending args with non-list fields', async() => {
+      const cargs = objectLoader.createCompactedResource({
+        fields: [ 'A', 'B' ],
+      });
+      expect(() => finalizer.inheritConstructorArgumentsEntry(cargs, []))
+        .toThrowError(/^Invalid fields: Only one value can be defined, or an RDF list must be provided/u);
+    });
+
     it('should handle extending args without fields with ObjectMapping type', async() => {
       const cargs = objectLoader.createCompactedResource({});
       const cargsSuper = objectLoader.createCompactedResource({
@@ -423,7 +437,7 @@ describe('ComponentRegistryFinalizer', () => {
         fields: [],
       });
       finalizer.inheritConstructorArgumentsEntry(cargs, [ cargsSuper ]);
-      expect(cargs.properties.fields.length).toBe(0);
+      expect(cargs.property.fields).toBeUndefined();
     });
 
     it('should handle extending args without fields with extends', async() => {
@@ -436,7 +450,7 @@ describe('ComponentRegistryFinalizer', () => {
         fields: [],
       });
       finalizer.inheritConstructorArgumentsEntry(cargs, [ cargsSuper ]);
-      expect(cargs.properties.fields.length).toBe(0);
+      expect(cargs.property.fields).toBeUndefined();
     });
 
     it('should throw on extending super args without fields', async() => {
@@ -454,15 +468,17 @@ describe('ComponentRegistryFinalizer', () => {
     it('should handle extending args with one field', async() => {
       const cargs = objectLoader.createCompactedResource({});
       const cargsSuper = objectLoader.createCompactedResource({
-        fields: [
-          {
-            '@id': 'ex:field1',
-          },
-        ],
+        fields: {
+          list: [
+            {
+              '@id': 'ex:field1',
+            },
+          ],
+        },
       });
       finalizer.inheritConstructorArgumentsEntry(cargs, [ cargsSuper ]);
-      expect(cargs.properties.fields.length).toBe(1);
-      expect(cargs.properties.fields[0].value).toEqual('ex:field1');
+      expect(cargs.property.fields.list!.length).toBe(1);
+      expect(cargs.property.fields.list![0].value).toEqual('ex:field1');
     });
 
     it('should handle extending args with multiple fields', async() => {
@@ -481,10 +497,10 @@ describe('ComponentRegistryFinalizer', () => {
         ],
       });
       finalizer.inheritConstructorArgumentsEntry(cargs, [ cargsSuper ]);
-      expect(cargs.properties.fields.length).toBe(3);
-      expect(cargs.properties.fields[0].value).toEqual('ex:field1');
-      expect(cargs.properties.fields[1].value).toEqual('ex:field2');
-      expect(cargs.properties.fields[2].value).toEqual('ex:field3');
+      expect(cargs.property.fields.list!.length).toBe(3);
+      expect(cargs.property.fields.list![0].value).toEqual('ex:field1');
+      expect(cargs.property.fields.list![1].value).toEqual('ex:field2');
+      expect(cargs.property.fields.list![2].value).toEqual('ex:field3');
     });
 
     it('should handle nested extending args with one field', async() => {
@@ -504,9 +520,9 @@ describe('ComponentRegistryFinalizer', () => {
         ],
       });
       finalizer.inheritConstructorArgumentsEntry(cargs, [ cargsSuper ]);
-      expect(cargs.properties.fields.length).toBe(2);
-      expect(cargs.properties.fields[0].value).toEqual('ex:field1');
-      expect(cargs.properties.fields[1].value).toEqual('ex:field1.1');
+      expect(cargs.property.fields.list!.length).toBe(2);
+      expect(cargs.property.fields.list![0].value).toEqual('ex:field1');
+      expect(cargs.property.fields.list![1].value).toEqual('ex:field1.1');
     });
 
     it('should not add already present fields', async() => {
@@ -528,9 +544,9 @@ describe('ComponentRegistryFinalizer', () => {
         ],
       });
       finalizer.inheritConstructorArgumentsEntry(cargs, [ cargsSuper ]);
-      expect(cargs.properties.fields.length).toBe(2);
-      expect(cargs.properties.fields[0].value).toEqual('ex:field1');
-      expect(cargs.properties.fields[1].value).toEqual('ex:field2');
+      expect(cargs.property.fields.list!.length).toBe(2);
+      expect(cargs.property.fields.list![0].value).toEqual('ex:field1');
+      expect(cargs.property.fields.list![1].value).toEqual('ex:field2');
     });
   });
 });
