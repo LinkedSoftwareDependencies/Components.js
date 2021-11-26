@@ -162,13 +162,14 @@ describe('ConfigConstructorPool', () => {
             {
               list: [
                 {
-                  hasFields: '"true"',
-                  fields: [
-                    {
-                      key: '"ex:myComponentInstance#param1"',
-                      value: '"A"',
-                    },
-                  ],
+                  fields: {
+                    list: [
+                      {
+                        key: '"ex:myComponentInstance#param1"',
+                        value: '"A"',
+                      },
+                    ],
+                  },
                 },
               ],
             },

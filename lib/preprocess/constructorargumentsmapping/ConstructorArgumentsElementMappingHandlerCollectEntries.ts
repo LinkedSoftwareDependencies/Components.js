@@ -31,24 +31,37 @@ implements IConstructorArgumentsElementMappingHandler {
     constructorArgs: Resource,
     configElement: Resource,
     mapper: IConstructorArgumentsMapper,
-  ): Resource[] {
+  ): Resource {
+    if (constructorArgs.properties.collectEntries.length > 1) {
+      throw new ErrorResourcesContext(`Invalid collectEntries: Only one value can be defined, or an RDF list must be provided`, {
+        constructorArgs,
+        config: configRoot,
+      });
+    }
+    const collectEntries = constructorArgs.properties.collectEntries[0];
+
     // Obtain all entry values
-    const entryResources = [];
-    for (const entry of constructorArgs.properties.collectEntries) {
+    const entryResources: Resource[] = [];
+    for (const entry of collectEntries.list || [ collectEntries ]) {
       if (entry.type !== 'NamedNode') {
         throw new ErrorResourcesContext(`Detected illegal collectEntries value "${entry.type}", must be an IRI`, {
           constructorArgs,
           config: configRoot,
         });
       }
-      for (const value of this.parameterHandler.applyParameterValues(configRoot, entry, configElement)) {
-        entryResources.push(value);
+      const value = this.parameterHandler.applyParameterValues(configRoot, entry, configElement);
+      if (value) {
+        for (const subValue of value.list || [ value ]) {
+          entryResources.push(subValue);
+        }
       }
     }
 
     // Map all entries to values
-    return entryResources.map((entryResource: Resource) => this
-      .handleCollectEntry(entryResource, configRoot, constructorArgs, configElement, mapper));
+    return mapper.objectLoader.createCompactedResource({
+      list: entryResources.map((entryResource: Resource) => this
+        .handleCollectEntry(entryResource, configRoot, constructorArgs, configElement, mapper)),
+    });
   }
 
   public handleCollectEntry(
@@ -107,11 +120,12 @@ implements IConstructorArgumentsElementMappingHandler {
     } else if (constructorArgs.property.value.type === 'NamedNode' &&
       constructorArgs.property.value.value === IRIS_RDF.object) {
       // Value is the entry value
-      value = mapper.applyConstructorArgumentsParameters(configRoot, entryResource, configElement)[0];
+      value = mapper.applyConstructorArgumentsParameters(configRoot, entryResource, configElement);
     } else if (constructorArgs.property.value &&
       (constructorArgs.property.value.property.fields || constructorArgs.property.value.property.elements)) {
       // Nested mapping should reduce the parameter scope
-      value = mapper.getParameterValue(configRoot, constructorArgs.property.value, entryResource, false)[0];
+      // ! at the end of the line, because will always be truthy
+      value = mapper.getParameterValue(configRoot, constructorArgs.property.value, entryResource, false)!;
     } else if (entryResource.properties[constructorArgs.property.value.value].length !== 1) {
       throw new ErrorResourcesContext(`Detected more than one value value in collectEntries`, {
         value: constructorArgs.property.value,
@@ -129,7 +143,6 @@ implements IConstructorArgumentsElementMappingHandler {
     if (key) {
       const ret = mapper.objectLoader.createCompactedResource({});
       ret.property.key = key;
-      value.property.unique = mapper.objectLoader.createCompactedResource('"true"');
       ret.property.value = value;
       return ret;
     }

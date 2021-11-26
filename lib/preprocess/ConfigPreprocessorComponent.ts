@@ -99,7 +99,7 @@ export class ConfigPreprocessorComponent implements IConfigPreprocessor<ICompone
     if (requireElement) {
       configRaw.property.requireElement = requireElement;
     }
-    configRaw.properties.arguments = this.transformConstructorArguments(config, handleResponse);
+    configRaw.property.arguments = this.transformConstructorArguments(config, handleResponse);
 
     // Validate the input config
     this.validateConfig(config, handleResponse);
@@ -115,26 +115,31 @@ export class ConfigPreprocessorComponent implements IConfigPreprocessor<ICompone
   public transformConstructorArguments(
     config: Resource,
     handleResponse: IComponentConfigPreprocessorHandleResponse,
-  ): Resource[] {
-    // Create a single-arg hash constructor, and add all params as key-value pairs
-    const param0 = this.objectLoader.createCompactedResource({
-      // Hack to enforce ArgumentConstructorHandlerHash
-      hasFields: '"true"',
-    });
+  ): Resource {
+    const entries: Resource[] = [];
     for (const fieldData of handleResponse.component.properties.parameters) {
       const field = this.objectLoader.createCompactedResource({});
       field.property.key = this.objectLoader.createCompactedResource(`"${fieldData.term.value}"`);
-      for (const value of this.parameterHandler.applyParameterValues(handleResponse.component, fieldData, config)) {
-        field.properties.value.push(value);
+      const value = this.parameterHandler.applyParameterValues(handleResponse.component, fieldData, config);
+      if (value) {
+        field.property.value = value;
       }
-      param0.properties.fields.push(field);
+      entries.push(field);
     }
 
-    // Create constructor arguments list
-    const args = this.objectLoader.createCompactedResource({});
-    args.list = [ param0 ];
+    // Create a single-arg hash constructor, and add all params as key-value pairs
+    const param0 = this.objectLoader.createCompactedResource({
+      fields: {
+        list: entries,
+      },
+    });
 
-    return [ args ];
+    // Create constructor arguments list
+    return this.objectLoader.createCompactedResource({
+      list: [
+        param0,
+      ],
+    });
   }
 
   /**

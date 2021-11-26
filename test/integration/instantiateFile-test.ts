@@ -68,8 +68,8 @@ describe('construction with component configs as files', () => {
       const run = await manager.instantiate(configResource.value);
       expect(run).toBeInstanceOf(Hello);
       expect(run._params).toEqual([{
-        'http://example.org/myModule/params#param1': [ 'ABC' ],
-        'http://example.org/myModule/params#param3': [ 'GHI' ],
+        'http://example.org/myModule/params#param1': 'ABC',
+        'http://example.org/myModule/params#param3': 'GHI',
       }]);
     });
 
@@ -86,8 +86,8 @@ describe('construction with component configs as files', () => {
       const run = await manager.instantiate(config1);
       expect(run).toBeInstanceOf(Hello);
       expect(run._params).toEqual([{
-        'http://example.org/myModule/params#param1': [ 'ABC' ],
-        'http://example.org/myModule/params#param3': [ 'GHI' ],
+        'http://example.org/myModule/params#param1': 'ABC',
+        'http://example.org/myModule/params#param3': 'GHI',
       }]);
     });
 
@@ -101,8 +101,8 @@ describe('construction with component configs as files', () => {
       const run = await manager.instantiate('my:config');
       expect(run).toBeInstanceOf(Hello);
       expect(run._params).toEqual([{
-        'http://example.org/myModule/params#param1': [ 'ABC' ],
-        'http://example.org/myModule/params#param3': [ 'GHI' ],
+        'http://example.org/myModule/params#param1': 'ABC',
+        'http://example.org/myModule/params#param3': 'GHI',
       }]);
     });
   });
@@ -124,8 +124,8 @@ describe('construction with component configs as files', () => {
       const run = await manager.instantiate('http://example.org/myconfig');
       expect(run).toBeInstanceOf(Hello);
       expect(run._params).toEqual([{
-        'http://example.org/hello/hello': [ 'WORLD' ],
-        'http://example.org/hello/say': [ 'HI' ],
+        'http://example.org/hello/hello': 'WORLD',
+        'http://example.org/hello/say': 'HI',
       }]);
     });
   });
@@ -147,8 +147,8 @@ describe('construction with component configs as files', () => {
       const run = await manager.instantiate('http://example.org/myconfig');
       expect(run).toBeInstanceOf(Hello);
       expect(run._params).toEqual([{
-        'http://example.org/hello/hello': [ 'WORLD' ],
-        'http://example.org/hello/say': [ 'HI' ],
+        'http://example.org/hello/hello': 'WORLD',
+        'http://example.org/hello/say': 'HI',
       }]);
     });
   });
@@ -223,8 +223,8 @@ describe('construction with component configs as files', () => {
       const run = await manager.instantiate('http://example.org/myHelloWorld1');
       expect(run).toBeInstanceOf(Hello);
       expect(run._params).toEqual([{
-        'http://example.org/hello/hello': [ new Hello({}) ],
-        'http://example.org/hello/say': [ new Hello({}) ],
+        'http://example.org/hello/hello': new Hello({}),
+        'http://example.org/hello/say': new Hello({}),
       }]);
       expect(run._params[0]['http://example.org/hello/hello'][0])
         .toBe(run._params[0]['http://example.org/hello/say'][0]);
@@ -236,8 +236,8 @@ describe('construction with component configs as files', () => {
       const run = await manager.instantiate('http://example.org/myHelloWorld1');
       expect(run).toBeInstanceOf(Hello);
       expect(run._params).toEqual([{
-        'http://example.org/hello/hello': [ new Hello({}) ],
-        'http://example.org/hello/say': [ new Hello({}) ],
+        'http://example.org/hello/hello': new Hello({}),
+        'http://example.org/hello/say': new Hello({}),
       }]);
       expect(run._params[0]['http://example.org/hello/hello'])
         .not.toBe(run._params[0]['http://example.org/hello/say']);
@@ -249,7 +249,7 @@ describe('construction with component configs as files', () => {
       const run = await manager.instantiate('http://example.org/myHelloWorld1');
       expect(run).toBeInstanceOf(Hello);
       expect(run._params).toEqual([{
-        'http://example.org/hello/hello': [ undefined ],
+        'http://example.org/hello/hello': undefined,
       }]);
     });
   });
@@ -272,13 +272,13 @@ describe('construction with component configs as files', () => {
       const run1 = await manager.instantiate('http://example.org/myHelloWorld1');
       expect(run1).toBeInstanceOf(Hello);
       expect(run1._params).toEqual([{
-        'http://example.org/hello/something': [ 'SOMETHING' ],
+        'http://example.org/hello/something': 'SOMETHING',
       }]);
 
       const run2 = await manager.instantiate('http://example.org/myHelloWorld2');
       expect(run2).toBeInstanceOf(Hello);
       expect(run2._params).toEqual([{
-        'http://example.org/hello/something': [ 'SOMETHING' ],
+        'http://example.org/hello/something': 'SOMETHING',
       }]);
     });
   });
@@ -301,7 +301,7 @@ describe('construction with component configs as files', () => {
       const run1 = await manager.instantiate('http://example.org/myHelloWorld1');
       expect(run1).toBeInstanceOf(Hello);
       expect(run1._params).toEqual([{
-        'http://example.org/hello/something': [ 'SOMETHING1' ],
+        'http://example.org/hello/something': 'SOMETHING1',
       }]);
     });
 
@@ -312,7 +312,7 @@ describe('construction with component configs as files', () => {
       const run1 = await manager.instantiate('http://example.org/myHelloWorld2');
       expect(run1).toBeInstanceOf(Hello);
       expect(run1._params).toEqual([{
-        'http://example.org/hello/something': [ 'SOMETHING2' ],
+        'http://example.org/hello/something': 'SOMETHING2',
       }]);
     });
   });
@@ -335,8 +335,8 @@ describe('construction with component configs as files', () => {
       const run1 = await manager.instantiate('http://example.org/myHelloWorld1');
       expect(run1).toBeInstanceOf(Hello);
       expect(run1._params).toEqual([{
-        something: [ 'SOMETHING' ],
-        something1: [ 'SOMETHING1' ],
+        something: 'SOMETHING',
+        something1: 'SOMETHING1',
       }]);
     });
 
@@ -347,9 +347,9 @@ describe('construction with component configs as files', () => {
       const run1 = await manager.instantiate('http://example.org/myHelloWorld2');
       expect(run1).toBeInstanceOf(Hello);
       expect(run1._params).toEqual([{
-        something: [ 'SOMETHING' ],
-        something1: [ 'SOMETHING1' ],
-        something2: [ 'SOMETHING2' ],
+        something: 'SOMETHING',
+        something1: 'SOMETHING1',
+        something2: 'SOMETHING2',
       }]);
     });
 
@@ -360,9 +360,9 @@ describe('construction with component configs as files', () => {
       const run1 = await manager.instantiate('http://example.org/myHelloWorld3');
       expect(run1).toBeInstanceOf(Hello);
       expect(run1._params).toEqual([{
-        something: [ 'SOMETHING' ],
-        something1: [ 'SOMETHING1' ],
-        something2: [ 'SOMETHING2' ],
+        something: 'SOMETHING',
+        something1: 'SOMETHING1',
+        something2: 'SOMETHING2',
       }]);
     });
   });
@@ -386,13 +386,13 @@ describe('construction with component configs as files', () => {
       const run1 = await manager.instantiate('http://example.org/myHelloWorld1');
       expect(run1).toBeInstanceOf(Hello);
       expect(run1._params).toEqual([{
-        something: [ 'SOMETHING' ],
+        something: 'SOMETHING',
       }]);
 
       const run2 = await manager.instantiate('http://example.org/myHelloWorld2');
       expect(run2).toBeInstanceOf(Hello);
       expect(run2._params).toEqual([{
-        something: [ 'SOMETHING' ],
+        something: 'SOMETHING',
       }]);
     });
   });
@@ -595,8 +595,8 @@ describe('construction with component configs as files', () => {
       const run1 = await manager.instantiate('http://example.org/myconfig2');
       expect(run1).toBeInstanceOf(Hello);
       expect(run1._params).toEqual([{
-        'http://example.org/hello/hello': [ 'WORLD' ],
-        'http://example.org/hello/say': [ true ],
+        'http://example.org/hello/hello': 'WORLD',
+        'http://example.org/hello/say': true,
       }]);
     });
   });
@@ -639,18 +639,18 @@ describe('construction with component configs as files', () => {
       expect(run1._params).toEqual([{
         KEY1: {
           'sub-KEY1': {
-            initial: [ '1' ],
-            final: [ '2' ],
+            initial: '1',
+            final: '2',
           },
           'sub-KEY2': {
-            initial: [ 'a' ],
-            final: [ 'b' ],
+            initial: 'a',
+            final: 'b',
           },
         },
         KEY2: {
           'sub-KEY1': {
-            initial: [ '1' ],
-            final: [ '2' ],
+            initial: '1',
+            final: '2',
           },
         },
       }]);

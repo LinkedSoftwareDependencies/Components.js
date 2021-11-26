@@ -26,18 +26,20 @@ describe('ParameterHandler', () => {
     });
   });
 
-  function expectOutputProperties(outputs: Resource[], expected: Resource[]) {
-    expect(outputs.length).toEqual(expected.length);
-    for (const [ i, output ] of outputs.entries()) {
-      expect(output.toQuads()).toBeRdfIsomorphic(expected[i].toQuads());
+  function expectOutputProperties(output: Resource | undefined, expected: Resource | undefined) {
+    if (output === undefined) {
+      expect(expected).toBeUndefined();
+    } else {
+      expect(output.toQuads()).toBeRdfIsomorphic(expected!.toQuads());
     }
   }
 
-  function expectOutputOnlyTerm(outputs: Resource[], expected: Resource[]) {
-    expect(outputs.length).toEqual(expected.length);
-    for (const [ i, output ] of outputs.entries()) {
-      expect(Object.keys(outputs[i].properties)).toEqual([]);
-      expect(outputs[i].term).toEqualRdfTerm(expected[i].term);
+  function expectOutputOnlyTerm(output: Resource | undefined, expected: Resource | undefined) {
+    if (output === undefined) {
+      expect(expected).toBeUndefined();
+    } else {
+      expect(Object.keys(output.properties)).toEqual([]);
+      expect(output.term).toEqualRdfTerm(expected!.term);
     }
   }
 
@@ -47,8 +49,8 @@ describe('ParameterHandler', () => {
         param = objectLoader.createCompactedResource('ex:myParam');
       });
 
-      it('should be empty for an undefined value', () => {
-        const expected: Resource[] = [];
+      it('should be undefined for an undefined value', () => {
+        const expected = undefined;
         expectOutputOnlyTerm(handler.applyParameterValues(configRoot, param, configElement), expected);
       });
 
@@ -56,13 +58,11 @@ describe('ParameterHandler', () => {
         configElement = objectLoader.createCompactedResource({
           'ex:myParam': '"ABC"',
         });
-        const expected: Resource[] = [
-          objectLoader.createCompactedResource('"ABC"'),
-        ];
+        const expected: Resource = objectLoader.createCompactedResource('"ABC"');
         expectOutputOnlyTerm(handler.applyParameterValues(configRoot, param, configElement), expected);
       });
 
-      it('should handle multiple set values', () => {
+      it('should reject multiple set values', () => {
         configElement = objectLoader.createCompactedResource({
           'ex:myParam': [
             '"A"',
@@ -70,12 +70,8 @@ describe('ParameterHandler', () => {
             '"C"',
           ],
         });
-        const expected: Resource[] = [
-          objectLoader.createCompactedResource('"A"'),
-          objectLoader.createCompactedResource('"B"'),
-          objectLoader.createCompactedResource('"C"'),
-        ];
-        expectOutputOnlyTerm(handler.applyParameterValues(configRoot, param, configElement), expected);
+        expect(() => handler.applyParameterValues(configRoot, param, configElement))
+          .toThrowError(`Detected multiple values for parameter ex:myParam. RDF lists should be used for defining multiple values.`);
       });
 
       it('should handle list values', () => {
@@ -90,15 +86,17 @@ describe('ParameterHandler', () => {
             },
           ],
         });
-        const expected: Resource[] = [
-          objectLoader.createCompactedResource('"A"'),
-          objectLoader.createCompactedResource('"B"'),
-          objectLoader.createCompactedResource('"C"'),
-        ];
+        const expected: Resource = objectLoader.createCompactedResource({
+          list: [
+            '"A"',
+            '"B"',
+            '"C"',
+          ],
+        });
         expectOutputOnlyTerm(handler.applyParameterValues(configRoot, param, configElement), expected);
       });
 
-      it('should handle multiple list values', () => {
+      it('should reject multiple list values', () => {
         configElement = objectLoader.createCompactedResource({
           'ex:myParam': [
             {
@@ -114,15 +112,11 @@ describe('ParameterHandler', () => {
             },
           ],
         });
-        const expected: Resource[] = [
-          objectLoader.createCompactedResource('"A"'),
-          objectLoader.createCompactedResource('"B"'),
-          objectLoader.createCompactedResource('"C"'),
-        ];
-        expectOutputOnlyTerm(handler.applyParameterValues(configRoot, param, configElement), expected);
+        expect(() => handler.applyParameterValues(configRoot, param, configElement))
+          .toThrowError(`Detected multiple values for parameter ex:myParam. RDF lists should be used for defining multiple values.`);
       });
 
-      it('should handle list and set values', () => {
+      it('should reject list and set values', () => {
         configElement = objectLoader.createCompactedResource({
           'ex:myParam': [
             '"A"',
@@ -134,12 +128,8 @@ describe('ParameterHandler', () => {
             '"C"',
           ],
         });
-        const expected: Resource[] = [
-          objectLoader.createCompactedResource('"A"'),
-          objectLoader.createCompactedResource('"B"'),
-          objectLoader.createCompactedResource('"C"'),
-        ];
-        expectOutputOnlyTerm(handler.applyParameterValues(configRoot, param, configElement), expected);
+        expect(() => handler.applyParameterValues(configRoot, param, configElement))
+          .toThrowError(`Detected multiple values for parameter ex:myParam. RDF lists should be used for defining multiple values.`);
       });
     });
 
@@ -153,9 +143,7 @@ describe('ParameterHandler', () => {
         });
 
         it('should be the default for an undefined value', () => {
-          const expected: Resource[] = [
-            objectLoader.createCompactedResource('"DEFAULT"'),
-          ];
+          const expected: Resource = objectLoader.createCompactedResource('"DEFAULT"');
           expectOutputOnlyTerm(handler.applyParameterValues(configRoot, param, configElement), expected);
         });
 
@@ -163,30 +151,32 @@ describe('ParameterHandler', () => {
           configElement = objectLoader.createCompactedResource({
             'ex:myParam': '"ABC"',
           });
-          const expected: Resource[] = [
-            objectLoader.createCompactedResource('"ABC"'),
-          ];
+          const expected: Resource = objectLoader.createCompactedResource('"ABC"');
           expectOutputOnlyTerm(handler.applyParameterValues(configRoot, param, configElement), expected);
         });
 
         it('should override the default with multiple set values', () => {
           configElement = objectLoader.createCompactedResource({
-            'ex:myParam': [
+            'ex:myParam': {
+              list: [
+                '"A"',
+                '"B"',
+                '"C"',
+              ],
+            },
+          });
+          const expected: Resource = objectLoader.createCompactedResource({
+            list: [
               '"A"',
               '"B"',
               '"C"',
             ],
           });
-          const expected: Resource[] = [
-            objectLoader.createCompactedResource('"A"'),
-            objectLoader.createCompactedResource('"B"'),
-            objectLoader.createCompactedResource('"C"'),
-          ];
           expectOutputOnlyTerm(handler.applyParameterValues(configRoot, param, configElement), expected);
         });
       });
 
-      describe('with multiple defaults', () => {
+      describe('with multiple defaults without list', () => {
         beforeEach(() => {
           param = objectLoader.createCompactedResource({
             '@id': 'ex:myParam',
@@ -197,11 +187,30 @@ describe('ParameterHandler', () => {
           });
         });
 
+        it('should throw', () => {
+          expect(() => handler.applyParameterValues(configRoot, param, configElement))
+            .toThrowError(`Invalid default value for parameter "ex:myParam": Only one value can be defined, or an RDF list must be provided`);
+        });
+      });
+
+      describe('with one default as list value', () => {
+        beforeEach(() => {
+          param = objectLoader.createCompactedResource({
+            '@id': 'ex:myParam',
+            default: {
+              list: [
+                '"DEFAULT1"',
+              ],
+            },
+          });
+        });
+
         it('should be the default for an undefined value', () => {
-          const expected: Resource[] = [
-            objectLoader.createCompactedResource('"DEFAULT1"'),
-            objectLoader.createCompactedResource('"DEFAULT2"'),
-          ];
+          const expected: Resource = objectLoader.createCompactedResource({
+            list: [
+              '"DEFAULT1"',
+            ],
+          });
           expectOutputOnlyTerm(handler.applyParameterValues(configRoot, param, configElement), expected);
         });
 
@@ -209,25 +218,79 @@ describe('ParameterHandler', () => {
           configElement = objectLoader.createCompactedResource({
             'ex:myParam': '"ABC"',
           });
-          const expected: Resource[] = [
-            objectLoader.createCompactedResource('"ABC"'),
-          ];
+          const expected: Resource = objectLoader.createCompactedResource('"ABC"');
           expectOutputOnlyTerm(handler.applyParameterValues(configRoot, param, configElement), expected);
         });
 
         it('should override the default with multiple set values', () => {
           configElement = objectLoader.createCompactedResource({
-            'ex:myParam': [
+            'ex:myParam': {
+              list: [
+                '"A"',
+                '"B"',
+                '"C"',
+              ],
+            },
+          });
+          const expected: Resource = objectLoader.createCompactedResource({
+            list: [
               '"A"',
               '"B"',
               '"C"',
             ],
           });
-          const expected: Resource[] = [
-            objectLoader.createCompactedResource('"A"'),
-            objectLoader.createCompactedResource('"B"'),
-            objectLoader.createCompactedResource('"C"'),
-          ];
+          expectOutputOnlyTerm(handler.applyParameterValues(configRoot, param, configElement), expected);
+        });
+      });
+
+      describe('with multiple defaults', () => {
+        beforeEach(() => {
+          param = objectLoader.createCompactedResource({
+            '@id': 'ex:myParam',
+            default: {
+              list: [
+                '"DEFAULT1"',
+                '"DEFAULT2"',
+              ],
+            },
+          });
+        });
+
+        it('should be the default for an undefined value', () => {
+          const expected: Resource = objectLoader.createCompactedResource({
+            list: [
+              '"DEFAULT1"',
+              '"DEFAULT2"',
+            ],
+          });
+          expectOutputOnlyTerm(handler.applyParameterValues(configRoot, param, configElement), expected);
+        });
+
+        it('should override the default with one set value', () => {
+          configElement = objectLoader.createCompactedResource({
+            'ex:myParam': '"ABC"',
+          });
+          const expected: Resource = objectLoader.createCompactedResource('"ABC"');
+          expectOutputOnlyTerm(handler.applyParameterValues(configRoot, param, configElement), expected);
+        });
+
+        it('should override the default with multiple set values', () => {
+          configElement = objectLoader.createCompactedResource({
+            'ex:myParam': {
+              list: [
+                '"A"',
+                '"B"',
+                '"C"',
+              ],
+            },
+          });
+          const expected: Resource = objectLoader.createCompactedResource({
+            list: [
+              '"A"',
+              '"B"',
+              '"C"',
+            ],
+          });
           expectOutputOnlyTerm(handler.applyParameterValues(configRoot, param, configElement), expected);
         });
       });
@@ -241,9 +304,7 @@ describe('ParameterHandler', () => {
         });
 
         it('should be the default for an undefined value', () => {
-          const expected: Resource[] = [
-            objectLoader.createCompactedResource('"ex:myConfig"'),
-          ];
+          const expected: Resource = objectLoader.createCompactedResource('"ex:myConfig"');
           expectOutputOnlyTerm(handler.applyParameterValues(configRoot, param, configElement), expected);
         });
       });
@@ -266,9 +327,7 @@ describe('ParameterHandler', () => {
         });
 
         it('should be the default for an undefined value', () => {
-          const expected: Resource[] = [
-            objectLoader.createCompactedResource('"DEFAULT"'),
-          ];
+          const expected: Resource = objectLoader.createCompactedResource('"DEFAULT"');
           expectOutputOnlyTerm(handler.applyParameterValues(configRoot, param, configElement), expected);
         });
 
@@ -276,25 +335,27 @@ describe('ParameterHandler', () => {
           configElement = objectLoader.createCompactedResource({
             'ex:myParam': '"ABC"',
           });
-          const expected: Resource[] = [
-            objectLoader.createCompactedResource('"ABC"'),
-          ];
+          const expected: Resource = objectLoader.createCompactedResource('"ABC"');
           expectOutputOnlyTerm(handler.applyParameterValues(configRoot, param, configElement), expected);
         });
 
         it('should override the default with multiple set values', () => {
           configElement = objectLoader.createCompactedResource({
-            'ex:myParam': [
+            'ex:myParam': {
+              list: [
+                '"A"',
+                '"B"',
+                '"C"',
+              ],
+            },
+          });
+          const expected: Resource = objectLoader.createCompactedResource({
+            list: [
               '"A"',
               '"B"',
               '"C"',
             ],
           });
-          const expected: Resource[] = [
-            objectLoader.createCompactedResource('"A"'),
-            objectLoader.createCompactedResource('"B"'),
-            objectLoader.createCompactedResource('"C"'),
-          ];
           expectOutputOnlyTerm(handler.applyParameterValues(configRoot, param, configElement), expected);
         });
       });
@@ -315,9 +376,7 @@ describe('ParameterHandler', () => {
         });
 
         it('should be the default for an undefined value', () => {
-          const expected: Resource[] = [
-            objectLoader.createCompactedResource('"DEFAULT"'),
-          ];
+          const expected: Resource = objectLoader.createCompactedResource('"DEFAULT"');
           expectOutputOnlyTerm(handler.applyParameterValues(configRoot, param, configElement), expected);
         });
 
@@ -325,30 +384,32 @@ describe('ParameterHandler', () => {
           configElement = objectLoader.createCompactedResource({
             'ex:myParam': '"ABC"',
           });
-          const expected: Resource[] = [
-            objectLoader.createCompactedResource('"ABC"'),
-          ];
+          const expected: Resource = objectLoader.createCompactedResource('"ABC"');
           expectOutputOnlyTerm(handler.applyParameterValues(configRoot, param, configElement), expected);
         });
 
         it('should override the default with multiple set values', () => {
           configElement = objectLoader.createCompactedResource({
-            'ex:myParam': [
+            'ex:myParam': {
+              list: [
+                '"A"',
+                '"B"',
+                '"C"',
+              ],
+            },
+          });
+          const expected: Resource = objectLoader.createCompactedResource({
+            list: [
               '"A"',
               '"B"',
               '"C"',
             ],
           });
-          const expected: Resource[] = [
-            objectLoader.createCompactedResource('"A"'),
-            objectLoader.createCompactedResource('"B"'),
-            objectLoader.createCompactedResource('"C"'),
-          ];
           expectOutputOnlyTerm(handler.applyParameterValues(configRoot, param, configElement), expected);
         });
       });
 
-      describe('with multiple applicable default scoped values', () => {
+      describe('with multiple applicable default scoped values without list', () => {
         beforeEach(() => {
           param = objectLoader.createCompactedResource({
             '@id': 'ex:myParam',
@@ -366,11 +427,39 @@ describe('ParameterHandler', () => {
           });
         });
 
+        it('should throw', () => {
+          expect(() => handler.applyParameterValues(configRoot, param, configElement))
+            .toThrowError(`Invalid defaultScoped value for parameter "ex:myParam": Only one defaultScopedValue can be defined, or an RDF list must be provided`);
+        });
+      });
+
+      describe('with multiple applicable default scoped values as list', () => {
+        beforeEach(() => {
+          param = objectLoader.createCompactedResource({
+            '@id': 'ex:myParam',
+            defaultScoped: [
+              {
+                defaultScope: [
+                  'ex:Component1',
+                ],
+                defaultScopedValue: {
+                  list: [
+                    '"DEFAULT1"',
+                    '"DEFAULT2"',
+                  ],
+                },
+              },
+            ],
+          });
+        });
+
         it('should be the default for an undefined value', () => {
-          const expected: Resource[] = [
-            objectLoader.createCompactedResource('"DEFAULT1"'),
-            objectLoader.createCompactedResource('"DEFAULT2"'),
-          ];
+          const expected: Resource = objectLoader.createCompactedResource({
+            list: [
+              '"DEFAULT1"',
+              '"DEFAULT2"',
+            ],
+          });
           expectOutputOnlyTerm(handler.applyParameterValues(configRoot, param, configElement), expected);
         });
 
@@ -378,25 +467,27 @@ describe('ParameterHandler', () => {
           configElement = objectLoader.createCompactedResource({
             'ex:myParam': '"ABC"',
           });
-          const expected: Resource[] = [
-            objectLoader.createCompactedResource('"ABC"'),
-          ];
+          const expected: Resource = objectLoader.createCompactedResource('"ABC"');
           expectOutputOnlyTerm(handler.applyParameterValues(configRoot, param, configElement), expected);
         });
 
         it('should override the default with multiple set values', () => {
           configElement = objectLoader.createCompactedResource({
-            'ex:myParam': [
+            'ex:myParam': {
+              list: [
+                '"A"',
+                '"B"',
+                '"C"',
+              ],
+            },
+          });
+          const expected: Resource = objectLoader.createCompactedResource({
+            list: [
               '"A"',
               '"B"',
               '"C"',
             ],
           });
-          const expected: Resource[] = [
-            objectLoader.createCompactedResource('"A"'),
-            objectLoader.createCompactedResource('"B"'),
-            objectLoader.createCompactedResource('"C"'),
-          ];
           expectOutputOnlyTerm(handler.applyParameterValues(configRoot, param, configElement), expected);
         });
       });
@@ -417,7 +508,7 @@ describe('ParameterHandler', () => {
         });
 
         it('should not be the default for an undefined value', () => {
-          const expected: Resource[] = [];
+          const expected = undefined;
           expectOutputOnlyTerm(handler.applyParameterValues(configRoot, param, configElement), expected);
         });
       });
@@ -440,7 +531,7 @@ describe('ParameterHandler', () => {
         });
 
         it('should not be the default for an undefined value', () => {
-          const expected: Resource[] = [];
+          const expected = undefined;
           expectOutputOnlyTerm(handler.applyParameterValues(configRoot, param, configElement), expected);
         });
       });
@@ -467,7 +558,7 @@ describe('ParameterHandler', () => {
         });
 
         it('should not be the default for an undefined value', () => {
-          const expected: Resource[] = [];
+          const expected = undefined;
           expectOutputOnlyTerm(handler.applyParameterValues(configRoot, param, configElement), expected);
         });
       });
@@ -500,9 +591,7 @@ describe('ParameterHandler', () => {
         });
 
         it('should not be the default for an undefined value', () => {
-          const expected: Resource[] = [
-            objectLoader.createCompactedResource('"DEFAULT1"'),
-          ];
+          const expected: Resource = objectLoader.createCompactedResource('"DEFAULT1"');
           expectOutputOnlyTerm(handler.applyParameterValues(configRoot, param, configElement), expected);
         });
       });
@@ -529,10 +618,12 @@ describe('ParameterHandler', () => {
         });
 
         it('should set all default values', () => {
-          const expected: Resource[] = [
-            objectLoader.createCompactedResource('"DEFAULT1"'),
-            objectLoader.createCompactedResource('"DEFAULT2"'),
-          ];
+          const expected: Resource = objectLoader.createCompactedResource({
+            list: [
+              '"DEFAULT1"',
+              '"DEFAULT2"',
+            ],
+          });
           expectOutputOnlyTerm(handler.applyParameterValues(configRoot, param, configElement), expected);
         });
       });
@@ -568,48 +659,8 @@ describe('ParameterHandler', () => {
       });
     });
 
-    describe('for parameter that is required', () => {
-      beforeEach(() => {
-        param = objectLoader.createCompactedResource({
-          '@id': 'ex:myParam',
-          required: '"true"',
-        });
-      });
-
-      it('should throw for an undefined value', () => {
-        expect(() => handler.applyParameterValues(configRoot, param, configElement))
-          .toThrowError(/^No value was set for required parameter "ex:myParam"/u);
-      });
-
-      it('should allow one set value', () => {
-        configElement = objectLoader.createCompactedResource({
-          'ex:myParam': '"ABC"',
-        });
-        const expected: Resource[] = [
-          objectLoader.createCompactedResource('"ABC"'),
-        ];
-        expectOutputOnlyTerm(handler.applyParameterValues(configRoot, param, configElement), expected);
-      });
-
-      it('should allow multiple set values', () => {
-        configElement = objectLoader.createCompactedResource({
-          'ex:myParam': [
-            '"A"',
-            '"B"',
-            '"C"',
-          ],
-        });
-        const expected: Resource[] = [
-          objectLoader.createCompactedResource('"A"'),
-          objectLoader.createCompactedResource('"B"'),
-          objectLoader.createCompactedResource('"C"'),
-        ];
-        expectOutputOnlyTerm(handler.applyParameterValues(configRoot, param, configElement), expected);
-      });
-    });
-
     describe('for parameter with fixed values', () => {
-      describe('with one fixed value', () => {
+      describe('with one fixed value as single value', () => {
         beforeEach(() => {
           param = objectLoader.createCompactedResource({
             '@id': 'ex:myParam',
@@ -618,9 +669,7 @@ describe('ParameterHandler', () => {
         });
 
         it('should return the fixed value for an undefined value', () => {
-          const expected: Resource[] = [
-            objectLoader.createCompactedResource('"FIXED"'),
-          ];
+          const expected: Resource = objectLoader.createCompactedResource('"FIXED"');
           expectOutputOnlyTerm(handler.applyParameterValues(configRoot, param, configElement), expected);
         });
 
@@ -628,27 +677,107 @@ describe('ParameterHandler', () => {
           configElement = objectLoader.createCompactedResource({
             'ex:myParam': '"ABC"',
           });
-          const expected: Resource[] = [
-            objectLoader.createCompactedResource('"FIXED"'),
-            objectLoader.createCompactedResource('"ABC"'),
-          ];
+          const expected: Resource = objectLoader.createCompactedResource({
+            list: [
+              '"FIXED"',
+              '"ABC"',
+            ],
+          });
           expectOutputOnlyTerm(handler.applyParameterValues(configRoot, param, configElement), expected);
         });
 
-        it('should allow multiple additional set values', () => {
+        it('should not allow multiple additional set values', () => {
           configElement = objectLoader.createCompactedResource({
-            'ex:myParam': [
+            'ex:myParam': {
+              list: [
+                '"A"',
+                '"B"',
+                '"C"',
+              ],
+            },
+          });
+          const expected: Resource = objectLoader.createCompactedResource({
+            list: [
+              '"FIXED"',
               '"A"',
               '"B"',
               '"C"',
             ],
           });
-          const expected: Resource[] = [
-            objectLoader.createCompactedResource('"FIXED"'),
-            objectLoader.createCompactedResource('"A"'),
-            objectLoader.createCompactedResource('"B"'),
-            objectLoader.createCompactedResource('"C"'),
-          ];
+          expectOutputOnlyTerm(handler.applyParameterValues(configRoot, param, configElement), expected);
+        });
+      });
+
+      describe('with multiple fixed value without list', () => {
+        beforeEach(() => {
+          param = objectLoader.createCompactedResource({
+            '@id': 'ex:myParam',
+            fixed: [
+              '"FIXED1"',
+              '"FIXED2"',
+            ],
+          });
+        });
+
+        it('should throw', () => {
+          const expected: Resource = objectLoader.createCompactedResource('"FIXED"');
+          expect(() => expectOutputOnlyTerm(handler.applyParameterValues(configRoot, param, configElement), expected))
+            .toThrowError(`Invalid fixed value for parameter "ex:myParam": Only one value can be defined, or an RDF list must be provided`);
+        });
+      });
+
+      describe('with one fixed value as list value', () => {
+        beforeEach(() => {
+          param = objectLoader.createCompactedResource({
+            '@id': 'ex:myParam',
+            fixed: {
+              list: [
+                '"FIXED"',
+              ],
+            },
+          });
+        });
+
+        it('should return the fixed value for an undefined value', () => {
+          const expected: Resource = objectLoader.createCompactedResource({
+            list: [
+              '"FIXED"',
+            ],
+          });
+          expectOutputOnlyTerm(handler.applyParameterValues(configRoot, param, configElement), expected);
+        });
+
+        it('should allow one additional set value', () => {
+          configElement = objectLoader.createCompactedResource({
+            'ex:myParam': '"ABC"',
+          });
+          const expected: Resource = objectLoader.createCompactedResource({
+            list: [
+              '"FIXED"',
+              '"ABC"',
+            ],
+          });
+          expectOutputOnlyTerm(handler.applyParameterValues(configRoot, param, configElement), expected);
+        });
+
+        it('should allow multiple additional set values', () => {
+          configElement = objectLoader.createCompactedResource({
+            'ex:myParam': {
+              list: [
+                '"A"',
+                '"B"',
+                '"C"',
+              ],
+            },
+          });
+          const expected: Resource = objectLoader.createCompactedResource({
+            list: [
+              '"FIXED"',
+              '"A"',
+              '"B"',
+              '"C"',
+            ],
+          });
           expectOutputOnlyTerm(handler.applyParameterValues(configRoot, param, configElement), expected);
         });
       });
@@ -657,151 +786,60 @@ describe('ParameterHandler', () => {
         beforeEach(() => {
           param = objectLoader.createCompactedResource({
             '@id': 'ex:myParam',
-            fixed: [
-              '"FIXED1"',
-              '"FIXED2"',
-            ],
+            fixed: {
+              list: [
+                '"FIXED1"',
+                '"FIXED2"',
+              ],
+            },
           });
         });
 
         it('should return the fixed values for an undefined value', () => {
-          const expected: Resource[] = [
-            objectLoader.createCompactedResource('"FIXED1"'),
-            objectLoader.createCompactedResource('"FIXED2"'),
-          ];
+          const expected: Resource = objectLoader.createCompactedResource({
+            list: [
+              '"FIXED1"',
+              '"FIXED2"',
+            ],
+          });
           expectOutputOnlyTerm(handler.applyParameterValues(configRoot, param, configElement), expected);
         });
 
         it('should allow one additional set value', () => {
           configElement = objectLoader.createCompactedResource({
             'ex:myParam': '"ABC"',
-          }); const expected: Resource[] = [
-            objectLoader.createCompactedResource('"FIXED1"'),
-            objectLoader.createCompactedResource('"FIXED2"'),
-            objectLoader.createCompactedResource('"ABC"'),
-          ];
+          });
+          const expected: Resource = objectLoader.createCompactedResource({
+            list: [
+              '"FIXED1"',
+              '"FIXED2"',
+              '"ABC"',
+            ],
+          });
           expectOutputOnlyTerm(handler.applyParameterValues(configRoot, param, configElement), expected);
         });
 
         it('should allow multiple additional set values', () => {
           configElement = objectLoader.createCompactedResource({
-            'ex:myParam': [
-              '"A"',
-              '"B"',
-              '"C"',
-            ],
+            'ex:myParam': {
+              list: [
+                '"A"',
+                '"B"',
+                '"C"',
+              ],
+            },
           });
-          const expected: Resource[] = [
-            objectLoader.createCompactedResource('"FIXED1"'),
-            objectLoader.createCompactedResource('"FIXED2"'),
-            objectLoader.createCompactedResource('"A"'),
-            objectLoader.createCompactedResource('"B"'),
-            objectLoader.createCompactedResource('"C"'),
-          ];
-          expectOutputOnlyTerm(handler.applyParameterValues(configRoot, param, configElement), expected);
-        });
-      });
-
-      describe('should prioritize fixed values when param is unique', () => {
-        beforeEach(() => {
-          param = objectLoader.createCompactedResource({
-            '@id': 'ex:myParam',
-            fixed: [
+          const expected: Resource = objectLoader.createCompactedResource({
+            list: [
               '"FIXED1"',
               '"FIXED2"',
-            ],
-            unique: '"true"',
-          });
-        });
-
-        it('should return the first fixed value for an undefined value', () => {
-          const expected: Resource[] = [
-            objectLoader.createCompactedResource('"FIXED1"'),
-          ];
-          expected[0].property.unique = objectLoader.createCompactedResource('"true"');
-          expectOutputProperties(handler.applyParameterValues(configRoot, param, configElement), expected);
-        });
-
-        it('should handle one additional set value', () => {
-          const expected: Resource[] = [
-            objectLoader.createCompactedResource('"FIXED1"'),
-          ];
-          expected[0].property.unique = objectLoader.createCompactedResource('"true"');
-          configElement = objectLoader.createCompactedResource({
-            'ex:myParam': '"ABC"',
-          });
-          expectOutputProperties(handler.applyParameterValues(configRoot, param, configElement), expected);
-        });
-
-        it('should handle multiple additional set values', () => {
-          const expected: Resource[] = [
-            objectLoader.createCompactedResource('"FIXED1"'),
-          ];
-          expected[0].property.unique = objectLoader.createCompactedResource('"true"');
-          configElement = objectLoader.createCompactedResource({
-            'ex:myParam': [
               '"A"',
               '"B"',
               '"C"',
             ],
           });
-          expectOutputProperties(handler.applyParameterValues(configRoot, param, configElement), expected);
+          expectOutputOnlyTerm(handler.applyParameterValues(configRoot, param, configElement), expected);
         });
-      });
-    });
-
-    describe('for parameter with unique values', () => {
-      beforeEach(() => {
-        param = objectLoader.createCompactedResource({
-          '@id': 'ex:myParam',
-          unique: '"true"',
-        });
-      });
-
-      it('should allow an undefined value', () => {
-        const expected: Resource[] = [];
-        expectOutputProperties(handler.applyParameterValues(configRoot, param, configElement), expected);
-      });
-
-      it('should allow one set value', () => {
-        configElement = objectLoader.createCompactedResource({
-          'ex:myParam': '"ABC"',
-        });
-        const expected: Resource[] = [
-          objectLoader.createCompactedResource('"ABC"'),
-        ];
-        expected[0].property.unique = objectLoader.createCompactedResource('"true"');
-        expectOutputProperties(handler.applyParameterValues(configRoot, param, configElement), expected);
-      });
-
-      it('should allow multiple set values, but only take the first', () => {
-        configElement = objectLoader.createCompactedResource({
-          'ex:myParam': [
-            '"A"',
-            '"B"',
-            '"C"',
-          ],
-        });
-        const expected: Resource[] = [
-          objectLoader.createCompactedResource('"A"'),
-        ];
-        expected[0].property.unique = objectLoader.createCompactedResource('"true"');
-        expectOutputProperties(handler.applyParameterValues(configRoot, param, configElement), expected);
-      });
-
-      it('should allow one resource value', () => {
-        configElement = objectLoader.createCompactedResource({
-          'ex:myParam': {
-            a: '"ABC"',
-          },
-        });
-        const expected: Resource[] = [
-          objectLoader.createCompactedResource({
-            a: '"ABC"',
-          }),
-        ];
-        expected[0].property.unique = objectLoader.createCompactedResource('"true"');
-        expectOutputProperties(handler.applyParameterValues(configRoot, param, configElement), expected);
       });
     });
 
@@ -813,37 +851,32 @@ describe('ParameterHandler', () => {
         });
       });
 
-      it('should allow an undefined value', () => {
-        const expected: Resource[] = [];
-        expectOutputOnlyTerm(handler.applyParameterValues(configRoot, param, configElement), expected);
+      it('should not allow an undefined value', () => {
+        expect(() => handler.applyParameterValues(configRoot, param, configElement))
+          .toThrow(`The value "undefined" for parameter "ex:myParam" is not of required range type "http://www.w3.org/2001/XMLSchema#boolean"`);
       });
 
       it('should allow one set boolean value', () => {
         configElement = objectLoader.createCompactedResource({
           'ex:myParam': '"true"',
         });
-        const expected: Resource[] = [
-          objectLoader.createCompactedResource('"true"'),
-        ];
+        const expected: Resource = objectLoader.createCompactedResource('"true"');
         const outputs = handler.applyParameterValues(configRoot, param, configElement);
         expectOutputOnlyTerm(outputs, expected);
       });
 
-      it('should allow multiple set boolean values', () => {
+      it('should not allow multiple set boolean values', () => {
         configElement = objectLoader.createCompactedResource({
-          'ex:myParam': [
-            '"true"',
-            '"false"',
-            '"true"',
-          ],
+          'ex:myParam': {
+            list: [
+              '"true"',
+              '"false"',
+              '"true"',
+            ],
+          },
         });
-        const expected: Resource[] = [
-          objectLoader.createCompactedResource('"true"'),
-          objectLoader.createCompactedResource('"false"'),
-          objectLoader.createCompactedResource('"true"'),
-        ];
-        const outputs = handler.applyParameterValues(configRoot, param, configElement);
-        expectOutputOnlyTerm(outputs, expected);
+        expect(() => handler.applyParameterValues(configRoot, param, configElement))
+          .toThrow(/The value ".*" for parameter "ex:myParam" is not of required range type ".*boolean"/u);
       });
     });
 
@@ -856,7 +889,7 @@ describe('ParameterHandler', () => {
       });
 
       it('should allow an undefined value', () => {
-        const expected: Resource[] = [];
+        const expected = undefined;
         expectOutputProperties(handler.applyParameterValues(configRoot, param, configElement), expected);
       });
 
@@ -864,29 +897,31 @@ describe('ParameterHandler', () => {
         configElement = objectLoader.createCompactedResource({
           'ex:myParam': '"ABC"',
         });
-        const expected: Resource[] = [
-          objectLoader.createCompactedResource('"ABC"'),
-        ];
-        expected[0].property.lazy = objectLoader.createCompactedResource('"true"');
+        const expected: Resource = objectLoader.createCompactedResource('"ABC"');
+        expected.property.lazy = objectLoader.createCompactedResource('"true"');
         expectOutputProperties(handler.applyParameterValues(configRoot, param, configElement), expected);
       });
 
       it('should allow multiple set values, and inherit lazy property on all', () => {
         configElement = objectLoader.createCompactedResource({
-          'ex:myParam': [
+          'ex:myParam': {
+            list: [
+              '"A"',
+              '"B"',
+              '"C"',
+            ],
+          },
+        });
+        const expected: Resource = objectLoader.createCompactedResource({
+          list: [
             '"A"',
             '"B"',
             '"C"',
           ],
         });
-        const expected: Resource[] = [
-          objectLoader.createCompactedResource('"A"'),
-          objectLoader.createCompactedResource('"B"'),
-          objectLoader.createCompactedResource('"C"'),
-        ];
-        expected[0].property.lazy = objectLoader.createCompactedResource('"true"');
-        expected[1].property.lazy = objectLoader.createCompactedResource('"true"');
-        expected[2].property.lazy = objectLoader.createCompactedResource('"true"');
+        expected.list![0].property.lazy = objectLoader.createCompactedResource('"true"');
+        expected.list![1].property.lazy = objectLoader.createCompactedResource('"true"');
+        expected.list![2].property.lazy = objectLoader.createCompactedResource('"true"');
         expectOutputProperties(handler.applyParameterValues(configRoot, param, configElement), expected);
       });
     });

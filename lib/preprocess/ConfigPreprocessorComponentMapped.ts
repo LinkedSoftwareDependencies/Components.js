@@ -54,7 +54,7 @@ export class ConfigPreprocessorComponentMapped extends ConfigPreprocessorCompone
   public transformConstructorArguments(
     config: Resource,
     handleResponse: IComponentConfigPreprocessorHandleResponse,
-  ): Resource[] {
+  ): Resource {
     const constructorArgs = handleResponse.component.property.constructorArguments;
     return this.applyConstructorArgumentsParameters(config, constructorArgs, config);
   }
@@ -63,7 +63,7 @@ export class ConfigPreprocessorComponentMapped extends ConfigPreprocessorCompone
     configRoot: Resource,
     constructorArgs: Resource,
     configElement: Resource,
-  ): Resource[] {
+  ): Resource {
     // Check if this constructor args resource can be handled by one of the built-in handlers.
     for (const handler of this.mappingHandlers) {
       if (handler.canHandle(configRoot, constructorArgs, configElement, this)) {
@@ -72,7 +72,7 @@ export class ConfigPreprocessorComponentMapped extends ConfigPreprocessorCompone
     }
 
     // Fallback to original constructor args
-    return [ constructorArgs ];
+    return constructorArgs;
   }
 
   public getParameterValue(
@@ -80,13 +80,12 @@ export class ConfigPreprocessorComponentMapped extends ConfigPreprocessorCompone
     parameter: Resource,
     configElement: Resource,
     rawValue: boolean,
-  ): Resource[] {
-    let valueOut: Resource[];
+  ): Resource | undefined {
+    let valueOut: Resource | undefined;
 
     if (parameter.type === 'NamedNode' && parameter.value === IRIS_RDF.subject) {
-      valueOut = [ this.objectLoader.createCompactedResource(`"${configElement.value}"`) ];
-      valueOut[0].property.unique = this.objectLoader.createCompactedResource('"true"');
-    } else if (parameter.type === 'NamedNode') {
+      valueOut = this.objectLoader.createCompactedResource(`"${configElement.value}"`);
+    } else if (parameter.type === 'NamedNode' && !parameter.property.fields) {
       valueOut = this.parameterHandler.applyParameterValues(configRoot, parameter, configElement);
     } else {
       valueOut = this.applyConstructorArgumentsParameters(configRoot, parameter, configElement);
@@ -94,13 +93,11 @@ export class ConfigPreprocessorComponentMapped extends ConfigPreprocessorCompone
 
     // If the referenced IRI should become a plain string
     if (rawValue) {
-      const unique = valueOut[0].property.unique?.value === 'true';
-      valueOut = [ this.objectLoader.createCompactedResource(`"${valueOut[0].value}"`) ];
-
-      // Make sure to inherit the original param's unique flag
-      if (unique) {
-        valueOut[0].property.unique = this.objectLoader.createCompactedResource('"true"');
-      }
+      valueOut = valueOut?.list ?
+        this.objectLoader.createCompactedResource({
+          list: valueOut.list.map(valueOutSub => `"${valueOutSub.value}"`),
+        }) :
+        this.objectLoader.createCompactedResource(`"${valueOut ? valueOut.value : 'undefined'}"`);
     }
     return valueOut;
   }

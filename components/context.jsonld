@@ -29,14 +29,8 @@
       "@id": "oo:constructorArguments",
       "@container": "@list"
     },
-    "unique": {
-      "@id": "oo:uniqueValue"
-    },
     "lazy": {
       "@id": "oo:lazyValue"
-    },
-    "required": {
-      "@id": "oo:required"
     },
     "default": {
       "@id": "oo:defaultValue"
@@ -64,17 +58,31 @@
     "ParameterRange": {
       "@id": "oo:ParameterRange"
     },
-    "ParameterRangeComposed": {
-      "@id": "oo:ParameterRangeComposed"
+    "ParameterRangeUndefined": {
+      "@id": "oo:ParameterRangeUndefined"
     },
-    "ParameterRangeComposedUnion": {
-      "@id": "oo:ParameterRangeComposedUnion"
+    "ParameterRangeArray": {
+      "@id": "oo:ParameterRangeArray"
     },
-    "ParameterRangeComposedIntersection": {
-      "@id": "oo:ParameterRangeComposedIntersection"
+    "parameterRangeValue": {
+      "@id": "oo:parameterRangeValue",
+      "@type": "@id"
     },
-    "parameterRangeComposedChildren": {
-      "@id": "oo:parameterRangeComposedChildren",
+    "ParameterRangeUnion": {
+      "@id": "oo:ParameterRangeUnion"
+    },
+    "ParameterRangeIntersection": {
+      "@id": "oo:ParameterRangeIntersection"
+    },
+    "parameterRangeElements": {
+      "@id": "oo:parameterRangeElements",
+      "@type": "@id"
+    },
+    "ParameterRangeCollectEntries": {
+      "@id": "oo:ParameterRangeCollectEntries"
+    },
+    "parameterRangeCollectEntriesParameters": {
+      "@id": "oo:parameterRangeCollectEntriesParameters",
       "@type": "@id"
     },
 
@@ -132,7 +140,8 @@
     },
     "fields": {
       "@id": "om:field",
-      "@type": "om:ObjectMapEntry"
+      "@type": "om:ObjectMapEntry",
+      "@container": "@list"
     },
     "elements": {
       "@id": "om:elements",
@@ -141,7 +150,8 @@
     },
     "collectEntries": {
       "@id": "om:collectsEntriesFrom",
-      "@type": "@id"
+      "@type": "@id",
+      "@container": "@list"
     },
     "keyRaw": {
       "@id": "om:fieldName"

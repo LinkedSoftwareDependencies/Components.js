@@ -20,35 +20,22 @@ export class ConstructorArgumentsElementMappingHandlerList implements IConstruct
     constructorArgs: Resource,
     configElement: Resource,
     mapper: IConstructorArgumentsMapper,
-  ): Resource[] {
+  ): Resource {
     // Recursively handle all field values.
     const ret = mapper.objectLoader.createCompactedResource({});
     ret.list = [];
     for (const argument of (<Resource[]> constructorArgs.list)) {
       if (argument.property.fields || argument.property.elements) {
-        for (const mapped of mapper.applyConstructorArgumentsParameters(configRoot, argument, configElement)) {
-          ret.list.push(mapped);
-        }
+        ret.list.push(mapper.applyConstructorArgumentsParameters(configRoot, argument, configElement));
       } else {
-        const mappeds = mapper.getParameterValue(configRoot, argument, configElement, false);
-        if (mappeds.length > 0) {
-          if (mappeds[0].property.unique?.value === 'true') {
-            // Only add a single value if param was unique
-            ret.list.push(mappeds[0]);
-          } else {
-            // Add all values as an array if param was not unique
-            ret.list.push(mapper.objectLoader.createCompactedResource({
-              elements: mappeds.map(value => mapper.objectLoader.createCompactedResource({ value })),
-            }));
-          }
+        const value = mapper.getParameterValue(configRoot, argument, configElement, false);
+        if (value) {
+          ret.list.push(value);
         } else {
-          // Explicitly pass a single undefined value if no param value was set
-          ret.list.push(mapper.objectLoader.createCompactedResource({
-            undefined: true,
-          }));
+          ret.list.push(mapper.objectLoader.createCompactedResource({ undefined: true }));
         }
       }
     }
-    return [ ret ];
+    return ret;
   }
 }

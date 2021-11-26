@@ -1,4 +1,5 @@
 import type { Resource } from 'rdf-object';
+import { ErrorResourcesContext } from '../../util/ErrorResourcesContext';
 import type { IConstructorArgumentsElementMappingHandler } from './IConstructorArgumentsElementMappingHandler';
 import type { IConstructorArgumentsMapper } from './IConstructorArgumentsMapper';
 
@@ -20,17 +21,23 @@ export class ConstructorArgumentsElementMappingHandlerFields implements IConstru
     constructorArgs: Resource,
     configElement: Resource,
     mapper: IConstructorArgumentsMapper,
-  ): Resource[] {
+  ): Resource {
+    if (constructorArgs.properties.fields.length > 1) {
+      throw new ErrorResourcesContext(`Invalid fields: Only one value can be defined, or an RDF list must be provided`, {
+        constructorArgs,
+        config: configRoot,
+      });
+    }
+    const fields = constructorArgs.properties.fields[0];
+
     // Recursively handle all field values.
-    const ret = mapper.objectLoader.createCompactedResource({});
-    for (const field of constructorArgs.properties.fields) {
-      for (const mappedResource of mapper.applyConstructorArgumentsParameters(configRoot, field, configElement)) {
-        ret.properties.fields.push(mappedResource);
+    const entries: Resource[] = [];
+    for (const field of fields.list || [ fields ]) {
+      const mapped = mapper.applyConstructorArgumentsParameters(configRoot, field, configElement);
+      for (const entry of mapped.list || [ mapped ]) {
+        entries.push(entry);
       }
     }
-    ret.property.unique = mapper.objectLoader.createCompactedResource('"true"');
-    // Hack to enforce ArgumentConstructorHandlerHash
-    ret.property.hasFields = mapper.objectLoader.createCompactedResource('"true"');
-    return [ ret ];
+    return mapper.objectLoader.createCompactedResource({ fields: { list: entries }});
   }
 }

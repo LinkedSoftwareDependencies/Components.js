@@ -1,12 +1,11 @@
 import type { RdfObjectLoader, Resource } from 'rdf-object';
+import { ErrorResourcesContext } from '../util/ErrorResourcesContext';
 import type { IParameterPropertyHandler } from './parameterproperty/IParameterPropertyHandler';
 import { ParameterPropertyHandlerDefault } from './parameterproperty/ParameterPropertyHandlerDefault';
 import { ParameterPropertyHandlerDefaultScoped } from './parameterproperty/ParameterPropertyHandlerDefaultScoped';
 import { ParameterPropertyHandlerFixed } from './parameterproperty/ParameterPropertyHandlerFixed';
 import { ParameterPropertyHandlerLazy } from './parameterproperty/ParameterPropertyHandlerLazy';
 import { ParameterPropertyHandlerRange } from './parameterproperty/ParameterPropertyHandlerRange';
-import { ParameterPropertyHandlerRequired } from './parameterproperty/ParameterPropertyHandlerRequired';
-import { ParameterPropertyHandlerUnique } from './parameterproperty/ParameterPropertyHandlerUnique';
 
 /**
  * Handles component parameters in the context of a config.
@@ -20,9 +19,7 @@ export class ParameterHandler {
     this.parameterPropertyHandlers = [
       new ParameterPropertyHandlerDefaultScoped(this.objectLoader),
       new ParameterPropertyHandlerDefault(this.objectLoader),
-      new ParameterPropertyHandlerRequired(this.objectLoader),
-      new ParameterPropertyHandlerFixed(),
-      new ParameterPropertyHandlerUnique(this.objectLoader),
+      new ParameterPropertyHandlerFixed(this.objectLoader),
       new ParameterPropertyHandlerRange(this.objectLoader),
       new ParameterPropertyHandlerLazy(),
     ];
@@ -33,23 +30,22 @@ export class ParameterHandler {
    * @param configRoot The root config resource that we are working in.
    * @param parameter The parameter resource to get the value for.
    * @param configElement Part of the config resource to look for parameter instantiations as predicates.
-   * @return The parameter value(s)
+   * @return The parameter value
    */
   public applyParameterValues(
     configRoot: Resource,
     parameter: Resource,
     configElement: Resource,
-  ): Resource[] {
-    // Obtain the parameter's value in the given config, and flatten RDF lists
-    let value: Resource[] = [];
-    for (const element of configElement.properties[parameter.value]) {
-      if (element.list) {
-        for (const subElement of element.list) {
-          value.push(subElement);
-        }
-      } else {
-        value.push(element);
-      }
+  ): Resource | undefined {
+    // Make sure that we always have a single value with list elements in it.
+    const values = configElement.properties[parameter.value];
+    let value: Resource | undefined;
+    if (values.length === 1) {
+      value = values[0];
+    } else if (values.length > 0) {
+      throw new ErrorResourcesContext(`Detected multiple values for parameter ${parameter.value}. RDF lists should be used for defining multiple values.`, {
+        arguments: values,
+      });
     }
 
     // Run the value through all applicable parameters property handlers.

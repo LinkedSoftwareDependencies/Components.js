@@ -37,17 +37,21 @@ describe('ConfigPreprocessorComponentMapped', () => {
     });
   });
 
-  function expectOutputProperties(outputs: Resource[], expected: Resource[]) {
-    expect(outputs.length).toEqual(expected.length);
-    for (const [ i, output ] of outputs.entries()) {
-      expect(output.toQuads()).toBeRdfIsomorphic(expected[i].toQuads());
+  function expectOutputProperties(output: Resource | undefined, expected: Resource | undefined) {
+    if (output === undefined) {
+      expect(expected).toBeUndefined();
+    } else {
+      expect(output.toQuads()).toBeRdfIsomorphic(expected!.toQuads());
     }
   }
 
-  function expectOutputOnlyTerm(outputs: Resource[], expected: Resource[]) {
-    expect(outputs.length).toEqual(expected.length);
-    expect(Object.keys(outputs[0].properties)).toEqual([]);
-    expect(outputs[0].term).toEqualRdfTerm(expected[0].term);
+  function expectOutputOnlyTerm(output: Resource | undefined, expected: Resource | undefined) {
+    if (output === undefined) {
+      expect(expected).toBeUndefined();
+    } else {
+      expect(Object.keys(output.properties)).toEqual([]);
+      expect(output.term).toEqualRdfTerm(expected!.term);
+    }
   }
 
   describe('canHandle', () => {
@@ -136,12 +140,10 @@ describe('ConfigPreprocessorComponentMapped', () => {
         }),
         module: objectLoader.createCompactedResource({}),
       };
-      const expected = [
-        objectLoader.createCompactedResource({
-          key: '"KEY"',
-          value: '"A"',
-        }),
-      ];
+      const expected = objectLoader.createCompactedResource({
+        key: '"KEY"',
+        value: '"A"',
+      });
       expectOutputProperties(preprocessor.transformConstructorArguments(config, handleResponse), expected);
     });
   });
@@ -153,9 +155,7 @@ describe('ConfigPreprocessorComponentMapped', () => {
         unknown: '"unknown"',
       });
       const configElement = objectLoader.createCompactedResource({});
-      const expected = [
-        constructorArgs,
-      ];
+      const expected = constructorArgs;
       expectOutputProperties(preprocessor
         .applyConstructorArgumentsParameters(configRoot, constructorArgs, configElement), expected);
     });
@@ -169,17 +169,15 @@ describe('ConfigPreprocessorComponentMapped', () => {
       const configElement = objectLoader.createCompactedResource({
         'ex:param1': '"A"',
       });
-      const expected = [
-        objectLoader.createCompactedResource({
-          key: '"KEY"',
-          value: '"A"',
-        }),
-      ];
+      const expected = objectLoader.createCompactedResource({
+        key: '"KEY"',
+        value: '"A"',
+      });
       expectOutputProperties(preprocessor
         .applyConstructorArgumentsParameters(configRoot, constructorArgs, configElement), expected);
     });
 
-    it('should pass args with literal key and multiple values', () => {
+    it('should reject args with literal key and multiple values as non-list', () => {
       const configRoot = objectLoader.createCompactedResource({});
       const constructorArgs = objectLoader.createCompactedResource({
         key: '"KEY"',
@@ -191,15 +189,35 @@ describe('ConfigPreprocessorComponentMapped', () => {
           '"B"',
         ],
       });
-      const expected = [
-        objectLoader.createCompactedResource({
-          key: '"KEY"',
-          value: [
+      const expected = objectLoader.createCompactedResource({});
+      expect(() => expectOutputProperties(preprocessor
+        .applyConstructorArgumentsParameters(configRoot, constructorArgs, configElement), expected))
+        .toThrowError(`Detected multiple values for parameter ex:param1. RDF lists should be used for defining multiple values.`);
+    });
+
+    it('should pass args with literal key and multiple values as list', () => {
+      const configRoot = objectLoader.createCompactedResource({});
+      const constructorArgs = objectLoader.createCompactedResource({
+        key: '"KEY"',
+        value: 'ex:param1',
+      });
+      const configElement = objectLoader.createCompactedResource({
+        'ex:param1': {
+          list: [
             '"A"',
             '"B"',
           ],
-        }),
-      ];
+        },
+      });
+      const expected = objectLoader.createCompactedResource({
+        key: '"KEY"',
+        value: {
+          list: [
+            '"A"',
+            '"B"',
+          ],
+        },
+      });
       expectOutputProperties(preprocessor
         .applyConstructorArgumentsParameters(configRoot, constructorArgs, configElement), expected);
     });
@@ -213,12 +231,10 @@ describe('ConfigPreprocessorComponentMapped', () => {
       const configElement = objectLoader.createCompactedResource({
         'ex:param1': '"A"',
       });
-      const expected = [
-        objectLoader.createCompactedResource({
-          key: '"KEY"',
-          value: '"A"',
-        }),
-      ];
+      const expected = objectLoader.createCompactedResource({
+        key: '"KEY"',
+        value: '"A"',
+      });
       expectOutputProperties(preprocessor
         .applyConstructorArgumentsParameters(configRoot, constructorArgs, configElement), expected);
     });
@@ -231,10 +247,19 @@ describe('ConfigPreprocessorComponentMapped', () => {
       const configElement = objectLoader.createCompactedResource({
         'ex:param1': '"A"',
       });
-      const expected = [
-        objectLoader.createCompactedResource('"A"'),
-      ];
+      const expected = objectLoader.createCompactedResource('"A"');
       expectOutputOnlyTerm(preprocessor
+        .applyConstructorArgumentsParameters(configRoot, constructorArgs, configElement), expected);
+    });
+
+    it('should pass args without key and one undefined value', () => {
+      const configRoot = objectLoader.createCompactedResource({});
+      const constructorArgs = objectLoader.createCompactedResource({
+        value: 'ex:param1',
+      });
+      const configElement = objectLoader.createCompactedResource({});
+      const expected = objectLoader.createCompactedResource({ undefined: true });
+      expectOutputProperties(preprocessor
         .applyConstructorArgumentsParameters(configRoot, constructorArgs, configElement), expected);
     });
 
@@ -246,10 +271,18 @@ describe('ConfigPreprocessorComponentMapped', () => {
       const configElement = objectLoader.createCompactedResource({
         'ex:param1': '"A"',
       });
-      const expected = [
-        objectLoader.createCompactedResource('"A"'),
-      ];
-      expected[0].property.unique = objectLoader.createCompactedResource('"true"');
+      const expected = objectLoader.createCompactedResource('"A"');
+      expectOutputProperties(preprocessor
+        .applyConstructorArgumentsParameters(configRoot, constructorArgs, configElement), expected);
+    });
+
+    it('should pass args without key and one raw undefined value', () => {
+      const configRoot = objectLoader.createCompactedResource({});
+      const constructorArgs = objectLoader.createCompactedResource({
+        valueRawReference: 'ex:param1',
+      });
+      const configElement = objectLoader.createCompactedResource({});
+      const expected = objectLoader.createCompactedResource('"undefined"');
       expectOutputProperties(preprocessor
         .applyConstructorArgumentsParameters(configRoot, constructorArgs, configElement), expected);
     });
@@ -282,12 +315,14 @@ describe('ConfigPreprocessorComponentMapped', () => {
           },
         ],
       });
-      const expected = [
-        objectLoader.createCompactedResource({
-          key: '"KEY1"',
-          value: '"VALUE1"',
-        }),
-      ];
+      const expected = objectLoader.createCompactedResource({
+        list: [
+          {
+            key: '"KEY1"',
+            value: '"VALUE1"',
+          },
+        ],
+      });
       expectOutputProperties(preprocessor
         .applyConstructorArgumentsParameters(configRoot, constructorArgs, configElement), expected);
     });
@@ -311,7 +346,7 @@ describe('ConfigPreprocessorComponentMapped', () => {
         .toThrowError(/^Detected illegal collectEntries value "Literal", must be an IRI/u);
     });
 
-    it('should pass args with collectEntries with multiple values', () => {
+    it('should pass args with collectEntries with multiple values as non-list', () => {
       const configRoot = objectLoader.createCompactedResource({});
       const constructorArgs = objectLoader.createCompactedResource({
         collectEntries: [
@@ -335,16 +370,68 @@ describe('ConfigPreprocessorComponentMapped', () => {
           },
         ],
       });
-      const expected = [
-        objectLoader.createCompactedResource({
-          key: '"KEY1"',
-          value: '"VALUE1"',
-        }),
-        objectLoader.createCompactedResource({
-          key: '"KEY2"',
-          value: '"VALUE2"',
-        }),
-      ];
+      expect(() => preprocessor.applyConstructorArgumentsParameters(configRoot, constructorArgs, configElement))
+        .toThrowError('Invalid collectEntries: Only one value can be defined, or an RDF list must be provided');
+    });
+
+    it('should pass args with collectEntries with multiple values as list', () => {
+      const configRoot = objectLoader.createCompactedResource({});
+      const constructorArgs = objectLoader.createCompactedResource({
+        collectEntries: {
+          list: [
+            'ex:param1',
+            'ex:param2',
+          ],
+        },
+        key: 'ex:param1#k',
+        value: 'ex:param1#v',
+      });
+      const configElement = objectLoader.createCompactedResource({
+        'ex:param1': [
+          {
+            'ex:param1#k': '"KEY1"',
+            'ex:param1#v': '"VALUE1"',
+          },
+        ],
+        'ex:param2': [
+          {
+            'ex:param1#k': '"KEY2"',
+            'ex:param1#v': '"VALUE2"',
+          },
+        ],
+      });
+      const expected = objectLoader.createCompactedResource({
+        list: [
+          objectLoader.createCompactedResource({
+            key: '"KEY1"',
+            value: '"VALUE1"',
+          }),
+          objectLoader.createCompactedResource({
+            key: '"KEY2"',
+            value: '"VALUE2"',
+          }),
+        ],
+      });
+      expectOutputProperties(preprocessor
+        .applyConstructorArgumentsParameters(configRoot, constructorArgs, configElement), expected);
+    });
+
+    it('should pass args with collectEntries without values', () => {
+      const configRoot = objectLoader.createCompactedResource({});
+      const constructorArgs = objectLoader.createCompactedResource({
+        collectEntries: {
+          list: [
+            'ex:param1',
+            'ex:param2',
+          ],
+        },
+        key: 'ex:param1#k',
+        value: 'ex:param1#v',
+      });
+      const configElement = objectLoader.createCompactedResource({});
+      const expected = objectLoader.createCompactedResource({
+        list: [],
+      });
       expectOutputProperties(preprocessor
         .applyConstructorArgumentsParameters(configRoot, constructorArgs, configElement), expected);
     });
@@ -364,12 +451,14 @@ describe('ConfigPreprocessorComponentMapped', () => {
           },
         ],
       });
-      const expected = [
-        objectLoader.createCompactedResource({
-          key: '"ex:abc"',
-          value: '"VALUE1"',
-        }),
-      ];
+      const expected = objectLoader.createCompactedResource({
+        list: [
+          {
+            key: '"ex:abc"',
+            value: '"VALUE1"',
+          },
+        ],
+      });
       expectOutputProperties(preprocessor
         .applyConstructorArgumentsParameters(configRoot, constructorArgs, configElement), expected);
     });
@@ -406,9 +495,11 @@ describe('ConfigPreprocessorComponentMapped', () => {
           },
         ],
       });
-      const expected = [
-        objectLoader.createCompactedResource('"VALUE1"'),
-      ];
+      const expected = objectLoader.createCompactedResource({
+        list: [
+          '"VALUE1"',
+        ],
+      });
       expectOutputOnlyTerm(preprocessor
         .applyConstructorArgumentsParameters(configRoot, constructorArgs, configElement), expected);
     });
@@ -428,12 +519,14 @@ describe('ConfigPreprocessorComponentMapped', () => {
           },
         ],
       });
-      const expected = [
-        objectLoader.createCompactedResource({
-          key: '"KEY1"',
-          value: '"ex:abc"',
-        }),
-      ];
+      const expected = objectLoader.createCompactedResource({
+        list: [
+          {
+            key: '"KEY1"',
+            value: '"ex:abc"',
+          },
+        ],
+      });
       expectOutputProperties(preprocessor
         .applyConstructorArgumentsParameters(configRoot, constructorArgs, configElement), expected);
     });
@@ -453,12 +546,14 @@ describe('ConfigPreprocessorComponentMapped', () => {
           },
         ],
       });
-      const expected = [
-        objectLoader.createCompactedResource({
-          key: '"KEY1"',
-          value: 'ex:abc',
-        }),
-      ];
+      const expected = objectLoader.createCompactedResource({
+        list: [
+          {
+            key: '"KEY1"',
+            value: 'ex:abc',
+          },
+        ],
+      });
       expectOutputProperties(preprocessor
         .applyConstructorArgumentsParameters(configRoot, constructorArgs, configElement), expected);
     });
@@ -483,19 +578,132 @@ describe('ConfigPreprocessorComponentMapped', () => {
           },
         ],
       });
-      const expected = [
-        objectLoader.createCompactedResource({
-          key: '"KEY1"',
-          value: {
-            fields: {
-              key: '"SUBKEY"',
-              value: '"VALUE1"',
+      const expected = objectLoader.createCompactedResource({
+        list: [
+          {
+            key: '"KEY1"',
+            value: {
+              fields: {
+                list:
+                [
+                  {
+                    key: '"SUBKEY"',
+                    value: '"VALUE1"',
+                  },
+                ],
+              },
             },
-            unique: '"true"',
-            hasFields: '"true"',
           },
-        }),
-      ];
+        ],
+      });
+      expectOutputProperties(preprocessor
+        .applyConstructorArgumentsParameters(configRoot, constructorArgs, configElement), expected);
+    });
+
+    it('should pass args with collectEntries without key with sub-fields', () => {
+      const configRoot = objectLoader.createCompactedResource({});
+      const constructorArgs = objectLoader.createCompactedResource({
+        collectEntries: 'ex:param1',
+        value: {
+          fields: {
+            key: '"SUBKEY"',
+            value: 'ex:param1#v',
+          },
+        },
+      });
+      const configElement = objectLoader.createCompactedResource({
+        'ex:param1': [
+          {
+            'ex:param1#k': '"KEY1"',
+            'ex:param1#v': '"VALUE1"',
+          },
+        ],
+      });
+      const expected = objectLoader.createCompactedResource({
+        list: [
+          {
+            fields: {
+              list:
+                [
+                  {
+                    key: '"SUBKEY"',
+                    value: '"VALUE1"',
+                  },
+                ],
+            },
+          },
+        ],
+      });
+      expectOutputProperties(preprocessor
+        .applyConstructorArgumentsParameters(configRoot, constructorArgs, configElement), expected);
+    });
+
+    it('should pass args with collectEntries without key with sub-fields without value', () => {
+      const configRoot = objectLoader.createCompactedResource({});
+      const constructorArgs = objectLoader.createCompactedResource({
+        collectEntries: 'ex:param1',
+        value: {
+          fields: {
+            key: '"SUBKEY"',
+            value: 'ex:param1#v',
+          },
+        },
+      });
+      const configElement = objectLoader.createCompactedResource({
+        'ex:param1': [
+          {
+            'ex:param1#k': '"KEY1"',
+          },
+        ],
+      });
+      const expected = objectLoader.createCompactedResource({
+        list: [
+          {
+            fields: {
+              list:
+                [
+                  {
+                    key: '"SUBKEY"',
+                  },
+                ],
+            },
+          },
+        ],
+      });
+      expectOutputProperties(preprocessor
+        .applyConstructorArgumentsParameters(configRoot, constructorArgs, configElement), expected);
+    });
+
+    it('should pass args with collectEntries without key with sub-fields without param value', () => {
+      const configRoot = objectLoader.createCompactedResource({});
+      const constructorArgs = objectLoader.createCompactedResource({
+        collectEntries: 'ex:param1',
+        value: {
+          fields: {
+            key: '"SUBKEY"',
+            value: 'ex:param1#v',
+          },
+        },
+      });
+      const configElement = objectLoader.createCompactedResource({
+        'ex:param1': [
+          {},
+        ],
+      });
+      const expected = objectLoader.createCompactedResource({
+        list: [
+          {
+            fields: {
+              list:
+                [
+                  {
+                    key: '"SUBKEY"',
+                  },
+                ],
+            },
+          },
+        ],
+      });
       expectOutputProperties(preprocessor
         .applyConstructorArgumentsParameters(configRoot, constructorArgs, configElement), expected);
     });
@@ -521,15 +729,20 @@ describe('ConfigPreprocessorComponentMapped', () => {
           },
         ],
       });
-      const expected = [
-        objectLoader.createCompactedResource({
-          key: '"KEY1"',
-          value: {
-            value: '"VALUE1"',
-            unique: '"true"',
+      const expected = objectLoader.createCompactedResource({
+        list: [
+          {
+            key: '"KEY1"',
+            value: {
+              value: {
+                list: [
+                  '"VALUE1"',
+                ],
+              },
+            },
           },
-        }),
-      ];
+        ],
+      });
       expectOutputProperties(preprocessor
         .applyConstructorArgumentsParameters(configRoot, constructorArgs, configElement), expected);
     });
@@ -597,11 +810,20 @@ describe('ConfigPreprocessorComponentMapped', () => {
         fields: [],
       });
       const configElement = objectLoader.createCompactedResource({});
-      const expected = [
-        objectLoader.createCompactedResource({}),
-      ];
+      const expected = objectLoader.createCompactedResource({});
       expectOutputProperties(preprocessor
         .applyConstructorArgumentsParameters(configRoot, constructorArgs, configElement), expected);
+    });
+
+    it('should throw on args with multiple fields as non-list', () => {
+      const configRoot = objectLoader.createCompactedResource({});
+      const constructorArgs = objectLoader.createCompactedResource({
+        fields: [ 'A', 'B' ],
+      });
+      const configElement = objectLoader.createCompactedResource({});
+      expect(() => preprocessor
+        .applyConstructorArgumentsParameters(configRoot, constructorArgs, configElement))
+        .toThrowError('Invalid fields: Only one value can be defined, or an RDF list must be provided');
     });
 
     it('should pass args with one static field', () => {
@@ -615,18 +837,18 @@ describe('ConfigPreprocessorComponentMapped', () => {
         ],
       });
       const configElement = objectLoader.createCompactedResource({});
-      const expected = [
-        objectLoader.createCompactedResource({
-          fields: [
-            {
-              key: '"KEY"',
-              value: '"VALUE"',
-            },
-          ],
-          unique: '"true"',
-          hasFields: '"true"',
-        }),
-      ];
+      const expected = objectLoader.createCompactedResource({
+        fields: [
+          {
+            list: [
+              {
+                key: '"KEY"',
+                value: '"VALUE"',
+              },
+            ],
+          },
+        ],
+      });
       expectOutputProperties(preprocessor
         .applyConstructorArgumentsParameters(configRoot, constructorArgs, configElement), expected);
     });
@@ -644,23 +866,23 @@ describe('ConfigPreprocessorComponentMapped', () => {
       const configElement = objectLoader.createCompactedResource({
         'ex:param1': '"VALUE"',
       });
-      const expected = [
-        objectLoader.createCompactedResource({
-          fields: [
-            {
-              key: '"KEY"',
-              value: '"VALUE"',
-            },
-          ],
-          unique: '"true"',
-          hasFields: '"true"',
-        }),
-      ];
+      const expected = objectLoader.createCompactedResource({
+        fields: [
+          {
+            list: [
+              {
+                key: '"KEY"',
+                value: '"VALUE"',
+              },
+            ],
+          },
+        ],
+      });
       expectOutputProperties(preprocessor
         .applyConstructorArgumentsParameters(configRoot, constructorArgs, configElement), expected);
     });
 
-    it('should pass args with one dynamic field with multiple values', () => {
+    it('should pass args with one dynamic field with multiple values as non-list', () => {
       const configRoot = objectLoader.createCompactedResource({});
       const constructorArgs = objectLoader.createCompactedResource({
         fields: [
@@ -673,18 +895,40 @@ describe('ConfigPreprocessorComponentMapped', () => {
       const configElement = objectLoader.createCompactedResource({
         'ex:param1': [ '"VALUE1"', '"VALUE2"' ],
       });
-      const expected = [
-        objectLoader.createCompactedResource({
-          fields: [
-            {
-              key: '"KEY"',
-              value: [ '"VALUE1"', '"VALUE2"' ],
-            },
-          ],
-          unique: '"true"',
-          hasFields: '"true"',
-        }),
-      ];
+      expect(() => preprocessor
+        .applyConstructorArgumentsParameters(configRoot, constructorArgs, configElement))
+        .toThrowError(`Detected multiple values for parameter ex:param1. RDF lists should be used for defining multiple values.`);
+    });
+
+    it('should pass args with one dynamic field with multiple values as list', () => {
+      const configRoot = objectLoader.createCompactedResource({});
+      const constructorArgs = objectLoader.createCompactedResource({
+        fields: [
+          {
+            key: '"KEY"',
+            value: 'ex:param1',
+          },
+        ],
+      });
+      const configElement = objectLoader.createCompactedResource({
+        'ex:param1': {
+          list: [ '"VALUE1"', '"VALUE2"' ],
+        },
+      });
+      const expected = objectLoader.createCompactedResource({
+        fields: [
+          {
+            list: [
+              {
+                key: '"KEY"',
+                value: {
+                  list: [ '"VALUE1"', '"VALUE2"' ],
+                },
+              },
+            ],
+          },
+        ],
+      });
       expectOutputProperties(preprocessor
         .applyConstructorArgumentsParameters(configRoot, constructorArgs, configElement), expected);
     });
@@ -692,24 +936,26 @@ describe('ConfigPreprocessorComponentMapped', () => {
     it('should pass args with multiple dynamic fields', () => {
       const configRoot = objectLoader.createCompactedResource({});
       const constructorArgs = objectLoader.createCompactedResource({
-        fields: [
-          {
-            key: '"KEY1"',
-            value: 'ex:param1',
-          },
-          {
-            key: '"KEY2"',
-            value: 'ex:param2',
-          },
-        ],
+        fields: {
+          list: [
+            {
+              key: '"KEY1"',
+              value: 'ex:param1',
+            },
+            {
+              key: '"KEY2"',
+              value: 'ex:param2',
+            },
+          ],
+        },
       });
       const configElement = objectLoader.createCompactedResource({
         'ex:param1': '"VALUE1"',
         'ex:param2': '"VALUE2"',
       });
-      const expected = [
-        objectLoader.createCompactedResource({
-          fields: [
+      const expected = objectLoader.createCompactedResource({
+        fields: {
+          list: [
             {
               key: '"KEY1"',
               value: '"VALUE1"',
@@ -719,10 +965,8 @@ describe('ConfigPreprocessorComponentMapped', () => {
               value: '"VALUE2"',
             },
           ],
-          unique: '"true"',
-          hasFields: '"true"',
-        }),
-      ];
+        },
+      });
       expectOutputProperties(preprocessor
         .applyConstructorArgumentsParameters(configRoot, constructorArgs, configElement), expected);
     });
@@ -733,9 +977,7 @@ describe('ConfigPreprocessorComponentMapped', () => {
         elements: [],
       });
       const configElement = objectLoader.createCompactedResource({});
-      const expected = [
-        objectLoader.createCompactedResource({}),
-      ];
+      const expected = objectLoader.createCompactedResource({});
       expectOutputProperties(preprocessor
         .applyConstructorArgumentsParameters(configRoot, constructorArgs, configElement), expected);
     });
@@ -753,16 +995,18 @@ describe('ConfigPreprocessorComponentMapped', () => {
         },
       });
       const configElement = objectLoader.createCompactedResource({});
-      const expected = [
-        objectLoader.createCompactedResource({
-          value: [
-            {
-              key: '"KEY"',
-              value: '"VALUE"',
-            },
-          ],
-        }),
-      ];
+      const expected = objectLoader.createCompactedResource({
+        value: [
+          {
+            list: [
+              {
+                key: '"KEY"',
+                value: '"VALUE"',
+              },
+            ],
+          },
+        ],
+      });
       expectOutputProperties(preprocessor
         .applyConstructorArgumentsParameters(configRoot, constructorArgs, configElement), expected);
     });
@@ -782,16 +1026,18 @@ describe('ConfigPreprocessorComponentMapped', () => {
       const configElement = objectLoader.createCompactedResource({
         'ex:param1': '"VALUE"',
       });
-      const expected = [
-        objectLoader.createCompactedResource({
-          value: [
-            {
-              key: '"KEY"',
-              value: '"VALUE"',
-            },
-          ],
-        }),
-      ];
+      const expected = objectLoader.createCompactedResource({
+        value: [
+          {
+            list: [
+              {
+                key: '"KEY"',
+                value: '"VALUE"',
+              },
+            ],
+          },
+        ],
+      });
       expectOutputProperties(preprocessor
         .applyConstructorArgumentsParameters(configRoot, constructorArgs, configElement), expected);
     });
@@ -809,18 +1055,24 @@ describe('ConfigPreprocessorComponentMapped', () => {
         },
       });
       const configElement = objectLoader.createCompactedResource({
-        'ex:param1': [ '"VALUE1"', '"VALUE2"' ],
+        'ex:param1': {
+          list: [ '"VALUE1"', '"VALUE2"' ],
+        },
       });
-      const expected = [
-        objectLoader.createCompactedResource({
-          value: [
-            {
-              key: '"KEY"',
-              value: [ '"VALUE1"', '"VALUE2"' ],
-            },
-          ],
-        }),
-      ];
+      const expected = objectLoader.createCompactedResource({
+        value: [
+          {
+            list: [
+              {
+                key: '"KEY"',
+                value: {
+                  list: [ '"VALUE1"', '"VALUE2"' ],
+                },
+              },
+            ],
+          },
+        ],
+      });
       expectOutputProperties(preprocessor
         .applyConstructorArgumentsParameters(configRoot, constructorArgs, configElement), expected);
     });
@@ -845,9 +1097,9 @@ describe('ConfigPreprocessorComponentMapped', () => {
         'ex:param1': '"VALUE1"',
         'ex:param2': '"VALUE2"',
       });
-      const expected = [
-        objectLoader.createCompactedResource({
-          value: [
+      const expected = objectLoader.createCompactedResource({
+        value: {
+          list: [
             {
               key: '"KEY1"',
               value: '"VALUE1"',
@@ -857,8 +1109,8 @@ describe('ConfigPreprocessorComponentMapped', () => {
               value: '"VALUE2"',
             },
           ],
-        }),
-      ];
+        },
+      });
       expectOutputProperties(preprocessor
         .applyConstructorArgumentsParameters(configRoot, constructorArgs, configElement), expected);
     });
@@ -875,13 +1127,32 @@ describe('ConfigPreprocessorComponentMapped', () => {
       const configElement = objectLoader.createCompactedResource({
         'ex:param1': '"VALUE"',
       });
-      const expected = [
-        objectLoader.createCompactedResource({
-          value: [
+      const expected = objectLoader.createCompactedResource({
+        value: {
+          list: [
             '"VALUE"',
           ],
-        }),
-      ];
+        },
+      });
+      expectOutputProperties(preprocessor
+        .applyConstructorArgumentsParameters(configRoot, constructorArgs, configElement), expected);
+    });
+
+    it('should pass args with one dynamic element directly referencing a param without value', () => {
+      const configRoot = objectLoader.createCompactedResource({});
+      const constructorArgs = objectLoader.createCompactedResource({
+        elements: {
+          list: [
+            'ex:param1',
+          ],
+        },
+      });
+      const configElement = objectLoader.createCompactedResource({});
+      const expected = objectLoader.createCompactedResource({
+        value: {
+          list: [],
+        },
+      });
       expectOutputProperties(preprocessor
         .applyConstructorArgumentsParameters(configRoot, constructorArgs, configElement), expected);
     });
@@ -900,14 +1171,14 @@ describe('ConfigPreprocessorComponentMapped', () => {
         'ex:param1': '"VALUE1"',
         'ex:param2': '"VALUE2"',
       });
-      const expected = [
-        objectLoader.createCompactedResource({
-          value: [
+      const expected = objectLoader.createCompactedResource({
+        value: {
+          list: [
             '"VALUE1"',
             '"VALUE2"',
           ],
-        }),
-      ];
+        },
+      });
       expectOutputProperties(preprocessor
         .applyConstructorArgumentsParameters(configRoot, constructorArgs, configElement), expected);
     });
@@ -960,16 +1231,14 @@ describe('ConfigPreprocessorComponentMapped', () => {
         list: [],
       });
       const configElement = objectLoader.createCompactedResource({});
-      const expected = [
-        objectLoader.createCompactedResource({
-          list: [],
-        }),
-      ];
+      const expected = objectLoader.createCompactedResource({
+        list: [],
+      });
       expectOutputOnlyTerm(preprocessor
         .applyConstructorArgumentsParameters(configRoot, constructorArgs, configElement), expected);
     });
 
-    it('should pass args with a list with direct params without values', () => {
+    it('should pass undefined args with a list with direct params without values', () => {
       const configRoot = objectLoader.createCompactedResource({});
       const constructorArgs = objectLoader.createCompactedResource({
         list: [
@@ -978,19 +1247,17 @@ describe('ConfigPreprocessorComponentMapped', () => {
         ],
       });
       const configElement = objectLoader.createCompactedResource({});
-      const expected = [
-        objectLoader.createCompactedResource({
-          list: [
-            { undefined: '"true"' },
-            { undefined: '"true"' },
-          ],
-        }),
-      ];
+      const expected = objectLoader.createCompactedResource({
+        list: [
+          { undefined: true },
+          { undefined: true },
+        ],
+      });
       expectOutputProperties(preprocessor
         .applyConstructorArgumentsParameters(configRoot, constructorArgs, configElement), expected);
     });
 
-    it('should pass args with a list with direct params that are not unique', () => {
+    it('should pass args with a list with direct params', () => {
       const configRoot = objectLoader.createCompactedResource({});
       const constructorArgs = objectLoader.createCompactedResource({
         list: [
@@ -1002,59 +1269,17 @@ describe('ConfigPreprocessorComponentMapped', () => {
         'ex:param1': '"VALUE1"',
         'ex:param2': '"VALUE2"',
       });
-      const expected = [
-        objectLoader.createCompactedResource({
-          list: [
-            {
-              elements: [
-                { value: '"VALUE1"' },
-              ],
-            },
-            {
-              elements: [
-                { value: '"VALUE2"' },
-              ],
-            },
-          ],
-        }),
-      ];
-      expectOutputProperties(preprocessor
-        .applyConstructorArgumentsParameters(configRoot, constructorArgs, configElement), expected);
-    });
-
-    it('should pass args with a list with direct params that are unique', () => {
-      const configRoot = objectLoader.createCompactedResource({});
-      const constructorArgs = objectLoader.createCompactedResource({
+      const expected = objectLoader.createCompactedResource({
         list: [
-          {
-            '@id': 'ex:param1',
-            unique: '"true"',
-          },
-          {
-            '@id': 'ex:param2',
-            unique: '"true"',
-          },
+          '"VALUE1"',
+          '"VALUE2"',
         ],
       });
-      const configElement = objectLoader.createCompactedResource({
-        'ex:param1': '"VALUE1"',
-        'ex:param2': '"VALUE2"',
-      });
-      const expected = [
-        objectLoader.createCompactedResource({
-          list: [
-            '"VALUE1"',
-            '"VALUE2"',
-          ],
-        }),
-      ];
-      expected[0].list![0].property.unique = objectLoader.createCompactedResource('"true"');
-      expected[0].list![1].property.unique = objectLoader.createCompactedResource('"true"');
       expectOutputProperties(preprocessor
         .applyConstructorArgumentsParameters(configRoot, constructorArgs, configElement), expected);
     });
 
-    it('should pass args with a list with direct params that are not unique with multiple values', () => {
+    it('should pass args with a list with direct params with multiple values', () => {
       const configRoot = objectLoader.createCompactedResource({});
       const constructorArgs = objectLoader.createCompactedResource({
         list: [
@@ -1063,59 +1288,25 @@ describe('ConfigPreprocessorComponentMapped', () => {
         ],
       });
       const configElement = objectLoader.createCompactedResource({
-        'ex:param1': [ '"VALUE1.1"', '"VALUE1.2"' ],
-        'ex:param2': [ '"VALUE2.1"', '"VALUE2.2"' ],
+        'ex:param1': { list: [ '"VALUE1.1"', '"VALUE1.2"' ]},
+        'ex:param2': { list: [ '"VALUE2.1"', '"VALUE2.2"' ]},
       });
-      const expected = [
-        objectLoader.createCompactedResource({
-          list: [
-            {
-              elements: [
-                { value: '"VALUE1.1"' },
-                { value: '"VALUE1.2"' },
-              ],
-            },
-            {
-              elements: [
-                { value: '"VALUE2.1"' },
-                { value: '"VALUE2.2"' },
-              ],
-            },
-          ],
-        }),
-      ];
-      expectOutputProperties(preprocessor
-        .applyConstructorArgumentsParameters(configRoot, constructorArgs, configElement), expected);
-    });
-
-    it('should pass args with a list with direct params that are unique with multiple values', () => {
-      const configRoot = objectLoader.createCompactedResource({});
-      const constructorArgs = objectLoader.createCompactedResource({
+      const expected = objectLoader.createCompactedResource({
         list: [
           {
-            '@id': 'ex:param1',
-            unique: '"true"',
+            list: [
+              '"VALUE1.1"',
+              '"VALUE1.2"',
+            ],
           },
           {
-            '@id': 'ex:param2',
-            unique: '"true"',
+            list: [
+              '"VALUE2.1"',
+              '"VALUE2.2"',
+            ],
           },
         ],
       });
-      const configElement = objectLoader.createCompactedResource({
-        'ex:param1': [ '"VALUE1.1"', '"VALUE1.2"' ],
-        'ex:param2': [ '"VALUE2.1"', '"VALUE2.2"' ],
-      });
-      const expected = [
-        objectLoader.createCompactedResource({
-          list: [
-            '"VALUE1.1"',
-            '"VALUE2.1"',
-          ],
-        }),
-      ];
-      expected[0].list![0].property.unique = objectLoader.createCompactedResource('"true"');
-      expected[0].list![1].property.unique = objectLoader.createCompactedResource('"true"');
       expectOutputProperties(preprocessor
         .applyConstructorArgumentsParameters(configRoot, constructorArgs, configElement), expected);
     });
@@ -1142,28 +1333,30 @@ describe('ConfigPreprocessorComponentMapped', () => {
         'ex:param1': '"VALUE1"',
         'ex:param2': '"VALUE2"',
       });
-      const expected = [
-        objectLoader.createCompactedResource({
-          list: [
-            {
-              fields: {
-                key: '"KEY1"',
-                value: '"VALUE1"',
-              },
-              unique: '"true"',
-              hasFields: '"true"',
+      const expected = objectLoader.createCompactedResource({
+        list: [
+          {
+            fields: {
+              list: [
+                {
+                  key: '"KEY1"',
+                  value: '"VALUE1"',
+                },
+              ],
             },
-            {
-              fields: {
-                key: '"KEY2"',
-                value: '"VALUE2"',
-              },
-              unique: '"true"',
-              hasFields: '"true"',
+          },
+          {
+            fields: {
+              list: [
+                {
+                  key: '"KEY2"',
+                  value: '"VALUE2"',
+                },
+              ],
             },
-          ],
-        }),
-      ];
+          },
+        ],
+      });
       expectOutputProperties(preprocessor
         .applyConstructorArgumentsParameters(configRoot, constructorArgs, configElement), expected);
     });
@@ -1192,22 +1385,20 @@ describe('ConfigPreprocessorComponentMapped', () => {
         'ex:param1': '"VALUE1"',
         'ex:param2': '"VALUE2"',
       });
-      const expected = [
-        objectLoader.createCompactedResource({
-          list: [
-            {
-              value: [
-                '"VALUE1"',
-              ],
-            },
-            {
-              value: [
-                '"VALUE2"',
-              ],
-            },
-          ],
-        }),
-      ];
+      const expected = objectLoader.createCompactedResource({
+        list: [
+          {
+            value: [
+              { list: [ '"VALUE1"' ]},
+            ],
+          },
+          {
+            value: [
+              { list: [ '"VALUE2"' ]},
+            ],
+          },
+        ],
+      });
       expectOutputProperties(preprocessor
         .applyConstructorArgumentsParameters(configRoot, constructorArgs, configElement), expected);
     });
@@ -1222,10 +1413,7 @@ describe('ConfigPreprocessorComponentMapped', () => {
       const configElement = objectLoader.createCompactedResource({
         '@id': 'ex:params',
       });
-      const expected = [
-        objectLoader.createCompactedResource('"ex:params"'),
-      ];
-      expected[0].property.unique = objectLoader.createCompactedResource('"true"');
+      const expected = objectLoader.createCompactedResource('"ex:params"');
       expectOutputProperties(preprocessor.getParameterValue(configRoot, parameter, configElement, false), expected);
     });
 
@@ -1238,9 +1426,7 @@ describe('ConfigPreprocessorComponentMapped', () => {
         '@id': 'ex:params',
         'ex:param1': '"A"',
       });
-      const expected = [
-        objectLoader.createCompactedResource('"A"'),
-      ];
+      const expected = objectLoader.createCompactedResource('"A"');
       expectOutputOnlyTerm(preprocessor.getParameterValue(configRoot, parameter, configElement, false), expected);
     });
 
@@ -1250,9 +1436,7 @@ describe('ConfigPreprocessorComponentMapped', () => {
       const configElement = objectLoader.createCompactedResource({
         '@id': 'ex:params',
       });
-      const expected = [
-        objectLoader.createCompactedResource({}),
-      ];
+      const expected = objectLoader.createCompactedResource({});
       expectOutputOnlyTerm(preprocessor.getParameterValue(configRoot, parameter, configElement, false), expected);
     });
 
@@ -1265,9 +1449,7 @@ describe('ConfigPreprocessorComponentMapped', () => {
         '@id': 'ex:params',
         'ex:param1': '"A"',
       });
-      const expected = [
-        objectLoader.createCompactedResource('"A"'),
-      ];
+      const expected = objectLoader.createCompactedResource('"A"');
       expectOutputOnlyTerm(preprocessor.getParameterValue(configRoot, parameter, configElement, false), expected);
     });
 
@@ -1283,18 +1465,18 @@ describe('ConfigPreprocessorComponentMapped', () => {
         '@id': 'ex:params',
         'ex:param1': '"A"',
       });
-      const expected = [
-        objectLoader.createCompactedResource({
-          fields: [
-            {
-              key: '"KEY"',
-              value: '"A"',
-            },
-          ],
-          unique: '"true"',
-          hasFields: '"true"',
-        }),
-      ];
+      const expected = objectLoader.createCompactedResource({
+        fields: [
+          {
+            list: [
+              {
+                key: '"KEY"',
+                value: '"A"',
+              },
+            ],
+          },
+        ],
+      });
       expectOutputProperties(preprocessor.getParameterValue(configRoot, parameter, configElement, false), expected);
     });
 
@@ -1307,9 +1489,42 @@ describe('ConfigPreprocessorComponentMapped', () => {
         '@id': 'ex:params',
         'ex:param1': '"A"',
       });
-      const expected = [
-        objectLoader.createCompactedResource('"A"'),
-      ];
+      const expected = objectLoader.createCompactedResource('"A"');
+      expectOutputProperties(preprocessor.getParameterValue(configRoot, parameter, configElement, true), expected);
+    });
+
+    it('should handle raw IRI references over lists', () => {
+      const configRoot = objectLoader.createCompactedResource({});
+      const parameter = objectLoader.createCompactedResource({
+        '@id': 'ex:param1',
+      });
+      const configElement = objectLoader.createCompactedResource({
+        '@id': 'ex:params',
+        'ex:param1': {
+          list: [
+            '"A"',
+            '"B"',
+          ],
+        },
+      });
+      const expected = objectLoader.createCompactedResource({
+        list: [
+          '"A"',
+          '"B"',
+        ],
+      });
+      expectOutputProperties(preprocessor.getParameterValue(configRoot, parameter, configElement, true), expected);
+    });
+
+    it('should handle raw undefined references', () => {
+      const configRoot = objectLoader.createCompactedResource({});
+      const parameter = objectLoader.createCompactedResource({
+        '@id': 'ex:param1',
+      });
+      const configElement = objectLoader.createCompactedResource({
+        '@id': 'ex:params',
+      });
+      const expected = objectLoader.createCompactedResource('"undefined"');
       expectOutputProperties(preprocessor.getParameterValue(configRoot, parameter, configElement, true), expected);
     });
   });

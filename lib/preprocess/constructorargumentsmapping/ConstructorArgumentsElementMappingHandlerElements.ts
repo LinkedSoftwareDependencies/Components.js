@@ -21,7 +21,7 @@ export class ConstructorArgumentsElementMappingHandlerElements implements IConst
     constructorArgs: Resource,
     configElement: Resource,
     mapper: IConstructorArgumentsMapper,
-  ): Resource[] {
+  ): Resource {
     // Elements must have RDF list values.
     if (!constructorArgs.property.elements.list) {
       throw new ErrorResourcesContext(`Illegal non-RDF-list elements`, {
@@ -32,7 +32,7 @@ export class ConstructorArgumentsElementMappingHandlerElements implements IConst
     }
 
     // Recursively handle all values in the array
-    const ret = mapper.objectLoader.createCompactedResource({});
+    const entries: Resource[] = [];
     for (const element of constructorArgs.property.elements.list) {
       if (element.type !== 'NamedNode' && !element.property.value && !element.property.valueRawReference) {
         throw new ErrorResourcesContext(`Illegal elements value, must be an IRI or resource with value/valueRawReference`, {
@@ -42,16 +42,19 @@ export class ConstructorArgumentsElementMappingHandlerElements implements IConst
           config: configRoot,
         });
       }
-      for (const value of mapper.getParameterValue(
+      const value = mapper.getParameterValue(
         configRoot,
         element,
         configElement,
         Boolean(element.property.valueRawReference),
-      )) {
-        ret.properties.value.push(value);
+      );
+      if (value) {
+        for (const entry of value.list || [ value ]) {
+          entries.push(entry);
+        }
       }
     }
 
-    return [ ret ];
+    return mapper.objectLoader.createCompactedResource({ value: { list: entries }});
   }
 }

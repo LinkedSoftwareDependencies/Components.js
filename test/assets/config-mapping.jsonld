@@ -8,14 +8,14 @@
     {
       "@id": "ex:myHelloWorld1",
       "@type": "ex:HelloWorldModule#SayHelloComponent1",
-      "hello:something1": [ "SOMETHING1", "SOMETHING2" ],
-      "hello:something2": [ "SOMETHING3", "SOMETHING4" ]
+      "hello:something1": { "@list": [ "SOMETHING1", "SOMETHING2" ] },
+      "hello:something2": { "@list": [ "SOMETHING3", "SOMETHING4" ] }
     },
     {
       "@id": "ex:myHelloWorld2",
       "@type": "ex:HelloWorldModule#SayHelloComponent2",
-      "hello:something1": [ "SOMETHING1", "SOMETHING2" ],
-      "hello:something2": [ "SOMETHING3", "SOMETHING4" ]
+      "hello:something1": { "@list": [ "SOMETHING1", "SOMETHING2" ] },
+      "hello:something2": { "@list": [ "SOMETHING3", "SOMETHING4" ] }
     }
   ]
 }

@@ -8,10 +8,10 @@
     {
       "@id": "ex:myHelloWorld1",
       "@type": "ex:HelloWorldModule#SayHelloComponent1",
-      "hello:something": [
+      "hello:something": { "@list": [
         {
           "hello:somethingKey": "KEY1",
-          "hello:somethingValue": [
+          "hello:somethingValue": { "@list": [
             {
               "hello:somethingValue_key": "sub-KEY1",
               "hello:somethingValue_initial": "1",
@@ -22,7 +22,7 @@
               "hello:somethingValue_initial": "a",
               "hello:somethingValue_final": "b"
             }
-          ]
+          ] }
         },
         {
           "hello:somethingKey": "KEY2",
@@ -32,15 +32,15 @@
             "hello:somethingValue_final": "2"
           }
         }
-      ]
+      ] }
     },
     {
       "@id": "ex:myHelloWorld2",
       "@type": "ex:HelloWorldModule#SayHelloComponent2",
-      "hello:something": [
+      "hello:something": { "@list": [
         {
           "hello:somethingKey": "KEY1",
-          "hello:somethingValue": [
+          "hello:somethingValue": { "@list": [
             {
               "hello:somethingValue_key": "sub-KEY1",
               "hello:somethingValue_initial": "1",
@@ -51,7 +51,7 @@
               "hello:somethingValue_initial": "a",
               "hello:somethingValue_final": "b"
             }
-          ]
+          ] }
         },
         {
           "hello:somethingKey": "KEY2",
@@ -61,15 +61,15 @@
             "hello:somethingValue_final": "2"
           }
         }
-      ]
+      ] }
     },
     {
       "@id": "ex:myHelloWorld3",
       "@type": "ex:HelloWorldModule#SayHelloComponent3",
-      "hello:something": [
+      "hello:something": { "@list": [
         {
           "hello:somethingKey": "KEY1",
-          "hello:somethingValue": [
+          "hello:somethingValue": { "@list": [
             {
               "hello:somethingValue_initial": "1",
               "hello:somethingValue_final": "2"
@@ -78,7 +78,7 @@
               "hello:somethingValue_initial": "a",
               "hello:somethingValue_final": "b"
             }
-          ]
+          ] }
         },
         {
           "hello:somethingKey": "KEY2",
@@ -87,7 +87,7 @@
             "hello:somethingValue_final": "2"
           }
         }
-      ]
+      ] }
     }
   ]
 }

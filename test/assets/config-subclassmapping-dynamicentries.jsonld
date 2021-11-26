@@ -8,7 +8,7 @@
     {
       "@id": "ex:myHelloWorld1",
       "@type": "ex:HelloWorldModule#SayHelloComponent1",
-      "hello:something": [
+      "hello:something": { "@list": [
         {
           "hello:somethingKey": "0KEY1",
           "hello:somethingValue": "0VALUE1"
@@ -17,8 +17,8 @@
           "hello:somethingKey": "0KEY2",
           "hello:somethingValue": "0VALUE2"
         }
-      ],
-      "hello:something1": [
+      ] },
+      "hello:something1": { "@list": [
         {
           "hello:somethingKey": "1KEY1",
           "hello:somethingValue": "1VALUE1"
@@ -27,8 +27,8 @@
           "hello:somethingKey": "1KEY2",
           "hello:somethingValue": "1VALUE2"
         }
-      ],
-      "hello:something2": [
+      ] },
+      "hello:something2": { "@list": [
         {
           "hello:somethingKey": "2KEY1",
           "hello:somethingValue": "2VALUE1"
@@ -37,12 +37,12 @@
           "hello:somethingKey": "2KEY2",
           "hello:somethingValue": "2VALUE2"
         }
-      ]
+      ] }
     },
     {
       "@id": "ex:myHelloWorld2",
       "@type": "ex:HelloWorldModule#SayHelloComponent2",
-      "hello:something": [
+      "hello:something": { "@list": [
         {
           "hello:somethingKey": "0KEY1",
           "hello:somethingValue": "0VALUE1"
@@ -51,8 +51,8 @@
           "hello:somethingKey": "0KEY2",
           "hello:somethingValue": "0VALUE2"
         }
-      ],
-      "hello:something1": [
+      ] },
+      "hello:something1": { "@list": [
         {
           "hello:somethingKey": "1KEY1",
           "hello:somethingValue": "1VALUE1"
@@ -61,8 +61,8 @@
           "hello:somethingKey": "1KEY2",
           "hello:somethingValue": "1VALUE2"
         }
-      ],
-      "hello:something2": [
+      ] },
+      "hello:something2": { "@list": [
         {
           "hello:somethingKey": "2KEY1",
           "hello:somethingValue": "2VALUE1"
@@ -71,7 +71,7 @@
           "hello:somethingKey": "2KEY2",
           "hello:somethingValue": "2VALUE2"
         }
-      ]
+      ] }
     }
   ]
 }

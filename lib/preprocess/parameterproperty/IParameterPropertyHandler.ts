@@ -13,7 +13,7 @@ export interface IParameterPropertyHandler {
    * @param configElement Part of the config resource to look for parameter instantiations as predicates.
    */
   canHandle: (
-    value: Resource[],
+    value: Resource | undefined,
     configRoot: Resource,
     parameter: Resource,
     configElement: Resource,
@@ -27,9 +27,9 @@ export interface IParameterPropertyHandler {
    * @param configElement Part of the config resource to look for parameter instantiations as predicates.
    */
   handle: (
-    value: Resource[],
+    value: Resource | undefined,
     configRoot: Resource,
     parameter: Resource,
     configElement: Resource,
-  ) => Resource[];
+  ) => Resource | undefined;
 }

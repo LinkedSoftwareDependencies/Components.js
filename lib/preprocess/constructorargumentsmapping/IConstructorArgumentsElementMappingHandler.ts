@@ -31,5 +31,5 @@ export interface IConstructorArgumentsElementMappingHandler {
     constructorArgs: Resource,
     configElement: Resource,
     mapper: IConstructorArgumentsMapper,
-  ) => Resource[];
+  ) => Resource;
 }

@@ -54,52 +54,28 @@ describe('ConfigConstructor', () => {
 
   describe('getArgumentValues', () => {
     it('should handle an empty array', async() => {
-      expect(await constructor.getArgumentValues([], settings)).toEqual([]);
-      expect(constructionStrategy.createArray).toHaveBeenCalledWith({ settings, elements: []});
+      expect(await constructor.getArgumentValues([], settings)).toEqual(undefined);
+      expect(constructionStrategy.createArray).not.toHaveBeenCalled();
+      expect(constructionStrategy.createUndefined).toHaveBeenCalledWith();
     });
 
-    it('should handle a array with one unique value', async() => {
+    it('should handle a array with one value', async() => {
       const values = [
         objectLoader.createCompactedResource('"ABC"'),
       ];
-      values[0].property.unique = objectLoader.createCompactedResource('"true"');
       expect(await constructor.getArgumentValues(values, settings)).toEqual('ABC');
       expect(constructionStrategy.createArray).not.toHaveBeenCalled();
       expect(constructionStrategy.createPrimitive).toHaveBeenCalledWith({ settings, value: 'ABC' });
     });
 
-    it('should handle a array with multiple values, but unique', async() => {
+    it('should throw on a array with multiple values', async() => {
       const values = [
         objectLoader.createCompactedResource('"ABC"'),
         objectLoader.createCompactedResource('"DEF"'),
         objectLoader.createCompactedResource('"GHI"'),
       ];
-      values[0].property.unique = objectLoader.createCompactedResource('"true"');
-      expect(await constructor.getArgumentValues(values, settings)).toEqual('ABC');
-      expect(constructionStrategy.createArray).not.toHaveBeenCalled();
-      expect(constructionStrategy.createPrimitive).toHaveBeenCalledWith({ settings, value: 'ABC' });
-    });
-
-    it('should handle a array with one non-unique value', async() => {
-      const values = [
-        objectLoader.createCompactedResource('"ABC"'),
-      ];
-      expect(await constructor.getArgumentValues(values, settings)).toEqual([ 'ABC' ]);
-      expect(constructionStrategy.createArray).toHaveBeenCalledWith({ settings, elements: [ 'ABC' ]});
-      expect(constructionStrategy.createPrimitive).toHaveBeenCalledWith({ settings, value: 'ABC' });
-    });
-
-    it('should handle a array with multiple values', async() => {
-      const values = [
-        objectLoader.createCompactedResource('"ABC"'),
-        objectLoader.createCompactedResource('"DEF"'),
-        objectLoader.createCompactedResource('"GHI"'),
-      ];
-      expect(await constructor.getArgumentValues(values, settings)).toEqual([ 'ABC', 'DEF', 'GHI' ]);
-      expect(constructionStrategy.createArray).toHaveBeenCalledWith({ settings, elements: [ 'ABC', 'DEF', 'GHI' ]});
-      expect(constructionStrategy.createPrimitive).toHaveBeenCalledWith({ settings, value: 'ABC' });
-      expect(constructionStrategy.createPrimitive).toHaveBeenCalledWith({ settings, value: 'DEF' });
-      expect(constructionStrategy.createPrimitive).toHaveBeenCalledWith({ settings, value: 'GHI' });
+      await expect(constructor.getArgumentValues(values, settings)).rejects
+        .toThrowError(`Detected multiple values for an argument. RDF lists should be used for defining multiple values.`);
     });
 
     it('should handle an RDF list', async() => {
@@ -119,21 +95,6 @@ describe('ConfigConstructor', () => {
       ]);
       expect(constructionStrategy.createArray).toHaveBeenCalledWith({ settings, elements: [ 'ABC', 'DEF', 'GHI' ]});
     });
-
-    it('should throw on an RDF list and anything else', async() => {
-      const values = [
-        objectLoader.createCompactedResource({
-          list: [
-            '"ABC"',
-            '"DEF"',
-            '"GHI"',
-          ],
-        }),
-        objectLoader.createCompactedResource('"ABC"'),
-      ];
-      await expect(constructor.getArgumentValues(values, settings)).rejects
-        .toThrowError(`Detected multiple values for an argument while only a single RDF list is allowed`);
-    });
   });
 
   describe('getArgumentValue', () => {
@@ -148,9 +109,17 @@ describe('ConfigConstructor', () => {
     });
 
     describe('for fields', () => {
+      it('should handle fields without list', async() => {
+        const resource = objectLoader.createCompactedResource({
+          fields: { bla: true },
+        });
+        expect(await constructor.getArgumentValue(resource, settings)).toEqual({ entries: []});
+        expect(constructionStrategy.createHash).toHaveBeenCalledWith({ settings, entries: []});
+      });
+
       it('should handle empty fields', async() => {
         const resource = objectLoader.createCompactedResource({
-          hasFields: '"true"',
+          fields: { list: []},
         });
         expect(await constructor.getArgumentValue(resource, settings)).toEqual({ entries: []});
         expect(constructionStrategy.createHash).toHaveBeenCalledWith({ settings, entries: []});
@@ -158,18 +127,20 @@ describe('ConfigConstructor', () => {
 
       it('should handle one field', async() => {
         const resource = objectLoader.createCompactedResource({
-          fields: [
-            {
-              key: '"KEY"',
-              value: '"ABC"',
-            },
-          ],
+          fields: {
+            list: [
+              {
+                key: '"KEY"',
+                value: '"ABC"',
+              },
+            ],
+          },
         });
         expect(await constructor.getArgumentValue(resource, settings)).toEqual({
           entries: [
             {
               key: 'KEY',
-              value: [ 'ABC' ],
+              value: 'ABC',
             },
           ],
         });
@@ -178,7 +149,7 @@ describe('ConfigConstructor', () => {
           entries: [
             {
               key: 'KEY',
-              value: [ 'ABC' ],
+              value: 'ABC',
             },
           ],
         });
@@ -186,34 +157,36 @@ describe('ConfigConstructor', () => {
 
       it('should handle multiple fields', async() => {
         const resource = objectLoader.createCompactedResource({
-          fields: [
-            {
-              key: '"KEY1"',
-              value: '"A"',
-            },
-            {
-              key: '"KEY2"',
-              value: '"B"',
-            },
-            {
-              key: '"KEY3"',
-              value: '"C"',
-            },
-          ],
+          fields: {
+            list: [
+              {
+                key: '"KEY1"',
+                value: '"A"',
+              },
+              {
+                key: '"KEY2"',
+                value: '"B"',
+              },
+              {
+                key: '"KEY3"',
+                value: '"C"',
+              },
+            ],
+          },
         });
         expect(await constructor.getArgumentValue(resource, settings)).toEqual({
           entries: [
             {
               key: 'KEY1',
-              value: [ 'A' ],
+              value: 'A',
             },
             {
               key: 'KEY2',
-              value: [ 'B' ],
+              value: 'B',
             },
             {
               key: 'KEY3',
-              value: [ 'C' ],
+              value: 'C',
             },
           ],
         });
@@ -222,15 +195,15 @@ describe('ConfigConstructor', () => {
           entries: [
             {
               key: 'KEY1',
-              value: [ 'A' ],
+              value: 'A',
             },
             {
               key: 'KEY2',
-              value: [ 'B' ],
+              value: 'B',
             },
             {
               key: 'KEY3',
-              value: [ 'C' ],
+              value: 'C',
             },
           ],
         });
@@ -238,11 +211,13 @@ describe('ConfigConstructor', () => {
 
       it('should throw on a missing key', async() => {
         const resource = objectLoader.createCompactedResource({
-          fields: [
-            {
-              value: '"ABC"',
-            },
-          ],
+          fields: {
+            list: [
+              {
+                value: '"ABC"',
+              },
+            ],
+          },
         });
         await expect(constructor.getArgumentValue(resource, settings)).rejects
           .toThrowError(/^Missing key in fields entry/u);
@@ -250,12 +225,14 @@ describe('ConfigConstructor', () => {
 
       it('should throw on IRI key', async() => {
         const resource = objectLoader.createCompactedResource({
-          fields: [
-            {
-              key: 'ex:abc',
-              value: '"ABC"',
-            },
-          ],
+          fields: {
+            list: [
+              {
+                key: 'ex:abc',
+                value: '"ABC"',
+              },
+            ],
+          },
         });
         await expect(constructor.getArgumentValue(resource, settings)).rejects
           .toThrowError(/^Illegal non-literal key \(ex:abc as NamedNode\) in fields entry/u);
@@ -263,11 +240,13 @@ describe('ConfigConstructor', () => {
 
       it('should ignore fields without value', async() => {
         const resource = objectLoader.createCompactedResource({
-          fields: [
-            {
-              key: '"KEY"',
-            },
-          ],
+          fields: {
+            list: [
+              {
+                key: '"KEY"',
+              },
+            ],
+          },
         });
         expect(await constructor.getArgumentValue(resource, settings)).toEqual({
           entries: [ undefined ],
@@ -389,9 +368,7 @@ describe('ConfigConstructor', () => {
           '@id': 'ex:abc',
           value: '"ABC"',
         });
-        expect(await constructor.getArgumentValue(resource, settings)).toEqual([
-          'ABC',
-        ]);
+        expect(await constructor.getArgumentValue(resource, settings)).toEqual('ABC');
         expect(constructionStrategy.createPrimitive).toHaveBeenCalledWith({
           settings,
           value: 'ABC',
@@ -402,9 +379,7 @@ describe('ConfigConstructor', () => {
         const resource = objectLoader.createCompactedResource({
           value: '"ABC"',
         });
-        expect(await constructor.getArgumentValue(resource, settings)).toEqual([
-          'ABC',
-        ]);
+        expect(await constructor.getArgumentValue(resource, settings)).toEqual('ABC');
         expect(constructionStrategy.createPrimitive).toHaveBeenCalledWith({
           settings,
           value: 'ABC',
@@ -528,12 +503,14 @@ describe('ConfigConstructor', () => {
           list: [
             '"ABC"',
             {
-              fields: [
-                {
-                  key: '"KEY"',
-                  value: '"ABC"',
-                },
-              ],
+              fields: {
+                list: [
+                  {
+                    key: '"KEY"',
+                    value: '"ABC"',
+                  },
+                ],
+              },
             },
           ],
         },
@@ -544,7 +521,7 @@ describe('ConfigConstructor', () => {
           entries: [
             {
               key: 'KEY',
-              value: [ 'ABC' ],
+              value: 'ABC',
             },
           ],
         },
