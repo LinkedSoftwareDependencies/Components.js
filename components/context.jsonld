@@ -70,6 +70,9 @@
     "ParameterRangeArray": {
       "@id": "oo:ParameterRangeArray"
     },
+    "ParameterRangeLiteral": {
+      "@id": "oo:ParameterRangeLiteral"
+    },
     "parameterRangeValue": {
       "@id": "oo:parameterRangeValue",
       "@type": "@id"
