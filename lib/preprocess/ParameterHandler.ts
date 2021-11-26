@@ -43,8 +43,13 @@ export class ParameterHandler {
     if (values.length === 1) {
       value = values[0];
     } else if (values.length > 0) {
-      throw new ErrorResourcesContext(`Detected multiple values for parameter ${parameter.value}. RDF lists should be used for defining multiple values.`, {
-        arguments: values,
+      if (values.some(subValue => !subValue.list)) {
+        throw new ErrorResourcesContext(`Detected multiple values for parameter ${parameter.value}. RDF lists should be used for defining multiple values.`, {
+          arguments: values,
+        });
+      }
+      value = this.objectLoader.createCompactedResource({
+        list: values.flatMap(subValue => <Resource[]> subValue.list),
       });
     }
 

@@ -93,10 +93,10 @@ describe('ParameterHandler', () => {
             '"C"',
           ],
         });
-        expectOutputOnlyTerm(handler.applyParameterValues(configRoot, param, configElement), expected);
+        expectOutputProperties(handler.applyParameterValues(configRoot, param, configElement), expected);
       });
 
-      it('should reject multiple list values', () => {
+      it('should accept multiple list values', () => {
         configElement = objectLoader.createCompactedResource({
           'ex:myParam': [
             {
@@ -112,8 +112,14 @@ describe('ParameterHandler', () => {
             },
           ],
         });
-        expect(() => handler.applyParameterValues(configRoot, param, configElement))
-          .toThrowError(`Detected multiple values for parameter ex:myParam. RDF lists should be used for defining multiple values.`);
+        const expected: Resource = objectLoader.createCompactedResource({
+          list: [
+            '"A"',
+            '"B"',
+            '"C"',
+          ],
+        });
+        expectOutputProperties(handler.applyParameterValues(configRoot, param, configElement), expected);
       });
 
       it('should reject list and set values', () => {
