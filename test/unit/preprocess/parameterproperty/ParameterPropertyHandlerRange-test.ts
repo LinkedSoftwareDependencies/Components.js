@@ -846,6 +846,49 @@ describe('ParameterPropertyHandlerRange', () => {
           // eslint-disable-next-line max-len
         )).toThrow(/^The value "123" for parameter ".*" is not of required range type "true"/u);
       });
+
+      it('should handle a union over string literal types with valid types', () => {
+        expect(handler.captureType(
+          objectLoader.createCompactedResource('"def"'),
+          objectLoader.createCompactedResource({
+            range: {
+              '@type': 'ParameterRangeUnion',
+              parameterRangeElements: [
+                {
+                  '@type': 'ParameterRangeLiteral',
+                  parameterRangeValue: '"abc"',
+                },
+                {
+                  '@type': 'ParameterRangeLiteral',
+                  parameterRangeValue: '"def"',
+                },
+              ],
+            },
+          }),
+        )).toBeTruthy();
+      });
+
+      it('should throw on a union over string literal types with incompatible types', () => {
+        expect(() => handler.captureType(
+          objectLoader.createCompactedResource('"xyz"'),
+          objectLoader.createCompactedResource({
+            range: {
+              '@type': 'ParameterRangeUnion',
+              parameterRangeElements: [
+                {
+                  '@type': 'ParameterRangeLiteral',
+                  parameterRangeValue: '"abc"',
+                },
+                {
+                  '@type': 'ParameterRangeLiteral',
+                  parameterRangeValue: '"def"',
+                },
+              ],
+            },
+          }),
+          // eslint-disable-next-line max-len
+        )).toThrow(/^The value "xyz" for parameter ".*" is not of required range type "abc \| def"/u);
+      });
     });
   });
 
