@@ -167,6 +167,9 @@ export class ParameterPropertyHandlerRange implements IParameterPropertyHandler 
           (tupleIndex === tupleTypes.length ||
             (tupleIndex === tupleTypes.length - 1 && tupleTypes[tupleIndex].isA('ParameterRangeRest')));
       }
+      if (paramRange.isA('ParameterRangeLiteral')) {
+        return Boolean(value && value.term.equals(paramRange.property.parameterRangeValue.term));
+      }
 
       // Check if this param defines a field with sub-params
       if (paramRange.isA('ParameterRangeCollectEntries')) {
@@ -217,6 +220,9 @@ export class ParameterPropertyHandlerRange implements IParameterPropertyHandler 
       return `[${paramRange.properties.parameterRangeElements
         .map(child => this.rangeToDisplayString(child))
         .join(', ')}]`;
+    }
+    if (paramRange.isA('ParameterRangeLiteral')) {
+      return paramRange.property.parameterRangeValue.value;
     }
     return paramRange.value;
   }

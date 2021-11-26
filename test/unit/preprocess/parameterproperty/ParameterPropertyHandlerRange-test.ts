@@ -797,6 +797,55 @@ describe('ParameterPropertyHandlerRange', () => {
           }),
         )).toBeTruthy();
       });
+
+      it('should handle a string literal type with valid types', () => {
+        expect(handler.captureType(
+          objectLoader.createCompactedResource('abc'),
+          objectLoader.createCompactedResource({
+            range: {
+              '@type': 'ParameterRangeLiteral',
+              parameterRangeValue: 'abc',
+            },
+          }),
+        )).toBeTruthy();
+      });
+
+      it('should handle a number literal type with valid types', () => {
+        expect(handler.captureType(
+          objectLoader.createCompactedResource(DF.literal('123', DF.namedNode(IRIS_XSD.integer))),
+          objectLoader.createCompactedResource({
+            range: {
+              '@type': 'ParameterRangeLiteral',
+              parameterRangeValue: DF.literal('123', DF.namedNode(IRIS_XSD.integer)),
+            },
+          }),
+        )).toBeTruthy();
+      });
+
+      it('should handle a boolean literal type with valid types', () => {
+        expect(handler.captureType(
+          objectLoader.createCompactedResource(DF.literal('true', DF.namedNode(IRIS_XSD.boolean))),
+          objectLoader.createCompactedResource({
+            range: {
+              '@type': 'ParameterRangeLiteral',
+              parameterRangeValue: DF.literal('true', DF.namedNode(IRIS_XSD.boolean)),
+            },
+          }),
+        )).toBeTruthy();
+      });
+
+      it('should throw on a literal type with incompatible value', () => {
+        expect(() => handler.captureType(
+          objectLoader.createCompactedResource(DF.literal('123', DF.namedNode(IRIS_XSD.integer))),
+          objectLoader.createCompactedResource({
+            range: {
+              '@type': 'ParameterRangeLiteral',
+              parameterRangeValue: DF.literal('true', DF.namedNode(IRIS_XSD.boolean)),
+            },
+          }),
+          // eslint-disable-next-line max-len
+        )).toThrow(/^The value "123" for parameter ".*" is not of required range type "true"/u);
+      });
     });
   });
 
