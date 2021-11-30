@@ -1,6 +1,32 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v5.0.0-beta.0"></a>
+## [v5.0.0-beta.0](https://github.com/LinkedSoftwareDependencies/Components.js/compare/v4.5.0...v5.0.0-beta.0) - 2021-11-30
+
+### BREAKING CHANGES
+* [Remove required and unique param flags in favor of parameter ranges](https://github.com/LinkedSoftwareDependencies/Components.js/commit/0df26318e4803b06660b3458fc75d565c4b60f67):
+  This allows more complex ranges to be defined, such as nested arrays, or arrays of union types.
+  **Because of this change, arrays now must always be explicitly defined within an RDF list (or @list in JSON-LD).**
+  If one param value is provided, it is considered a singular value.
+  If the param value contains an RDF list, it is considered an array.
+  If multiple param values are provided without RDF list, an error is thrown.
+
+### Added
+* Validate parameter values by type:
+  * [Validate param ranges with union and intersection types](https://github.com/LinkedSoftwareDependencies/Components.js/commit/d08ecdb94051d3e88e7e1ea09f0f77518fb0debf)
+  * [Validate types of resource-based param values](https://github.com/LinkedSoftwareDependencies/Components.js/commit/2be90ccb416215261ef9c785e89302f3c4ef9264)
+  * [Validate param ranges with tuple types](https://github.com/LinkedSoftwareDependencies/Components.js/commit/05d84c4c1d4bde6bcb5a99d53df4e66ca69536bf)
+  * [Validate param ranges with literal types](https://github.com/LinkedSoftwareDependencies/Components.js/commit/7373b0fc06bdaf95a8099b9f58b741cd6f4f1b9d)
+
+### Changed
+* [Allow IRIs to be casted to string params](https://github.com/LinkedSoftwareDependencies/Components.js/commit/978985684dcba67629d44bfd0e5cf75293c5ea7a)
+* [Allow components to be registered to multiple modules](https://github.com/LinkedSoftwareDependencies/Components.js/commit/e575e64ebd26092a6bb005d837023e35877e9308)
+* [Make relative IRIs make use of importPaths-based URLs if possible](https://github.com/LinkedSoftwareDependencies/Components.js/commit/6a2e18c3bf6a1b95f826b66ee0ef8b154f10c3cc)
+
+### Fixed
+* [Fix raw JSON values not being serializable to strings](https://github.com/LinkedSoftwareDependencies/Components.js/commit/96fe46eda1e153e87b29689196506ce6fbbdae58)
+
 <a name="v4.5.0"></a>
 ## [v4.5.0](https://github.com/LinkedSoftwareDependencies/Components.js/compare/v4.4.1...v4.5.0) - 2021-08-30
 
