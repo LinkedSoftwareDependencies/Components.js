@@ -22,8 +22,15 @@
     "components": {
       "@id": "oo:component"
     },
+    "component": {
+      "@id": "oo:component",
+      "@type": "@id"
+    },
     "parameters": {
       "@id": "oo:parameter"
+    },
+    "genericTypeParameters": {
+      "@id": "oo:genericTypeParameter"
     },
     "constructorArguments": {
       "@id": "oo:constructorArguments",
@@ -94,7 +101,21 @@
       "@id": "oo:ParameterRangeCollectEntries"
     },
     "parameterRangeCollectEntriesParameters": {
-      "@id": "oo:parameterRangeCollectEntriesParameters",
+      "@id": "oo:parameterRangeCollectEntriesParameter",
+      "@type": "@id"
+    },
+    "ParameterRangeGenericComponent": {
+      "@id": "oo:ParameterRangeGenericComponent"
+    },
+    "genericTypeInstances": {
+      "@id": "oo:genericTypeInstance",
+      "@type": "@id"
+    },
+    "ParameterRangeGenericTypeReference": {
+      "@id": "oo:ParameterRangeGenericTypeReference"
+    },
+    "parameterRangeGenericType": {
+      "@id": "oo:parameterRangeGenericType",
       "@type": "@id"
     },
 
