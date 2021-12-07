@@ -361,6 +361,84 @@ describe('ConfigPreprocessorComponent', () => {
       });
       expectTransformOutput(config, expectedArgs);
     });
+
+    it('should handle one parameter with one value and generic type instance', () => {
+      const config = objectLoader.createCompactedResource({
+        '@id': 'ex:myComponentInstance',
+        types: 'ex:ComponentThis',
+        'ex:myComponentInstance#param1': '"A"',
+        genericTypeInstances: [
+          {
+            parameterRangeGenericType: 'ex:ComponentThis__generic_T',
+            parameterRangeGenericBindings: 'xsd:number',
+          },
+        ],
+      });
+      componentResources['ex:ComponentThis'] = objectLoader.createCompactedResource({
+        '@id': 'ex:ComponentThis',
+        module: 'ex:Module',
+        parameters: [
+          {
+            '@id': 'ex:myComponentInstance#param1',
+          },
+        ],
+        genericTypeParameters: [
+          {
+            '@id': 'ex:ComponentThis__generic_T',
+          },
+        ],
+      });
+      const expectedArgs = objectLoader.createCompactedResource({
+        list: [
+          {
+            fields: {
+              list: [
+                {
+                  key: '"ex:myComponentInstance#param1"',
+                  value: '"A"',
+                },
+              ],
+            },
+          },
+        ],
+      });
+      expectTransformOutput(config, expectedArgs);
+    });
+
+    it('should not handle with incompatible generic type instances', () => {
+      const config = objectLoader.createCompactedResource({
+        '@id': 'ex:myComponentInstance',
+        types: 'ex:ComponentThis',
+        'ex:myComponentInstance#param1': '"A"',
+        genericTypeInstances: [
+          {
+            parameterRangeGenericType: 'ex:ComponentThis__generic_T',
+            parameterRangeGenericBindings: 'xsd:number',
+          },
+          {
+            parameterRangeGenericType: 'ex:ComponentThis__generic_T',
+            parameterRangeGenericBindings: 'xsd:number',
+          },
+        ],
+      });
+      componentResources['ex:ComponentThis'] = objectLoader.createCompactedResource({
+        '@id': 'ex:ComponentThis',
+        module: 'ex:Module',
+        parameters: [
+          {
+            '@id': 'ex:myComponentInstance#param1',
+          },
+        ],
+        genericTypeParameters: [
+          {
+            '@id': 'ex:ComponentThis__generic_T',
+          },
+        ],
+      });
+      const expectedArgs = objectLoader.createCompactedResource({});
+      expect(() => expectTransformOutput(config, expectedArgs))
+        .toThrowError(`Invalid generic type instantiations: more generic types are passed than are defined on the component.`);
+    });
   });
 
   describe('transform', () => {

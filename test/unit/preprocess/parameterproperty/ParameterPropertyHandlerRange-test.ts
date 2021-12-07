@@ -2,6 +2,7 @@ import * as fs from 'fs';
 import { DataFactory } from 'rdf-data-factory';
 import { RdfObjectLoader } from 'rdf-object/lib/RdfObjectLoader';
 import 'jest-rdf';
+import type { Resource } from 'rdf-object/lib/Resource';
 import { GenericsContext } from '../../../../lib/preprocess/GenericsContext';
 import {
   ParameterPropertyHandlerRange,
@@ -9,6 +10,14 @@ import {
 import { IRIS_RDF, IRIS_XSD } from '../../../../lib/rdf/Iris';
 
 const DF = new DataFactory();
+
+function expectOutputProperties(output: Resource | undefined, expected: Resource | undefined) {
+  if (output === undefined) {
+    expect(expected).toBeUndefined();
+  } else {
+    expect(output.toQuads()).toBeRdfIsomorphic(expected!.toQuads());
+  }
+}
 
 describe('ParameterPropertyHandlerRange', () => {
   let objectLoader: RdfObjectLoader;
@@ -1144,6 +1153,158 @@ describe('ParameterPropertyHandlerRange', () => {
           genericsContext,
           // eslint-disable-next-line max-len
         )).toThrow(/^The value "true" for parameter ".*" is not of required range type "<ex:GEN_T>"/u);
+      });
+
+      it('should handle a generic component without generic binding', () => {
+        const value = handler.captureType(
+          objectLoader.createCompactedResource({
+            '@type': [ 'ex:SomeType1' ],
+          }),
+          objectLoader.createCompactedResource({
+            range: {
+              '@type': 'ParameterRangeGenericComponent',
+              component: 'ex:SomeType1',
+              genericTypeInstances: [
+                {
+                  '@type': 'ParameterRangeGenericTypeReference',
+                  parameterRangeGenericType: 'ex:GEN_T',
+                },
+              ],
+            },
+          }),
+          genericsContext,
+        );
+        expect(value).toBeTruthy();
+        expectOutputProperties(value, objectLoader.createCompactedResource({
+          '@type': [ 'ex:SomeType1' ],
+          genericTypeInstances: [
+            {
+              type: 'ParameterRangeGenericTypeReference',
+              parameterRangeGenericType: 'ex:GEN_T',
+              parameterRangeGenericBindings: undefined,
+            },
+          ],
+        }));
+      });
+
+      it('should throw on a generic component without generic binding and undefined value', () => {
+        expect(() => handler.captureType(
+          undefined,
+          objectLoader.createCompactedResource({
+            range: {
+              '@type': 'ParameterRangeGenericComponent',
+              component: 'ex:SomeType1',
+              genericTypeInstances: [
+                {
+                  '@type': 'ParameterRangeGenericTypeReference',
+                  parameterRangeGenericType: 'ex:GEN_T',
+                },
+              ],
+            },
+          }),
+          genericsContext,
+          // eslint-disable-next-line max-len
+        )).toThrow(/^The value "undefined" for parameter ".*" is not of required range type "\(ex:SomeType1\)<UNKNOWN GENERIC: ex:GEN_T>"/u);
+      });
+
+      it('should handle a generic component with generic binding', () => {
+        genericsContext = new GenericsContext(objectLoader, [
+          objectLoader.createCompactedResource('ex:GEN_T'),
+        ]);
+        genericsContext.bindings['ex:GEN_T'] = [ objectLoader.createCompactedResource('ex:SomeType2') ];
+
+        const value = handler.captureType(
+          objectLoader.createCompactedResource({
+            '@type': [ 'ex:SomeType1' ],
+          }),
+          objectLoader.createCompactedResource({
+            range: {
+              '@type': 'ParameterRangeGenericComponent',
+              component: 'ex:SomeType1',
+              genericTypeInstances: [
+                {
+                  '@type': 'ParameterRangeGenericTypeReference',
+                  parameterRangeGenericType: 'ex:GEN_T',
+                },
+              ],
+            },
+          }),
+          genericsContext,
+        );
+        expect(value).toBeTruthy();
+        expectOutputProperties(value, objectLoader.createCompactedResource({
+          '@type': [ 'ex:SomeType1' ],
+          genericTypeInstances: [
+            {
+              type: 'ParameterRangeGenericTypeReference',
+              parameterRangeGenericType: 'ex:GEN_T',
+              parameterRangeGenericBindings: [
+                { '@id': 'ex:SomeType2' },
+              ],
+            },
+          ],
+        }));
+      });
+
+      it('should throw on a generic component with an incompatible value', () => {
+        genericsContext = new GenericsContext(objectLoader, [
+          objectLoader.createCompactedResource('ex:GEN_T'),
+        ]);
+        genericsContext.bindings['ex:GEN_T'] = [ objectLoader.createCompactedResource('ex:SomeType2') ];
+
+        expect(() => handler.captureType(
+          objectLoader.createCompactedResource({
+            '@type': [ 'ex:SomeType1' ],
+          }),
+          objectLoader.createCompactedResource({
+            range: {
+              '@type': 'ParameterRangeGenericComponent',
+              component: 'ex:SomeType2',
+              genericTypeInstances: [
+                {
+                  '@type': 'ParameterRangeGenericTypeReference',
+                  parameterRangeGenericType: 'ex:GEN_T',
+                },
+              ],
+            },
+          }),
+          genericsContext,
+          // eslint-disable-next-line max-len
+        )).toThrow(/^The value ".*" with types "ex:SomeType1" for parameter ".*" is not of required range type "\(ex:SomeType2\)<ex:GEN_T>"/u);
+      });
+
+      it('should throw on a generic component with config that already has manual generics set', () => {
+        genericsContext = new GenericsContext(objectLoader, [
+          objectLoader.createCompactedResource('ex:GEN_T'),
+        ]);
+        genericsContext.bindings['ex:GEN_T'] = [ objectLoader.createCompactedResource('ex:SomeType2') ];
+
+        expect(() => handler.captureType(
+          objectLoader.createCompactedResource({
+            '@type': [ 'ex:SomeType1' ],
+            genericTypeInstances: [
+              {
+                type: 'ParameterRangeGenericTypeReference',
+                parameterRangeGenericType: 'ex:GEN_T',
+                parameterRangeGenericBindings: undefined,
+              },
+            ],
+          }),
+          objectLoader.createCompactedResource({
+            range: {
+              '@type': 'ParameterRangeGenericComponent',
+              component: 'ex:SomeType1',
+              genericTypeInstances: [
+                {
+                  '@type': 'ParameterRangeGenericTypeReference',
+                  parameterRangeGenericType: 'ex:GEN_T',
+                },
+              ],
+            },
+          }),
+          genericsContext,
+          // eslint-disable-next-line max-len
+        )).toThrow(/^Simultaneous manual generic type passing and generic type inference are not supported yet\./u);
       });
     });
   });
