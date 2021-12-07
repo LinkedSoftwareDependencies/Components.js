@@ -2,6 +2,7 @@ import type { Resource, RdfObjectLoader } from 'rdf-object';
 import type { Logger } from 'winston';
 import { IRIS_OWL } from '../rdf/Iris';
 import { ErrorResourcesContext } from '../util/ErrorResourcesContext';
+import { GenericsContext } from './GenericsContext';
 import type { IConfigPreprocessor } from './IConfigPreprocessor';
 import type { ParameterHandler } from './ParameterHandler';
 
@@ -107,6 +108,13 @@ export class ConfigPreprocessorComponent implements IConfigPreprocessor<ICompone
     return configRaw;
   }
 
+  protected createGenericsContext(handleResponse: IComponentConfigPreprocessorHandleResponse): GenericsContext {
+    return new GenericsContext(
+      this.objectLoader,
+      handleResponse.component.properties.genericTypeParameters,
+    );
+  }
+
   /**
    * Determine the constructor arguments of the given config.
    * @param config A config.
@@ -117,10 +125,12 @@ export class ConfigPreprocessorComponent implements IConfigPreprocessor<ICompone
     handleResponse: IComponentConfigPreprocessorHandleResponse,
   ): Resource {
     const entries: Resource[] = [];
+    const genericsContext = this.createGenericsContext(handleResponse);
     for (const fieldData of handleResponse.component.properties.parameters) {
       const field = this.objectLoader.createCompactedResource({});
       field.property.key = this.objectLoader.createCompactedResource(`"${fieldData.term.value}"`);
-      const value = this.parameterHandler.applyParameterValues(handleResponse.component, fieldData, config);
+      const value = this.parameterHandler
+        .applyParameterValues(handleResponse.component, fieldData, config, genericsContext);
       if (value) {
         field.property.value = value;
       }

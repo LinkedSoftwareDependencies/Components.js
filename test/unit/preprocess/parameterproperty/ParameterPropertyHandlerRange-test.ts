@@ -2,6 +2,7 @@ import * as fs from 'fs';
 import { DataFactory } from 'rdf-data-factory';
 import { RdfObjectLoader } from 'rdf-object/lib/RdfObjectLoader';
 import 'jest-rdf';
+import { GenericsContext } from '../../../../lib/preprocess/GenericsContext';
 import {
   ParameterPropertyHandlerRange,
 } from '../../../../lib/preprocess/parameterproperty/ParameterPropertyHandlerRange';
@@ -11,12 +12,14 @@ const DF = new DataFactory();
 
 describe('ParameterPropertyHandlerRange', () => {
   let objectLoader: RdfObjectLoader;
+  let genericsContext: GenericsContext;
   let handler: ParameterPropertyHandlerRange;
   beforeEach(async() => {
     objectLoader = new RdfObjectLoader({
       context: JSON.parse(fs.readFileSync(`${__dirname}/../../../../components/context.jsonld`, 'utf8')),
     });
     await objectLoader.context;
+    genericsContext = new GenericsContext(objectLoader, []);
     handler = new ParameterPropertyHandlerRange(objectLoader);
   });
 
@@ -24,123 +27,150 @@ describe('ParameterPropertyHandlerRange', () => {
     describe('for literals', () => {
       it('should capture strings', () => {
         expect((<any>handler.captureType(objectLoader.createCompactedResource('"aaa"'),
-          objectLoader.createCompactedResource({ range: IRIS_XSD.string }))).term.valueRaw)
+          objectLoader.createCompactedResource({ range: IRIS_XSD.string }),
+          genericsContext)).term.valueRaw)
           .toBeUndefined();
         expect((<any>handler.captureType(objectLoader.createCompactedResource('"qqseqfqefefù$^"'),
-          objectLoader.createCompactedResource({ range: IRIS_XSD.string }))).term.valueRaw)
+          objectLoader.createCompactedResource({ range: IRIS_XSD.string }),
+          genericsContext)).term.valueRaw)
           .toBeUndefined();
       });
 
       it('should capture booleans', () => {
         expect((<any>handler.captureType(objectLoader.createCompactedResource('"true"'),
-          objectLoader.createCompactedResource({ range: IRIS_XSD.boolean }))).term.valueRaw)
+          objectLoader.createCompactedResource({ range: IRIS_XSD.boolean }),
+          genericsContext)).term.valueRaw)
           .toEqual(true);
         expect((<any>handler.captureType(objectLoader.createCompactedResource('"false"'),
-          objectLoader.createCompactedResource({ range: IRIS_XSD.boolean }))).term.valueRaw)
+          objectLoader.createCompactedResource({ range: IRIS_XSD.boolean }),
+          genericsContext)).term.valueRaw)
           .toEqual(false);
       });
       it('should error on invalid booleans', () => {
         expect(() => handler.captureType(objectLoader.createCompactedResource('"1"'),
-          objectLoader.createCompactedResource({ range: IRIS_XSD.boolean, '@id': 'param' })))
+          objectLoader.createCompactedResource({ range: IRIS_XSD.boolean, '@id': 'param' }),
+          genericsContext))
           // eslint-disable-next-line max-len
           .toThrowError(/^The value "1" for parameter "param" is not of required range type "http:\/\/www.w3.org\/2001\/XMLSchema#boolean"/u);
       });
 
       it('should capture integers', () => {
         expect((<any>handler.captureType(objectLoader.createCompactedResource('"1"'),
-          objectLoader.createCompactedResource({ range: IRIS_XSD.integer }))).term.valueRaw)
+          objectLoader.createCompactedResource({ range: IRIS_XSD.integer }),
+          genericsContext)).term.valueRaw)
           .toEqual(1);
         expect((<any>handler.captureType(objectLoader.createCompactedResource('"1456789876"'),
-          objectLoader.createCompactedResource({ range: IRIS_XSD.integer }))).term.valueRaw)
+          objectLoader.createCompactedResource({ range: IRIS_XSD.integer }),
+          genericsContext)).term.valueRaw)
           .toEqual(1_456_789_876);
       });
       it('should error on invalid integers', () => {
         expect(() => handler.captureType(objectLoader.createCompactedResource('"a"'),
-          objectLoader.createCompactedResource({ range: IRIS_XSD.integer, '@id': 'param' })))
+          objectLoader.createCompactedResource({ range: IRIS_XSD.integer, '@id': 'param' }),
+          genericsContext))
           // eslint-disable-next-line max-len
           .toThrowError(/^The value "a" for parameter "param" is not of required range type "http:\/\/www.w3.org\/2001\/XMLSchema#integer"/u);
       });
       it('should error on invalid integers that are numbers', () => {
         expect(() => handler.captureType(objectLoader.createCompactedResource('"1.12"'),
-          objectLoader.createCompactedResource({ range: IRIS_XSD.integer, '@id': 'param' })))
+          objectLoader.createCompactedResource({ range: IRIS_XSD.integer, '@id': 'param' }),
+          genericsContext))
           // eslint-disable-next-line max-len
           .toThrowError(/^The value "1.12" for parameter "param" is not of required range type "http:\/\/www.w3.org\/2001\/XMLSchema#integer"/u);
       });
       it('should capture numbers', () => {
         expect((<any>handler.captureType(objectLoader.createCompactedResource('"1"'),
-          objectLoader.createCompactedResource({ range: IRIS_XSD.number }))).term.valueRaw)
+          objectLoader.createCompactedResource({ range: IRIS_XSD.number }),
+          genericsContext)).term.valueRaw)
           .toEqual(1);
         expect((<any>handler.captureType(objectLoader.createCompactedResource('"456789876"'),
-          objectLoader.createCompactedResource({ range: IRIS_XSD.number }))).term.valueRaw)
+          objectLoader.createCompactedResource({ range: IRIS_XSD.number }),
+          genericsContext)).term.valueRaw)
           .toEqual(456_789_876);
       });
       it('should capture ints', () => {
         expect((<any>handler.captureType(objectLoader.createCompactedResource('"1"'),
-          objectLoader.createCompactedResource({ range: IRIS_XSD.int }))).term.valueRaw)
+          objectLoader.createCompactedResource({ range: IRIS_XSD.int }),
+          genericsContext)).term.valueRaw)
           .toEqual(1);
         expect((<any>handler.captureType(objectLoader.createCompactedResource('"456789876"'),
-          objectLoader.createCompactedResource({ range: IRIS_XSD.int }))).term.valueRaw)
+          objectLoader.createCompactedResource({ range: IRIS_XSD.int }),
+          genericsContext)).term.valueRaw)
           .toEqual(456_789_876);
       });
       it('should capture bytes', () => {
         expect((<any>handler.captureType(objectLoader.createCompactedResource('"1"'),
-          objectLoader.createCompactedResource({ range: IRIS_XSD.byte }))).term.valueRaw)
+          objectLoader.createCompactedResource({ range: IRIS_XSD.byte }),
+          genericsContext)).term.valueRaw)
           .toEqual(1);
         expect((<any>handler.captureType(objectLoader.createCompactedResource('"456789876"'),
-          objectLoader.createCompactedResource({ range: IRIS_XSD.byte }))).term.valueRaw)
+          objectLoader.createCompactedResource({ range: IRIS_XSD.byte }),
+          genericsContext)).term.valueRaw)
           .toEqual(456_789_876);
       });
       it('should capture longs', () => {
         expect((<any>handler.captureType(objectLoader.createCompactedResource('"1"'),
-          objectLoader.createCompactedResource({ range: IRIS_XSD.long }))).term.valueRaw)
+          objectLoader.createCompactedResource({ range: IRIS_XSD.long }),
+          genericsContext)).term.valueRaw)
           .toEqual(1);
         expect((<any>handler.captureType(objectLoader.createCompactedResource('"456789876"'),
-          objectLoader.createCompactedResource({ range: IRIS_XSD.long }))).term.valueRaw)
+          objectLoader.createCompactedResource({ range: IRIS_XSD.long }),
+          genericsContext)).term.valueRaw)
           .toEqual(456_789_876);
       });
 
       it('should capture floats', () => {
         expect((<any>handler.captureType(objectLoader.createCompactedResource('"1"'),
-          objectLoader.createCompactedResource({ range: IRIS_XSD.float }))).term.valueRaw)
+          objectLoader.createCompactedResource({ range: IRIS_XSD.float }),
+          genericsContext)).term.valueRaw)
           .toEqual(1);
         expect((<any>handler.captureType(objectLoader.createCompactedResource('"256.36"'),
-          objectLoader.createCompactedResource({ range: IRIS_XSD.float }))).term.valueRaw)
+          objectLoader.createCompactedResource({ range: IRIS_XSD.float }),
+          genericsContext)).term.valueRaw)
           .toEqual(256.36);
       });
       it('should error on invalid floats', () => {
         expect(() => handler.captureType(objectLoader.createCompactedResource('"a"'),
-          objectLoader.createCompactedResource({ range: IRIS_XSD.float, '@id': 'param' })))
+          objectLoader.createCompactedResource({ range: IRIS_XSD.float, '@id': 'param' }),
+          genericsContext))
           // eslint-disable-next-line max-len
           .toThrowError(/^The value "a" for parameter "param" is not of required range type "http:\/\/www.w3.org\/2001\/XMLSchema#float"/u);
       });
       it('should capture decimals', () => {
         expect((<any>handler.captureType(objectLoader.createCompactedResource('"1"'),
-          objectLoader.createCompactedResource({ range: IRIS_XSD.decimal }))).term.valueRaw)
+          objectLoader.createCompactedResource({ range: IRIS_XSD.decimal }),
+          genericsContext)).term.valueRaw)
           .toEqual(1);
         expect((<any>handler.captureType(objectLoader.createCompactedResource('"256.36"'),
-          objectLoader.createCompactedResource({ range: IRIS_XSD.decimal }))).term.valueRaw)
+          objectLoader.createCompactedResource({ range: IRIS_XSD.decimal }),
+          genericsContext)).term.valueRaw)
           .toEqual(256.36);
       });
       it('should capture doubles', () => {
         expect((<any>handler.captureType(objectLoader.createCompactedResource('"1"'),
-          objectLoader.createCompactedResource({ range: IRIS_XSD.double }))).term.valueRaw)
+          objectLoader.createCompactedResource({ range: IRIS_XSD.double }),
+          genericsContext)).term.valueRaw)
           .toEqual(1);
         expect((<any>handler.captureType(objectLoader.createCompactedResource('"256.36"'),
-          objectLoader.createCompactedResource({ range: IRIS_XSD.double }))).term.valueRaw)
+          objectLoader.createCompactedResource({ range: IRIS_XSD.double }),
+          genericsContext)).term.valueRaw)
           .toEqual(256.36);
       });
 
       it('should capture JSON', () => {
         expect((<any>handler.captureType(objectLoader.createCompactedResource('"1"'),
-          objectLoader.createCompactedResource({ range: IRIS_RDF.JSON }))).term.valueRaw)
+          objectLoader.createCompactedResource({ range: IRIS_RDF.JSON }),
+          genericsContext)).term.valueRaw)
           .toEqual(1);
         expect((<any>handler.captureType(objectLoader.createCompactedResource('"{"a":"b"}"'),
-          objectLoader.createCompactedResource({ range: IRIS_RDF.JSON }))).term.valueRaw)
+          objectLoader.createCompactedResource({ range: IRIS_RDF.JSON }),
+          genericsContext)).term.valueRaw)
           .toEqual({ a: 'b' });
       });
       it('should error on invalid JSON', () => {
         expect(() => handler.captureType(objectLoader.createCompactedResource('"{a:\\"b\\"}"'),
-          objectLoader.createCompactedResource({ range: IRIS_RDF.JSON, '@id': 'param' })))
+          objectLoader.createCompactedResource({ range: IRIS_RDF.JSON, '@id': 'param' }),
+          genericsContext))
           .toThrowError(/^The value .* for parameter "param" is not of required range type/u);
       });
     });
@@ -154,6 +184,7 @@ describe('ParameterPropertyHandlerRange', () => {
           objectLoader.createCompactedResource({
             range: IRIS_XSD.string,
           }),
+          genericsContext,
         )).toBeTruthy();
       });
 
@@ -163,6 +194,7 @@ describe('ParameterPropertyHandlerRange', () => {
             '@id': 'ex:abc',
           }),
           objectLoader.createCompactedResource({}),
+          genericsContext,
         )).toBeTruthy();
 
         expect(handler.captureType(
@@ -171,6 +203,7 @@ describe('ParameterPropertyHandlerRange', () => {
             '@type': 'ex:Type',
           }),
           objectLoader.createCompactedResource({}),
+          genericsContext,
         )).toBeTruthy();
       });
 
@@ -182,6 +215,7 @@ describe('ParameterPropertyHandlerRange', () => {
           objectLoader.createCompactedResource({
             range: 'ex:RangeType',
           }),
+          genericsContext,
         )).toThrow(/^The value "ex:abc" for parameter ".*" is not of required range type "ex:RangeType"/u);
       });
 
@@ -194,6 +228,7 @@ describe('ParameterPropertyHandlerRange', () => {
           objectLoader.createCompactedResource({
             range: 'ex:RangeType',
           }),
+          genericsContext,
         )).toThrow(/The value "ex:abc" for parameter ".*" is not of required range type "ex:RangeType"/u);
       });
 
@@ -206,6 +241,7 @@ describe('ParameterPropertyHandlerRange', () => {
           objectLoader.createCompactedResource({
             range: 'ex:RangeType',
           }),
+          genericsContext,
         )).toBeTruthy();
       });
 
@@ -221,6 +257,7 @@ describe('ParameterPropertyHandlerRange', () => {
           objectLoader.createCompactedResource({
             range: 'ex:RangeType',
           }),
+          genericsContext,
         )).toBeTruthy();
       });
 
@@ -236,6 +273,7 @@ describe('ParameterPropertyHandlerRange', () => {
           objectLoader.createCompactedResource({
             range: 'ex:RangeType',
           }),
+          genericsContext,
           // eslint-disable-next-line max-len
         )).toThrow(/^The value "ex:abc" with types "ex:SubRangeType" for parameter ".*" is not of required range type "ex:RangeType"/u);
       });
@@ -255,6 +293,7 @@ describe('ParameterPropertyHandlerRange', () => {
           objectLoader.createCompactedResource({
             range: 'ex:RangeType',
           }),
+          genericsContext,
         )).toBeTruthy();
       });
 
@@ -270,6 +309,7 @@ describe('ParameterPropertyHandlerRange', () => {
           objectLoader.createCompactedResource({
             range: 'ex:RangeType',
           }),
+          genericsContext,
         )).toBeTruthy();
       });
 
@@ -285,6 +325,7 @@ describe('ParameterPropertyHandlerRange', () => {
           objectLoader.createCompactedResource({
             range: 'ex:RangeType',
           }),
+          genericsContext,
           // eslint-disable-next-line max-len
         )).toThrow(/^The value "ex:abc" for parameter ".*" is not of required range type "ex:RangeType"/u);
       });
@@ -301,6 +342,7 @@ describe('ParameterPropertyHandlerRange', () => {
               '@type': 'ParameterRangeCollectEntries',
             },
           }),
+          genericsContext,
         )).toBeTruthy();
       });
 
@@ -323,6 +365,7 @@ describe('ParameterPropertyHandlerRange', () => {
               ],
             },
           }),
+          genericsContext,
         )).toBeTruthy();
       });
 
@@ -345,6 +388,7 @@ describe('ParameterPropertyHandlerRange', () => {
               ],
             },
           }),
+          genericsContext,
         )).toBeTruthy();
       });
 
@@ -367,6 +411,7 @@ describe('ParameterPropertyHandlerRange', () => {
               ],
             },
           }),
+          genericsContext,
           // eslint-disable-next-line max-len
         )).toThrow(/^The value "ex:abc" with types "ex:SomeType" for parameter ".*" is not of required range type "ex:SomeTypeInvalid1 \| ex:SomeTypeInvalid2"/u);
       });
@@ -390,6 +435,7 @@ describe('ParameterPropertyHandlerRange', () => {
               ],
             },
           }),
+          genericsContext,
         )).toBeTruthy();
       });
 
@@ -412,6 +458,7 @@ describe('ParameterPropertyHandlerRange', () => {
               ],
             },
           }),
+          genericsContext,
           // eslint-disable-next-line max-len
         )).toThrow(/^The value "ex:abc" with types "ex:SomeType" for parameter ".*" is not of required range type "ex:SomeType1 & ex:SomeType2"/u);
       });
@@ -435,6 +482,7 @@ describe('ParameterPropertyHandlerRange', () => {
               ],
             },
           }),
+          genericsContext,
           // eslint-disable-next-line max-len
         )).toThrow(/^The value "ex:abc" with types "ex:SomeType" for parameter ".*" is not of required range type "ex:SomeTypeInvalid1 & ex:SomeTypeInvalid2"/u);
       });
@@ -445,6 +493,7 @@ describe('ParameterPropertyHandlerRange', () => {
           objectLoader.createCompactedResource({
             range: { '@type': 'ParameterRangeUndefined' },
           }),
+          genericsContext,
         )).toBeUndefined();
       });
 
@@ -464,6 +513,7 @@ describe('ParameterPropertyHandlerRange', () => {
               parameterRangeValue: { '@id': 'ex:SomeType1' },
             },
           }),
+          genericsContext,
         )).toBeTruthy();
       });
 
@@ -479,6 +529,7 @@ describe('ParameterPropertyHandlerRange', () => {
               parameterRangeValue: { '@id': 'ex:SomeType1' },
             },
           }),
+          genericsContext,
           // eslint-disable-next-line max-len
         )).toThrow(/^The value "ex:abc" with types "ex:SomeType1" for parameter ".*" is not of required range type "ex:SomeType1\[\]"/u);
       });
@@ -499,6 +550,7 @@ describe('ParameterPropertyHandlerRange', () => {
               parameterRangeValue: { '@id': 'ex:SomeType1' },
             },
           }),
+          genericsContext,
           // eslint-disable-next-line max-len
         )).toThrow(/^The value "\[ex:abc\]" for parameter ".*" is not of required range type "ex:SomeType1\[\]"/u);
       });
@@ -521,6 +573,7 @@ describe('ParameterPropertyHandlerRange', () => {
               ],
             },
           }),
+          genericsContext,
         )).toBeTruthy();
       });
 
@@ -542,6 +595,7 @@ describe('ParameterPropertyHandlerRange', () => {
               ],
             },
           }),
+          genericsContext,
         )).toThrow(/^The value "\[ex:abc\]" for parameter ".*" is not of required range type "\[ex:SomeType\]"/u);
       });
 
@@ -556,6 +610,7 @@ describe('ParameterPropertyHandlerRange', () => {
               ],
             },
           }),
+          genericsContext,
         )).toThrow(/^The value ".*" for parameter ".*" is not of required range type "\[ex:SomeType\]"/u);
       });
 
@@ -587,6 +642,7 @@ describe('ParameterPropertyHandlerRange', () => {
               ],
             },
           }),
+          genericsContext,
         )).toBeTruthy();
       });
 
@@ -618,6 +674,7 @@ describe('ParameterPropertyHandlerRange', () => {
               ],
             },
           }),
+          genericsContext,
           // eslint-disable-next-line max-len
         )).toThrow(/^The value "\[ex:abc1, ex:abc2, ex:abc3\]" for parameter ".*" is not of required range type "\[ex:SomeType1, ex:SomeType2, ex:SomeType3\]"/u);
       });
@@ -647,6 +704,7 @@ describe('ParameterPropertyHandlerRange', () => {
               ],
             },
           }),
+          genericsContext,
         )).toBeTruthy();
       });
 
@@ -675,6 +733,7 @@ describe('ParameterPropertyHandlerRange', () => {
               ],
             },
           }),
+          genericsContext,
           // eslint-disable-next-line max-len
         )).toThrow(/^The value "\[ex:abc1, ex:abc2\]" for parameter ".*" is not of required range type "\[...ex:SomeType1\]"/u);
       });
@@ -716,6 +775,7 @@ describe('ParameterPropertyHandlerRange', () => {
               ],
             },
           }),
+          genericsContext,
         )).toBeTruthy();
       });
 
@@ -756,6 +816,7 @@ describe('ParameterPropertyHandlerRange', () => {
               ],
             },
           }),
+          genericsContext,
           // eslint-disable-next-line max-len
         )).toThrow(/^The value "\[ex:abc1, ex:abc2, ex:abc3, ex:abc4\]" for parameter ".*" is not of required range type "\[...ex:SomeType1, ...ex:SomeType2\]"/u);
       });
@@ -795,6 +856,7 @@ describe('ParameterPropertyHandlerRange', () => {
               ],
             },
           }),
+          genericsContext,
         )).toBeTruthy();
       });
 
@@ -807,6 +869,7 @@ describe('ParameterPropertyHandlerRange', () => {
               parameterRangeValue: 'abc',
             },
           }),
+          genericsContext,
         )).toBeTruthy();
       });
 
@@ -819,6 +882,7 @@ describe('ParameterPropertyHandlerRange', () => {
               parameterRangeValue: DF.literal('123', DF.namedNode(IRIS_XSD.integer)),
             },
           }),
+          genericsContext,
         )).toBeTruthy();
       });
 
@@ -831,6 +895,7 @@ describe('ParameterPropertyHandlerRange', () => {
               parameterRangeValue: DF.literal('true', DF.namedNode(IRIS_XSD.boolean)),
             },
           }),
+          genericsContext,
         )).toBeTruthy();
       });
 
@@ -843,6 +908,7 @@ describe('ParameterPropertyHandlerRange', () => {
               parameterRangeValue: DF.literal('true', DF.namedNode(IRIS_XSD.boolean)),
             },
           }),
+          genericsContext,
           // eslint-disable-next-line max-len
         )).toThrow(/^The value "123" for parameter ".*" is not of required range type "true"/u);
       });
@@ -865,6 +931,7 @@ describe('ParameterPropertyHandlerRange', () => {
               ],
             },
           }),
+          genericsContext,
         )).toBeTruthy();
       });
 
@@ -886,8 +953,197 @@ describe('ParameterPropertyHandlerRange', () => {
               ],
             },
           }),
+          genericsContext,
           // eslint-disable-next-line max-len
         )).toThrow(/^The value "xyz" for parameter ".*" is not of required range type "abc \| def"/u);
+      });
+
+      it('should handle an unbound generic type reference with a literal value', () => {
+        genericsContext = new GenericsContext(objectLoader, [
+          objectLoader.createCompactedResource('ex:GEN_T'),
+        ]);
+
+        expect(handler.captureType(
+          objectLoader.createCompactedResource('"def"'),
+          objectLoader.createCompactedResource({
+            range: {
+              '@type': 'ParameterRangeGenericTypeReference',
+              parameterRangeGenericType: 'ex:GEN_T',
+            },
+          }),
+          genericsContext,
+        )).toBeTruthy();
+      });
+
+      it('should throw on an unknown generic type reference', () => {
+        expect(() => handler.captureType(
+          objectLoader.createCompactedResource('"def"'),
+          objectLoader.createCompactedResource({
+            range: {
+              '@type': 'ParameterRangeGenericTypeReference',
+              parameterRangeGenericType: 'ex:GEN_T',
+            },
+          }),
+          genericsContext,
+          // eslint-disable-next-line max-len
+        )).toThrow(/^The value "def" for parameter ".*" is not of required range type "<UNKNOWN GENERIC: ex:GEN_T>"/u);
+      });
+
+      it('should handle a bound generic type reference with a compatible literal value', () => {
+        genericsContext = new GenericsContext(objectLoader, [
+          objectLoader.createCompactedResource('ex:GEN_T'),
+        ]);
+        genericsContext.bindings['ex:GEN_T'] = [ objectLoader.createCompactedResource(IRIS_XSD.number) ];
+
+        expect(handler.captureType(
+          objectLoader.createCompactedResource(`"123"^^${IRIS_XSD.number}`),
+          objectLoader.createCompactedResource({
+            range: {
+              '@type': 'ParameterRangeGenericTypeReference',
+              parameterRangeGenericType: 'ex:GEN_T',
+            },
+          }),
+          genericsContext,
+        )).toBeTruthy();
+      });
+
+      it('should handle a generic type reference with range with a compatible literal value', () => {
+        genericsContext = new GenericsContext(objectLoader, [
+          objectLoader.createCompactedResource({
+            '@id': 'ex:GEN_T',
+            range: IRIS_XSD.number,
+          }),
+        ]);
+
+        expect(handler.captureType(
+          objectLoader.createCompactedResource(`"123"^^${IRIS_XSD.number}`),
+          objectLoader.createCompactedResource({
+            range: {
+              '@type': 'ParameterRangeGenericTypeReference',
+              parameterRangeGenericType: 'ex:GEN_T',
+            },
+          }),
+          genericsContext,
+        )).toBeTruthy();
+      });
+
+      it('should throw on a bound generic type reference with an incompatible literal value', () => {
+        genericsContext = new GenericsContext(objectLoader, [
+          objectLoader.createCompactedResource('ex:GEN_T'),
+        ]);
+        genericsContext.bindings['ex:GEN_T'] = [ objectLoader.createCompactedResource(IRIS_XSD.number) ];
+
+        expect(() => handler.captureType(
+          objectLoader.createCompactedResource(`"true"^^${IRIS_XSD.boolean}`),
+          objectLoader.createCompactedResource({
+            range: {
+              '@type': 'ParameterRangeGenericTypeReference',
+              parameterRangeGenericType: 'ex:GEN_T',
+            },
+          }),
+          genericsContext,
+          // eslint-disable-next-line max-len
+        )).toThrow(/^The value "true" for parameter ".*" is not of required range type "<ex:GEN_T>"/u);
+      });
+
+      it('should handle an unbound generic type reference with a component value', () => {
+        genericsContext = new GenericsContext(objectLoader, [
+          objectLoader.createCompactedResource('ex:GEN_T'),
+        ]);
+
+        expect(handler.captureType(
+          objectLoader.createCompactedResource({
+            '@id': 'ex:component',
+            '@type': [ 'ex:SomeType1' ],
+          }),
+          objectLoader.createCompactedResource({
+            range: {
+              '@type': 'ParameterRangeGenericTypeReference',
+              parameterRangeGenericType: 'ex:GEN_T',
+            },
+          }),
+          genericsContext,
+        )).toBeTruthy();
+      });
+
+      it('should handle a bound generic type reference with a compatible component value', () => {
+        genericsContext = new GenericsContext(objectLoader, [
+          objectLoader.createCompactedResource('ex:GEN_T'),
+        ]);
+        genericsContext.bindings['ex:GEN_T'] = [ objectLoader.createCompactedResource('ex:SomeType1') ];
+
+        expect(handler.captureType(
+          objectLoader.createCompactedResource({
+            '@id': 'ex:component',
+            '@type': [ 'ex:SomeType1' ],
+          }),
+          objectLoader.createCompactedResource({
+            range: {
+              '@type': 'ParameterRangeGenericTypeReference',
+              parameterRangeGenericType: 'ex:GEN_T',
+            },
+          }),
+          genericsContext,
+        )).toBeTruthy();
+      });
+
+      it('should throw on a bound generic type reference with an incompatible component value', () => {
+        genericsContext = new GenericsContext(objectLoader, [
+          objectLoader.createCompactedResource('ex:GEN_T'),
+        ]);
+        genericsContext.bindings['ex:GEN_T'] = [ objectLoader.createCompactedResource('ex:SomeType2') ];
+
+        expect(() => handler.captureType(
+          objectLoader.createCompactedResource({
+            '@id': 'ex:component',
+            '@type': [ 'ex:SomeType1' ],
+          }),
+          objectLoader.createCompactedResource({
+            range: {
+              '@type': 'ParameterRangeGenericTypeReference',
+              parameterRangeGenericType: 'ex:GEN_T',
+            },
+          }),
+          genericsContext,
+          // eslint-disable-next-line max-len
+        )).toThrow(/^The value "ex:component" with types "ex:SomeType1" for parameter ".*" is not of required range type "<ex:GEN_T>"/u);
+      });
+
+      it('should handle a bound generic type reference with a compatible undefined value', () => {
+        genericsContext = new GenericsContext(objectLoader, [
+          objectLoader.createCompactedResource('ex:GEN_T'),
+        ]);
+        genericsContext.bindings['ex:GEN_T'] = [ objectLoader.createCompactedResource('oo:ParameterRangeUndefined') ];
+
+        expect(handler.captureType(
+          undefined,
+          objectLoader.createCompactedResource({
+            range: {
+              '@type': 'ParameterRangeGenericTypeReference',
+              parameterRangeGenericType: 'ex:GEN_T',
+            },
+          }),
+          genericsContext,
+        )).toBeUndefined();
+      });
+
+      it('should throw on a bound generic type reference with an incompatible undefined value', () => {
+        genericsContext = new GenericsContext(objectLoader, [
+          objectLoader.createCompactedResource('ex:GEN_T'),
+        ]);
+        genericsContext.bindings['ex:GEN_T'] = [ objectLoader.createCompactedResource('ParameterRangeUndefined') ];
+
+        expect(() => handler.captureType(
+          objectLoader.createCompactedResource(`"true"^^${IRIS_XSD.boolean}`),
+          objectLoader.createCompactedResource({
+            range: {
+              '@type': 'ParameterRangeGenericTypeReference',
+              parameterRangeGenericType: 'ex:GEN_T',
+            },
+          }),
+          genericsContext,
+          // eslint-disable-next-line max-len
+        )).toThrow(/^The value "true" for parameter ".*" is not of required range type "<ex:GEN_T>"/u);
       });
     });
   });
@@ -895,13 +1151,13 @@ describe('ParameterPropertyHandlerRange', () => {
   describe('rangeToDisplayString', () => {
     it('handles undefined range', () => {
       // eslint-disable-next-line unicorn/no-useless-undefined
-      expect(handler.rangeToDisplayString(undefined)).toEqual('any');
+      expect(handler.rangeToDisplayString(undefined, genericsContext)).toEqual('any');
     });
 
     it('handles ParameterRangeUndefined range', () => {
       expect(handler.rangeToDisplayString(objectLoader.createCompactedResource({
         '@type': 'ParameterRangeUndefined',
-      }))).toEqual('undefined');
+      }), genericsContext)).toEqual('undefined');
     });
   });
 });

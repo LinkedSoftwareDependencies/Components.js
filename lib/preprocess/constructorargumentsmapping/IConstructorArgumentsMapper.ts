@@ -1,4 +1,5 @@
 import type { RdfObjectLoader, Resource } from 'rdf-object';
+import type { GenericsContext } from '../GenericsContext';
 
 /**
  * Instances of this interfaces can apply constructor arguments on configs.
@@ -17,11 +18,13 @@ export interface IConstructorArgumentsMapper {
    * @param configRoot The root config resource that we are working in.
    * @param constructorArgs Object mapping definition inside the constructor arguments.
    * @param configElement Part of the config resource to look for parameter instantiations as predicates.
+   * @param genericsContext Context for generic types.
    */
   applyConstructorArgumentsParameters: (
     configRoot: Resource,
     constructorArgs: Resource,
     configElement: Resource,
+    genericsContext: GenericsContext,
   ) => Resource;
 
   /**
@@ -30,11 +33,13 @@ export interface IConstructorArgumentsMapper {
    * @param parameter The parameter resource to get the value for.
    * @param configElement Part of the config resource to look for parameter instantiations as predicates.
    * @param rawValue If the IRI represents a raw string value instead of a parameter reference.
+   * @param genericsContext Context for generic types.
    */
   getParameterValue: (
     configRoot: Resource,
     parameter: Resource,
     configElement: Resource,
     rawValue: boolean,
+    genericsContext: GenericsContext,
   ) => Resource | undefined;
 }

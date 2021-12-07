@@ -1,4 +1,5 @@
 import type { Resource } from 'rdf-object';
+import type { GenericsContext } from '../GenericsContext';
 import type { IConstructorArgumentsElementMappingHandler } from './IConstructorArgumentsElementMappingHandler';
 import type { IConstructorArgumentsMapper } from './IConstructorArgumentsMapper';
 
@@ -20,15 +21,18 @@ export class ConstructorArgumentsElementMappingHandlerList implements IConstruct
     constructorArgs: Resource,
     configElement: Resource,
     mapper: IConstructorArgumentsMapper,
+    genericsContext: GenericsContext,
   ): Resource {
     // Recursively handle all field values.
     const ret = mapper.objectLoader.createCompactedResource({});
     ret.list = [];
     for (const argument of (<Resource[]> constructorArgs.list)) {
       if (argument.property.fields || argument.property.elements) {
-        ret.list.push(mapper.applyConstructorArgumentsParameters(configRoot, argument, configElement));
+        ret.list.push(mapper
+          .applyConstructorArgumentsParameters(configRoot, argument, configElement, genericsContext));
       } else {
-        const value = mapper.getParameterValue(configRoot, argument, configElement, false);
+        const value = mapper
+          .getParameterValue(configRoot, argument, configElement, false, genericsContext);
         if (value) {
           ret.list.push(value);
         } else {

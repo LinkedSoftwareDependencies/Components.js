@@ -1,5 +1,6 @@
 import type { Resource } from 'rdf-object';
 import { ErrorResourcesContext } from '../../util/ErrorResourcesContext';
+import type { GenericsContext } from '../GenericsContext';
 import type { IConstructorArgumentsElementMappingHandler } from './IConstructorArgumentsElementMappingHandler';
 import type { IConstructorArgumentsMapper } from './IConstructorArgumentsMapper';
 
@@ -21,6 +22,7 @@ export class ConstructorArgumentsElementMappingHandlerFields implements IConstru
     constructorArgs: Resource,
     configElement: Resource,
     mapper: IConstructorArgumentsMapper,
+    genericsContext: GenericsContext,
   ): Resource {
     if (constructorArgs.properties.fields.length > 1) {
       throw new ErrorResourcesContext(`Invalid fields: Only one value can be defined, or an RDF list must be provided`, {
@@ -33,7 +35,8 @@ export class ConstructorArgumentsElementMappingHandlerFields implements IConstru
     // Recursively handle all field values.
     const entries: Resource[] = [];
     for (const field of fields.list || [ fields ]) {
-      const mapped = mapper.applyConstructorArgumentsParameters(configRoot, field, configElement);
+      const mapped = mapper
+        .applyConstructorArgumentsParameters(configRoot, field, configElement, genericsContext);
       for (const entry of mapped.list || [ mapped ]) {
         entries.push(entry);
       }

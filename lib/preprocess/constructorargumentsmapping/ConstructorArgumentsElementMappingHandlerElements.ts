@@ -1,5 +1,6 @@
 import type { Resource } from 'rdf-object';
 import { ErrorResourcesContext } from '../../util/ErrorResourcesContext';
+import type { GenericsContext } from '../GenericsContext';
 import type { IConstructorArgumentsElementMappingHandler } from './IConstructorArgumentsElementMappingHandler';
 import type { IConstructorArgumentsMapper } from './IConstructorArgumentsMapper';
 
@@ -21,6 +22,7 @@ export class ConstructorArgumentsElementMappingHandlerElements implements IConst
     constructorArgs: Resource,
     configElement: Resource,
     mapper: IConstructorArgumentsMapper,
+    genericsContext: GenericsContext,
   ): Resource {
     // Elements must have RDF list values.
     if (!constructorArgs.property.elements.list) {
@@ -47,6 +49,7 @@ export class ConstructorArgumentsElementMappingHandlerElements implements IConst
         element,
         configElement,
         Boolean(element.property.valueRawReference),
+        genericsContext,
       );
       if (value) {
         for (const entry of value.list || [ value ]) {

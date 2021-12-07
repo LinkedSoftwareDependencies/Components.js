@@ -1,6 +1,7 @@
 import type { Resource } from 'rdf-object';
 import { IRIS_RDF } from '../../rdf/Iris';
 import { ErrorResourcesContext } from '../../util/ErrorResourcesContext';
+import type { GenericsContext } from '../GenericsContext';
 import type { ParameterHandler } from '../ParameterHandler';
 import type { IConstructorArgumentsElementMappingHandler } from './IConstructorArgumentsElementMappingHandler';
 import type { IConstructorArgumentsMapper } from './IConstructorArgumentsMapper';
@@ -31,6 +32,7 @@ implements IConstructorArgumentsElementMappingHandler {
     constructorArgs: Resource,
     configElement: Resource,
     mapper: IConstructorArgumentsMapper,
+    genericsContext: GenericsContext,
   ): Resource {
     if (constructorArgs.properties.collectEntries.length > 1) {
       throw new ErrorResourcesContext(`Invalid collectEntries: Only one value can be defined, or an RDF list must be provided`, {
@@ -49,7 +51,7 @@ implements IConstructorArgumentsElementMappingHandler {
           config: configRoot,
         });
       }
-      const value = this.parameterHandler.applyParameterValues(configRoot, entry, configElement);
+      const value = this.parameterHandler.applyParameterValues(configRoot, entry, configElement, genericsContext);
       if (value) {
         for (const subValue of value.list || [ value ]) {
           entryResources.push(subValue);
@@ -60,7 +62,7 @@ implements IConstructorArgumentsElementMappingHandler {
     // Map all entries to values
     return mapper.objectLoader.createCompactedResource({
       list: entryResources.map((entryResource: Resource) => this
-        .handleCollectEntry(entryResource, configRoot, constructorArgs, configElement, mapper)),
+        .handleCollectEntry(entryResource, configRoot, constructorArgs, configElement, mapper, genericsContext)),
     });
   }
 
@@ -70,6 +72,7 @@ implements IConstructorArgumentsElementMappingHandler {
     constructorArgs: Resource,
     configElement: Resource,
     mapper: IConstructorArgumentsMapper,
+    genericsContext: GenericsContext,
   ): Resource {
     // Determine the (optional) entry key
     let key: Resource | undefined;
@@ -120,12 +123,14 @@ implements IConstructorArgumentsElementMappingHandler {
     } else if (constructorArgs.property.value.type === 'NamedNode' &&
       constructorArgs.property.value.value === IRIS_RDF.object) {
       // Value is the entry value
-      value = mapper.applyConstructorArgumentsParameters(configRoot, entryResource, configElement);
+      value = mapper
+        .applyConstructorArgumentsParameters(configRoot, entryResource, configElement, genericsContext);
     } else if (constructorArgs.property.value &&
       (constructorArgs.property.value.property.fields || constructorArgs.property.value.property.elements)) {
       // Nested mapping should reduce the parameter scope
       // ! at the end of the line, because will always be truthy
-      value = mapper.getParameterValue(configRoot, constructorArgs.property.value, entryResource, false)!;
+      value = mapper
+        .getParameterValue(configRoot, constructorArgs.property.value, entryResource, false, genericsContext)!;
     } else if (entryResource.properties[constructorArgs.property.value.value].length !== 1) {
       throw new ErrorResourcesContext(`Detected more than one value value in collectEntries`, {
         value: constructorArgs.property.value,

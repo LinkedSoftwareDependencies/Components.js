@@ -1,4 +1,5 @@
 import type { Resource } from 'rdf-object';
+import type { GenericsContext } from '../GenericsContext';
 import type { IConstructorArgumentsMapper } from './IConstructorArgumentsMapper';
 
 /**
@@ -11,12 +12,14 @@ export interface IConstructorArgumentsElementMappingHandler {
    * @param constructorArgs Object mapping definition inside the constructor arguments.
    * @param configElement Part of the config resource to look for parameter instantiations as predicates.
    * @param mapper Instance of the constructor arguments mapper that can be used to handle recursive args.
+   * @param genericsContext Context for generic types.
    */
   canHandle: (
     configRoot: Resource,
     constructorArgs: Resource,
     configElement: Resource,
     mapper: IConstructorArgumentsMapper,
+    genericsContext: GenericsContext,
   ) => boolean;
   /**
    * Map the given config element with param instantiations
@@ -25,11 +28,13 @@ export interface IConstructorArgumentsElementMappingHandler {
    * @param constructorArgs Object mapping definition inside the constructor arguments.
    * @param configElement Part of the config resource to look for parameter instantiations as predicates.
    * @param mapper Instance of the constructor arguments mapper that can be used to handle recursive args.
+   * @param genericsContext Context for generic types.
    */
   handle: (
     configRoot: Resource,
     constructorArgs: Resource,
     configElement: Resource,
     mapper: IConstructorArgumentsMapper,
+    genericsContext: GenericsContext,
   ) => Resource;
 }

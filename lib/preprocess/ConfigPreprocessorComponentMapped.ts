@@ -27,6 +27,7 @@ import type {
 import type {
   IConstructorArgumentsMapper,
 } from './constructorargumentsmapping/IConstructorArgumentsMapper';
+import type { GenericsContext } from './GenericsContext';
 
 /**
  * Handles config that refer to a component as type.
@@ -56,18 +57,20 @@ export class ConfigPreprocessorComponentMapped extends ConfigPreprocessorCompone
     handleResponse: IComponentConfigPreprocessorHandleResponse,
   ): Resource {
     const constructorArgs = handleResponse.component.property.constructorArguments;
-    return this.applyConstructorArgumentsParameters(config, constructorArgs, config);
+    const genericsContext = this.createGenericsContext(handleResponse);
+    return this.applyConstructorArgumentsParameters(config, constructorArgs, config, genericsContext);
   }
 
   public applyConstructorArgumentsParameters(
     configRoot: Resource,
     constructorArgs: Resource,
     configElement: Resource,
+    genericsContext: GenericsContext,
   ): Resource {
     // Check if this constructor args resource can be handled by one of the built-in handlers.
     for (const handler of this.mappingHandlers) {
-      if (handler.canHandle(configRoot, constructorArgs, configElement, this)) {
-        return handler.handle(configRoot, constructorArgs, configElement, this);
+      if (handler.canHandle(configRoot, constructorArgs, configElement, this, genericsContext)) {
+        return handler.handle(configRoot, constructorArgs, configElement, this, genericsContext);
       }
     }
 
@@ -80,15 +83,17 @@ export class ConfigPreprocessorComponentMapped extends ConfigPreprocessorCompone
     parameter: Resource,
     configElement: Resource,
     rawValue: boolean,
+    genericsContext: GenericsContext,
   ): Resource | undefined {
     let valueOut: Resource | undefined;
 
     if (parameter.type === 'NamedNode' && parameter.value === IRIS_RDF.subject) {
       valueOut = this.objectLoader.createCompactedResource(`"${configElement.value}"`);
     } else if (parameter.type === 'NamedNode' && !parameter.property.fields) {
-      valueOut = this.parameterHandler.applyParameterValues(configRoot, parameter, configElement);
+      valueOut = this.parameterHandler
+        .applyParameterValues(configRoot, parameter, configElement, genericsContext);
     } else {
-      valueOut = this.applyConstructorArgumentsParameters(configRoot, parameter, configElement);
+      valueOut = this.applyConstructorArgumentsParameters(configRoot, parameter, configElement, genericsContext);
     }
 
     // If the referenced IRI should become a plain string

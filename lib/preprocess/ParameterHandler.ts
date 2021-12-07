@@ -1,5 +1,6 @@
 import type { RdfObjectLoader, Resource } from 'rdf-object';
 import { ErrorResourcesContext } from '../util/ErrorResourcesContext';
+import type { GenericsContext } from './GenericsContext';
 import type { IParameterPropertyHandler } from './parameterproperty/IParameterPropertyHandler';
 import { ParameterPropertyHandlerDefault } from './parameterproperty/ParameterPropertyHandlerDefault';
 import { ParameterPropertyHandlerDefaultScoped } from './parameterproperty/ParameterPropertyHandlerDefaultScoped';
@@ -30,12 +31,14 @@ export class ParameterHandler {
    * @param configRoot The root config resource that we are working in.
    * @param parameter The parameter resource to get the value for.
    * @param configElement Part of the config resource to look for parameter instantiations as predicates.
-   * @return The parameter value
+   * @param genericsContext Context for generic types.
+   * @return - The parameter value
    */
   public applyParameterValues(
     configRoot: Resource,
     parameter: Resource,
     configElement: Resource,
+    genericsContext: GenericsContext,
   ): Resource | undefined {
     // Make sure that we always have a single value with list elements in it.
     const values = configElement.properties[parameter.value];
@@ -55,8 +58,8 @@ export class ParameterHandler {
 
     // Run the value through all applicable parameters property handlers.
     for (const handler of this.parameterPropertyHandlers) {
-      if (handler.canHandle(value, configRoot, parameter, configElement)) {
-        value = handler.handle(value, configRoot, parameter, configElement);
+      if (handler.canHandle(value, configRoot, parameter, configElement, genericsContext)) {
+        value = handler.handle(value, configRoot, parameter, configElement, genericsContext);
       }
     }
 

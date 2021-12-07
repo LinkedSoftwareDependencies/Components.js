@@ -1,0 +1,60 @@
+{
+  "@context": [
+    "https://linkedsoftwaredependencies.org/bundles/npm/componentsjs/^4.0.0/components/context.jsonld",
+    {
+      "hello": "http://example.org/hello/",
+      "ex": "http://example.org/"
+    }
+  ],
+  "@graph": [
+    {
+      "@id": "ex:HelloWorldModule",
+      "@type": "Module",
+      "requireName": "helloworld",
+      "components": [
+        {
+          "@id": "ex:HelloWorldModule#SayHelloComponent",
+          "@type": "Class",
+          "requireElement": "Hello",
+          "genericTypeParameters": [
+            {
+              "@id": "ex:HelloWorldModule#SayHelloComponent__generic_T",
+              "range": "xsd:number",
+            },
+          ],
+          "parameters": [
+            {
+              "@id": "hello:say",
+              "range": {
+                "@type": "ParameterRangeGenericTypeReference",
+                "parameterRangeGenericType": "ex:HelloWorldModule#SayHelloComponent__generic_T",
+              },
+            },
+            {
+              "@id": "hello:hello",
+              "range": {
+                "@type": "ParameterRangeGenericTypeReference",
+                "parameterRangeGenericType": "ex:HelloWorldModule#SayHelloComponent__generic_T",
+              },
+            }
+          ],
+          "constructorArguments": [
+            {
+              "@id": "ex:HelloWorldModule#SayHelloComponent_constructorArgumentsObject",
+              "fields": [
+                {
+                  "keyRaw": "say",
+                  "value": "hello:say"
+                },
+                {
+                  "keyRaw": "hello",
+                  "value": "hello:hello"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

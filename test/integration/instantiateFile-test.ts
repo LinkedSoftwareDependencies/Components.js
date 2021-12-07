@@ -601,6 +601,41 @@ describe('construction with component configs as files', () => {
     });
   });
 
+  describe(`for a component with generically typed params`, () => {
+    beforeEach(async() => {
+      manager = await ComponentsManager.build({
+        mainModulePath: __dirname,
+        moduleState,
+        async moduleLoader(registry) {
+          await registry.registerModule(Path.join(__dirname, '../assets/module-paramranges-generics.jsonld'));
+        },
+      });
+    });
+
+    it('should throw on invalid param values', async() => {
+      await manager.configRegistry
+        .register(Path.join(__dirname, '../assets/config-paramranges.jsonld'));
+      manager.logger.error = jest.fn();
+
+      await expect(manager.instantiate('http://example.org/myconfig2')).rejects
+        .toThrow(`The value "true" for parameter "http://example.org/hello/say" is not of required range type "<http://example.org/HelloWorldModule#SayHelloComponent__generic_T>"`);
+      expect(fs.existsSync('componentsjs-error-state.json')).toBeTruthy();
+      fs.unlinkSync('componentsjs-error-state.json');
+    });
+
+    it('should handle valid param values', async() => {
+      await manager.configRegistry
+        .register(Path.join(__dirname, '../assets/config-paramranges-generics.jsonld'));
+
+      const run1 = await manager.instantiate('http://example.org/myconfig3');
+      expect(run1).toBeInstanceOf(Hello);
+      expect(run1._params).toEqual([{
+        hello: 123,
+        say: 456,
+      }]);
+    });
+  });
+
   describe('for a component with constructor args with nested entry collection', () => {
     beforeEach(async() => {
       manager = await ComponentsManager.build({

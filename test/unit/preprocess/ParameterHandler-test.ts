@@ -1,11 +1,13 @@
 import * as fs from 'fs';
 import type { Resource } from 'rdf-object';
 import { RdfObjectLoader } from 'rdf-object/lib/RdfObjectLoader';
+import { GenericsContext } from '../../../lib/preprocess/GenericsContext';
 import { ParameterHandler } from '../../../lib/preprocess/ParameterHandler';
 import 'jest-rdf';
 
 describe('ParameterHandler', () => {
   let objectLoader: RdfObjectLoader;
+  let genericsContext: GenericsContext;
   let handler: ParameterHandler;
   let configRoot: Resource;
   let param: Resource;
@@ -15,6 +17,7 @@ describe('ParameterHandler', () => {
       context: JSON.parse(fs.readFileSync(`${__dirname}/../../../components/context.jsonld`, 'utf8')),
     });
     await objectLoader.context;
+    genericsContext = new GenericsContext(objectLoader, []);
     handler = new ParameterHandler({ objectLoader });
 
     configRoot = objectLoader.createCompactedResource({
@@ -51,7 +54,8 @@ describe('ParameterHandler', () => {
 
       it('should be undefined for an undefined value', () => {
         const expected = undefined;
-        expectOutputOnlyTerm(handler.applyParameterValues(configRoot, param, configElement), expected);
+        expectOutputOnlyTerm(handler
+          .applyParameterValues(configRoot, param, configElement, genericsContext), expected);
       });
 
       it('should handle one set value', () => {
@@ -59,7 +63,8 @@ describe('ParameterHandler', () => {
           'ex:myParam': '"ABC"',
         });
         const expected: Resource = objectLoader.createCompactedResource('"ABC"');
-        expectOutputOnlyTerm(handler.applyParameterValues(configRoot, param, configElement), expected);
+        expectOutputOnlyTerm(handler
+          .applyParameterValues(configRoot, param, configElement, genericsContext), expected);
       });
 
       it('should reject multiple set values', () => {
@@ -70,7 +75,7 @@ describe('ParameterHandler', () => {
             '"C"',
           ],
         });
-        expect(() => handler.applyParameterValues(configRoot, param, configElement))
+        expect(() => handler.applyParameterValues(configRoot, param, configElement, genericsContext))
           .toThrowError(`Detected multiple values for parameter ex:myParam. RDF lists should be used for defining multiple values.`);
       });
 
@@ -93,7 +98,8 @@ describe('ParameterHandler', () => {
             '"C"',
           ],
         });
-        expectOutputProperties(handler.applyParameterValues(configRoot, param, configElement), expected);
+        expectOutputProperties(handler
+          .applyParameterValues(configRoot, param, configElement, genericsContext), expected);
       });
 
       it('should accept multiple list values', () => {
@@ -119,7 +125,8 @@ describe('ParameterHandler', () => {
             '"C"',
           ],
         });
-        expectOutputProperties(handler.applyParameterValues(configRoot, param, configElement), expected);
+        expectOutputProperties(handler
+          .applyParameterValues(configRoot, param, configElement, genericsContext), expected);
       });
 
       it('should reject list and set values', () => {
@@ -134,7 +141,7 @@ describe('ParameterHandler', () => {
             '"C"',
           ],
         });
-        expect(() => handler.applyParameterValues(configRoot, param, configElement))
+        expect(() => handler.applyParameterValues(configRoot, param, configElement, genericsContext))
           .toThrowError(`Detected multiple values for parameter ex:myParam. RDF lists should be used for defining multiple values.`);
       });
     });
@@ -150,7 +157,8 @@ describe('ParameterHandler', () => {
 
         it('should be the default for an undefined value', () => {
           const expected: Resource = objectLoader.createCompactedResource('"DEFAULT"');
-          expectOutputOnlyTerm(handler.applyParameterValues(configRoot, param, configElement), expected);
+          expectOutputOnlyTerm(handler
+            .applyParameterValues(configRoot, param, configElement, genericsContext), expected);
         });
 
         it('should override the default with one set value', () => {
@@ -158,7 +166,8 @@ describe('ParameterHandler', () => {
             'ex:myParam': '"ABC"',
           });
           const expected: Resource = objectLoader.createCompactedResource('"ABC"');
-          expectOutputOnlyTerm(handler.applyParameterValues(configRoot, param, configElement), expected);
+          expectOutputOnlyTerm(handler
+            .applyParameterValues(configRoot, param, configElement, genericsContext), expected);
         });
 
         it('should override the default with multiple set values', () => {
@@ -178,7 +187,8 @@ describe('ParameterHandler', () => {
               '"C"',
             ],
           });
-          expectOutputOnlyTerm(handler.applyParameterValues(configRoot, param, configElement), expected);
+          expectOutputOnlyTerm(handler
+            .applyParameterValues(configRoot, param, configElement, genericsContext), expected);
         });
       });
 
@@ -194,7 +204,7 @@ describe('ParameterHandler', () => {
         });
 
         it('should throw', () => {
-          expect(() => handler.applyParameterValues(configRoot, param, configElement))
+          expect(() => handler.applyParameterValues(configRoot, param, configElement, genericsContext))
             .toThrowError(`Invalid default value for parameter "ex:myParam": Only one value can be defined, or an RDF list must be provided`);
         });
       });
@@ -217,7 +227,8 @@ describe('ParameterHandler', () => {
               '"DEFAULT1"',
             ],
           });
-          expectOutputOnlyTerm(handler.applyParameterValues(configRoot, param, configElement), expected);
+          expectOutputOnlyTerm(handler
+            .applyParameterValues(configRoot, param, configElement, genericsContext), expected);
         });
 
         it('should override the default with one set value', () => {
@@ -225,7 +236,8 @@ describe('ParameterHandler', () => {
             'ex:myParam': '"ABC"',
           });
           const expected: Resource = objectLoader.createCompactedResource('"ABC"');
-          expectOutputOnlyTerm(handler.applyParameterValues(configRoot, param, configElement), expected);
+          expectOutputOnlyTerm(handler
+            .applyParameterValues(configRoot, param, configElement, genericsContext), expected);
         });
 
         it('should override the default with multiple set values', () => {
@@ -245,7 +257,8 @@ describe('ParameterHandler', () => {
               '"C"',
             ],
           });
-          expectOutputOnlyTerm(handler.applyParameterValues(configRoot, param, configElement), expected);
+          expectOutputOnlyTerm(handler
+            .applyParameterValues(configRoot, param, configElement, genericsContext), expected);
         });
       });
 
@@ -269,7 +282,8 @@ describe('ParameterHandler', () => {
               '"DEFAULT2"',
             ],
           });
-          expectOutputOnlyTerm(handler.applyParameterValues(configRoot, param, configElement), expected);
+          expectOutputOnlyTerm(handler
+            .applyParameterValues(configRoot, param, configElement, genericsContext), expected);
         });
 
         it('should override the default with one set value', () => {
@@ -277,7 +291,8 @@ describe('ParameterHandler', () => {
             'ex:myParam': '"ABC"',
           });
           const expected: Resource = objectLoader.createCompactedResource('"ABC"');
-          expectOutputOnlyTerm(handler.applyParameterValues(configRoot, param, configElement), expected);
+          expectOutputOnlyTerm(handler
+            .applyParameterValues(configRoot, param, configElement, genericsContext), expected);
         });
 
         it('should override the default with multiple set values', () => {
@@ -297,7 +312,8 @@ describe('ParameterHandler', () => {
               '"C"',
             ],
           });
-          expectOutputOnlyTerm(handler.applyParameterValues(configRoot, param, configElement), expected);
+          expectOutputOnlyTerm(handler
+            .applyParameterValues(configRoot, param, configElement, genericsContext), expected);
         });
       });
 
@@ -311,7 +327,8 @@ describe('ParameterHandler', () => {
 
         it('should be the default for an undefined value', () => {
           const expected: Resource = objectLoader.createCompactedResource('"ex:myConfig"');
-          expectOutputOnlyTerm(handler.applyParameterValues(configRoot, param, configElement), expected);
+          expectOutputOnlyTerm(handler
+            .applyParameterValues(configRoot, param, configElement, genericsContext), expected);
         });
       });
     });
@@ -334,7 +351,8 @@ describe('ParameterHandler', () => {
 
         it('should be the default for an undefined value', () => {
           const expected: Resource = objectLoader.createCompactedResource('"DEFAULT"');
-          expectOutputOnlyTerm(handler.applyParameterValues(configRoot, param, configElement), expected);
+          expectOutputOnlyTerm(handler
+            .applyParameterValues(configRoot, param, configElement, genericsContext), expected);
         });
 
         it('should override the default with one set value', () => {
@@ -342,7 +360,8 @@ describe('ParameterHandler', () => {
             'ex:myParam': '"ABC"',
           });
           const expected: Resource = objectLoader.createCompactedResource('"ABC"');
-          expectOutputOnlyTerm(handler.applyParameterValues(configRoot, param, configElement), expected);
+          expectOutputOnlyTerm(handler
+            .applyParameterValues(configRoot, param, configElement, genericsContext), expected);
         });
 
         it('should override the default with multiple set values', () => {
@@ -362,7 +381,8 @@ describe('ParameterHandler', () => {
               '"C"',
             ],
           });
-          expectOutputOnlyTerm(handler.applyParameterValues(configRoot, param, configElement), expected);
+          expectOutputOnlyTerm(handler
+            .applyParameterValues(configRoot, param, configElement, genericsContext), expected);
         });
       });
 
@@ -383,7 +403,8 @@ describe('ParameterHandler', () => {
 
         it('should be the default for an undefined value', () => {
           const expected: Resource = objectLoader.createCompactedResource('"DEFAULT"');
-          expectOutputOnlyTerm(handler.applyParameterValues(configRoot, param, configElement), expected);
+          expectOutputOnlyTerm(handler
+            .applyParameterValues(configRoot, param, configElement, genericsContext), expected);
         });
 
         it('should override the default with one set value', () => {
@@ -391,7 +412,8 @@ describe('ParameterHandler', () => {
             'ex:myParam': '"ABC"',
           });
           const expected: Resource = objectLoader.createCompactedResource('"ABC"');
-          expectOutputOnlyTerm(handler.applyParameterValues(configRoot, param, configElement), expected);
+          expectOutputOnlyTerm(handler
+            .applyParameterValues(configRoot, param, configElement, genericsContext), expected);
         });
 
         it('should override the default with multiple set values', () => {
@@ -411,7 +433,8 @@ describe('ParameterHandler', () => {
               '"C"',
             ],
           });
-          expectOutputOnlyTerm(handler.applyParameterValues(configRoot, param, configElement), expected);
+          expectOutputOnlyTerm(handler
+            .applyParameterValues(configRoot, param, configElement, genericsContext), expected);
         });
       });
 
@@ -434,7 +457,7 @@ describe('ParameterHandler', () => {
         });
 
         it('should throw', () => {
-          expect(() => handler.applyParameterValues(configRoot, param, configElement))
+          expect(() => handler.applyParameterValues(configRoot, param, configElement, genericsContext))
             .toThrowError(`Invalid defaultScoped value for parameter "ex:myParam": Only one defaultScopedValue can be defined, or an RDF list must be provided`);
         });
       });
@@ -466,7 +489,8 @@ describe('ParameterHandler', () => {
               '"DEFAULT2"',
             ],
           });
-          expectOutputOnlyTerm(handler.applyParameterValues(configRoot, param, configElement), expected);
+          expectOutputOnlyTerm(handler
+            .applyParameterValues(configRoot, param, configElement, genericsContext), expected);
         });
 
         it('should override the default with one set value', () => {
@@ -474,7 +498,8 @@ describe('ParameterHandler', () => {
             'ex:myParam': '"ABC"',
           });
           const expected: Resource = objectLoader.createCompactedResource('"ABC"');
-          expectOutputOnlyTerm(handler.applyParameterValues(configRoot, param, configElement), expected);
+          expectOutputOnlyTerm(handler
+            .applyParameterValues(configRoot, param, configElement, genericsContext), expected);
         });
 
         it('should override the default with multiple set values', () => {
@@ -494,7 +519,8 @@ describe('ParameterHandler', () => {
               '"C"',
             ],
           });
-          expectOutputOnlyTerm(handler.applyParameterValues(configRoot, param, configElement), expected);
+          expectOutputOnlyTerm(handler
+            .applyParameterValues(configRoot, param, configElement, genericsContext), expected);
         });
       });
 
@@ -515,7 +541,8 @@ describe('ParameterHandler', () => {
 
         it('should not be the default for an undefined value', () => {
           const expected = undefined;
-          expectOutputOnlyTerm(handler.applyParameterValues(configRoot, param, configElement), expected);
+          expectOutputOnlyTerm(handler
+            .applyParameterValues(configRoot, param, configElement, genericsContext), expected);
         });
       });
 
@@ -538,7 +565,8 @@ describe('ParameterHandler', () => {
 
         it('should not be the default for an undefined value', () => {
           const expected = undefined;
-          expectOutputOnlyTerm(handler.applyParameterValues(configRoot, param, configElement), expected);
+          expectOutputOnlyTerm(handler
+            .applyParameterValues(configRoot, param, configElement, genericsContext), expected);
         });
       });
 
@@ -565,7 +593,8 @@ describe('ParameterHandler', () => {
 
         it('should not be the default for an undefined value', () => {
           const expected = undefined;
-          expectOutputOnlyTerm(handler.applyParameterValues(configRoot, param, configElement), expected);
+          expectOutputOnlyTerm(handler
+            .applyParameterValues(configRoot, param, configElement, genericsContext), expected);
         });
       });
 
@@ -598,7 +627,8 @@ describe('ParameterHandler', () => {
 
         it('should not be the default for an undefined value', () => {
           const expected: Resource = objectLoader.createCompactedResource('"DEFAULT1"');
-          expectOutputOnlyTerm(handler.applyParameterValues(configRoot, param, configElement), expected);
+          expectOutputOnlyTerm(handler
+            .applyParameterValues(configRoot, param, configElement, genericsContext), expected);
         });
       });
 
@@ -630,7 +660,8 @@ describe('ParameterHandler', () => {
               '"DEFAULT2"',
             ],
           });
-          expectOutputOnlyTerm(handler.applyParameterValues(configRoot, param, configElement), expected);
+          expectOutputOnlyTerm(handler
+            .applyParameterValues(configRoot, param, configElement, genericsContext), expected);
         });
       });
 
@@ -644,7 +675,7 @@ describe('ParameterHandler', () => {
               },
             ],
           });
-          expect(() => handler.applyParameterValues(configRoot, param, configElement))
+          expect(() => handler.applyParameterValues(configRoot, param, configElement, genericsContext))
             .toThrowError(/^Invalid defaultScoped for parameter "ex:myParam": Missing defaultScope/u);
         });
 
@@ -659,7 +690,7 @@ describe('ParameterHandler', () => {
               },
             ],
           });
-          expect(() => handler.applyParameterValues(configRoot, param, configElement))
+          expect(() => handler.applyParameterValues(configRoot, param, configElement, genericsContext))
             .toThrowError(/^Invalid defaultScoped for parameter "ex:myParam": Missing defaultScopedValue/u);
         });
       });
@@ -676,7 +707,8 @@ describe('ParameterHandler', () => {
 
         it('should return the fixed value for an undefined value', () => {
           const expected: Resource = objectLoader.createCompactedResource('"FIXED"');
-          expectOutputOnlyTerm(handler.applyParameterValues(configRoot, param, configElement), expected);
+          expectOutputOnlyTerm(handler
+            .applyParameterValues(configRoot, param, configElement, genericsContext), expected);
         });
 
         it('should allow one additional set value', () => {
@@ -689,7 +721,8 @@ describe('ParameterHandler', () => {
               '"ABC"',
             ],
           });
-          expectOutputOnlyTerm(handler.applyParameterValues(configRoot, param, configElement), expected);
+          expectOutputOnlyTerm(handler
+            .applyParameterValues(configRoot, param, configElement, genericsContext), expected);
         });
 
         it('should not allow multiple additional set values', () => {
@@ -710,7 +743,8 @@ describe('ParameterHandler', () => {
               '"C"',
             ],
           });
-          expectOutputOnlyTerm(handler.applyParameterValues(configRoot, param, configElement), expected);
+          expectOutputOnlyTerm(handler
+            .applyParameterValues(configRoot, param, configElement, genericsContext), expected);
         });
       });
 
@@ -727,7 +761,8 @@ describe('ParameterHandler', () => {
 
         it('should throw', () => {
           const expected: Resource = objectLoader.createCompactedResource('"FIXED"');
-          expect(() => expectOutputOnlyTerm(handler.applyParameterValues(configRoot, param, configElement), expected))
+          expect(() => expectOutputOnlyTerm(handler
+            .applyParameterValues(configRoot, param, configElement, genericsContext), expected))
             .toThrowError(`Invalid fixed value for parameter "ex:myParam": Only one value can be defined, or an RDF list must be provided`);
         });
       });
@@ -750,7 +785,8 @@ describe('ParameterHandler', () => {
               '"FIXED"',
             ],
           });
-          expectOutputOnlyTerm(handler.applyParameterValues(configRoot, param, configElement), expected);
+          expectOutputOnlyTerm(handler
+            .applyParameterValues(configRoot, param, configElement, genericsContext), expected);
         });
 
         it('should allow one additional set value', () => {
@@ -763,7 +799,8 @@ describe('ParameterHandler', () => {
               '"ABC"',
             ],
           });
-          expectOutputOnlyTerm(handler.applyParameterValues(configRoot, param, configElement), expected);
+          expectOutputOnlyTerm(handler
+            .applyParameterValues(configRoot, param, configElement, genericsContext), expected);
         });
 
         it('should allow multiple additional set values', () => {
@@ -784,7 +821,8 @@ describe('ParameterHandler', () => {
               '"C"',
             ],
           });
-          expectOutputOnlyTerm(handler.applyParameterValues(configRoot, param, configElement), expected);
+          expectOutputOnlyTerm(handler
+            .applyParameterValues(configRoot, param, configElement, genericsContext), expected);
         });
       });
 
@@ -808,7 +846,8 @@ describe('ParameterHandler', () => {
               '"FIXED2"',
             ],
           });
-          expectOutputOnlyTerm(handler.applyParameterValues(configRoot, param, configElement), expected);
+          expectOutputOnlyTerm(handler
+            .applyParameterValues(configRoot, param, configElement, genericsContext), expected);
         });
 
         it('should allow one additional set value', () => {
@@ -822,7 +861,8 @@ describe('ParameterHandler', () => {
               '"ABC"',
             ],
           });
-          expectOutputOnlyTerm(handler.applyParameterValues(configRoot, param, configElement), expected);
+          expectOutputOnlyTerm(handler
+            .applyParameterValues(configRoot, param, configElement, genericsContext), expected);
         });
 
         it('should allow multiple additional set values', () => {
@@ -844,7 +884,8 @@ describe('ParameterHandler', () => {
               '"C"',
             ],
           });
-          expectOutputOnlyTerm(handler.applyParameterValues(configRoot, param, configElement), expected);
+          expectOutputOnlyTerm(handler
+            .applyParameterValues(configRoot, param, configElement, genericsContext), expected);
         });
       });
     });
@@ -858,7 +899,7 @@ describe('ParameterHandler', () => {
       });
 
       it('should not allow an undefined value', () => {
-        expect(() => handler.applyParameterValues(configRoot, param, configElement))
+        expect(() => handler.applyParameterValues(configRoot, param, configElement, genericsContext))
           .toThrow(`The value "undefined" for parameter "ex:myParam" is not of required range type "http://www.w3.org/2001/XMLSchema#boolean"`);
       });
 
@@ -867,7 +908,7 @@ describe('ParameterHandler', () => {
           'ex:myParam': '"true"',
         });
         const expected: Resource = objectLoader.createCompactedResource('"true"');
-        const outputs = handler.applyParameterValues(configRoot, param, configElement);
+        const outputs = handler.applyParameterValues(configRoot, param, configElement, genericsContext);
         expectOutputOnlyTerm(outputs, expected);
       });
 
@@ -881,7 +922,7 @@ describe('ParameterHandler', () => {
             ],
           },
         });
-        expect(() => handler.applyParameterValues(configRoot, param, configElement))
+        expect(() => handler.applyParameterValues(configRoot, param, configElement, genericsContext))
           .toThrow(/The value ".*" for parameter "ex:myParam" is not of required range type ".*boolean"/u);
       });
     });
@@ -896,7 +937,8 @@ describe('ParameterHandler', () => {
 
       it('should allow an undefined value', () => {
         const expected = undefined;
-        expectOutputProperties(handler.applyParameterValues(configRoot, param, configElement), expected);
+        expectOutputProperties(handler
+          .applyParameterValues(configRoot, param, configElement, genericsContext), expected);
       });
 
       it('should allow one set value, and inherit lazy property', () => {
@@ -905,7 +947,8 @@ describe('ParameterHandler', () => {
         });
         const expected: Resource = objectLoader.createCompactedResource('"ABC"');
         expected.property.lazy = objectLoader.createCompactedResource('"true"');
-        expectOutputProperties(handler.applyParameterValues(configRoot, param, configElement), expected);
+        expectOutputProperties(handler
+          .applyParameterValues(configRoot, param, configElement, genericsContext), expected);
       });
 
       it('should allow multiple set values, and inherit lazy property on all', () => {
@@ -928,7 +971,8 @@ describe('ParameterHandler', () => {
         expected.list![0].property.lazy = objectLoader.createCompactedResource('"true"');
         expected.list![1].property.lazy = objectLoader.createCompactedResource('"true"');
         expected.list![2].property.lazy = objectLoader.createCompactedResource('"true"');
-        expectOutputProperties(handler.applyParameterValues(configRoot, param, configElement), expected);
+        expectOutputProperties(handler
+          .applyParameterValues(configRoot, param, configElement, genericsContext), expected);
       });
     });
   });

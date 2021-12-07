@@ -1,0 +1,16 @@
+{
+  "@context": {
+    "@vocab": "https://linkedsoftwaredependencies.org/vocabularies/object-oriented#",
+    "ex": "http://example.org/",
+    "hello": "http://example.org/hello/"
+  },
+  "@graph": [
+    {
+      "@id": "ex:myconfig3",
+      "@type": "ex:HelloWorldModule#SayHelloComponent",
+      "hello:hello": 123,
+      "hello:say": 456,
+      "hello:anIgnoredParameter": "BLA"
+    }
+  ]
+}
