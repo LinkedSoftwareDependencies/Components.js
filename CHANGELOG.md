@@ -1,6 +1,14 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v5.0.0-beta.1"></a>
+## [v5.0.0-beta.1](https://github.com/LinkedSoftwareDependencies/Components.js/compare/v5.0.0-beta.0...v5.0.0-beta.1) - 2021-12-07
+
+### Added
+* [Handle generics in nested components](https://github.com/LinkedSoftwareDependencies/Components.js/commit/d33d4c2668974087873943b3d5c66300fa3df65b)
+* [Handle generics in parameter ranges](https://github.com/LinkedSoftwareDependencies/Components.js/commit/d3358b74ab25a3aca13d6dfc97b16cfd836d4ba9)
+* [Add generic vocabulary changes to context](https://github.com/LinkedSoftwareDependencies/Components.js/commit/b8af018bb8f344833c07d1ef795a6b08d414c2ad)
+
 <a name="v5.0.0-beta.0"></a>
 ## [v5.0.0-beta.0](https://github.com/LinkedSoftwareDependencies/Components.js/compare/v4.5.0...v5.0.0-beta.0) - 2021-11-30
 
