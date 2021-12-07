@@ -199,6 +199,26 @@ export class ParameterPropertyHandlerRange implements IParameterPropertyHandler 
         );
       }
 
+      // Check if the range refers to a component with a generic type
+      if (paramRange.isA('ParameterRangeGenericComponent')) {
+        if (value) {
+          if (value.property.genericTypeInstances) {
+            // Once we support manual generics setting, we'll need to check here if we can merge with it.
+            throw new ErrorResourcesContext(`Simultaneous manual generic type passing and generic type inference are not supported yet.`, { parameter: param, value: value || 'undefined' });
+          }
+
+          // For the defined generic type instances, apply them into the instance so they can be checked later
+          value.properties.genericTypeInstances = paramRange.properties.genericTypeInstances
+            .map(genericTypeInstance => this.objectLoader.createCompactedResource({
+              type: 'ParameterRangeGenericTypeReference',
+              parameterRangeGenericType: genericTypeInstance.value,
+              parameterRangeGenericBindings: genericsContext
+                .bindings[genericTypeInstance.property.parameterRangeGenericType.value],
+            }));
+        }
+        return this.hasParamValueValidType(value, param, paramRange.property.component, genericsContext);
+      }
+
       // Check if this param defines a field with sub-params
       if (paramRange.isA('ParameterRangeCollectEntries')) {
         // TODO: Add support for type-checking nested fields with collectEntries
@@ -264,6 +284,10 @@ export class ParameterPropertyHandlerRange implements IParameterPropertyHandler 
     if (paramRange.isA('ParameterRangeGenericTypeReference')) {
       const valid = paramRange.property.parameterRangeGenericType.value in genericsContext.genericTypeIds;
       return `<${valid ? '' : 'UNKNOWN GENERIC: '}${paramRange.property.parameterRangeGenericType.value}>`;
+    }
+    if (paramRange.isA('ParameterRangeGenericComponent')) {
+      return `(${this.rangeToDisplayString(paramRange.property.component, genericsContext)})${paramRange.properties.genericTypeInstances
+        .map(genericTypeInstance => this.rangeToDisplayString(genericTypeInstance, genericsContext)).join('')}`;
     }
     return paramRange.value;
   }

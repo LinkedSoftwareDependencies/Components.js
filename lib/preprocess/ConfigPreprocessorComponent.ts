@@ -108,11 +108,32 @@ export class ConfigPreprocessorComponent implements IConfigPreprocessor<ICompone
     return configRaw;
   }
 
-  protected createGenericsContext(handleResponse: IComponentConfigPreprocessorHandleResponse): GenericsContext {
-    return new GenericsContext(
+  protected createGenericsContext(
+    handleResponse: IComponentConfigPreprocessorHandleResponse,
+    config: Resource,
+  ): GenericsContext {
+    const genericsContext = new GenericsContext(
       this.objectLoader,
       handleResponse.component.properties.genericTypeParameters,
     );
+
+    // Populate with manually defined generic type bindings
+    const genericTypesInner = handleResponse.component.properties.genericTypeParameters;
+    if (genericTypesInner.length < config.properties.genericTypeInstances.length) {
+      throw new ErrorResourcesContext(`Invalid generic type instantiations: more generic types are passed than are defined on the component.`, {
+        config,
+        component: handleResponse.component,
+      });
+    }
+    for (const [ i, genericTypeInstance ] of config.properties.genericTypeInstances.entries()) {
+      // Remap generic type IRI to inner generic type IRI
+      const genericTypeIdInner = genericTypesInner[i].value;
+
+      genericsContext.bindings[genericTypeIdInner] = genericTypeInstance.properties.parameterRangeGenericBindings;
+      genericsContext.genericTypeIds[genericTypeIdInner] = true;
+    }
+
+    return genericsContext;
   }
 
   /**
@@ -125,7 +146,7 @@ export class ConfigPreprocessorComponent implements IConfigPreprocessor<ICompone
     handleResponse: IComponentConfigPreprocessorHandleResponse,
   ): Resource {
     const entries: Resource[] = [];
-    const genericsContext = this.createGenericsContext(handleResponse);
+    const genericsContext = this.createGenericsContext(handleResponse, config);
     for (const fieldData of handleResponse.component.properties.parameters) {
       const field = this.objectLoader.createCompactedResource({});
       field.property.key = this.objectLoader.createCompactedResource(`"${fieldData.term.value}"`);

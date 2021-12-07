@@ -57,7 +57,7 @@ export class ConfigPreprocessorComponentMapped extends ConfigPreprocessorCompone
     handleResponse: IComponentConfigPreprocessorHandleResponse,
   ): Resource {
     const constructorArgs = handleResponse.component.property.constructorArguments;
-    const genericsContext = this.createGenericsContext(handleResponse);
+    const genericsContext = this.createGenericsContext(handleResponse, config);
     return this.applyConstructorArgumentsParameters(config, constructorArgs, config, genericsContext);
   }
 
