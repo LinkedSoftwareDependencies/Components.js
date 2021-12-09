@@ -190,6 +190,20 @@ export class ParameterPropertyHandlerRange implements IParameterPropertyHandler 
         return Boolean(value && value.term.equals(paramRange.property.parameterRangeValue.term));
       }
 
+      // Check if the range refers to `keyof ...`
+      if (paramRange.isA('ParameterRangeKeyof')) {
+        const component = paramRange.property.parameterRangeValue;
+        // Simulate a union of the member keys as literal parameter ranges
+        const simulatedUnionRange = this.objectLoader.createCompactedResource({
+          '@type': 'ParameterRangeUnion',
+          parameterRangeElements: component.properties.memberKeys.map(memberKey => ({
+            '@type': 'ParameterRangeLiteral',
+            parameterRangeValue: memberKey,
+          })),
+        });
+        return this.hasParamValueValidType(value, param, simulatedUnionRange, genericsContext);
+      }
+
       // Check if the range refers to a generic type
       if (paramRange.isA('ParameterRangeGenericTypeReference')) {
         return genericsContext.bindGenericTypeToValue(
@@ -262,6 +276,9 @@ export class ParameterPropertyHandlerRange implements IParameterPropertyHandler 
     }
     if (paramRange.isA('ParameterRangeRest')) {
       return `...${this.rangeToDisplayString(paramRange.property.parameterRangeValue, genericsContext)}`;
+    }
+    if (paramRange.isA('ParameterRangeKeyof')) {
+      return `keyof ${this.rangeToDisplayString(paramRange.property.parameterRangeValue, genericsContext)}`;
     }
     if (paramRange.isA('ParameterRangeUnion')) {
       return paramRange.properties.parameterRangeElements

@@ -29,6 +29,9 @@
     "parameters": {
       "@id": "oo:parameter"
     },
+    "memberKeys": {
+      "@id": "oo:memberKey"
+    },
     "genericTypeParameters": {
       "@id": "oo:genericTypeParameter"
     },
@@ -76,6 +79,12 @@
     },
     "ParameterRangeArray": {
       "@id": "oo:ParameterRangeArray"
+    },
+    "ParameterRangeRest": {
+      "@id": "oo:ParameterRangeRest"
+    },
+    "ParameterRangeKeyof": {
+      "@id": "oo:ParameterRangeKeyof"
     },
     "ParameterRangeLiteral": {
       "@id": "oo:ParameterRangeLiteral"

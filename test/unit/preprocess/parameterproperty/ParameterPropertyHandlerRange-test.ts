@@ -1306,6 +1306,39 @@ describe('ParameterPropertyHandlerRange', () => {
           // eslint-disable-next-line max-len
         )).toThrow(/^Simultaneous manual generic type passing and generic type inference are not supported yet\./u);
       });
+
+      it('should handle keyof type with valid value', () => {
+        expect(handler.captureType(
+          objectLoader.createCompactedResource('"fieldB"'),
+          objectLoader.createCompactedResource({
+            range: {
+              '@type': 'ParameterRangeKeyof',
+              parameterRangeValue: {
+                '@id': 'ex:SomeType1',
+                memberKeys: [ '"fieldA"', '"fieldB"' ],
+              },
+            },
+          }),
+          genericsContext,
+        )).toBeTruthy();
+      });
+
+      it('should throw on keyof type without valid value', () => {
+        expect(() => handler.captureType(
+          objectLoader.createCompactedResource('"fieldC"'),
+          objectLoader.createCompactedResource({
+            range: {
+              '@type': 'ParameterRangeKeyof',
+              parameterRangeValue: {
+                '@id': 'ex:SomeType1',
+                memberKeys: [ '"fieldA"', '"fieldB"' ],
+              },
+            },
+          }),
+          genericsContext,
+          // eslint-disable-next-line max-len
+        )).toThrow(/^The value "fieldC" for parameter ".*" is not of required range type "keyof ex:SomeType1"/u);
+      });
     });
   });
 
