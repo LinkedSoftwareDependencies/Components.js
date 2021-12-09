@@ -1,6 +1,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v5.0.0-beta.2"></a>
+## [v5.0.0-beta.2](https://github.com/LinkedSoftwareDependencies/Components.js/compare/v5.0.0-beta.1...v5.0.0-beta.2) - 2021-12-09
+
+### Added
+* [Handle keyof parameter ranges](https://github.com/LinkedSoftwareDependencies/Components.js/commit/0f55ba05bff5311d111ca97256aaa2e7be7ae83b)
+
 <a name="v5.0.0-beta.1"></a>
 ## [v5.0.0-beta.1](https://github.com/LinkedSoftwareDependencies/Components.js/compare/v5.0.0-beta.0...v5.0.0-beta.1) - 2021-12-07
 
