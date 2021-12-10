@@ -120,7 +120,9 @@ export class ConfigPreprocessorComponent implements IConfigPreprocessor<ICompone
     // Populate with manually defined generic type bindings
     const genericTypesInner = handleResponse.component.properties.genericTypeParameters;
     if (genericTypesInner.length < config.properties.genericTypeInstances.length) {
-      throw new ErrorResourcesContext(`Invalid generic type instantiations: more generic types are passed than are defined on the component.`, {
+      throw new ErrorResourcesContext(`Invalid generic type instantiations: more generic types are passed (${config.properties.genericTypeInstances.length}) than are defined on the component (${genericTypesInner.length}).`, {
+        passedGenerics: config.properties.genericTypeInstances,
+        defindGenerics: genericTypesInner,
         config,
         component: handleResponse.component,
       });

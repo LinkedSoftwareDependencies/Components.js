@@ -437,7 +437,7 @@ describe('ConfigPreprocessorComponent', () => {
       });
       const expectedArgs = objectLoader.createCompactedResource({});
       expect(() => expectTransformOutput(config, expectedArgs))
-        .toThrowError(`Invalid generic type instantiations: more generic types are passed than are defined on the component.`);
+        .toThrowError(`Invalid generic type instantiations: more generic types are passed (2) than are defined on the component (1).`);
     });
   });
 
