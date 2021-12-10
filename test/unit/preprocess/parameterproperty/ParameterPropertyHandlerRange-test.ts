@@ -1273,6 +1273,35 @@ describe('ParameterPropertyHandlerRange', () => {
         )).toThrow(/^The value ".*" with types "ex:SomeType1" for parameter ".*" is not of required range type "\(ex:SomeType2\)<ex:GEN_T>"/u);
       });
 
+      it('should handle a generic component with a direct type value', () => {
+        const value = handler.captureType(
+          objectLoader.createCompactedResource({
+            '@type': [ 'ex:SomeType1' ],
+          }),
+          objectLoader.createCompactedResource({
+            range: {
+              '@type': 'ParameterRangeGenericComponent',
+              component: 'ex:SomeType1',
+              genericTypeInstances: [
+                {
+                  '@id': 'ex:SomeType2',
+                },
+              ],
+            },
+          }),
+          genericsContext,
+        );
+        expect(value).toBeTruthy();
+        expectOutputProperties(value, objectLoader.createCompactedResource({
+          '@type': [ 'ex:SomeType1' ],
+          genericTypeInstances: [
+            {
+              '@id': 'ex:SomeType2',
+            },
+          ],
+        }));
+      });
+
       it('should throw on a generic component with config that already has manual generics set', () => {
         genericsContext = new GenericsContext(objectLoader, [
           objectLoader.createCompactedResource('ex:GEN_T'),
