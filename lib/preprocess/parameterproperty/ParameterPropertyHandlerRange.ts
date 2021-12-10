@@ -223,12 +223,17 @@ export class ParameterPropertyHandlerRange implements IParameterPropertyHandler 
 
           // For the defined generic type instances, apply them into the instance so they can be checked later
           value.properties.genericTypeInstances = paramRange.properties.genericTypeInstances
-            .map(genericTypeInstance => this.objectLoader.createCompactedResource({
-              type: 'ParameterRangeGenericTypeReference',
-              parameterRangeGenericType: genericTypeInstance.property.parameterRangeGenericType.value,
-              parameterRangeGenericBindings: genericsContext
-                .bindings[genericTypeInstance.property.parameterRangeGenericType.value],
-            }));
+            .map(genericTypeInstance => {
+              if (!genericTypeInstance.property.parameterRangeGenericType) {
+                throw new ErrorResourcesContext(`Invalid generic type instance in a ParameterRangeGenericComponent was detected: missing parameterRangeGenericType property.`, { parameter: param, genericTypeInstance, value });
+              }
+              return this.objectLoader.createCompactedResource({
+                type: 'ParameterRangeGenericTypeReference',
+                parameterRangeGenericType: genericTypeInstance.property.parameterRangeGenericType.value,
+                parameterRangeGenericBindings: genericsContext
+                  .bindings[genericTypeInstance.property.parameterRangeGenericType.value],
+              });
+            });
         }
         return this.hasParamValueValidType(value, param, paramRange.property.component, genericsContext);
       }

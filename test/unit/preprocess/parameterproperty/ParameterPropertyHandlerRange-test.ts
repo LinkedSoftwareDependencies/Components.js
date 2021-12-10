@@ -1307,6 +1307,31 @@ describe('ParameterPropertyHandlerRange', () => {
         )).toThrow(/^Simultaneous manual generic type passing and generic type inference are not supported yet\./u);
       });
 
+      it('should throw on a generic component without parameterRangeGenericType value', () => {
+        genericsContext = new GenericsContext(objectLoader, [
+          objectLoader.createCompactedResource('ex:GEN_T'),
+        ]);
+        genericsContext.bindings['ex:GEN_T'] = [ objectLoader.createCompactedResource('ex:SomeType2') ];
+
+        expect(() => handler.captureType(
+          objectLoader.createCompactedResource({
+            '@type': [ 'ex:SomeType1' ],
+          }),
+          objectLoader.createCompactedResource({
+            range: {
+              '@type': 'ParameterRangeGenericComponent',
+              component: 'ex:SomeType1',
+              genericTypeInstances: [
+                {
+                  '@type': 'ParameterRangeGenericTypeReference',
+                },
+              ],
+            },
+          }),
+          genericsContext,
+        )).toThrow(`Invalid generic type instance in a ParameterRangeGenericComponent was detected: missing parameterRangeGenericType property.`);
+      });
+
       it('should handle keyof type with valid value', () => {
         expect(handler.captureType(
           objectLoader.createCompactedResource('"fieldB"'),
