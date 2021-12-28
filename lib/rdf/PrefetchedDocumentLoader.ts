@@ -48,7 +48,7 @@ export class PrefetchedDocumentLoader extends FetchDocumentLoader {
 
     // Warn before doing a remote context lookup
     if (this.logger) {
-      this.logger.warn(`Detected remote context lookup for '${url}'${this.path ? ` in ${this.path}` : ''}. This may indicate a missing or invalid dependency, or an invalid context URL.`);
+      this.logger.warn(`Detected remote context lookup for '${url}'${this.path ? ` in ${this.path}` : ''}. This may indicate a missing or invalid dependency, incorrect version number, or an invalid context URL.`);
     }
     return super.load(url);
   }
