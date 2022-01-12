@@ -660,7 +660,7 @@ describe('construction with component configs as files', () => {
 
     it('should handle valid param values', async() => {
       await manager.configRegistry
-        .register(Path.join(__dirname, '../assets/config-paramranges-generics-nested.jsonld'));
+        .register(Path.join(__dirname, '../assets/config-paramranges-generics-nested-valid.jsonld'));
 
       const run1 = await manager.instantiate('http://example.org/myconfig2');
       expect(run1).toBeInstanceOf(Hello);
@@ -670,6 +670,52 @@ describe('construction with component configs as files', () => {
           _params: [
             {
               inner: 456,
+            },
+          ],
+        },
+      }]);
+    });
+  });
+
+  describe(`for a component with generically typed params with links to nested components that implements a generic super`, () => {
+    // This test case is a bit complex.
+    // It checks to see if a component C with param that expects an abstract class A with generic type T
+    // allows a value I to be passed that implements this abstract class with a fixed generic value T.
+    // In doing so, we have to make sure that the binding of I propagates to the rest of the generics of C.
+    beforeEach(async() => {
+      manager = await ComponentsManager.build({
+        mainModulePath: __dirname,
+        moduleState,
+        async moduleLoader(registry) {
+          await registry.registerModule(Path
+            .join(__dirname, '../assets/module-paramranges-generics-nested-extends.jsonld'));
+        },
+      });
+    });
+
+    it('should throw on invalid param values', async() => {
+      await manager.configRegistry
+        .register(Path.join(__dirname, '../assets/config-paramranges-generics-nested-extends-invalid.jsonld'));
+      manager.logger.error = jest.fn();
+
+      await expect(manager.instantiate('http://example.org/myconfig1')).rejects
+        .toThrow(`The value "http://example.org/myconfig1-innervalue" with types "http://example.org/HelloWorldModule#SayHelloComponentInner" for parameter "http://example.org/hello/inner" is not of required range type "(http://example.org/HelloWorldModule#SayHelloComponentInnerAbstract)<http://example.org/HelloWorldModule#SayHelloComponent__generic_T>"`);
+      expect(fs.existsSync('componentsjs-error-state.json')).toBeTruthy();
+      fs.unlinkSync('componentsjs-error-state.json');
+    });
+
+    it('should handle valid param values', async() => {
+      await manager.configRegistry
+        .register(Path.join(__dirname, '../assets/config-paramranges-generics-nested-extends-valid.jsonld'));
+
+      const run1 = await manager.instantiate('http://example.org/myconfig2');
+      expect(run1).toBeInstanceOf(Hello);
+      expect(run1._params).toEqual([{
+        hello: 'true',
+        inner: {
+          _params: [
+            {
+              inner: 'true',
             },
           ],
         },

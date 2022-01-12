@@ -1,0 +1,105 @@
+{
+  "@context": [
+    "https://linkedsoftwaredependencies.org/bundles/npm/componentsjs/^4.0.0/components/context.jsonld",
+    {
+      "hello": "http://example.org/hello/",
+      "ex": "http://example.org/"
+    }
+  ],
+  "@graph": [
+    {
+      "@id": "ex:HelloWorldModule",
+      "@type": "Module",
+      "requireName": "helloworld",
+      "components": [
+        {
+          "@id": "ex:HelloWorldModule#SayHelloComponent",
+          "@type": "Class",
+          "requireElement": "Hello",
+          "genericTypeParameters": [
+            {
+              "@id": "ex:HelloWorldModule#SayHelloComponent__generic_T"
+            },
+          ],
+          "parameters": [
+            {
+              "@id": "hello:hello",
+              "range": {
+                "@type": "ParameterRangeGenericTypeReference",
+                "parameterRangeGenericType": "ex:HelloWorldModule#SayHelloComponent__generic_T"
+              },
+            },
+            {
+              "@id": "hello:inner",
+              "range": {
+                "@type": "ParameterRangeGenericComponent",
+                "component": "ex:HelloWorldModule#SayHelloComponentInnerAbstract",
+                "genericTypeInstances": [
+                  {
+                    "@type": "ParameterRangeGenericTypeReference",
+                    "parameterRangeGenericType": "ex:HelloWorldModule#SayHelloComponent__generic_T"
+                  }
+                ]
+              },
+            }
+          ],
+          "constructorArguments": [
+            {
+              "@id": "ex:HelloWorldModule#SayHelloComponent_constructorArgumentsObject",
+              "fields": [
+                {
+                  "keyRaw": "hello",
+                  "value": "hello:hello"
+                },
+                {
+                  "keyRaw": "inner",
+                  "value": "hello:inner"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "@id": "ex:HelloWorldModule#SayHelloComponentInnerAbstract",
+          "@type": "Class",
+          "requireElement": "Hello",
+          "genericTypeParameters": [
+            {
+              "@id": "ex:HelloWorldModule#SayHelloComponentInnerAbstract__generic_T"
+            },
+          ]
+        },
+        {
+          "@id": "ex:HelloWorldModule#SayHelloComponentInner",
+          "@type": "Class",
+          "requireElement": "Hello",
+          "extends": [
+            {
+              "@type": "ParameterRangeGenericComponent",
+              "component": "ex:HelloWorldModule#SayHelloComponentInnerAbstract",
+              "genericTypeInstances": [
+                "xsd:boolean"
+              ]
+            }
+          ],
+          "parameters": [
+            {
+              "@id": "hello:inner2"
+            }
+          ],
+          "constructorArguments": [
+            {
+              "@id": "ex:HelloWorldModule#SayHelloComponentInner_constructorArgumentsObject",
+              "fields": [
+                {
+                  "keyRaw": "inner",
+                  "value": "hello:inner2"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -51,7 +51,13 @@ export class ComponentRegistryFinalizer {
    * @param superComponents The components to inherit from.
    */
   public inheritParameters(component: Resource, superComponents: Resource[]): void {
-    for (const superComponent of superComponents) {
+    for (let superComponent of superComponents) {
+      // Check if the super component is wrapped in a generic component instantiation
+      if (superComponent.property.type?.value === this.objectLoader.contextResolved
+        .expandTerm('oo:ParameterRangeGenericComponent')) {
+        superComponent = superComponent.property.component;
+      }
+
       this.componentRegistry.requireValidComponent(superComponent, component);
       for (const parameter of superComponent.properties.parameters) {
         if (!component.properties.parameters.includes(parameter)) {

@@ -279,6 +279,60 @@ describe('ComponentRegistryFinalizer', () => {
       expect(component1.properties.parameters[0]).toBe(component2.properties.parameters[0]);
       expect(component1.properties.parameters[1]).toBe(component2.properties.parameters[1]);
     });
+
+    it('should handle a component with superclass wrapped in a generic component instantiation', async() => {
+      const component1 = objectLoader.createCompactedResource({
+        '@id': 'ex:MyComponent1',
+        types: 'oo:Class',
+        parameters: [
+          {
+            '@id': 'ex:MyComponent1#param1',
+          },
+        ],
+      });
+      const component2 = objectLoader.createCompactedResource({
+        '@type': 'ParameterRangeGenericComponent',
+        component: {
+          '@id': 'ex:MyComponent2',
+          types: 'oo:Class',
+          parameters: [
+            {
+              '@id': 'ex:MyComponent2#param1',
+            },
+          ],
+        },
+      });
+      finalizer.inheritParameters(component1, [ component2 ]);
+      expect(component1.properties.parameters.length).toBe(2);
+      expect(component1.properties.parameters[0]).toBe(component1.properties.parameters[0]);
+      expect(component1.properties.parameters[1]).toBe(component2.property.component.properties.parameters[0]);
+    });
+
+    it('should throw on a component with superclass wrapped in an invalid generic component instantiation', async() => {
+      const component1 = objectLoader.createCompactedResource({
+        '@id': 'ex:MyComponent1',
+        types: 'oo:Class',
+        parameters: [
+          {
+            '@id': 'ex:MyComponent1#param1',
+          },
+        ],
+      });
+      const component2 = objectLoader.createCompactedResource({
+        component: {
+          '@id': 'ex:MyComponent2',
+          types: 'oo:Class',
+          parameters: [
+            {
+              '@id': 'ex:MyComponent2#param1',
+            },
+          ],
+        },
+      });
+      expect(() => finalizer.inheritParameters(component1, [ component2 ]))
+        // eslint-disable-next-line max-len
+        .toThrow(/Resource .* is not a valid component, either it is not defined, has no type, or is incorrectly referenced by ex:MyComponent1./u);
+    });
   });
 
   describe('inheritConstructorArguments', () => {

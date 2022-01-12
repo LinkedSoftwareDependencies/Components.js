@@ -1,0 +1,19 @@
+{
+  "@context": {
+    "@vocab": "https://linkedsoftwaredependencies.org/vocabularies/object-oriented#",
+    "ex": "http://example.org/",
+    "hello": "http://example.org/hello/"
+  },
+  "@graph": [
+    {
+      "@id": "ex:myconfig1",
+      "@type": "ex:HelloWorldModule#SayHelloComponent",
+      "hello:hello": 3,
+      "hello:inner": {
+      "@id": "ex:myconfig1-innervalue",
+        "@type": "ex:HelloWorldModule#SayHelloComponentInner",
+        "hello:inner2": true,
+      },
+    }
+  ]
+}

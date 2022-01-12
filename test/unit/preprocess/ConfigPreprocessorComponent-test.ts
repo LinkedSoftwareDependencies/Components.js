@@ -367,6 +367,7 @@ describe('ConfigPreprocessorComponent', () => {
         '@id': 'ex:myComponentInstance',
         types: 'ex:ComponentThis',
         'ex:myComponentInstance#param1': '"A"',
+        genericTypeInstancesComponentScope: 'ex:ComponentThis',
         genericTypeInstances: [
           {
             parameterRangeGenericType: 'ex:ComponentThis__generic_T',
@@ -410,15 +411,10 @@ describe('ConfigPreprocessorComponent', () => {
         '@id': 'ex:myComponentInstance',
         types: 'ex:ComponentThis',
         'ex:myComponentInstance#param1': '"A"',
+        genericTypeInstancesComponentScope: 'ex:ComponentThis',
         genericTypeInstances: [
-          {
-            parameterRangeGenericType: 'ex:ComponentThis__generic_T',
-            parameterRangeGenericBindings: 'xsd:number',
-          },
-          {
-            parameterRangeGenericType: 'ex:ComponentThis__generic_T',
-            parameterRangeGenericBindings: 'xsd:number',
-          },
+          'xsd:number',
+          'xsd:number',
         ],
       });
       componentResources['ex:ComponentThis'] = objectLoader.createCompactedResource({
@@ -437,7 +433,7 @@ describe('ConfigPreprocessorComponent', () => {
       });
       const expectedArgs = objectLoader.createCompactedResource({});
       expect(() => expectTransformOutput(config, expectedArgs))
-        .toThrowError(`Invalid generic type instantiations: more generic types are passed (2) than are defined on the component (1).`);
+        .toThrowError(`Invalid generic type instantiation: a different amount of generic types are passed (2) than are defined on the component (1).`);
     });
   });
 

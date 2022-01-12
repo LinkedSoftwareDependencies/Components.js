@@ -2,6 +2,9 @@
   "@context": {
     "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
     "xsd": "http://www.w3.org/2001/XMLSchema#",
+    "type": {
+      "@id": "rdf:type"
+    },
     "types": {
       "@id": "rdf:type"
     },
@@ -115,6 +118,10 @@
     },
     "ParameterRangeGenericComponent": {
       "@id": "oo:ParameterRangeGenericComponent"
+    },
+    "genericTypeInstancesComponentScope": {
+      "@id": "oo:genericTypeInstancesComponentScope",
+      "@type": "@id"
     },
     "genericTypeInstances": {
       "@id": "oo:genericTypeInstance",

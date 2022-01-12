@@ -1,7 +1,7 @@
 import type { RdfObjectLoader, Resource } from 'rdf-object';
 import { IRIS_RDF, IRIS_XSD } from '../../rdf/Iris';
 import { ErrorResourcesContext } from '../../util/ErrorResourcesContext';
-import type { GenericsContext } from '../GenericsContext';
+import { GenericsContext } from '../GenericsContext';
 import type { IParameterPropertyHandler } from './IParameterPropertyHandler';
 
 /**
@@ -73,6 +73,11 @@ export class ParameterPropertyHandlerRange implements IParameterPropertyHandler 
       return true;
     }
 
+    // Always match variable values
+    if (value && value.isA('Variable')) {
+      return true;
+    }
+
     if (value && value.type === 'Literal') {
       let parsed;
       switch (paramRange.value) {
@@ -123,141 +128,154 @@ export class ParameterPropertyHandlerRange implements IParameterPropertyHandler 
     }
 
     // Allow IRIs to be casted to strings
-    if (value && paramRange && paramRange.value === IRIS_XSD.string && value.type === 'NamedNode') {
+    if (value && paramRange.value === IRIS_XSD.string && value.type === 'NamedNode') {
       return true;
     }
 
-    if (paramRange && (!value || (!value.isA('Variable') && !value.isA(paramRange.term)))) {
-      if (value && paramRange.isA('ParameterRangeArray')) {
-        if (!value.list) {
-          return false;
-        }
-        return value.list.every(listElement => this
-          .hasParamValueValidType(listElement, param, paramRange.property.parameterRangeValue, genericsContext));
+    // Try to match the value with the parameter's range (which will always be defined at this stage)
+    // Check if the value has a super-type that equals the parameter's range
+    if (value && this.hasType(
+      value,
+      paramRange,
+      genericsContext,
+      value.property.genericTypeInstancesComponentScope,
+      value.properties.genericTypeInstances,
+    )) {
+      return true;
+    }
+
+    // Check if the param type is an array
+    if (value && paramRange.isA('ParameterRangeArray')) {
+      if (!value.list) {
+        return false;
+      }
+      return value.list.every(listElement => this
+        .hasParamValueValidType(listElement, param, paramRange.property.parameterRangeValue, genericsContext));
+    }
+
+    // Check if the param type is a composed type
+    if (paramRange.isA('ParameterRangeUnion')) {
+      return paramRange.properties.parameterRangeElements
+        .some(child => this.hasParamValueValidType(value, param, child, genericsContext));
+    }
+    if (paramRange.isA('ParameterRangeIntersection')) {
+      return paramRange.properties.parameterRangeElements
+        .every(child => this.hasParamValueValidType(value, param, child, genericsContext));
+    }
+    if (paramRange.isA('ParameterRangeTuple')) {
+      if (!value || !value.list) {
+        return false;
       }
 
-      // Check if the param type is a composed type
-      if (paramRange.isA('ParameterRangeUnion')) {
-        return paramRange.properties.parameterRangeElements
-          .some(child => this.hasParamValueValidType(value, param, child, genericsContext));
-      }
-      if (paramRange.isA('ParameterRangeIntersection')) {
-        return paramRange.properties.parameterRangeElements
-          .every(child => this.hasParamValueValidType(value, param, child, genericsContext));
-      }
-      if (paramRange.isA('ParameterRangeTuple')) {
-        if (!value || !value.list) {
-          return false;
-        }
-
-        // Iterate over list elements and try to match with tuple types
-        const listElements = value.list;
-        const tupleTypes = paramRange.properties.parameterRangeElements;
-        let listIndex = 0;
-        let tupleIndex = 0;
-        while (listIndex < listElements.length && tupleIndex < tupleTypes.length) {
-          if (tupleTypes[tupleIndex].isA('ParameterRangeRest')) {
-            // Rest types can match multiple list elements, so only increment index if no match is found.
-            if (!this.hasParamValueValidType(
-              listElements[listIndex],
-              param,
-              tupleTypes[tupleIndex].property.parameterRangeValue,
-              genericsContext,
-            )) {
-              tupleIndex++;
-            } else {
-              listIndex++;
-            }
-          } else {
-            if (!this.hasParamValueValidType(
-              listElements[listIndex],
-              param,
-              tupleTypes[tupleIndex],
-              genericsContext,
-            )) {
-              return false;
-            }
+      // Iterate over list elements and try to match with tuple types
+      const listElements = value.list;
+      const tupleTypes = paramRange.properties.parameterRangeElements;
+      let listIndex = 0;
+      let tupleIndex = 0;
+      while (listIndex < listElements.length && tupleIndex < tupleTypes.length) {
+        if (tupleTypes[tupleIndex].isA('ParameterRangeRest')) {
+          // Rest types can match multiple list elements, so only increment index if no match is found.
+          if (!this.hasParamValueValidType(
+            listElements[listIndex],
+            param,
+            tupleTypes[tupleIndex].property.parameterRangeValue,
+            genericsContext,
+          )) {
             tupleIndex++;
+          } else {
             listIndex++;
           }
+        } else {
+          if (!this.hasParamValueValidType(
+            listElements[listIndex],
+            param,
+            tupleTypes[tupleIndex],
+            genericsContext,
+          )) {
+            return false;
+          }
+          tupleIndex++;
+          listIndex++;
+        }
+      }
+
+      return listIndex === listElements.length &&
+        (tupleIndex === tupleTypes.length ||
+          (tupleIndex === tupleTypes.length - 1 && tupleTypes[tupleIndex].isA('ParameterRangeRest')));
+    }
+    if (paramRange.isA('ParameterRangeLiteral')) {
+      return Boolean(value && value.term.equals(paramRange.property.parameterRangeValue.term));
+    }
+
+    // Check if the range refers to `keyof ...`
+    if (paramRange.isA('ParameterRangeKeyof')) {
+      const component = paramRange.property.parameterRangeValue;
+      // Simulate a union of the member keys as literal parameter ranges
+      const simulatedUnionRange = this.objectLoader.createCompactedResource({
+        '@type': 'ParameterRangeUnion',
+        parameterRangeElements: component.properties.memberKeys.map(memberKey => ({
+          '@type': 'ParameterRangeLiteral',
+          parameterRangeValue: memberKey,
+        })),
+      });
+      return this.hasParamValueValidType(value, param, simulatedUnionRange, genericsContext);
+    }
+
+    // Check if the range refers to a generic type
+    if (paramRange.isA('ParameterRangeGenericTypeReference')) {
+      return genericsContext.bindGenericTypeToValue(
+        paramRange.property.parameterRangeGenericType.value,
+        value,
+        (subValue, subType) => this.hasParamValueValidType(subValue, param, subType, genericsContext),
+      );
+    }
+
+    // Check if the range refers to a component with a generic type
+    if (paramRange.isA('ParameterRangeGenericComponent')) {
+      if (value) {
+        if (value.property.genericTypeInstances) {
+          // Once we support manual generics setting, we'll need to check here if we can merge with it.
+          throw new ErrorResourcesContext(`Simultaneous manual generic type passing and generic type inference are not supported yet.`, { parameter: param, value });
         }
 
-        return listIndex === listElements.length &&
-          (tupleIndex === tupleTypes.length ||
-            (tupleIndex === tupleTypes.length - 1 && tupleTypes[tupleIndex].isA('ParameterRangeRest')));
-      }
-      if (paramRange.isA('ParameterRangeLiteral')) {
-        return Boolean(value && value.term.equals(paramRange.property.parameterRangeValue.term));
-      }
-
-      // Check if the range refers to `keyof ...`
-      if (paramRange.isA('ParameterRangeKeyof')) {
-        const component = paramRange.property.parameterRangeValue;
-        // Simulate a union of the member keys as literal parameter ranges
-        const simulatedUnionRange = this.objectLoader.createCompactedResource({
-          '@type': 'ParameterRangeUnion',
-          parameterRangeElements: component.properties.memberKeys.map(memberKey => ({
-            '@type': 'ParameterRangeLiteral',
-            parameterRangeValue: memberKey,
-          })),
-        });
-        return this.hasParamValueValidType(value, param, simulatedUnionRange, genericsContext);
-      }
-
-      // Check if the range refers to a generic type
-      if (paramRange.isA('ParameterRangeGenericTypeReference')) {
-        return genericsContext.bindGenericTypeToValue(
-          paramRange.property.parameterRangeGenericType.value,
-          value,
-          (subValue, subType) => this.hasParamValueValidType(subValue, param, subType, genericsContext),
-        );
-      }
-
-      // Check if the range refers to a component with a generic type
-      if (paramRange.isA('ParameterRangeGenericComponent')) {
-        if (value) {
-          if (value.property.genericTypeInstances) {
-            // Once we support manual generics setting, we'll need to check here if we can merge with it.
-            throw new ErrorResourcesContext(`Simultaneous manual generic type passing and generic type inference are not supported yet.`, { parameter: param, value });
-          }
-
-          // For the defined generic type instances, apply them into the instance so they can be checked later
-          value.properties.genericTypeInstances = paramRange.properties.genericTypeInstances
-            .map(genericTypeInstance => {
-              // If we have a generic param type reference, instantiate them based on the current generics context
-              if (genericTypeInstance.isA('ParameterRangeGenericTypeReference')) {
-                if (!genericTypeInstance.property.parameterRangeGenericType) {
-                  throw new ErrorResourcesContext(`Invalid generic type instance in a ParameterRangeGenericComponent was detected: missing parameterRangeGenericType property.`, {
-                    parameter: param,
-                    genericTypeInstance,
-                    value,
-                  });
-                }
-                return this.objectLoader.createCompactedResource({
-                  type: 'ParameterRangeGenericTypeReference',
-                  parameterRangeGenericType: genericTypeInstance.property.parameterRangeGenericType.value,
-                  parameterRangeGenericBindings: genericsContext
-                    .bindings[genericTypeInstance.property.parameterRangeGenericType.value],
+        // For the defined generic type instances, apply them into the instance so they can be checked later during a
+        // call to GenericsContext#bindComponentGenericTypes.
+        value.property.genericTypeInstancesComponentScope = paramRange.property.component;
+        value.properties.genericTypeInstances = paramRange.properties.genericTypeInstances
+          .map(genericTypeInstance => {
+            // If we have a generic param type reference, instantiate them based on the current generics context
+            if (genericTypeInstance.isA('ParameterRangeGenericTypeReference')) {
+              if (!genericTypeInstance.property.parameterRangeGenericType) {
+                throw new ErrorResourcesContext(`Invalid generic type instance in a ParameterRangeGenericComponent was detected: missing parameterRangeGenericType property.`, {
+                  parameter: param,
+                  genericTypeInstance,
+                  value,
                 });
               }
 
-              // For all other param types, return the as-is
-              return genericTypeInstance;
-            });
-        }
-        return this.hasParamValueValidType(value, param, paramRange.property.component, genericsContext);
+              return this.objectLoader.createCompactedResource({
+                '@type': 'ParameterRangeGenericTypeReference',
+                parameterRangeGenericType: genericTypeInstance.property.parameterRangeGenericType.value,
+                parameterRangeGenericBindings: genericsContext
+                  .bindings[genericTypeInstance.property.parameterRangeGenericType.value],
+              });
+            }
+
+            // For all other param types, return the as-is
+            return genericTypeInstance;
+          });
       }
 
-      // Check if this param defines a field with sub-params
-      if (paramRange.isA('ParameterRangeCollectEntries')) {
-        // TODO: Add support for type-checking nested fields with collectEntries
-        return true;
-      }
-
-      return false;
+      return this.hasParamValueValidType(value, param, paramRange.property.component, genericsContext);
     }
 
-    return true;
+    // Check if this param defines a field with sub-params
+    if (paramRange.isA('ParameterRangeCollectEntries')) {
+      // TODO: Add support for type-checking nested fields with collectEntries
+      return true;
+    }
+
+    return false;
   }
 
   protected throwIncorrectTypeError(
@@ -272,11 +290,106 @@ export class ParameterPropertyHandlerRange implements IParameterPropertyHandler 
       value: value || 'undefined',
       ...Object.keys(genericsContext.bindings).length > 0 ?
         { generics: `[\n  ${Object.entries(genericsContext.bindings)
-          .map(([ id, values ]) => `<${id}> => ${values.map(subValue => subValue.value)}`)
+          .map(([ id, subValue ]) => `<${id}> => ${this.rangeToDisplayString(subValue, genericsContext)}`)
           .join(',\n  ')}\n]` } :
         {},
       parameter,
     });
+  }
+
+  /**
+   * Check if the given value is of the given type.
+   * @param value A value.
+   * @param type A type.
+   * @param genericsContext The current generics context.
+   * @param genericTypeInstancesComponentScope
+   * @param genericTypeInstances
+   * @protected
+   */
+  protected hasType(
+    value: Resource,
+    type: Resource,
+    genericsContext: GenericsContext,
+    genericTypeInstancesComponentScope: Resource | undefined,
+    genericTypeInstances: Resource[],
+  ): boolean {
+    // Immediately return if the terms are equal
+    if (value.term.equals(type.term)) {
+      return true;
+    }
+
+    // Otherwise, iterate over the value's super types are recursively call this method again.
+    for (const valueSuperType of [ ...value.properties.extends, ...value.properties.type ]) {
+      // Special case: if the super component is wrapped in a generic component instantiation, unwrap it.
+      if (valueSuperType.property.type?.value === this.objectLoader.contextResolved
+        .expandTerm('oo:ParameterRangeGenericComponent')) {
+        // First recursively continue calling hasType for the unwrapped component
+        if (this.hasType(
+          valueSuperType.property.component,
+          type,
+          genericsContext,
+          genericTypeInstancesComponentScope,
+          genericTypeInstances,
+        )) {
+          // If hasType has passed, validate the generic instantiations
+          // AND (possibly) the parameter's generic type instances against the component's generic params.
+          const superComponent = valueSuperType.property.component;
+          const genericsContextInner = new GenericsContext(
+            this.objectLoader,
+            superComponent.properties.genericTypeParameters,
+          );
+
+          // Try to bind the generic instances from the wrapped generic component instantiation
+          if (!genericsContextInner.bindComponentGenericTypes(
+            superComponent,
+            valueSuperType.properties.genericTypeInstances
+              .map(instance => this.objectLoader.createCompactedResource({
+                parameterRangeGenericBindings: instance,
+              })),
+            { value },
+          )) {
+            return false;
+          }
+
+          // If the given generic type component scope applies to this component,
+          // Try to bind the generic instances from the parameter type-checking.
+          if (genericTypeInstancesComponentScope && genericTypeInstancesComponentScope.value === superComponent.value) {
+            if (!genericsContextInner.bindComponentGenericTypes(
+              superComponent,
+              genericTypeInstances,
+              { value },
+            )) {
+              return false;
+            }
+
+            // Extract the bound generic instances from the inner context into the actual context.
+            // This is needed for cases where param generics are bound via a wrapped generic component instantiation.
+            for (const [ i, genericTypeInstance ] of genericTypeInstances.entries()) {
+              const innerGenericType = genericTypeInstancesComponentScope.properties.genericTypeParameters[i].value;
+              const outerGenericType = genericTypeInstance.property.parameterRangeGenericType.value;
+              genericsContext.bindings[outerGenericType] = genericsContextInner.bindings[innerGenericType];
+            }
+          }
+
+          return true;
+        }
+
+        return false;
+      }
+
+      // The default case just checks the super type recursively.
+      if (this.hasType(
+        valueSuperType,
+        type,
+        genericsContext,
+        genericTypeInstancesComponentScope,
+        genericTypeInstances,
+      )) {
+        return true;
+      }
+    }
+
+    return false;
   }
 
   public rangeToDisplayString(paramRange: Resource | undefined, genericsContext: GenericsContext): string {

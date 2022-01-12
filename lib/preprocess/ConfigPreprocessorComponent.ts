@@ -112,26 +112,23 @@ export class ConfigPreprocessorComponent implements IConfigPreprocessor<ICompone
     handleResponse: IComponentConfigPreprocessorHandleResponse,
     config: Resource,
   ): GenericsContext {
+    // Create a new generics context for the component's generic type parameters
     const genericsContext = new GenericsContext(
       this.objectLoader,
       handleResponse.component.properties.genericTypeParameters,
     );
 
-    // Populate with manually defined generic type bindings
-    const genericTypesInner = handleResponse.component.properties.genericTypeParameters;
-    if (genericTypesInner.length < config.properties.genericTypeInstances.length) {
-      throw new ErrorResourcesContext(`Invalid generic type instantiations: more generic types are passed (${config.properties.genericTypeInstances.length}) than are defined on the component (${genericTypesInner.length}).`, {
-        passedGenerics: config.properties.genericTypeInstances,
-        defindGenerics: genericTypesInner,
-        config,
-        component: handleResponse.component,
-      });
-    }
-    for (const [ i, genericTypeInstance ] of config.properties.genericTypeInstances.entries()) {
-      // Remap generic type IRI to inner generic type IRI
-      const genericTypeIdInner = genericTypesInner[i].value;
-      genericsContext.bindings[genericTypeIdInner] = genericTypeInstance.properties.parameterRangeGenericBindings;
-      genericsContext.genericTypeIds[genericTypeIdInner] = true;
+    // If the config has a genericTypeInstancesComponentScope, it will also have genericTypeInstances.
+    // In that case, we bind these instances to the component's generic type parameters within the context.
+    // (these values may have been set during generic param type-checking in
+    // ParameterPropertyHandlerRange#hasParamValueValidType)
+    if (config.property.genericTypeInstancesComponentScope &&
+      handleResponse.component.value === config.property.genericTypeInstancesComponentScope.value) {
+      genericsContext.bindComponentGenericTypes(
+        handleResponse.component,
+        config.properties.genericTypeInstances,
+        { config },
+      );
     }
 
     return genericsContext;
