@@ -370,8 +370,22 @@ export class ParameterPropertyHandlerRange implements IParameterPropertyHandler 
             // This is needed for cases where param generics are bound via a wrapped generic component instantiation.
             for (const [ i, genericTypeInstance ] of genericTypeInstances.entries()) {
               const innerGenericType = genericTypeInstancesComponentScope.properties.genericTypeParameters[i].value;
-              const outerGenericType = genericTypeInstance.property.parameterRangeGenericType.value;
-              genericsContext.bindings[outerGenericType] = genericsContextInner.bindings[innerGenericType];
+              if (genericTypeInstance.isA('ParameterRangeGenericTypeReference')) {
+                // If the generic type instance refers to another generic,
+                // bind it to the corresponding value of the inner context
+                const outerGenericType = genericTypeInstance.property.parameterRangeGenericType.value;
+                genericsContext.bindings[outerGenericType] = genericsContextInner.bindings[innerGenericType];
+              } else if (!this.hasType(
+                genericsContextInner.bindings[innerGenericType],
+                genericTypeInstance,
+                genericsContext,
+                undefined,
+                [],
+              )) {
+                // If the generic type instance is just a type, check it against the value in the inner context.
+                // If it does not match, return false.
+                return false;
+              }
             }
           }
 

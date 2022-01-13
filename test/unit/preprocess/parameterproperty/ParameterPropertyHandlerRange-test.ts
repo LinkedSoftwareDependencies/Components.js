@@ -1722,6 +1722,83 @@ describe('ParameterPropertyHandlerRange', () => {
             // eslint-disable-next-line max-len
           )).toThrow(/The value ".*" with types "ex:SomeType1" for parameter ".*" is not of required range type "\(ex:SomeType2\)<ex:GEN_T>"/u);
         });
+
+        it(`should handle a generic component with value a sub-type with fixed generic with fixed param generic`, () => {
+          genericsContext = new GenericsContext(objectLoader, []);
+
+          const value = handler.captureType(
+            objectLoader.createCompactedResource({
+              '@type': {
+                '@id': 'ex:SomeType1',
+                extends: {
+                  '@type': 'ParameterRangeGenericComponent',
+                  component: {
+                    '@id': 'ex:SomeType2',
+                    genericTypeParameters: [
+                      'ex:SomeType2__generic_T',
+                    ],
+                  },
+                  genericTypeInstances: [
+                    'xsd:integer',
+                  ],
+                },
+              },
+            }),
+            objectLoader.createCompactedResource({
+              range: {
+                '@type': 'ParameterRangeGenericComponent',
+                component: 'ex:SomeType2',
+                genericTypeInstances: [
+                  'xsd:integer',
+                ],
+              },
+            }),
+            genericsContext,
+          );
+          expect(value).toBeTruthy();
+          expectOutputProperties(value, objectLoader.createCompactedResource({
+            '@type': [ 'ex:SomeType1' ],
+            genericTypeInstancesComponentScope: 'ex:SomeType2',
+            genericTypeInstances: [
+              'xsd:integer',
+            ],
+          }));
+        });
+
+        it(`should throw on a generic component with value a sub-type with fixed generic with incompatible fixed param generic`, () => {
+          genericsContext = new GenericsContext(objectLoader, []);
+
+          expect(() => handler.captureType(
+            objectLoader.createCompactedResource({
+              '@type': {
+                '@id': 'ex:SomeType1',
+                extends: {
+                  '@type': 'ParameterRangeGenericComponent',
+                  component: {
+                    '@id': 'ex:SomeType2',
+                    genericTypeParameters: [
+                      'ex:SomeType2__generic_T',
+                    ],
+                  },
+                  genericTypeInstances: [
+                    'xsd:integer',
+                  ],
+                },
+              },
+            }),
+            objectLoader.createCompactedResource({
+              range: {
+                '@type': 'ParameterRangeGenericComponent',
+                component: 'ex:SomeType2',
+                genericTypeInstances: [
+                  'xsd:boolean',
+                ],
+              },
+            }),
+            genericsContext,
+            // eslint-disable-next-line max-len
+          )).toThrow(/The value ".*" with types "ex:SomeType1" for parameter ".*" is not of required range type "\(ex:SomeType2\).*#boolean"/u);
+        });
       });
     });
   });
