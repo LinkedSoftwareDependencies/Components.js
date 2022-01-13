@@ -141,6 +141,9 @@
       "@id": "oo:parameterRangeGenericBindings",
       "@type": "@id"
     },
+    "GenericComponentExtension": {
+      "@id": "oo:GenericComponentExtension"
+    },
 
     "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
     "comment": {

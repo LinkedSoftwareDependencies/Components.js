@@ -1469,7 +1469,7 @@ describe('ParameterPropertyHandlerRange', () => {
               '@type': {
                 '@id': 'ex:SomeType1',
                 extends: {
-                  '@type': 'ParameterRangeGenericComponent',
+                  '@type': 'GenericComponentExtension',
                   component: {
                     '@id': 'ex:SomeType2',
                     genericTypeParameters: [
@@ -1521,7 +1521,7 @@ describe('ParameterPropertyHandlerRange', () => {
               '@type': {
                 '@id': 'ex:SomeType1',
                 extends: {
-                  '@type': 'ParameterRangeGenericComponent',
+                  '@type': 'GenericComponentExtension',
                   component: {
                     '@id': 'ex:SomeType2',
                     genericTypeParameters: [
@@ -1573,7 +1573,7 @@ describe('ParameterPropertyHandlerRange', () => {
               '@type': {
                 '@id': 'ex:SomeType1',
                 extends: {
-                  '@type': 'ParameterRangeGenericComponent',
+                  '@type': 'GenericComponentExtension',
                   component: {
                     '@id': 'ex:SomeType2',
                     genericTypeParameters: [
@@ -1612,14 +1612,14 @@ describe('ParameterPropertyHandlerRange', () => {
           const value = handler.captureType(
             objectLoader.createCompactedResource({
               '@type': {
-                '@type': 'ParameterRangeGenericComponent',
+                '@type': 'GenericComponentExtension',
                 component: {
                   '@id': 'ex:SomeType1',
                   genericTypeParameters: [
                     'ex:SomeType1__generic_T',
                   ],
                   extends: {
-                    '@type': 'ParameterRangeGenericComponent',
+                    '@type': 'GenericComponentExtension',
                     component: {
                       '@id': 'ex:SomeType2',
                       genericTypeParameters: [
@@ -1659,7 +1659,7 @@ describe('ParameterPropertyHandlerRange', () => {
           expect(value).toBeTruthy();
           expectOutputProperties(value, objectLoader.createCompactedResource({
             '@type': {
-              '@type': 'ParameterRangeGenericComponent',
+              '@type': 'GenericComponentExtension',
               component: 'ex:SomeType1',
               genericTypeInstances: [
                 {
@@ -1690,7 +1690,7 @@ describe('ParameterPropertyHandlerRange', () => {
               '@type': {
                 '@id': 'ex:SomeType1',
                 extends: {
-                  '@type': 'ParameterRangeGenericComponent',
+                  '@type': 'GenericComponentExtension',
                   component: {
                     '@id': 'ex:SomeType2',
                     genericTypeParameters: [
@@ -1731,7 +1731,7 @@ describe('ParameterPropertyHandlerRange', () => {
               '@type': {
                 '@id': 'ex:SomeType1',
                 extends: {
-                  '@type': 'ParameterRangeGenericComponent',
+                  '@type': 'GenericComponentExtension',
                   component: {
                     '@id': 'ex:SomeType2',
                     genericTypeParameters: [
@@ -1773,7 +1773,7 @@ describe('ParameterPropertyHandlerRange', () => {
               '@type': {
                 '@id': 'ex:SomeType1',
                 extends: {
-                  '@type': 'ParameterRangeGenericComponent',
+                  '@type': 'GenericComponentExtension',
                   component: {
                     '@id': 'ex:SomeType2',
                     genericTypeParameters: [

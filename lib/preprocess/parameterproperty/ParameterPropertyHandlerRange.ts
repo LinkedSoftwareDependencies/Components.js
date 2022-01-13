@@ -326,7 +326,7 @@ export class ParameterPropertyHandlerRange implements IParameterPropertyHandler 
     for (const valueSuperType of [ ...value.properties.extends, ...value.properties.type ]) {
       // Special case: if the super component is wrapped in a generic component instantiation, unwrap it.
       if (valueSuperType.property.type?.value === this.objectLoader.contextResolved
-        .expandTerm('oo:ParameterRangeGenericComponent')) {
+        .expandTerm('oo:GenericComponentExtension')) {
         // First recursively continue calling hasType for the unwrapped component
         if (this.hasType(
           valueSuperType.property.component,

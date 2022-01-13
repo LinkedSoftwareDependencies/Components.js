@@ -291,7 +291,7 @@ describe('ComponentRegistryFinalizer', () => {
         ],
       });
       const component2 = objectLoader.createCompactedResource({
-        '@type': 'ParameterRangeGenericComponent',
+        '@type': 'GenericComponentExtension',
         component: {
           '@id': 'ex:MyComponent2',
           types: 'oo:Class',

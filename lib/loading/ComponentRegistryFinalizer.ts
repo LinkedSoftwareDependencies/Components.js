@@ -54,7 +54,7 @@ export class ComponentRegistryFinalizer {
     for (let superComponent of superComponents) {
       // Check if the super component is wrapped in a generic component instantiation
       if (superComponent.property.type?.value === this.objectLoader.contextResolved
-        .expandTerm('oo:ParameterRangeGenericComponent')) {
+        .expandTerm('oo:GenericComponentExtension')) {
         superComponent = superComponent.property.component;
       }
 

@@ -75,7 +75,7 @@
           "requireElement": "Hello",
           "extends": [
             {
-              "@type": "ParameterRangeGenericComponent",
+              "@type": "GenericComponentExtension",
               "component": "ex:HelloWorldModule#SayHelloComponentInnerAbstract",
               "genericTypeInstances": [
                 "xsd:boolean"
