@@ -69,6 +69,10 @@ export class ParameterPropertyHandlerRange implements IParameterPropertyHandler 
       return true;
     }
 
+    if (paramRange.isA('ParameterRangeWildcard')) {
+      return true;
+    }
+
     if (!value && paramRange.isA('ParameterRangeUndefined')) {
       return true;
     }

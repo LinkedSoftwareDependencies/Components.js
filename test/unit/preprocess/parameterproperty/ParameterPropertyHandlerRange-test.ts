@@ -519,6 +519,26 @@ describe('ParameterPropertyHandlerRange', () => {
         )).toBeUndefined();
       });
 
+      it('should handle param with wildcard range and a value', () => {
+        expect(handler.captureType(
+          objectLoader.createCompactedResource('"abc"'),
+          objectLoader.createCompactedResource({
+            range: { '@type': 'ParameterRangeWildcard' },
+          }),
+          genericsContext,
+        )).toBeTruthy();
+      });
+
+      it('should handle param with wildcard range and undefined value', () => {
+        expect(handler.captureType(
+          undefined,
+          objectLoader.createCompactedResource({
+            range: { '@type': 'ParameterRangeWildcard' },
+          }),
+          genericsContext,
+        )).toBeUndefined();
+      });
+
       it('should handle array type with valid types', () => {
         expect(handler.captureType(
           objectLoader.createCompactedResource({

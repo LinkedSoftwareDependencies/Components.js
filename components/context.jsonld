@@ -80,6 +80,9 @@
     "ParameterRangeUndefined": {
       "@id": "oo:ParameterRangeUndefined"
     },
+    "ParameterRangeWildcard": {
+      "@id": "oo:ParameterRangeWildcard"
+    },
     "ParameterRangeArray": {
       "@id": "oo:ParameterRangeArray"
     },
