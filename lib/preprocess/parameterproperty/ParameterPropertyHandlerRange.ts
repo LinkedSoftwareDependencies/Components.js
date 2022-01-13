@@ -381,9 +381,9 @@ export class ParameterPropertyHandlerRange implements IParameterPropertyHandler 
                 genericsContext,
                 undefined,
                 [],
-              )) {
+              ) && !this.hasParamValueValidType(value, type, genericTypeInstance, genericsContext)) {
                 // If the generic type instance is just a type, check it against the value in the inner context.
-                // If it does not match, return false.
+                // If it does not match (either is not of that type, or the param type does not match), return false.
                 return false;
               }
             }

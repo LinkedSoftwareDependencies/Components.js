@@ -1804,6 +1804,52 @@ describe('ParameterPropertyHandlerRange', () => {
           }));
         });
 
+        it(`should handle a generic component with value a sub-type with fixed generic with wildcard param generic`, () => {
+          genericsContext = new GenericsContext(objectLoader, []);
+
+          const value = handler.captureType(
+            objectLoader.createCompactedResource({
+              '@type': {
+                '@id': 'ex:SomeType1',
+                extends: {
+                  '@type': 'GenericComponentExtension',
+                  component: {
+                    '@id': 'ex:SomeType2',
+                    genericTypeParameters: [
+                      'ex:SomeType2__generic_T',
+                    ],
+                  },
+                  genericTypeInstances: [
+                    'xsd:integer',
+                  ],
+                },
+              },
+            }),
+            objectLoader.createCompactedResource({
+              range: {
+                '@type': 'ParameterRangeGenericComponent',
+                component: 'ex:SomeType2',
+                genericTypeInstances: [
+                  {
+                    '@type': 'ParameterRangeWildcard',
+                  },
+                ],
+              },
+            }),
+            genericsContext,
+          );
+          expect(value).toBeTruthy();
+          expectOutputProperties(value, objectLoader.createCompactedResource({
+            '@type': [ 'ex:SomeType1' ],
+            genericTypeInstancesComponentScope: 'ex:SomeType2',
+            genericTypeInstances: [
+              {
+                '@type': 'ParameterRangeWildcard',
+              },
+            ],
+          }));
+        });
+
         it(`should throw on a generic component with value a sub-type with fixed generic with incompatible fixed param generic`, () => {
           genericsContext = new GenericsContext(objectLoader, []);
 
