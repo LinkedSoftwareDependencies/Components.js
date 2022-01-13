@@ -618,7 +618,7 @@ describe('construction with component configs as files', () => {
       manager.logger.error = jest.fn();
 
       await expect(manager.instantiate('http://example.org/myconfig2')).rejects
-        .toThrow(`The value "true" for parameter "http://example.org/hello/say" is not of required range type "<http://example.org/HelloWorldModule#SayHelloComponent__generic_T>"`);
+        .toThrow(`The value "true" for parameter "http://example.org/hello/say" is not of required range type "GENERIC: http://example.org/HelloWorldModule#SayHelloComponent__generic_T"`);
       expect(fs.existsSync('componentsjs-error-state.json')).toBeTruthy();
       fs.unlinkSync('componentsjs-error-state.json');
     });
@@ -653,7 +653,7 @@ describe('construction with component configs as files', () => {
       manager.logger.error = jest.fn();
 
       await expect(manager.instantiate('http://example.org/myconfig1')).rejects
-        .toThrow(`The value "abc" for parameter "http://example.org/hello/inner2" is not of required range type "<http://example.org/HelloWorldModule#SayHelloComponentInner__generic_T>"`);
+        .toThrow(`The value "abc" for parameter "http://example.org/hello/inner2" is not of required range type "GENERIC: http://example.org/HelloWorldModule#SayHelloComponentInner__generic_T"`);
       expect(fs.existsSync('componentsjs-error-state.json')).toBeTruthy();
       fs.unlinkSync('componentsjs-error-state.json');
     });
@@ -699,7 +699,7 @@ describe('construction with component configs as files', () => {
       manager.logger.error = jest.fn();
 
       await expect(manager.instantiate('http://example.org/myconfig1')).rejects
-        .toThrow(`The value "http://example.org/myconfig1-innervalue" with types "http://example.org/HelloWorldModule#SayHelloComponentInner" for parameter "http://example.org/hello/inner" is not of required range type "(http://example.org/HelloWorldModule#SayHelloComponentInnerAbstract)<http://example.org/HelloWorldModule#SayHelloComponent__generic_T>"`);
+        .toThrow(`The value "http://example.org/myconfig1-innervalue" with types "http://example.org/HelloWorldModule#SayHelloComponentInner" for parameter "http://example.org/hello/inner" is not of required range type "(http://example.org/HelloWorldModule#SayHelloComponentInnerAbstract)<GENERIC: http://example.org/HelloWorldModule#SayHelloComponent__generic_T>"`);
       expect(fs.existsSync('componentsjs-error-state.json')).toBeTruthy();
       fs.unlinkSync('componentsjs-error-state.json');
     });

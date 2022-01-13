@@ -1062,7 +1062,7 @@ describe('ParameterPropertyHandlerRange', () => {
             }),
             genericsContext,
             // eslint-disable-next-line max-len
-          )).toThrow(/^The value "def" for parameter ".*" is not of required range type "<UNKNOWN GENERIC: ex:GEN_T>"/u);
+          )).toThrow(/^The value "def" for parameter ".*" is not of required range type "UNKNOWN GENERIC: ex:GEN_T"/u);
         });
 
         it('should handle a bound generic type reference with a compatible literal value', () => {
@@ -1119,7 +1119,7 @@ describe('ParameterPropertyHandlerRange', () => {
             }),
             genericsContext,
             // eslint-disable-next-line max-len
-          )).toThrow(/^The value "true" for parameter ".*" is not of required range type "<ex:GEN_T>"/u);
+          )).toThrow(/^The value "true" for parameter ".*" is not of required range type "GENERIC: ex:GEN_T"/u);
         });
 
         it('should handle an unbound generic type reference with a component value', () => {
@@ -1182,7 +1182,7 @@ describe('ParameterPropertyHandlerRange', () => {
             }),
             genericsContext,
             // eslint-disable-next-line max-len
-          )).toThrow(/^The value "ex:component" with types "ex:SomeType1" for parameter ".*" is not of required range type "<ex:GEN_T>"/u);
+          )).toThrow(/^The value "ex:component" with types "ex:SomeType1" for parameter ".*" is not of required range type "GENERIC: ex:GEN_T"/u);
         });
 
         it('should handle a bound generic type reference with a compatible undefined value', () => {
@@ -1221,7 +1221,7 @@ describe('ParameterPropertyHandlerRange', () => {
             }),
             genericsContext,
             // eslint-disable-next-line max-len
-          )).toThrow(/^The value "true" for parameter ".*" is not of required range type "<ex:GEN_T>"/u);
+          )).toThrow(/^The value "true" for parameter ".*" is not of required range type "GENERIC: ex:GEN_T"/u);
         });
 
         it('should handle a generic component without generic binding', () => {
@@ -1361,7 +1361,46 @@ describe('ParameterPropertyHandlerRange', () => {
             }),
             genericsContext,
             // eslint-disable-next-line max-len
-          )).toThrow(/^The value ".*" with types "ex:SomeType1" for parameter ".*" is not of required range type "\(ex:SomeType2\)<ex:GEN_T>"/u);
+          )).toThrow(/^The value ".*" with types "ex:SomeType1" for parameter ".*" is not of required range type "\(ex:SomeType2\)<GENERIC: ex:GEN_T>"/u);
+        });
+
+        it('should throw on a generic component with an incompatible values', () => {
+          genericsContext = new GenericsContext(objectLoader, [
+            objectLoader.createCompactedResource('ex:GEN_T'),
+            objectLoader.createCompactedResource('ex:GEN_U'),
+          ]);
+          genericsContext.bindings['ex:GEN_T'] = objectLoader.createCompactedResource('ex:SomeType2');
+          genericsContext.bindings['ex:GEN_U'] = objectLoader.createCompactedResource('ex:SomeType2');
+
+          expect(() => handler.captureType(
+            objectLoader.createCompactedResource({
+              '@type': [ 'ex:SomeType1' ],
+            }),
+            objectLoader.createCompactedResource({
+              range: {
+                '@type': 'ParameterRangeGenericComponent',
+                component: {
+                  '@id': 'ex:SomeType2',
+                  genericTypeParameters: [
+                    'ex:SomeType2__generic_T',
+                    'ex:SomeType2__generic_U',
+                  ],
+                },
+                genericTypeInstances: [
+                  {
+                    '@type': 'ParameterRangeGenericTypeReference',
+                    parameterRangeGenericType: 'ex:GEN_T',
+                  },
+                  {
+                    '@type': 'ParameterRangeGenericTypeReference',
+                    parameterRangeGenericType: 'ex:GEN_U',
+                  },
+                ],
+              },
+            }),
+            genericsContext,
+            // eslint-disable-next-line max-len
+          )).toThrow(/^The value ".*" with types "ex:SomeType1" for parameter ".*" is not of required range type "\(ex:SomeType2\)<GENERIC: ex:GEN_T, GENERIC: ex:GEN_U>"/u);
         });
 
         it('should handle a generic component with a direct type value', () => {
@@ -1600,7 +1639,7 @@ describe('ParameterPropertyHandlerRange', () => {
             }),
             genericsContext,
             // eslint-disable-next-line max-len
-          )).toThrow(/The value ".*" with types "ex:SomeType1" for parameter ".*" is not of required range type "\(ex:SomeType2\)<ex:GEN_T>"/u);
+          )).toThrow(/The value ".*" with types "ex:SomeType1" for parameter ".*" is not of required range type "\(ex:SomeType2\)<GENERIC: ex:GEN_T>"/u);
         });
 
         it('should handle a generic component with value a sub-type with unbound generic', () => {
@@ -1720,7 +1759,7 @@ describe('ParameterPropertyHandlerRange', () => {
             }),
             genericsContext,
             // eslint-disable-next-line max-len
-          )).toThrow(/The value ".*" with types "ex:SomeType1" for parameter ".*" is not of required range type "\(ex:SomeType2\)<ex:GEN_T>"/u);
+          )).toThrow(/The value ".*" with types "ex:SomeType1" for parameter ".*" is not of required range type "\(ex:SomeType2\)<GENERIC: ex:GEN_T>"/u);
         });
 
         it(`should handle a generic component with value a sub-type with fixed generic with fixed param generic`, () => {
@@ -1797,7 +1836,7 @@ describe('ParameterPropertyHandlerRange', () => {
             }),
             genericsContext,
             // eslint-disable-next-line max-len
-          )).toThrow(/The value ".*" with types "ex:SomeType1" for parameter ".*" is not of required range type "\(ex:SomeType2\).*#boolean"/u);
+          )).toThrow(/The value ".*" with types "ex:SomeType1" for parameter ".*" is not of required range type "\(ex:SomeType2\)<.*#boolean>"/u);
         });
       });
     });

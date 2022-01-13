@@ -446,11 +446,11 @@ export class ParameterPropertyHandlerRange implements IParameterPropertyHandler 
     }
     if (paramRange.isA('ParameterRangeGenericTypeReference')) {
       const valid = paramRange.property.parameterRangeGenericType.value in genericsContext.genericTypeIds;
-      return `<${valid ? '' : 'UNKNOWN GENERIC: '}${paramRange.property.parameterRangeGenericType.value}>`;
+      return `${valid ? 'GENERIC: ' : 'UNKNOWN GENERIC: '}${paramRange.property.parameterRangeGenericType.value}`;
     }
     if (paramRange.isA('ParameterRangeGenericComponent')) {
-      return `(${this.rangeToDisplayString(paramRange.property.component, genericsContext)})${paramRange.properties.genericTypeInstances
-        .map(genericTypeInstance => this.rangeToDisplayString(genericTypeInstance, genericsContext)).join('')}`;
+      return `(${this.rangeToDisplayString(paramRange.property.component, genericsContext)})<${paramRange.properties.genericTypeInstances
+        .map(genericTypeInstance => this.rangeToDisplayString(genericTypeInstance, genericsContext)).join(', ')}>`;
     }
     return paramRange.value;
   }
