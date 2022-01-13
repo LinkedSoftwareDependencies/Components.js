@@ -1809,6 +1809,13 @@ describe('ParameterPropertyHandlerRange', () => {
       expect(handler.rangeToDisplayString(undefined, genericsContext)).toEqual('any');
     });
 
+    it('handles wildcard range', () => {
+      // eslint-disable-next-line unicorn/no-useless-undefined
+      expect(handler.rangeToDisplayString(objectLoader.createCompactedResource({
+        '@type': 'ParameterRangeWildcard',
+      }), genericsContext)).toEqual('any');
+    });
+
     it('handles ParameterRangeUndefined range', () => {
       expect(handler.rangeToDisplayString(objectLoader.createCompactedResource({
         '@type': 'ParameterRangeUndefined',

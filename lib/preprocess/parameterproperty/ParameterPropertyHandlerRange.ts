@@ -411,7 +411,7 @@ export class ParameterPropertyHandlerRange implements IParameterPropertyHandler 
   }
 
   public rangeToDisplayString(paramRange: Resource | undefined, genericsContext: GenericsContext): string {
-    if (!paramRange) {
+    if (!paramRange || paramRange.isA('ParameterRangeWildcard')) {
       return `any`;
     }
     if (paramRange.isA('ParameterRangeUndefined')) {
