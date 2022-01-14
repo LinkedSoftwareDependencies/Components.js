@@ -1,6 +1,6 @@
 import type { RdfObjectLoader, Resource } from 'rdf-object';
 import { IRIS_RDF, IRIS_XSD } from '../../rdf/Iris';
-import type { ErrorContext } from '../../util/ErrorResourcesContext';
+import type { IErrorContext } from '../../util/ErrorResourcesContext';
 import { ErrorResourcesContext } from '../../util/ErrorResourcesContext';
 import { GenericsContext } from '../GenericsContext';
 import type { IParameterPropertyHandler } from './IParameterPropertyHandler';
@@ -44,7 +44,7 @@ export class ParameterPropertyHandlerRange implements IParameterPropertyHandler 
     param: Resource,
     genericsContext: GenericsContext,
   ): Resource | undefined {
-    const errorContext: ErrorContext = { param };
+    const errorContext: IErrorContext = { param };
     const conflict = this.hasValueType(value, param.property.range, errorContext, genericsContext);
     if (!conflict) {
       return value;
@@ -66,7 +66,7 @@ export class ParameterPropertyHandlerRange implements IParameterPropertyHandler 
   public hasValueType(
     value: Resource | undefined,
     type: Resource | undefined,
-    errorContext: ErrorContext,
+    errorContext: IErrorContext,
     genericsContext: GenericsContext,
   ): IParamValueConflict | undefined {
     errorContext = { ...errorContext, value, type };
@@ -394,7 +394,7 @@ export class ParameterPropertyHandlerRange implements IParameterPropertyHandler 
     // eslint-disable-next-line @typescript-eslint/no-extra-parens
     const valueString = value ? (value.list ? `[${value.list.map(subValue => subValue.value).join(', ')}]` : value.value) : 'undefined';
     throw new ErrorResourcesContext(`The value "${valueString}"${withTypes} for parameter "${parameter.value}" is not of required range type "${ParameterPropertyHandlerRange.rangeToDisplayString(parameter.property.range, genericsContext)}"`, {
-      cause: ParameterPropertyHandlerRange.conflictToString(conflict, 2),
+      cause: conflict,
       value: value || 'undefined',
       ...Object.keys(genericsContext.bindings).length > 0 ?
         { generics: `[\n  ${Object.entries(genericsContext.bindings)
@@ -403,18 +403,6 @@ export class ParameterPropertyHandlerRange implements IParameterPropertyHandler 
         {},
       parameter,
     });
-  }
-
-  public static conflictToString(conflict: IParamValueConflict, indent: number): string {
-    let message = `${conflict.description}`;
-    if (conflict.causes) {
-      for (const subConflict of conflict.causes) {
-        message += `\n${' '.repeat(indent)}${ParameterPropertyHandlerRange.conflictToString(subConflict, indent + 2)}`;
-      }
-    } else {
-      message += `\n${' '.repeat(indent)}${ErrorResourcesContext.contextToString(conflict.context, indent)}`;
-    }
-    return message;
   }
 
   /**
@@ -433,7 +421,7 @@ export class ParameterPropertyHandlerRange implements IParameterPropertyHandler 
     genericsContext: GenericsContext,
     genericTypeInstancesComponentScope: Resource | undefined,
     genericTypeInstances: Resource[],
-    errorContext: ErrorContext,
+    errorContext: IErrorContext,
   ): IParamValueConflict | undefined {
     // Immediately return if the terms are equal
     if (value.term.equals(type.term)) {
@@ -615,6 +603,6 @@ export class ParameterPropertyHandlerRange implements IParameterPropertyHandler 
  */
 export interface IParamValueConflict {
   description: string;
-  context: ErrorContext;
+  context: IErrorContext;
   causes?: IParamValueConflict[];
 }

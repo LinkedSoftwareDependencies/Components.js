@@ -1,48 +1,63 @@
-import NodeUtil = require('util');
-import type { Resource } from 'rdf-object';
+import { Resource } from 'rdf-object';
+import type { IParamValueConflict } from '../preprocess/parameterproperty/ParameterPropertyHandlerRange';
 
 /**
  * An error that can include a context containing resources for display.
  */
 export class ErrorResourcesContext extends Error {
-  public readonly context: ErrorContext;
+  public readonly context: IErrorContext;
 
-  public constructor(message: string, context: ErrorContext) {
-    super(`${message}\n${ErrorResourcesContext.contextToString(context)}`);
+  public constructor(message: string, context: IErrorContext) {
+    super(message);
     this.name = 'ErrorResourcesContext';
     this.context = context;
   }
 
-  public static contextToString(context: ErrorContext, indent = 0): string {
-    return Object.entries(context)
-      .map(([ key, value ]) => `${key}: ${typeof value === 'string' ?
-        value :
-        // eslint-disable-next-line @typescript-eslint/no-extra-parens
-        (Array.isArray(value) ?
-          value.map(valueSub => ErrorResourcesContext.resourceToString(valueSub)) :
-          ErrorResourcesContext.resourceToString(value))}`)
-      .join(`\n${' '.repeat(indent)}`);
+  public exportContext(): any {
+    return ErrorResourcesContext.contextToJson(this.context);
   }
 
-  /**
-   * Convert the given resource to a compact string.
-   * Mainly used for error reporting.
-   *
-   * Note that this will remove certain fields from the resource,
-   * so only use this when throwing an error that will stop the process.
-   *
-   * @param resource A resource.
-   */
-  public static resourceToString(resource: Resource | undefined): string {
-    if (!resource) {
-      return 'undefined';
+  public static contextToJson(context: IErrorContext): any {
+    return Object.fromEntries(Object.entries(context)
+      .map(([ key, value ]) => {
+        let mapped: any;
+        if (typeof value === 'string') {
+          mapped = value;
+        } else if (Array.isArray(value)) {
+          mapped = value.map(valueSub => ErrorResourcesContext.resourceToJson(valueSub));
+        } else if (value instanceof Resource || value === undefined) {
+          mapped = ErrorResourcesContext.resourceToJson(value);
+        } else if ('description' in value) {
+          mapped = ErrorResourcesContext.conflictToJson(<IParamValueConflict> value);
+        } else {
+          mapped = ErrorResourcesContext.contextToJson(value);
+        }
+        return [ key, mapped ];
+      }));
+  }
+
+  public static resourceToJson(resource: Resource | undefined): any {
+    if (resource) {
+      return resource.toJSON(1);
     }
-    return NodeUtil.inspect({
-      term: resource.term,
-      properties: resource.properties,
-      ...resource.list ? { list: resource.list } : {},
-    }, { colors: true, depth: 2 });
+  }
+
+  public static conflictToJson(conflict: IParamValueConflict): any {
+    const data: any = { description: conflict.description };
+    if (conflict.causes) {
+      data.causes = [];
+      // Only pick the first 2 conflicts for visualization
+      for (const subConflict of conflict.causes.slice(0, 1)) {
+        data.causes.push(ErrorResourcesContext.conflictToJson(subConflict));
+      }
+    } else {
+      data.context = ErrorResourcesContext.contextToJson(conflict.context);
+    }
+    return data;
   }
 }
 
-export type ErrorContext = Record<string, Resource | Resource[] | string | undefined>;
+// eslint-disable-next-line @typescript-eslint/consistent-indexed-object-style
+export interface IErrorContext {
+  [key: string]: Resource | Resource[] | string | undefined | IErrorContext | IParamValueConflict;
+}

@@ -4245,10 +4245,10 @@ rdf-literal@^1.2.0:
     "@rdfjs/types" "*"
     rdf-data-factory "^1.1.0"
 
-rdf-object@^1.12.0:
-  version "1.12.0"
-  resolved "https://registry.yarnpkg.com/rdf-object/-/rdf-object-1.12.0.tgz#76f786f333a5bd4eb9f11b10af8879950123249e"
-  integrity sha512-LF4LjYCneh2RJcUSPWbTfGgsYqRMcElmHDR3lPkMrJQ6azrCqY9DLdVWaqK7xRn1ujeHWiOkS34ThTZgzzvuUQ==
+rdf-object@^1.13.0:
+  version "1.13.0"
+  resolved "https://registry.yarnpkg.com/rdf-object/-/rdf-object-1.13.0.tgz#8914d09de1430fcc76a197f2ee1ecab8c341e852"
+  integrity sha512-a32scuLEGWfes8Da2fg3ArpT5iJZABEtpQ3OS1ZbPAAMKiwMTNtJxbsK1XZeXYaVAxNTcxLAwDnOrcmy8vtImA==
   dependencies:
     "@rdfjs/types" "*"
     jsonld-context-parser "^2.0.2"

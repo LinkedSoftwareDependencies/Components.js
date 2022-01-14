@@ -11,6 +11,7 @@ import {
   ParameterPropertyHandlerRange,
 } from '../../../../lib/preprocess/parameterproperty/ParameterPropertyHandlerRange';
 import { IRIS_RDF, IRIS_XSD } from '../../../../lib/rdf/Iris';
+import type { ErrorResourcesContext } from '../../../../lib/util/ErrorResourcesContext';
 
 const DF = new DataFactory();
 
@@ -2459,61 +2460,21 @@ describe('ParameterPropertyHandlerRange', () => {
     it('handles generics', () => {
       genericsContext.bindings['ex:T'] = objectLoader.createCompactedResource('ex:A');
       genericsContext.bindings['ex:U'] = objectLoader.createCompactedResource('ex:B');
-      expect(() => ParameterPropertyHandlerRange.throwIncorrectTypeError(
-        objectLoader.createCompactedResource('ex:value'),
-        objectLoader.createCompactedResource('ex:param'),
-        genericsContext,
-        conflict,
-      )).toThrow(`generics: [
+      try {
+        ParameterPropertyHandlerRange.throwIncorrectTypeError(
+          objectLoader.createCompactedResource('ex:value'),
+          objectLoader.createCompactedResource('ex:param'),
+          genericsContext,
+          conflict,
+        );
+        expect(false).toBeTruthy(); // This can't occur
+      } catch (error: unknown) {
+        const context = (<ErrorResourcesContext> error).exportContext();
+        expect(context.generics).toEqual(`[
   <ex:T> => ex:A,
   <ex:U> => ex:B
 ]`);
-    });
-  });
-
-  describe('conflictToString', () => {
-    it('for no inner causes', () => {
-      expect(ParameterPropertyHandlerRange.conflictToString({
-        description: 'cause',
-        context: {
-          a: 'A',
-          b: 'B',
-        },
-      }, 2)).toEqual(`cause
-  a: A
-  b: B`);
-    });
-
-    it('for inner causes', () => {
-      expect(ParameterPropertyHandlerRange.conflictToString({
-        description: 'cause',
-        context: {
-          a: 'A',
-          b: 'B',
-        },
-        causes: [
-          {
-            description: 'causeinner1',
-            context: {
-              a: 'A',
-              b: 'B',
-            },
-          },
-          {
-            description: 'causeinner2',
-            context: {
-              a: 'A',
-              b: 'B',
-            },
-          },
-        ],
-      }, 2)).toEqual(`cause
-  causeinner1
-    a: A
-    b: B
-  causeinner2
-    a: A
-    b: B`);
+      }
     });
   });
 

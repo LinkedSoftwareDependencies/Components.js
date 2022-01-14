@@ -7,6 +7,7 @@ import type { IComponentsManagerBuilderOptions } from './loading/ComponentsManag
 import { ComponentsManagerBuilder } from './loading/ComponentsManagerBuilder';
 import type { ConfigRegistry } from './loading/ConfigRegistry';
 import type { IModuleState } from './loading/ModuleStateBuilder';
+import { ErrorResourcesContext } from './util/ErrorResourcesContext';
 
 /**
  * A components manager can instantiate components.
@@ -67,6 +68,7 @@ export class ComponentsManager<Instance> {
   private generateErrorLog(error: unknown): Error {
     if (this.dumpErrorState) {
       const contents = JSON.stringify({
+        ...error instanceof ErrorResourcesContext ? error.exportContext() : {},
         componentTypes: Object.keys(this.componentResources),
         moduleState: {
           mainModulePath: this.moduleState.mainModulePath,

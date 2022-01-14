@@ -40,7 +40,7 @@
     "jsonld-context-parser": "^2.1.1",
     "minimist": "^1.2.0",
     "rdf-data-factory": "^1.1.0",
-    "rdf-object": "^1.12.0",
+    "rdf-object": "^1.13.0",
     "rdf-parse": "^1.9.1",
     "rdf-quad": "^1.5.0",
     "rdf-terms": "^1.7.0",

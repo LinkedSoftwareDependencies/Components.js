@@ -7,6 +7,7 @@ import { ComponentsManager } from '../../../lib/ComponentsManager';
 import type { IConfigConstructorPool } from '../../../lib/construction/IConfigConstructorPool';
 import { ConfigRegistry } from '../../../lib/loading/ConfigRegistry';
 import type { IModuleState } from '../../../lib/loading/ModuleStateBuilder';
+import { ErrorResourcesContext } from '../../../lib/util/ErrorResourcesContext';
 
 jest.spyOn(fs, 'writeFileSync');
 mocked(fs.writeFileSync).mockReturnValue();
@@ -129,6 +130,33 @@ describe('ComponentsManager', () => {
         componentsManager.objectLoader.resources['http://example.org/myconfig'],
         { variables: { a: 1 }},
       );
+    });
+  });
+
+  describe('generateErrorLog', () => {
+    it('should export the context for an ErrorResourcesContext', () => {
+      componentsManager = new ComponentsManager({
+        moduleState,
+        objectLoader,
+        componentResources,
+        configRegistry,
+        dumpErrorState: true,
+        configConstructorPool,
+        logger,
+      });
+      (<any> componentsManager).generateErrorLog(new ErrorResourcesContext('test', { a: 'b' }));
+      expect(fs.writeFileSync).toHaveBeenCalledWith('componentsjs-error-state.json', JSON.stringify({
+        a: 'b',
+        componentTypes: [],
+        moduleState: {
+          mainModulePath,
+          componentModules: {
+            A: `${mainModulePath}/../../assets/module.jsonld`,
+          },
+          nodeModulePaths: [],
+        },
+      }, null, '  '), 'utf8');
+      expect(logger.error).toHaveBeenCalledWith(`Detected fatal error. Generated 'componentsjs-error-state.json' with more information.`);
     });
   });
 });
