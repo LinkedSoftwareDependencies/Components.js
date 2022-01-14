@@ -5,15 +5,15 @@ import type { Resource } from 'rdf-object';
  * An error that can include a context containing resources for display.
  */
 export class ErrorResourcesContext extends Error {
-  public readonly context: Record<string, Resource | Resource[] | string>;
+  public readonly context: ErrorContext;
 
-  public constructor(message: string, context: Record<string, Resource | Resource[] | string>) {
+  public constructor(message: string, context: ErrorContext) {
     super(`${message}\n${ErrorResourcesContext.contextToString(context)}`);
     this.name = 'ErrorResourcesContext';
     this.context = context;
   }
 
-  public static contextToString(context: Record<string, Resource | Resource[] | string>): string {
+  public static contextToString(context: ErrorContext): string {
     return Object.entries(context)
       .map(([ key, value ]) => `${key}: ${typeof value === 'string' ?
         value :
@@ -33,7 +33,10 @@ export class ErrorResourcesContext extends Error {
    *
    * @param resource A resource.
    */
-  public static resourceToString(resource: Resource): string {
+  public static resourceToString(resource: Resource | undefined): string {
+    if (!resource) {
+      return 'undefined';
+    }
     return NodeUtil.inspect({
       term: resource.term,
       properties: resource.properties,
@@ -41,3 +44,5 @@ export class ErrorResourcesContext extends Error {
     }, { colors: true, depth: 2 });
   }
 }
+
+export type ErrorContext = Record<string, Resource | Resource[] | string | undefined>;

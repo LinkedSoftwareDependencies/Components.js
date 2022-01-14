@@ -1,6 +1,8 @@
 import type * as RDF from '@rdfjs/types';
 import type { Resource, RdfObjectLoader } from 'rdf-object';
 import { ErrorResourcesContext } from '../util/ErrorResourcesContext';
+import type { IParamValueConflict } from './parameterproperty/ParameterPropertyHandlerRange';
+import { ParameterPropertyHandlerRange } from './parameterproperty/ParameterPropertyHandlerRange';
 
 /**
  * Context for binding generic types to a concrete range value.
@@ -74,23 +76,33 @@ export class GenericsContext {
   public bindGenericTypeToValue(
     genericTypeId: string,
     value: Resource | undefined,
-    typeValidator: (subValue: Resource | undefined, subType: Resource) => boolean,
-  ): boolean {
+    typeValidator: (subValue: Resource | undefined, subType: Resource) => IParamValueConflict | undefined,
+  ): IParamValueConflict | undefined {
     // Fail if an unknown generic type is referenced
     if (!(genericTypeId in this.genericTypeIds)) {
-      return false;
+      return {
+        description: `unknown generic <${genericTypeId}> is being referenced`,
+        context: { value },
+      };
     }
 
     // If the generic was already bound to a range, validate it
     const existingRange = this.bindings[genericTypeId];
-    if (existingRange && !typeValidator(value, existingRange)) {
-      return false;
+    if (existingRange) {
+      const subConflict = typeValidator(value, existingRange);
+      if (subConflict) {
+        return {
+          description: `generic <${genericTypeId}> with existing range "${ParameterPropertyHandlerRange.rangeToDisplayString(existingRange, this)}" can not contain the given value`,
+          context: { existingRange, value },
+          causes: [ subConflict ],
+        };
+      }
     }
 
     // Infer type of value
     const valueRange = this.inferValueRange(value);
     if (!valueRange) {
-      return true;
+      return;
     }
 
     // Save inferred type
@@ -106,24 +118,31 @@ export class GenericsContext {
   public bindGenericTypeToRange(
     genericTypeId: string,
     range: Resource,
-  ): boolean {
+  ): IParamValueConflict | undefined {
     // Fail if an unknown generic type is referenced
     if (!(genericTypeId in this.genericTypeIds)) {
-      return false;
+      return {
+        description: `unknown generic <${genericTypeId}> is being referenced`,
+      };
     }
 
     // If we already had a range, check if they match
     if (this.bindings[genericTypeId]) {
       const mergedRange = this.mergeRanges(this.bindings[genericTypeId], range);
       if (!mergedRange) {
-        return false;
+        return {
+          description: `generic <${genericTypeId}> with existing range "${ParameterPropertyHandlerRange.rangeToDisplayString(this.bindings[genericTypeId], this)}" can not be bound to range "${ParameterPropertyHandlerRange.rangeToDisplayString(range, this)}"`,
+          context: {
+            existingRange: this.bindings[genericTypeId],
+            newRange: range,
+          },
+        };
       }
 
       range = mergedRange;
     }
 
     this.bindings[genericTypeId] = range;
-    return true;
   }
 
   /**
@@ -249,12 +268,14 @@ export class GenericsContext {
     component: Resource,
     genericTypeInstances: Resource[],
     errorContext: Record<string, Resource | Resource[] | string>,
-  ): boolean {
+  ): IParamValueConflict | undefined {
     const genericTypeParameters = component.properties.genericTypeParameters;
 
     // Don't do anything if no generic type instances are passed.
     if (genericTypeInstances.length === 0) {
-      return false;
+      return {
+        description: `no generic type instances are passed`,
+      };
     }
 
     // Throw if an unexpected number of generic type instances are passed.
@@ -271,15 +292,19 @@ export class GenericsContext {
     for (const [ i, genericTypeInstance ] of genericTypeInstances.entries()) {
       // Remap generic type IRI to inner generic type IRI
       const genericTypeIdInner = genericTypeParameters[i].value;
-      if (genericTypeInstance.property.parameterRangeGenericBindings && !this.bindGenericTypeToRange(
-        genericTypeIdInner,
-        genericTypeInstance.property.parameterRangeGenericBindings,
-      )) {
-        return false;
+      if (genericTypeInstance.property.parameterRangeGenericBindings) {
+        const subConflict = this.bindGenericTypeToRange(
+          genericTypeIdInner,
+          genericTypeInstance.property.parameterRangeGenericBindings,
+        );
+        if (subConflict) {
+          return {
+            description: `invalid binding for generic <${genericTypeIdInner}>`,
+            causes: [ subConflict ],
+          };
+        }
       }
       this.genericTypeIds[genericTypeIdInner] = true;
     }
-
-    return true;
   }
 }

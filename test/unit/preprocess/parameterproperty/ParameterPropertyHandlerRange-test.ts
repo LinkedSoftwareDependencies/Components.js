@@ -641,6 +641,21 @@ describe('ParameterPropertyHandlerRange', () => {
         )).toThrow(/^The value "\[ex:abc\]" for parameter ".*" is not of required range type "\[ex:SomeType\]"/u);
       });
 
+      it('should throw on tuple type without vakue', () => {
+        expect(() => handler.captureType(
+          undefined,
+          objectLoader.createCompactedResource({
+            range: {
+              '@type': 'ParameterRangeTuple',
+              parameterRangeElements: [
+                { '@id': 'ex:SomeType' },
+              ],
+            },
+          }),
+          genericsContext,
+        )).toThrow(/^The value ".*" for parameter ".*" is not of required range type "\[ex:SomeType\]"/u);
+      });
+
       it('should throw on tuple type without list', () => {
         expect(() => handler.captureType(
           objectLoader.createCompactedResource({}),
@@ -1891,18 +1906,18 @@ describe('ParameterPropertyHandlerRange', () => {
   describe('rangeToDisplayString', () => {
     it('handles undefined range', () => {
       // eslint-disable-next-line unicorn/no-useless-undefined
-      expect(handler.rangeToDisplayString(undefined, genericsContext)).toEqual('any');
+      expect(ParameterPropertyHandlerRange.rangeToDisplayString(undefined, genericsContext)).toEqual('any');
     });
 
     it('handles wildcard range', () => {
       // eslint-disable-next-line unicorn/no-useless-undefined
-      expect(handler.rangeToDisplayString(objectLoader.createCompactedResource({
+      expect(ParameterPropertyHandlerRange.rangeToDisplayString(objectLoader.createCompactedResource({
         '@type': 'ParameterRangeWildcard',
       }), genericsContext)).toEqual('any');
     });
 
     it('handles ParameterRangeUndefined range', () => {
-      expect(handler.rangeToDisplayString(objectLoader.createCompactedResource({
+      expect(ParameterPropertyHandlerRange.rangeToDisplayString(objectLoader.createCompactedResource({
         '@type': 'ParameterRangeUndefined',
       }), genericsContext)).toEqual('undefined');
     });

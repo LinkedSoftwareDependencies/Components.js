@@ -4,6 +4,7 @@ import { DataFactory } from 'rdf-data-factory';
 import type { Resource } from 'rdf-object';
 import { RdfObjectLoader } from 'rdf-object';
 import { GenericsContext } from '../../../lib/preprocess/GenericsContext';
+import type { IParamValueConflict } from '../../../lib/preprocess/parameterproperty/ParameterPropertyHandlerRange';
 
 const DF = new DataFactory();
 
@@ -67,10 +68,10 @@ describe('GenericsContext', () => {
     });
 
     describe('bindGenericTypeToValue', () => {
-      let typeValidator: (subValue: Resource | undefined, subType: Resource) => boolean;
+      let typeValidator: (subValue: Resource | undefined, subType: Resource) => IParamValueConflict | undefined;
 
       beforeEach(() => {
-        typeValidator = jest.fn(() => true);
+        typeValidator = jest.fn();
       });
 
       it('should not bind undefined generic types', () => {
@@ -78,20 +79,34 @@ describe('GenericsContext', () => {
           'ex:UNKNOWN',
           objectLoader.createCompactedResource('"value"^^http://www.w3.org/2001/XMLSchema#string'),
           typeValidator,
-        )).toBeFalsy();
+        )).toEqual({
+          description: 'unknown generic <ex:UNKNOWN> is being referenced',
+          context: {
+            value: objectLoader.createCompactedResource('"value"^^http://www.w3.org/2001/XMLSchema#string'),
+          },
+        });
 
         expect(Object.keys(genericsContext.genericTypeIds)).toEqual([ 'ex:T', 'ex:U', 'ex:V' ]);
         expect(Object.keys(genericsContext.bindings)).toEqual([ 'ex:U', 'ex:V' ]);
       });
 
       it('should not bind a range that does not match an existing range', () => {
-        typeValidator = jest.fn(() => false);
+        typeValidator = jest.fn(() => ({ description: 'invalid type' }));
 
         expect(genericsContext.bindGenericTypeToValue(
           'ex:U',
           objectLoader.createCompactedResource('"value"^^http://www.w3.org/2001/XMLSchema#not-a-string'),
           typeValidator,
-        )).toBeFalsy();
+        )).toEqual({
+          description: `generic <ex:U> with existing range "http://www.w3.org/2001/XMLSchema#string" can not contain the given value`,
+          context: {
+            existingRange: objectLoader.createCompactedResource('http://www.w3.org/2001/XMLSchema#string'),
+            value: objectLoader.createCompactedResource('"value"^^http://www.w3.org/2001/XMLSchema#not-a-string'),
+          },
+          causes: [
+            { description: 'invalid type' },
+          ],
+        });
         expect(typeValidator).toHaveBeenCalledWith(
           objectLoader.createCompactedResource('"value"^^http://www.w3.org/2001/XMLSchema#not-a-string'),
           objectLoader.createCompactedResource('xsd:string'),
@@ -103,13 +118,13 @@ describe('GenericsContext', () => {
       });
 
       it('should bind a range that does match an existing range', () => {
-        typeValidator = jest.fn(() => true);
+        typeValidator = jest.fn();
 
         expect(genericsContext.bindGenericTypeToValue(
           'ex:U',
           objectLoader.createCompactedResource('"value"^^http://www.w3.org/2001/XMLSchema#string'),
           typeValidator,
-        )).toBeTruthy();
+        )).toBeUndefined();
         expect(typeValidator).toHaveBeenCalledWith(
           objectLoader.createCompactedResource('"value"^^http://www.w3.org/2001/XMLSchema#string'),
           objectLoader.createCompactedResource('xsd:string'),
@@ -125,7 +140,7 @@ describe('GenericsContext', () => {
           'ex:T',
           objectLoader.createCompactedResource('"value"^^http://www.w3.org/2001/XMLSchema#string'),
           typeValidator,
-        )).toBeTruthy();
+        )).toBeUndefined();
         expect(genericsContext.bindings['ex:T']).toEqual(objectLoader.createCompactedResource('xsd:string'));
 
         expect(Object.keys(genericsContext.genericTypeIds)).toEqual([ 'ex:T', 'ex:U', 'ex:V' ]);
@@ -137,7 +152,7 @@ describe('GenericsContext', () => {
           'ex:T',
           objectLoader.createCompactedResource('ex:this-has-no-type'),
           typeValidator,
-        )).toBeTruthy();
+        )).toBeUndefined();
         expect(genericsContext.bindings['ex:T']).toBeUndefined();
 
         expect(Object.keys(genericsContext.genericTypeIds)).toEqual([ 'ex:T', 'ex:U', 'ex:V' ]);
@@ -150,7 +165,9 @@ describe('GenericsContext', () => {
         expect(genericsContext.bindGenericTypeToRange(
           'ex:UNKNOWN',
           objectLoader.createCompactedResource('xsd:string'),
-        )).toBeFalsy();
+        )).toEqual({
+          description: 'unknown generic <ex:UNKNOWN> is being referenced',
+        });
 
         expect(Object.keys(genericsContext.genericTypeIds)).toEqual([ 'ex:T', 'ex:U', 'ex:V' ]);
         expect(Object.keys(genericsContext.bindings)).toEqual([ 'ex:U', 'ex:V' ]);
@@ -160,7 +177,13 @@ describe('GenericsContext', () => {
         expect(genericsContext.bindGenericTypeToRange(
           'ex:U',
           objectLoader.createCompactedResource('xsd:not-a-string'),
-        )).toBeFalsy();
+        )).toEqual({
+          description: `generic <ex:U> with existing range "http://www.w3.org/2001/XMLSchema#string" can not be bound to range "http://www.w3.org/2001/XMLSchema#not-a-string"`,
+          context: {
+            existingRange: objectLoader.createCompactedResource('http://www.w3.org/2001/XMLSchema#string'),
+            newRange: objectLoader.createCompactedResource('http://www.w3.org/2001/XMLSchema#not-a-string'),
+          },
+        });
         expect(genericsContext.bindings['ex:U']).toEqual(objectLoader.createCompactedResource('xsd:string'));
 
         expect(Object.keys(genericsContext.genericTypeIds)).toEqual([ 'ex:T', 'ex:U', 'ex:V' ]);
@@ -171,7 +194,7 @@ describe('GenericsContext', () => {
         expect(genericsContext.bindGenericTypeToRange(
           'ex:U',
           objectLoader.createCompactedResource('xsd:string'),
-        )).toBeTruthy();
+        )).toBeUndefined();
         expect(genericsContext.bindings['ex:U']).toEqual(objectLoader.createCompactedResource('xsd:string'));
 
         expect(Object.keys(genericsContext.genericTypeIds)).toEqual([ 'ex:T', 'ex:U', 'ex:V' ]);
@@ -184,7 +207,7 @@ describe('GenericsContext', () => {
         expect(genericsContext.bindGenericTypeToRange(
           'ex:U',
           objectLoader.createCompactedResource('xsd:integer'),
-        )).toBeTruthy();
+        )).toBeUndefined();
         expect(genericsContext.bindings['ex:U']).toEqual(objectLoader.createCompactedResource('xsd:integer'));
 
         expect(Object.keys(genericsContext.genericTypeIds)).toEqual([ 'ex:T', 'ex:U', 'ex:V' ]);
@@ -847,7 +870,9 @@ describe('GenericsContext', () => {
           }),
           [],
           {},
-        )).toBeFalsy();
+        )).toEqual({
+          description: 'no generic type instances are passed',
+        });
       });
 
       it('should throw when a different amount instances and generic params are passed', () => {
@@ -886,12 +911,36 @@ describe('GenericsContext', () => {
             }),
           ],
           {},
-        )).toBeTruthy();
+        )).toBeUndefined();
 
         expect(genericsContext.bindings['ex:Component__generic_T'])
           .toEqual(objectLoader.createCompactedResource('xsd:string'));
         expect(genericsContext.bindings['ex:Component__generic_U'])
           .toEqual(objectLoader.createCompactedResource('xsd:number'));
+      });
+
+      it('should handle valid instances without bindings', () => {
+        expect(genericsContext.bindComponentGenericTypes(
+          objectLoader.createCompactedResource({
+            '@id': 'ex:Component',
+            genericTypeParameters: [
+              'ex:Component__generic_T',
+              'ex:Component__generic_U',
+            ],
+          }),
+          [
+            objectLoader.createCompactedResource({
+              parameterRangeGenericBindings: 'xsd:string',
+            }),
+            objectLoader.createCompactedResource({}),
+          ],
+          {},
+        )).toBeUndefined();
+
+        expect(genericsContext.bindings['ex:Component__generic_T'])
+          .toEqual(objectLoader.createCompactedResource('xsd:string'));
+        expect(genericsContext.bindings['ex:Component__generic_U'])
+          .toBeUndefined();
       });
 
       it('should handle valid instances that match', () => {
@@ -915,7 +964,7 @@ describe('GenericsContext', () => {
             }),
           ],
           {},
-        )).toBeTruthy();
+        )).toBeUndefined();
 
         expect(genericsContext.bindings['ex:Component__generic_T'])
           .toEqual(objectLoader.createCompactedResource('xsd:string'));
@@ -944,7 +993,18 @@ describe('GenericsContext', () => {
             }),
           ],
           {},
-        )).toBeFalsy();
+        )).toEqual({
+          description: `invalid binding for generic <ex:Component__generic_T>`,
+          causes: [
+            {
+              description: `generic <ex:Component__generic_T> with existing range "http://www.w3.org/2001/XMLSchema#boolean" can not be bound to range "http://www.w3.org/2001/XMLSchema#string"`,
+              context: {
+                existingRange: objectLoader.createCompactedResource('http://www.w3.org/2001/XMLSchema#boolean'),
+                newRange: objectLoader.createCompactedResource('http://www.w3.org/2001/XMLSchema#string'),
+              },
+            },
+          ],
+        });
       });
     });
   });
