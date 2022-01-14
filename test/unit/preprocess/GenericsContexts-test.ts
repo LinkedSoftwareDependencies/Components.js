@@ -91,7 +91,7 @@ describe('GenericsContext', () => {
       });
 
       it('should not bind a range that does not match an existing range', () => {
-        typeValidator = jest.fn(() => ({ description: 'invalid type' }));
+        typeValidator = jest.fn(() => ({ description: 'invalid type', context: {}}));
 
         expect(genericsContext.bindGenericTypeToValue(
           'ex:U',
@@ -104,7 +104,7 @@ describe('GenericsContext', () => {
             value: objectLoader.createCompactedResource('"value"^^http://www.w3.org/2001/XMLSchema#not-a-string'),
           },
           causes: [
-            { description: 'invalid type' },
+            { description: 'invalid type', context: {}},
           ],
         });
         expect(typeValidator).toHaveBeenCalledWith(
@@ -167,6 +167,7 @@ describe('GenericsContext', () => {
           objectLoader.createCompactedResource('xsd:string'),
         )).toEqual({
           description: 'unknown generic <ex:UNKNOWN> is being referenced',
+          context: {},
         });
 
         expect(Object.keys(genericsContext.genericTypeIds)).toEqual([ 'ex:T', 'ex:U', 'ex:V' ]);
@@ -872,6 +873,7 @@ describe('GenericsContext', () => {
           {},
         )).toEqual({
           description: 'no generic type instances are passed',
+          context: {},
         });
       });
 
@@ -995,6 +997,7 @@ describe('GenericsContext', () => {
           {},
         )).toEqual({
           description: `invalid binding for generic <ex:Component__generic_T>`,
+          context: {},
           causes: [
             {
               description: `generic <ex:Component__generic_T> with existing range "http://www.w3.org/2001/XMLSchema#boolean" can not be bound to range "http://www.w3.org/2001/XMLSchema#string"`,

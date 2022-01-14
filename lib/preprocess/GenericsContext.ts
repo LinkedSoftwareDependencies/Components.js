@@ -123,6 +123,7 @@ export class GenericsContext {
     if (!(genericTypeId in this.genericTypeIds)) {
       return {
         description: `unknown generic <${genericTypeId}> is being referenced`,
+        context: {},
       };
     }
 
@@ -275,6 +276,7 @@ export class GenericsContext {
     if (genericTypeInstances.length === 0) {
       return {
         description: `no generic type instances are passed`,
+        context: errorContext,
       };
     }
 
@@ -300,6 +302,7 @@ export class GenericsContext {
         if (subConflict) {
           return {
             description: `invalid binding for generic <${genericTypeIdInner}>`,
+            context: errorContext,
             causes: [ subConflict ],
           };
         }

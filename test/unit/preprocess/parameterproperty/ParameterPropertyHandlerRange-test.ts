@@ -4,6 +4,9 @@ import { RdfObjectLoader } from 'rdf-object/lib/RdfObjectLoader';
 import 'jest-rdf';
 import type { Resource } from 'rdf-object/lib/Resource';
 import { GenericsContext } from '../../../../lib/preprocess/GenericsContext';
+import type {
+  IParamValueConflict,
+} from '../../../../lib/preprocess/parameterproperty/ParameterPropertyHandlerRange';
 import {
   ParameterPropertyHandlerRange,
 } from '../../../../lib/preprocess/parameterproperty/ParameterPropertyHandlerRange';
@@ -32,243 +35,384 @@ describe('ParameterPropertyHandlerRange', () => {
     handler = new ParameterPropertyHandlerRange(objectLoader);
   });
 
-  describe('captureType', () => {
+  describe('canHandle', () => {
+    it('returns false for a param without range', () => {
+      expect(handler.canHandle(
+        undefined,
+        objectLoader.createCompactedResource({}),
+        objectLoader.createCompactedResource({}),
+      )).toBeFalsy();
+    });
+  });
+
+  describe('handle', () => {
+    it('handles a valid value', () => {
+      expect(() => handler.handle(
+        objectLoader.createCompactedResource('"aaa"'),
+        objectLoader.createCompactedResource({}),
+        objectLoader.createCompactedResource({ range: IRIS_XSD.string }),
+        objectLoader.createCompactedResource({}),
+        genericsContext,
+      )).not.toThrow();
+    });
+
+    it('throw on an invalid value', () => {
+      expect(() => handler.handle(
+        objectLoader.createCompactedResource('"aaa"'),
+        objectLoader.createCompactedResource({}),
+        objectLoader.createCompactedResource({ range: IRIS_XSD.integer }),
+        objectLoader.createCompactedResource({}),
+        genericsContext,
+      )).toThrow(/The value "aaa" for parameter ".*" is not of required range type ".*integer"/u);
+    });
+  });
+
+  describe('hasValueType', () => {
+    const errorContext = {};
+
     describe('for literals', () => {
       it('should capture strings', () => {
-        expect((<any>handler.captureType(objectLoader.createCompactedResource('"aaa"'),
-          objectLoader.createCompactedResource({ range: IRIS_XSD.string }),
-          genericsContext)).term.valueRaw)
-          .toBeUndefined();
-        expect((<any>handler.captureType(objectLoader.createCompactedResource('"qqseqfqefefù$^"'),
-          objectLoader.createCompactedResource({ range: IRIS_XSD.string }),
-          genericsContext)).term.valueRaw)
-          .toBeUndefined();
+        const value1 = objectLoader.createCompactedResource('"aaa"');
+        expect(handler.hasValueType(value1,
+          objectLoader.createCompactedResource(IRIS_XSD.string),
+          errorContext,
+          genericsContext)).toBeUndefined();
+        expect((<any> value1.term).valueRaw).toBeUndefined();
+
+        const value2 = objectLoader.createCompactedResource('"qqseqfqefefù$^"');
+        expect(handler.hasValueType(value2,
+          objectLoader.createCompactedResource(IRIS_XSD.string),
+          errorContext,
+          genericsContext)).toBeUndefined();
+        expect((<any> value2.term).valueRaw).toBeUndefined();
       });
 
       it('should capture booleans', () => {
-        expect((<any>handler.captureType(objectLoader.createCompactedResource('"true"'),
-          objectLoader.createCompactedResource({ range: IRIS_XSD.boolean }),
-          genericsContext)).term.valueRaw)
-          .toEqual(true);
-        expect((<any>handler.captureType(objectLoader.createCompactedResource('"false"'),
-          objectLoader.createCompactedResource({ range: IRIS_XSD.boolean }),
-          genericsContext)).term.valueRaw)
-          .toEqual(false);
+        const value1 = objectLoader.createCompactedResource('"true"');
+        expect(handler.hasValueType(value1,
+          objectLoader.createCompactedResource(IRIS_XSD.boolean),
+          errorContext,
+          genericsContext)).toBeUndefined();
+        expect((<any> value1.term).valueRaw).toEqual(true);
+
+        const value2 = objectLoader.createCompactedResource('"false"');
+        expect(handler.hasValueType(value2,
+          objectLoader.createCompactedResource(IRIS_XSD.boolean),
+          errorContext,
+          genericsContext)).toBeUndefined();
+        expect((<any> value2.term).valueRaw).toEqual(false);
       });
+
       it('should error on invalid booleans', () => {
-        expect(() => handler.captureType(objectLoader.createCompactedResource('"1"'),
-          objectLoader.createCompactedResource({ range: IRIS_XSD.boolean, '@id': 'param' }),
+        expect(handler.hasValueType(objectLoader.createCompactedResource('"1"'),
+          objectLoader.createCompactedResource(IRIS_XSD.boolean),
+          errorContext,
           genericsContext))
-          // eslint-disable-next-line max-len
-          .toThrowError(/^The value "1" for parameter "param" is not of required range type "http:\/\/www.w3.org\/2001\/XMLSchema#boolean"/u);
+          .toEqual({
+            description: `value must either be "true" or "false"`,
+            context: {
+              type: objectLoader.createCompactedResource(IRIS_XSD.boolean),
+              value: objectLoader.createCompactedResource('"1"'),
+            },
+          });
       });
 
       it('should capture integers', () => {
-        expect((<any>handler.captureType(objectLoader.createCompactedResource('"1"'),
-          objectLoader.createCompactedResource({ range: IRIS_XSD.integer }),
-          genericsContext)).term.valueRaw)
-          .toEqual(1);
-        expect((<any>handler.captureType(objectLoader.createCompactedResource('"1456789876"'),
-          objectLoader.createCompactedResource({ range: IRIS_XSD.integer }),
-          genericsContext)).term.valueRaw)
-          .toEqual(1_456_789_876);
+        const value1 = objectLoader.createCompactedResource('"1"');
+        expect(handler.hasValueType(value1,
+          objectLoader.createCompactedResource(IRIS_XSD.integer),
+          errorContext,
+          genericsContext)).toBeUndefined();
+        expect((<any> value1.term).valueRaw).toEqual(1);
+
+        const value2 = objectLoader.createCompactedResource('"1456789876"');
+        expect(handler.hasValueType(value2,
+          objectLoader.createCompactedResource(IRIS_XSD.integer),
+          errorContext,
+          genericsContext)).toBeUndefined();
+        expect((<any> value2.term).valueRaw).toEqual(1_456_789_876);
       });
+
       it('should error on invalid integers', () => {
-        expect(() => handler.captureType(objectLoader.createCompactedResource('"a"'),
-          objectLoader.createCompactedResource({ range: IRIS_XSD.integer, '@id': 'param' }),
+        expect(handler.hasValueType(objectLoader.createCompactedResource('"a"'),
+          objectLoader.createCompactedResource(IRIS_XSD.integer),
+          errorContext,
           genericsContext))
-          // eslint-disable-next-line max-len
-          .toThrowError(/^The value "a" for parameter "param" is not of required range type "http:\/\/www.w3.org\/2001\/XMLSchema#integer"/u);
+          .toEqual({
+            description: `value is not a number`,
+            context: {
+              type: objectLoader.createCompactedResource(IRIS_XSD.integer),
+              value: objectLoader.createCompactedResource('"a"'),
+            },
+          });
       });
+
       it('should error on invalid integers that are numbers', () => {
-        expect(() => handler.captureType(objectLoader.createCompactedResource('"1.12"'),
-          objectLoader.createCompactedResource({ range: IRIS_XSD.integer, '@id': 'param' }),
+        expect(handler.hasValueType(objectLoader.createCompactedResource('"1.12"'),
+          objectLoader.createCompactedResource(IRIS_XSD.integer),
+          errorContext,
           genericsContext))
-          // eslint-disable-next-line max-len
-          .toThrowError(/^The value "1.12" for parameter "param" is not of required range type "http:\/\/www.w3.org\/2001\/XMLSchema#integer"/u);
+          .toEqual({
+            description: `value can not be a float`,
+            context: {
+              type: objectLoader.createCompactedResource(IRIS_XSD.integer),
+              value: objectLoader.createCompactedResource('"1.12"'),
+            },
+          });
       });
       it('should capture numbers', () => {
-        expect((<any>handler.captureType(objectLoader.createCompactedResource('"1"'),
-          objectLoader.createCompactedResource({ range: IRIS_XSD.number }),
-          genericsContext)).term.valueRaw)
-          .toEqual(1);
-        expect((<any>handler.captureType(objectLoader.createCompactedResource('"456789876"'),
-          objectLoader.createCompactedResource({ range: IRIS_XSD.number }),
-          genericsContext)).term.valueRaw)
-          .toEqual(456_789_876);
+        const value1 = objectLoader.createCompactedResource('"1"');
+        expect(handler.hasValueType(value1,
+          objectLoader.createCompactedResource(IRIS_XSD.number),
+          errorContext,
+          genericsContext)).toBeUndefined();
+        expect((<any> value1.term).valueRaw).toEqual(1);
+
+        const value2 = objectLoader.createCompactedResource('"1456789876"');
+        expect(handler.hasValueType(value2,
+          objectLoader.createCompactedResource(IRIS_XSD.number),
+          errorContext,
+          genericsContext)).toBeUndefined();
+        expect((<any> value2.term).valueRaw).toEqual(1_456_789_876);
       });
       it('should capture ints', () => {
-        expect((<any>handler.captureType(objectLoader.createCompactedResource('"1"'),
-          objectLoader.createCompactedResource({ range: IRIS_XSD.int }),
-          genericsContext)).term.valueRaw)
-          .toEqual(1);
-        expect((<any>handler.captureType(objectLoader.createCompactedResource('"456789876"'),
-          objectLoader.createCompactedResource({ range: IRIS_XSD.int }),
-          genericsContext)).term.valueRaw)
-          .toEqual(456_789_876);
+        const value1 = objectLoader.createCompactedResource('"1"');
+        expect(handler.hasValueType(value1,
+          objectLoader.createCompactedResource(IRIS_XSD.int),
+          errorContext,
+          genericsContext)).toBeUndefined();
+        expect((<any> value1.term).valueRaw).toEqual(1);
+
+        const value2 = objectLoader.createCompactedResource('"1456789876"');
+        expect(handler.hasValueType(value2,
+          objectLoader.createCompactedResource(IRIS_XSD.int),
+          errorContext,
+          genericsContext)).toBeUndefined();
+        expect((<any> value2.term).valueRaw).toEqual(1_456_789_876);
       });
       it('should capture bytes', () => {
-        expect((<any>handler.captureType(objectLoader.createCompactedResource('"1"'),
-          objectLoader.createCompactedResource({ range: IRIS_XSD.byte }),
-          genericsContext)).term.valueRaw)
-          .toEqual(1);
-        expect((<any>handler.captureType(objectLoader.createCompactedResource('"456789876"'),
-          objectLoader.createCompactedResource({ range: IRIS_XSD.byte }),
-          genericsContext)).term.valueRaw)
-          .toEqual(456_789_876);
+        const value1 = objectLoader.createCompactedResource('"1"');
+        expect(handler.hasValueType(value1,
+          objectLoader.createCompactedResource(IRIS_XSD.byte),
+          errorContext,
+          genericsContext)).toBeUndefined();
+        expect((<any> value1.term).valueRaw).toEqual(1);
+
+        const value2 = objectLoader.createCompactedResource('"1456789876"');
+        expect(handler.hasValueType(value2,
+          objectLoader.createCompactedResource(IRIS_XSD.byte),
+          errorContext,
+          genericsContext)).toBeUndefined();
+        expect((<any> value2.term).valueRaw).toEqual(1_456_789_876);
       });
       it('should capture longs', () => {
-        expect((<any>handler.captureType(objectLoader.createCompactedResource('"1"'),
-          objectLoader.createCompactedResource({ range: IRIS_XSD.long }),
-          genericsContext)).term.valueRaw)
-          .toEqual(1);
-        expect((<any>handler.captureType(objectLoader.createCompactedResource('"456789876"'),
-          objectLoader.createCompactedResource({ range: IRIS_XSD.long }),
-          genericsContext)).term.valueRaw)
-          .toEqual(456_789_876);
+        const value1 = objectLoader.createCompactedResource('"1"');
+        expect(handler.hasValueType(value1,
+          objectLoader.createCompactedResource(IRIS_XSD.long),
+          errorContext,
+          genericsContext)).toBeUndefined();
+        expect((<any> value1.term).valueRaw).toEqual(1);
+
+        const value2 = objectLoader.createCompactedResource('"1456789876"');
+        expect(handler.hasValueType(value2,
+          objectLoader.createCompactedResource(IRIS_XSD.long),
+          errorContext,
+          genericsContext)).toBeUndefined();
+        expect((<any> value2.term).valueRaw).toEqual(1_456_789_876);
       });
 
       it('should capture floats', () => {
-        expect((<any>handler.captureType(objectLoader.createCompactedResource('"1"'),
-          objectLoader.createCompactedResource({ range: IRIS_XSD.float }),
-          genericsContext)).term.valueRaw)
-          .toEqual(1);
-        expect((<any>handler.captureType(objectLoader.createCompactedResource('"256.36"'),
-          objectLoader.createCompactedResource({ range: IRIS_XSD.float }),
-          genericsContext)).term.valueRaw)
-          .toEqual(256.36);
+        const value1 = objectLoader.createCompactedResource('"1"');
+        expect(handler.hasValueType(value1,
+          objectLoader.createCompactedResource(IRIS_XSD.float),
+          errorContext,
+          genericsContext)).toBeUndefined();
+        expect((<any> value1.term).valueRaw).toEqual(1);
+
+        const value2 = objectLoader.createCompactedResource('"256.36"');
+        expect(handler.hasValueType(value2,
+          objectLoader.createCompactedResource(IRIS_XSD.float),
+          errorContext,
+          genericsContext)).toBeUndefined();
+        expect((<any> value2.term).valueRaw).toEqual(256.36);
       });
+
       it('should error on invalid floats', () => {
-        expect(() => handler.captureType(objectLoader.createCompactedResource('"a"'),
-          objectLoader.createCompactedResource({ range: IRIS_XSD.float, '@id': 'param' }),
+        expect(handler.hasValueType(objectLoader.createCompactedResource('"a"'),
+          objectLoader.createCompactedResource(IRIS_XSD.float),
+          errorContext,
           genericsContext))
-          // eslint-disable-next-line max-len
-          .toThrowError(/^The value "a" for parameter "param" is not of required range type "http:\/\/www.w3.org\/2001\/XMLSchema#float"/u);
+          .toEqual({
+            description: `value is not a number`,
+            context: {
+              type: objectLoader.createCompactedResource(IRIS_XSD.float),
+              value: objectLoader.createCompactedResource('"a"'),
+            },
+          });
       });
       it('should capture decimals', () => {
-        expect((<any>handler.captureType(objectLoader.createCompactedResource('"1"'),
-          objectLoader.createCompactedResource({ range: IRIS_XSD.decimal }),
-          genericsContext)).term.valueRaw)
-          .toEqual(1);
-        expect((<any>handler.captureType(objectLoader.createCompactedResource('"256.36"'),
-          objectLoader.createCompactedResource({ range: IRIS_XSD.decimal }),
-          genericsContext)).term.valueRaw)
-          .toEqual(256.36);
+        const value1 = objectLoader.createCompactedResource('"1"');
+        expect(handler.hasValueType(value1,
+          objectLoader.createCompactedResource(IRIS_XSD.decimal),
+          errorContext,
+          genericsContext)).toBeUndefined();
+        expect((<any> value1.term).valueRaw).toEqual(1);
+
+        const value2 = objectLoader.createCompactedResource('"256.36"');
+        expect(handler.hasValueType(value2,
+          objectLoader.createCompactedResource(IRIS_XSD.decimal),
+          errorContext,
+          genericsContext)).toBeUndefined();
+        expect((<any> value2.term).valueRaw).toEqual(256.36);
       });
       it('should capture doubles', () => {
-        expect((<any>handler.captureType(objectLoader.createCompactedResource('"1"'),
-          objectLoader.createCompactedResource({ range: IRIS_XSD.double }),
-          genericsContext)).term.valueRaw)
-          .toEqual(1);
-        expect((<any>handler.captureType(objectLoader.createCompactedResource('"256.36"'),
-          objectLoader.createCompactedResource({ range: IRIS_XSD.double }),
-          genericsContext)).term.valueRaw)
-          .toEqual(256.36);
+        const value1 = objectLoader.createCompactedResource('"1"');
+        expect(handler.hasValueType(value1,
+          objectLoader.createCompactedResource(IRIS_XSD.double),
+          errorContext,
+          genericsContext)).toBeUndefined();
+        expect((<any> value1.term).valueRaw).toEqual(1);
+
+        const value2 = objectLoader.createCompactedResource('"256.36"');
+        expect(handler.hasValueType(value2,
+          objectLoader.createCompactedResource(IRIS_XSD.double),
+          errorContext,
+          genericsContext)).toBeUndefined();
+        expect((<any> value2.term).valueRaw).toEqual(256.36);
       });
 
       it('should capture JSON', () => {
-        expect((<any>handler.captureType(objectLoader.createCompactedResource('"1"'),
-          objectLoader.createCompactedResource({ range: IRIS_RDF.JSON }),
-          genericsContext)).term.valueRaw)
-          .toEqual(1);
-        expect((<any>handler.captureType(objectLoader.createCompactedResource('"{"a":"b"}"'),
-          objectLoader.createCompactedResource({ range: IRIS_RDF.JSON }),
-          genericsContext)).term.valueRaw)
-          .toEqual({ a: 'b' });
+        const value1 = objectLoader.createCompactedResource('"1"');
+        expect(handler.hasValueType(value1,
+          objectLoader.createCompactedResource(IRIS_RDF.JSON),
+          errorContext,
+          genericsContext)).toBeUndefined();
+        expect((<any> value1.term).valueRaw).toEqual(1);
+
+        const value2 = objectLoader.createCompactedResource('"{"a":"b"}"');
+        expect(handler.hasValueType(value2,
+          objectLoader.createCompactedResource(IRIS_RDF.JSON),
+          errorContext,
+          genericsContext)).toBeUndefined();
+        expect((<any> value2.term).valueRaw).toEqual({ a: 'b' });
       });
+
       it('should error on invalid JSON', () => {
-        expect(() => handler.captureType(objectLoader.createCompactedResource('"{a:\\"b\\"}"'),
-          objectLoader.createCompactedResource({ range: IRIS_RDF.JSON, '@id': 'param' }),
+        expect(handler.hasValueType(objectLoader.createCompactedResource('"{a:\\"b\\"}"'),
+          objectLoader.createCompactedResource(IRIS_RDF.JSON),
+          errorContext,
           genericsContext))
-          .toThrowError(/^The value .* for parameter "param" is not of required range type/u);
+          .toEqual({
+            description: `JSON parse exception: Unexpected token a in JSON at position 1`,
+            context: {
+              type: objectLoader.createCompactedResource(IRIS_RDF.JSON),
+              value: objectLoader.createCompactedResource('"{a:\\"b\\"}"'),
+            },
+          });
       });
     });
 
     describe('for non-literals', () => {
       it('should always handle variables', () => {
-        expect(handler.captureType(
+        expect(handler.hasValueType(
           objectLoader.createCompactedResource({
             '@id': 'ex:abc',
             '@type': 'Variable',
           }),
-          objectLoader.createCompactedResource({
-            range: IRIS_XSD.string,
-          }),
+          objectLoader.createCompactedResource(IRIS_XSD.string),
+          errorContext,
           genericsContext,
-        )).toBeTruthy();
+        )).toBeUndefined();
       });
 
       it('should handle IRIs as values for params with string range', () => {
-        expect(handler.captureType(
+        expect(handler.hasValueType(
           objectLoader.createCompactedResource({
             '@id': 'ex:abc',
           }),
-          objectLoader.createCompactedResource({
-            range: IRIS_XSD.string,
-          }),
+          objectLoader.createCompactedResource(IRIS_XSD.string),
+          errorContext,
           genericsContext,
-        )).toBeTruthy();
+        )).toBeUndefined();
       });
 
       it('should ignore params without range', () => {
-        expect(handler.captureType(
+        expect(handler.hasValueType(
           objectLoader.createCompactedResource({
             '@id': 'ex:abc',
           }),
-          objectLoader.createCompactedResource({}),
+          undefined,
+          errorContext,
           genericsContext,
-        )).toBeTruthy();
+        )).toBeUndefined();
 
-        expect(handler.captureType(
+        expect(handler.hasValueType(
           objectLoader.createCompactedResource({
             '@id': 'ex:abc',
             '@type': 'ex:Type',
           }),
-          objectLoader.createCompactedResource({}),
+          undefined,
+          errorContext,
           genericsContext,
-        )).toBeTruthy();
+        )).toBeUndefined();
       });
 
-      it('should throw on param with range and missing value @type', () => {
-        expect(() => handler.captureType(
+      it('should return an error on param with range and missing value @type', () => {
+        expect(handler.hasValueType(
           objectLoader.createCompactedResource({
             '@id': 'ex:abc',
           }),
-          objectLoader.createCompactedResource({
-            range: 'ex:RangeType',
-          }),
+          objectLoader.createCompactedResource('ex:RangeType'),
+          errorContext,
           genericsContext,
-        )).toThrow(/^The value "ex:abc" for parameter ".*" is not of required range type "ex:RangeType"/u);
+        )).toEqual({
+          description: `value is not a subtype of "ex:RangeType"`,
+          context: {
+            type: objectLoader.createCompactedResource('ex:RangeType'),
+            value: objectLoader.createCompactedResource({
+              '@id': 'ex:abc',
+            }),
+          },
+          causes: [],
+        });
       });
 
-      it('should throw on param with range and unequal value @type', () => {
-        expect(() => handler.captureType(
+      it('should return an error on param with range and unequal value @type', () => {
+        expect(handler.hasValueType(
           objectLoader.createCompactedResource({
             '@id': 'ex:abc',
             range: 'ex:OtherType',
           }),
-          objectLoader.createCompactedResource({
-            range: 'ex:RangeType',
-          }),
+          objectLoader.createCompactedResource('ex:RangeType'),
+          errorContext,
           genericsContext,
-        )).toThrow(/The value "ex:abc" for parameter ".*" is not of required range type "ex:RangeType"/u);
+        )).toEqual({
+          description: `value is not a subtype of "ex:RangeType"`,
+          context: {
+            type: objectLoader.createCompactedResource('ex:RangeType'),
+            value: objectLoader.createCompactedResource({
+              '@id': 'ex:abc',
+              range: 'ex:OtherType',
+            }),
+          },
+          causes: [],
+        });
       });
 
       it('should handle param with range and equal value @type', () => {
-        expect(handler.captureType(
+        expect(handler.hasValueType(
           objectLoader.createCompactedResource({
             '@id': 'ex:abc',
             '@type': 'ex:RangeType',
           }),
-          objectLoader.createCompactedResource({
-            range: 'ex:RangeType',
-          }),
+          objectLoader.createCompactedResource('ex:RangeType'),
+          errorContext,
           genericsContext,
-        )).toBeTruthy();
+        )).toBeUndefined();
       });
 
       it('should handle param with range and a value @type that is a sub-type', () => {
-        expect(handler.captureType(
+        expect(handler.hasValueType(
           objectLoader.createCompactedResource({
             '@id': 'ex:abc',
             '@type': {
@@ -276,15 +420,14 @@ describe('ParameterPropertyHandlerRange', () => {
               '@type': 'ex:RangeType',
             },
           }),
-          objectLoader.createCompactedResource({
-            range: 'ex:RangeType',
-          }),
+          objectLoader.createCompactedResource('ex:RangeType'),
+          errorContext,
           genericsContext,
-        )).toBeTruthy();
+        )).toBeUndefined();
       });
 
-      it('should throw on param with range and a value @type that is an incompatible sub-type', () => {
-        expect(() => handler.captureType(
+      it('should return an error on param with range and a value @type that is an incompatible sub-type', () => {
+        expect(handler.hasValueType(
           objectLoader.createCompactedResource({
             '@id': 'ex:abc',
             '@type': {
@@ -292,16 +435,48 @@ describe('ParameterPropertyHandlerRange', () => {
               '@type': 'ex:RangeTypeOther',
             },
           }),
-          objectLoader.createCompactedResource({
-            range: 'ex:RangeType',
-          }),
+          objectLoader.createCompactedResource('ex:RangeType'),
+          errorContext,
           genericsContext,
-          // eslint-disable-next-line max-len
-        )).toThrow(/^The value "ex:abc" with types "ex:SubRangeType" for parameter ".*" is not of required range type "ex:RangeType"/u);
+        )).toEqual({
+          description: `value is not a subtype of "ex:RangeType"`,
+          context: {
+            type: objectLoader.createCompactedResource('ex:RangeType'),
+            value: objectLoader.createCompactedResource({
+              '@id': 'ex:abc',
+              '@type': {
+                '@id': 'ex:SubRangeType',
+                '@type': 'ex:RangeTypeOther',
+              },
+            }),
+          },
+          causes: [
+            {
+              description: `value is not a subtype of "ex:RangeType"`,
+              context: {
+                type: objectLoader.createCompactedResource('ex:RangeType'),
+                value: objectLoader.createCompactedResource({
+                  '@id': 'ex:SubRangeType',
+                  '@type': 'ex:RangeTypeOther',
+                }),
+              },
+              causes: [
+                {
+                  description: `value is not a subtype of "ex:RangeType"`,
+                  context: {
+                    type: objectLoader.createCompactedResource('ex:RangeType'),
+                    value: objectLoader.createCompactedResource('ex:RangeTypeOther'),
+                  },
+                  causes: [],
+                },
+              ],
+            },
+          ],
+        });
       });
 
       it('should handle param with range and a value @type that is a sub-sub-type', () => {
-        expect(handler.captureType(
+        expect(handler.hasValueType(
           objectLoader.createCompactedResource({
             '@id': 'ex:abc',
             '@type': {
@@ -312,15 +487,14 @@ describe('ParameterPropertyHandlerRange', () => {
               },
             },
           }),
-          objectLoader.createCompactedResource({
-            range: 'ex:RangeType',
-          }),
+          objectLoader.createCompactedResource('ex:RangeType'),
+          errorContext,
           genericsContext,
-        )).toBeTruthy();
+        )).toBeUndefined();
       });
 
       it('should handle param with range and a value @type that is a sub-class', () => {
-        expect(handler.captureType(
+        expect(handler.hasValueType(
           objectLoader.createCompactedResource({
             '@id': 'ex:abc',
             'http://www.w3.org/2000/01/rdf-schema#subClassOf': {
@@ -328,15 +502,14 @@ describe('ParameterPropertyHandlerRange', () => {
               '@type': 'ex:RangeType',
             },
           }),
-          objectLoader.createCompactedResource({
-            range: 'ex:RangeType',
-          }),
+          objectLoader.createCompactedResource('ex:RangeType'),
+          errorContext,
           genericsContext,
-        )).toBeTruthy();
+        )).toBeUndefined();
       });
 
-      it('should throw on param with range and a value @type that is an incompatible sub-class', () => {
-        expect(() => handler.captureType(
+      it('should return an error on param with range and a value @type that is an incompatible sub-class', () => {
+        expect(handler.hasValueType(
           objectLoader.createCompactedResource({
             '@id': 'ex:abc',
             'http://www.w3.org/2000/01/rdf-schema#subClassOf': {
@@ -344,84 +517,131 @@ describe('ParameterPropertyHandlerRange', () => {
               '@type': 'ex:RangeTypeOther',
             },
           }),
-          objectLoader.createCompactedResource({
-            range: 'ex:RangeType',
-          }),
+          objectLoader.createCompactedResource('ex:RangeType'),
+          errorContext,
           genericsContext,
-          // eslint-disable-next-line max-len
-        )).toThrow(/^The value "ex:abc" for parameter ".*" is not of required range type "ex:RangeType"/u);
+
+        )).toEqual({
+          description: `value is not a subtype of "ex:RangeType"`,
+          context: {
+            type: objectLoader.createCompactedResource('ex:RangeType'),
+            value: objectLoader.createCompactedResource({
+              '@id': 'ex:abc',
+              'http://www.w3.org/2000/01/rdf-schema#subClassOf': {
+                '@id': 'ex:SubRangeType',
+                '@type': 'ex:RangeTypeOther',
+              },
+            }),
+          },
+          causes: [
+            {
+              description: `value is not a subtype of "ex:RangeType"`,
+              context: {
+                type: objectLoader.createCompactedResource('ex:RangeType'),
+                value: objectLoader.createCompactedResource({
+                  '@id': 'ex:SubRangeType',
+                  '@type': 'ex:RangeTypeOther',
+                }),
+              },
+              causes: [
+                {
+                  description: `value is not a subtype of "ex:RangeType"`,
+                  context: {
+                    type: objectLoader.createCompactedResource('ex:RangeType'),
+                    value: objectLoader.createCompactedResource('ex:RangeTypeOther'),
+                  },
+                  causes: [],
+                },
+              ],
+            },
+          ],
+        });
       });
 
       it('should handle ignore param with range ParameterRangeCollectEntries', () => {
-        expect(handler.captureType(
+        expect(handler.hasValueType(
           objectLoader.createCompactedResource({
             '@id': 'ex:abc',
             '@type': 'ex:SomeType',
           }),
           objectLoader.createCompactedResource({
-            range: {
-              '@id': 'ex:RangeType',
-              '@type': 'ParameterRangeCollectEntries',
-            },
+            '@id': 'ex:RangeType',
+            '@type': 'ParameterRangeCollectEntries',
           }),
+          errorContext,
           genericsContext,
-        )).toBeTruthy();
+        )).toBeUndefined();
       });
 
       it('should handle union types with all valid types', () => {
-        expect(handler.captureType(
+        expect(handler.hasValueType(
           objectLoader.createCompactedResource({
             '@id': 'ex:abc',
             '@type': [ 'ex:SomeType1', 'ex:SomeType2' ],
           }),
           objectLoader.createCompactedResource({
-            range: {
-              '@type': 'ParameterRangeUnion',
-              parameterRangeElements: [
-                {
-                  '@id': 'ex:SomeType1',
-                },
-                {
-                  '@id': 'ex:SomeType2',
-                },
-              ],
-            },
+            '@type': 'ParameterRangeUnion',
+            parameterRangeElements: [
+              {
+                '@id': 'ex:SomeType1',
+              },
+              {
+                '@id': 'ex:SomeType2',
+              },
+            ],
           }),
+          errorContext,
           genericsContext,
-        )).toBeTruthy();
+        )).toBeUndefined();
       });
 
       it('should handle union types with one valid type', () => {
-        expect(handler.captureType(
+        expect(handler.hasValueType(
           objectLoader.createCompactedResource({
             '@id': 'ex:abc',
             '@type': 'ex:SomeType',
           }),
           objectLoader.createCompactedResource({
-            range: {
-              '@type': 'ParameterRangeUnion',
-              parameterRangeElements: [
-                {
-                  '@id': 'ex:SomeTypeInvalid',
-                },
-                {
-                  '@id': 'ex:SomeType',
-                },
-              ],
-            },
+            '@type': 'ParameterRangeUnion',
+            parameterRangeElements: [
+              {
+                '@id': 'ex:SomeTypeInvalid',
+              },
+              {
+                '@id': 'ex:SomeType',
+              },
+            ],
           }),
+          errorContext,
           genericsContext,
-        )).toBeTruthy();
+        )).toBeUndefined();
       });
 
-      it('should throw on union types with no valid type', () => {
-        expect(() => handler.captureType(
+      it('should return an error on union types with no valid type', () => {
+        expect(handler.hasValueType(
           objectLoader.createCompactedResource({
             '@id': 'ex:abc',
             '@type': 'ex:SomeType',
           }),
           objectLoader.createCompactedResource({
-            range: {
+            '@id': 'ex:type',
+            '@type': 'ParameterRangeUnion',
+            parameterRangeElements: [
+              {
+                '@id': 'ex:SomeTypeInvalid1',
+              },
+              {
+                '@id': 'ex:SomeTypeInvalid2',
+              },
+            ],
+          }),
+          errorContext,
+          genericsContext,
+        )).toEqual({
+          description: `no union values are valid`,
+          context: {
+            type: objectLoader.createCompactedResource({
+              '@id': 'ex:type',
               '@type': 'ParameterRangeUnion',
               parameterRangeElements: [
                 {
@@ -431,116 +651,195 @@ describe('ParameterPropertyHandlerRange', () => {
                   '@id': 'ex:SomeTypeInvalid2',
                 },
               ],
+            }),
+            value: objectLoader.createCompactedResource({
+              '@id': 'ex:abc',
+              '@type': 'ex:SomeType',
+            }),
+          },
+          causes: [
+            {
+              description: `value is not a subtype of "ex:SomeTypeInvalid1"`,
+              context: {
+                type: objectLoader.createCompactedResource('ex:SomeTypeInvalid1'),
+                value: objectLoader.createCompactedResource({
+                  '@id': 'ex:abc',
+                  '@type': 'ex:SomeType',
+                }),
+              },
+              causes: [
+                {
+                  description: `value is not a subtype of "ex:SomeTypeInvalid1"`,
+                  context: {
+                    type: objectLoader.createCompactedResource('ex:SomeTypeInvalid1'),
+                    value: objectLoader.createCompactedResource('ex:SomeType'),
+                  },
+                  causes: [],
+                },
+              ],
             },
-          }),
-          genericsContext,
-          // eslint-disable-next-line max-len
-        )).toThrow(/^The value "ex:abc" with types "ex:SomeType" for parameter ".*" is not of required range type "ex:SomeTypeInvalid1 \| ex:SomeTypeInvalid2"/u);
+            {
+              description: `value is not a subtype of "ex:SomeTypeInvalid2"`,
+              context: {
+                type: objectLoader.createCompactedResource('ex:SomeTypeInvalid2'),
+                value: objectLoader.createCompactedResource({
+                  '@id': 'ex:abc',
+                  '@type': 'ex:SomeType',
+                }),
+              },
+              causes: [
+                {
+                  description: `value is not a subtype of "ex:SomeTypeInvalid2"`,
+                  context: {
+                    type: objectLoader.createCompactedResource('ex:SomeTypeInvalid2'),
+                    value: objectLoader.createCompactedResource('ex:SomeType'),
+                  },
+                  causes: [],
+                },
+              ],
+            },
+          ],
+        });
       });
 
       it('should handle intersection types with all valid types', () => {
-        expect(handler.captureType(
+        expect(handler.hasValueType(
           objectLoader.createCompactedResource({
             '@id': 'ex:abc',
             '@type': [ 'ex:SomeType1', 'ex:SomeType2' ],
           }),
           objectLoader.createCompactedResource({
-            range: {
-              '@type': 'ParameterRangeIntersection',
-              parameterRangeElements: [
-                {
-                  '@id': 'ex:SomeType1',
-                },
-                {
-                  '@id': 'ex:SomeType2',
-                },
-              ],
-            },
+            '@type': 'ParameterRangeIntersection',
+            parameterRangeElements: [
+              {
+                '@id': 'ex:SomeType1',
+              },
+              {
+                '@id': 'ex:SomeType2',
+              },
+            ],
           }),
+          errorContext,
           genericsContext,
-        )).toBeTruthy();
+        )).toBeUndefined();
       });
 
-      it('should throw on intersection types with one valid type', () => {
-        expect(() => handler.captureType(
+      it('should return an error on intersection types with one valid type', () => {
+        expect(handler.hasValueType(
           objectLoader.createCompactedResource({
             '@id': 'ex:abc',
             '@type': 'ex:SomeType',
           }),
           objectLoader.createCompactedResource({
-            range: {
-              '@type': 'ParameterRangeIntersection',
-              parameterRangeElements: [
+            '@type': 'ParameterRangeIntersection',
+            parameterRangeElements: [
+              {
+                '@id': 'ex:SomeType',
+              },
+              {
+                '@id': 'ex:SomeType2',
+              },
+            ],
+          }),
+          errorContext,
+          genericsContext,
+        )).toEqual({
+          description: `not all intersection values are valid`,
+          context: expect.anything(),
+          causes: [
+            {
+              description: `value is not a subtype of "ex:SomeType2"`,
+              context: expect.anything(),
+              causes: [
                 {
-                  '@id': 'ex:SomeType1',
-                },
-                {
-                  '@id': 'ex:SomeType2',
+                  description: `value is not a subtype of "ex:SomeType2"`,
+                  context: expect.anything(),
+                  causes: [],
                 },
               ],
             },
-          }),
-          genericsContext,
-          // eslint-disable-next-line max-len
-        )).toThrow(/^The value "ex:abc" with types "ex:SomeType" for parameter ".*" is not of required range type "ex:SomeType1 & ex:SomeType2"/u);
+          ],
+        });
       });
 
-      it('should throw on intersection types with no valid type', () => {
-        expect(() => handler.captureType(
+      it('should return an error on intersection types with no valid type', () => {
+        expect(handler.hasValueType(
           objectLoader.createCompactedResource({
             '@id': 'ex:abc',
             '@type': 'ex:SomeType',
           }),
           objectLoader.createCompactedResource({
-            range: {
-              '@type': 'ParameterRangeIntersection',
-              parameterRangeElements: [
+            '@type': 'ParameterRangeIntersection',
+            parameterRangeElements: [
+              {
+                '@id': 'ex:SomeTypeInvalid1',
+              },
+              {
+                '@id': 'ex:SomeTypeInvalid2',
+              },
+            ],
+          }),
+          errorContext,
+          genericsContext,
+        )).toEqual({
+          description: `not all intersection values are valid`,
+          context: expect.anything(),
+          causes: [
+            {
+              description: `value is not a subtype of "ex:SomeTypeInvalid1"`,
+              context: expect.anything(),
+              causes: [
                 {
-                  '@id': 'ex:SomeTypeInvalid1',
-                },
-                {
-                  '@id': 'ex:SomeTypeInvalid2',
+                  description: `value is not a subtype of "ex:SomeTypeInvalid1"`,
+                  context: expect.anything(),
+                  causes: [],
                 },
               ],
             },
-          }),
-          genericsContext,
-          // eslint-disable-next-line max-len
-        )).toThrow(/^The value "ex:abc" with types "ex:SomeType" for parameter ".*" is not of required range type "ex:SomeTypeInvalid1 & ex:SomeTypeInvalid2"/u);
+            {
+              description: `value is not a subtype of "ex:SomeTypeInvalid2"`,
+              context: expect.anything(),
+              causes: [
+                {
+                  description: `value is not a subtype of "ex:SomeTypeInvalid2"`,
+                  context: expect.anything(),
+                  causes: [],
+                },
+              ],
+            },
+          ],
+        });
       });
 
       it('should handle param with undefined range and undefined value', () => {
-        expect(handler.captureType(
+        expect(handler.hasValueType(
           undefined,
-          objectLoader.createCompactedResource({
-            range: { '@type': 'ParameterRangeUndefined' },
-          }),
+          objectLoader.createCompactedResource({ '@type': 'ParameterRangeUndefined' }),
+          errorContext,
           genericsContext,
         )).toBeUndefined();
       });
 
       it('should handle param with wildcard range and a value', () => {
-        expect(handler.captureType(
+        expect(handler.hasValueType(
           objectLoader.createCompactedResource('"abc"'),
-          objectLoader.createCompactedResource({
-            range: { '@type': 'ParameterRangeWildcard' },
-          }),
+          objectLoader.createCompactedResource({ '@type': 'ParameterRangeWildcard' }),
+          errorContext,
           genericsContext,
-        )).toBeTruthy();
+        )).toBeUndefined();
       });
 
       it('should handle param with wildcard range and undefined value', () => {
-        expect(handler.captureType(
+        expect(handler.hasValueType(
           undefined,
-          objectLoader.createCompactedResource({
-            range: { '@type': 'ParameterRangeWildcard' },
-          }),
+          objectLoader.createCompactedResource({ '@type': 'ParameterRangeWildcard' }),
+          errorContext,
           genericsContext,
         )).toBeUndefined();
       });
 
       it('should handle array type with valid types', () => {
-        expect(handler.captureType(
+        expect(handler.hasValueType(
           objectLoader.createCompactedResource({
             list: [
               {
@@ -550,34 +849,34 @@ describe('ParameterPropertyHandlerRange', () => {
             ],
           }),
           objectLoader.createCompactedResource({
-            range: {
-              '@type': 'ParameterRangeArray',
-              parameterRangeValue: { '@id': 'ex:SomeType1' },
-            },
+            '@type': 'ParameterRangeArray',
+            parameterRangeValue: { '@id': 'ex:SomeType1' },
           }),
+          errorContext,
           genericsContext,
-        )).toBeTruthy();
+        )).toBeUndefined();
       });
 
-      it('should throw on array type without list', () => {
-        expect(() => handler.captureType(
+      it('should return an error on array type without list', () => {
+        expect(handler.hasValueType(
           objectLoader.createCompactedResource({
             '@id': 'ex:abc',
             '@type': 'ex:SomeType1',
           }),
           objectLoader.createCompactedResource({
-            range: {
-              '@type': 'ParameterRangeArray',
-              parameterRangeValue: { '@id': 'ex:SomeType1' },
-            },
+            '@type': 'ParameterRangeArray',
+            parameterRangeValue: { '@id': 'ex:SomeType1' },
           }),
+          errorContext,
           genericsContext,
-          // eslint-disable-next-line max-len
-        )).toThrow(/^The value "ex:abc" with types "ex:SomeType1" for parameter ".*" is not of required range type "ex:SomeType1\[\]"/u);
+        )).toEqual({
+          description: `value is not an RDF list`,
+          context: expect.anything(),
+        });
       });
 
-      it('should throw on array type with invalid list element type', () => {
-        expect(() => handler.captureType(
+      it('should return an error on array type with invalid list element type', () => {
+        expect(handler.hasValueType(
           objectLoader.createCompactedResource({
             list: [
               {
@@ -587,18 +886,32 @@ describe('ParameterPropertyHandlerRange', () => {
             ],
           }),
           objectLoader.createCompactedResource({
-            range: {
-              '@type': 'ParameterRangeArray',
-              parameterRangeValue: { '@id': 'ex:SomeType1' },
-            },
+            '@type': 'ParameterRangeArray',
+            parameterRangeValue: { '@id': 'ex:SomeType1' },
           }),
+          errorContext,
           genericsContext,
-          // eslint-disable-next-line max-len
-        )).toThrow(/^The value "\[ex:abc\]" for parameter ".*" is not of required range type "ex:SomeType1\[\]"/u);
+        )).toEqual({
+          description: `one or more array values are invalid`,
+          context: expect.anything(),
+          causes: [
+            {
+              description: `value is not a subtype of "ex:SomeType1"`,
+              context: expect.anything(),
+              causes: [
+                {
+                  description: `value is not a subtype of "ex:SomeType1"`,
+                  context: expect.anything(),
+                  causes: [],
+                },
+              ],
+            },
+          ],
+        });
       });
 
       it('should handle tuple type with single entry', () => {
-        expect(handler.captureType(
+        expect(handler.hasValueType(
           objectLoader.createCompactedResource({
             list: [
               {
@@ -608,19 +921,18 @@ describe('ParameterPropertyHandlerRange', () => {
             ],
           }),
           objectLoader.createCompactedResource({
-            range: {
-              '@type': 'ParameterRangeTuple',
-              parameterRangeElements: [
-                { '@id': 'ex:SomeType1' },
-              ],
-            },
+            '@type': 'ParameterRangeTuple',
+            parameterRangeElements: [
+              { '@id': 'ex:SomeType1' },
+            ],
           }),
+          errorContext,
           genericsContext,
-        )).toBeTruthy();
+        )).toBeUndefined();
       });
 
-      it('should throw on tuple type with invalid single entry', () => {
-        expect(() => handler.captureType(
+      it('should return an error on tuple type with invalid single entry', () => {
+        expect(handler.hasValueType(
           objectLoader.createCompactedResource({
             list: [
               {
@@ -630,49 +942,68 @@ describe('ParameterPropertyHandlerRange', () => {
             ],
           }),
           objectLoader.createCompactedResource({
-            range: {
-              '@type': 'ParameterRangeTuple',
-              parameterRangeElements: [
-                { '@id': 'ex:SomeType' },
+            '@type': 'ParameterRangeTuple',
+            parameterRangeElements: [
+              { '@id': 'ex:SomeType' },
+            ],
+          }),
+          errorContext,
+          genericsContext,
+        )).toEqual({
+          description: `tuple element is invalid`,
+          context: expect.anything(),
+          causes: [
+            {
+              description: `value is not a subtype of "ex:SomeType"`,
+              context: expect.anything(),
+              causes: [
+                {
+                  description: `value is not a subtype of "ex:SomeType"`,
+                  context: expect.anything(),
+                  causes: [],
+                },
               ],
             },
-          }),
-          genericsContext,
-        )).toThrow(/^The value "\[ex:abc\]" for parameter ".*" is not of required range type "\[ex:SomeType\]"/u);
+          ],
+        });
       });
 
-      it('should throw on tuple type without vakue', () => {
-        expect(() => handler.captureType(
+      it('should return an error on tuple type without value', () => {
+        expect(handler.hasValueType(
           undefined,
           objectLoader.createCompactedResource({
-            range: {
-              '@type': 'ParameterRangeTuple',
-              parameterRangeElements: [
-                { '@id': 'ex:SomeType' },
-              ],
-            },
+            '@type': 'ParameterRangeTuple',
+            parameterRangeElements: [
+              { '@id': 'ex:SomeType' },
+            ],
           }),
+          errorContext,
           genericsContext,
-        )).toThrow(/^The value ".*" for parameter ".*" is not of required range type "\[ex:SomeType\]"/u);
+        )).toEqual({
+          description: `undefined value is not an RDF list`,
+          context: expect.anything(),
+        });
       });
 
-      it('should throw on tuple type without list', () => {
-        expect(() => handler.captureType(
+      it('should return an error on tuple type without list', () => {
+        expect(handler.hasValueType(
           objectLoader.createCompactedResource({}),
           objectLoader.createCompactedResource({
-            range: {
-              '@type': 'ParameterRangeTuple',
-              parameterRangeElements: [
-                { '@id': 'ex:SomeType' },
-              ],
-            },
+            '@type': 'ParameterRangeTuple',
+            parameterRangeElements: [
+              { '@id': 'ex:SomeType' },
+            ],
           }),
+          errorContext,
           genericsContext,
-        )).toThrow(/^The value ".*" for parameter ".*" is not of required range type "\[ex:SomeType\]"/u);
+        )).toEqual({
+          description: `value is not an RDF list`,
+          context: expect.anything(),
+        });
       });
 
       it('should handle tuple type with multiple entries', () => {
-        expect(handler.captureType(
+        expect(handler.hasValueType(
           objectLoader.createCompactedResource({
             list: [
               {
@@ -690,21 +1021,20 @@ describe('ParameterPropertyHandlerRange', () => {
             ],
           }),
           objectLoader.createCompactedResource({
-            range: {
-              '@type': 'ParameterRangeTuple',
-              parameterRangeElements: [
-                { '@id': 'ex:SomeType1' },
-                { '@id': 'ex:SomeType2' },
-                { '@id': 'ex:SomeType3' },
-              ],
-            },
+            '@type': 'ParameterRangeTuple',
+            parameterRangeElements: [
+              { '@id': 'ex:SomeType1' },
+              { '@id': 'ex:SomeType2' },
+              { '@id': 'ex:SomeType3' },
+            ],
           }),
+          errorContext,
           genericsContext,
-        )).toBeTruthy();
+        )).toBeUndefined();
       });
 
-      it('should throw on tuple type with invalid multiple entries', () => {
-        expect(() => handler.captureType(
+      it('should return an error on tuple type with invalid multiple entries', () => {
+        expect(handler.hasValueType(
           objectLoader.createCompactedResource({
             list: [
               {
@@ -722,22 +1052,36 @@ describe('ParameterPropertyHandlerRange', () => {
             ],
           }),
           objectLoader.createCompactedResource({
-            range: {
-              '@type': 'ParameterRangeTuple',
-              parameterRangeElements: [
-                { '@id': 'ex:SomeType1' },
-                { '@id': 'ex:SomeType2' },
-                { '@id': 'ex:SomeType3' },
+            '@type': 'ParameterRangeTuple',
+            parameterRangeElements: [
+              { '@id': 'ex:SomeType1' },
+              { '@id': 'ex:SomeType2' },
+              { '@id': 'ex:SomeType3' },
+            ],
+          }),
+          errorContext,
+          genericsContext,
+        )).toEqual({
+          description: `tuple element is invalid`,
+          context: expect.anything(),
+          causes: [
+            {
+              description: `value is not a subtype of "ex:SomeType3"`,
+              context: expect.anything(),
+              causes: [
+                {
+                  description: `value is not a subtype of "ex:SomeType3"`,
+                  context: expect.anything(),
+                  causes: [],
+                },
               ],
             },
-          }),
-          genericsContext,
-          // eslint-disable-next-line max-len
-        )).toThrow(/^The value "\[ex:abc1, ex:abc2, ex:abc3\]" for parameter ".*" is not of required range type "\[ex:SomeType1, ex:SomeType2, ex:SomeType3\]"/u);
+          ],
+        });
       });
 
       it('should handle tuple type with single rest entry', () => {
-        expect(handler.captureType(
+        expect(handler.hasValueType(
           objectLoader.createCompactedResource({
             list: [
               {
@@ -751,22 +1095,21 @@ describe('ParameterPropertyHandlerRange', () => {
             ],
           }),
           objectLoader.createCompactedResource({
-            range: {
-              '@type': 'ParameterRangeTuple',
-              parameterRangeElements: [
-                {
-                  '@type': 'ParameterRangeRest',
-                  parameterRangeValue: { '@id': 'ex:SomeType1' },
-                },
-              ],
-            },
+            '@type': 'ParameterRangeTuple',
+            parameterRangeElements: [
+              {
+                '@type': 'ParameterRangeRest',
+                parameterRangeValue: { '@id': 'ex:SomeType1' },
+              },
+            ],
           }),
+          errorContext,
           genericsContext,
-        )).toBeTruthy();
+        )).toBeUndefined();
       });
 
-      it('should throw on tuple type with invalid single rest entry', () => {
-        expect(() => handler.captureType(
+      it('should return an error on tuple type with invalid single rest entry', () => {
+        expect(handler.hasValueType(
           objectLoader.createCompactedResource({
             list: [
               {
@@ -780,23 +1123,24 @@ describe('ParameterPropertyHandlerRange', () => {
             ],
           }),
           objectLoader.createCompactedResource({
-            range: {
-              '@type': 'ParameterRangeTuple',
-              parameterRangeElements: [
-                {
-                  '@type': 'ParameterRangeRest',
-                  parameterRangeValue: { '@id': 'ex:SomeType1' },
-                },
-              ],
-            },
+            '@type': 'ParameterRangeTuple',
+            parameterRangeElements: [
+              {
+                '@type': 'ParameterRangeRest',
+                parameterRangeValue: { '@id': 'ex:SomeType1' },
+              },
+            ],
           }),
+          errorContext,
           genericsContext,
-          // eslint-disable-next-line max-len
-        )).toThrow(/^The value "\[ex:abc1, ex:abc2\]" for parameter ".*" is not of required range type "\[...ex:SomeType1\]"/u);
+        )).toEqual({
+          description: `tuple does not contain the expected number of elements`,
+          context: expect.anything(),
+        });
       });
 
       it('should handle tuple type with multiple rest entries', () => {
-        expect(handler.captureType(
+        expect(handler.hasValueType(
           objectLoader.createCompactedResource({
             list: [
               {
@@ -818,26 +1162,25 @@ describe('ParameterPropertyHandlerRange', () => {
             ],
           }),
           objectLoader.createCompactedResource({
-            range: {
-              '@type': 'ParameterRangeTuple',
-              parameterRangeElements: [
-                {
-                  '@type': 'ParameterRangeRest',
-                  parameterRangeValue: { '@id': 'ex:SomeType1' },
-                },
-                {
-                  '@type': 'ParameterRangeRest',
-                  parameterRangeValue: { '@id': 'ex:SomeType2' },
-                },
-              ],
-            },
+            '@type': 'ParameterRangeTuple',
+            parameterRangeElements: [
+              {
+                '@type': 'ParameterRangeRest',
+                parameterRangeValue: { '@id': 'ex:SomeType1' },
+              },
+              {
+                '@type': 'ParameterRangeRest',
+                parameterRangeValue: { '@id': 'ex:SomeType2' },
+              },
+            ],
           }),
+          errorContext,
           genericsContext,
-        )).toBeTruthy();
+        )).toBeUndefined();
       });
 
-      it('should throw on tuple type with invalid multiple rest entries', () => {
-        expect(() => handler.captureType(
+      it('should return an error on tuple type with invalid multiple rest entries', () => {
+        expect(handler.hasValueType(
           objectLoader.createCompactedResource({
             list: [
               {
@@ -859,27 +1202,28 @@ describe('ParameterPropertyHandlerRange', () => {
             ],
           }),
           objectLoader.createCompactedResource({
-            range: {
-              '@type': 'ParameterRangeTuple',
-              parameterRangeElements: [
-                {
-                  '@type': 'ParameterRangeRest',
-                  parameterRangeValue: { '@id': 'ex:SomeType1' },
-                },
-                {
-                  '@type': 'ParameterRangeRest',
-                  parameterRangeValue: { '@id': 'ex:SomeType2' },
-                },
-              ],
-            },
+            '@type': 'ParameterRangeTuple',
+            parameterRangeElements: [
+              {
+                '@type': 'ParameterRangeRest',
+                parameterRangeValue: { '@id': 'ex:SomeType1' },
+              },
+              {
+                '@type': 'ParameterRangeRest',
+                parameterRangeValue: { '@id': 'ex:SomeType2' },
+              },
+            ],
           }),
+          errorContext,
           genericsContext,
-          // eslint-disable-next-line max-len
-        )).toThrow(/^The value "\[ex:abc1, ex:abc2, ex:abc3, ex:abc4\]" for parameter ".*" is not of required range type "\[...ex:SomeType1, ...ex:SomeType2\]"/u);
+        )).toEqual({
+          description: `tuple does not contain the expected number of elements`,
+          context: expect.anything(),
+        });
       });
 
       it('should handle tuple type with complex entries', () => {
-        expect(handler.captureType(
+        expect(handler.hasValueType(
           objectLoader.createCompactedResource({
             list: [
               {
@@ -901,151 +1245,174 @@ describe('ParameterPropertyHandlerRange', () => {
             ],
           }),
           objectLoader.createCompactedResource({
-            range: {
-              '@type': 'ParameterRangeTuple',
-              parameterRangeElements: [
-                {
-                  '@type': 'ParameterRangeRest',
-                  parameterRangeValue: { '@id': 'ex:SomeType1' },
-                },
-                { '@id': 'ex:SomeType2' },
-                { '@id': 'ex:SomeType3' },
-              ],
-            },
+            '@type': 'ParameterRangeTuple',
+            parameterRangeElements: [
+              {
+                '@type': 'ParameterRangeRest',
+                parameterRangeValue: { '@id': 'ex:SomeType1' },
+              },
+              { '@id': 'ex:SomeType2' },
+              { '@id': 'ex:SomeType3' },
+            ],
           }),
+          errorContext,
           genericsContext,
-        )).toBeTruthy();
+        )).toBeUndefined();
       });
 
       it('should handle a string literal type with valid types', () => {
-        expect(handler.captureType(
+        expect(handler.hasValueType(
           objectLoader.createCompactedResource('abc'),
           objectLoader.createCompactedResource({
-            range: {
-              '@type': 'ParameterRangeLiteral',
-              parameterRangeValue: 'abc',
-            },
+            '@type': 'ParameterRangeLiteral',
+            parameterRangeValue: 'abc',
           }),
+          errorContext,
           genericsContext,
-        )).toBeTruthy();
+        )).toBeUndefined();
       });
 
       it('should handle a number literal type with valid types', () => {
-        expect(handler.captureType(
+        expect(handler.hasValueType(
           objectLoader.createCompactedResource(DF.literal('123', DF.namedNode(IRIS_XSD.integer))),
           objectLoader.createCompactedResource({
-            range: {
-              '@type': 'ParameterRangeLiteral',
-              parameterRangeValue: DF.literal('123', DF.namedNode(IRIS_XSD.integer)),
-            },
+            '@type': 'ParameterRangeLiteral',
+            parameterRangeValue: DF.literal('123', DF.namedNode(IRIS_XSD.integer)),
           }),
+          errorContext,
           genericsContext,
-        )).toBeTruthy();
+        )).toBeUndefined();
       });
 
       it('should handle a boolean literal type with valid types', () => {
-        expect(handler.captureType(
+        expect(handler.hasValueType(
           objectLoader.createCompactedResource(DF.literal('true', DF.namedNode(IRIS_XSD.boolean))),
           objectLoader.createCompactedResource({
-            range: {
-              '@type': 'ParameterRangeLiteral',
-              parameterRangeValue: DF.literal('true', DF.namedNode(IRIS_XSD.boolean)),
-            },
+            '@type': 'ParameterRangeLiteral',
+            parameterRangeValue: DF.literal('true', DF.namedNode(IRIS_XSD.boolean)),
           }),
+          errorContext,
           genericsContext,
-        )).toBeTruthy();
+        )).toBeUndefined();
       });
 
-      it('should throw on a literal type with incompatible value', () => {
-        expect(() => handler.captureType(
+      it('should return an error on a literal type with incompatible value', () => {
+        expect(handler.hasValueType(
           objectLoader.createCompactedResource(DF.literal('123', DF.namedNode(IRIS_XSD.integer))),
           objectLoader.createCompactedResource({
-            range: {
-              '@type': 'ParameterRangeLiteral',
-              parameterRangeValue: DF.literal('true', DF.namedNode(IRIS_XSD.boolean)),
-            },
+            '@type': 'ParameterRangeLiteral',
+            parameterRangeValue: DF.literal('true', DF.namedNode(IRIS_XSD.boolean)),
           }),
+          errorContext,
           genericsContext,
-          // eslint-disable-next-line max-len
-        )).toThrow(/^The value "123" for parameter ".*" is not of required range type "true"/u);
+        )).toEqual({
+          description: `literal value is unequal`,
+          context: expect.anything(),
+        });
       });
 
       it('should handle a union over string literal types with valid types', () => {
-        expect(handler.captureType(
+        expect(handler.hasValueType(
           objectLoader.createCompactedResource('"def"'),
           objectLoader.createCompactedResource({
-            range: {
-              '@type': 'ParameterRangeUnion',
-              parameterRangeElements: [
-                {
-                  '@type': 'ParameterRangeLiteral',
-                  parameterRangeValue: '"abc"',
-                },
-                {
-                  '@type': 'ParameterRangeLiteral',
-                  parameterRangeValue: '"def"',
-                },
-              ],
-            },
+            '@type': 'ParameterRangeUnion',
+            parameterRangeElements: [
+              {
+                '@type': 'ParameterRangeLiteral',
+                parameterRangeValue: '"abc"',
+              },
+              {
+                '@type': 'ParameterRangeLiteral',
+                parameterRangeValue: '"def"',
+              },
+            ],
           }),
+          errorContext,
           genericsContext,
-        )).toBeTruthy();
+        )).toBeUndefined();
       });
 
-      it('should throw on a union over string literal types with incompatible types', () => {
-        expect(() => handler.captureType(
+      it('should return an error on a union over string literal types with incompatible types', () => {
+        expect(handler.hasValueType(
           objectLoader.createCompactedResource('"xyz"'),
           objectLoader.createCompactedResource({
-            range: {
-              '@type': 'ParameterRangeUnion',
-              parameterRangeElements: [
-                {
-                  '@type': 'ParameterRangeLiteral',
-                  parameterRangeValue: '"abc"',
-                },
-                {
-                  '@type': 'ParameterRangeLiteral',
-                  parameterRangeValue: '"def"',
-                },
-              ],
-            },
+            '@type': 'ParameterRangeUnion',
+            parameterRangeElements: [
+              {
+                '@type': 'ParameterRangeLiteral',
+                parameterRangeValue: '"abc"',
+              },
+              {
+                '@type': 'ParameterRangeLiteral',
+                parameterRangeValue: '"def"',
+              },
+            ],
           }),
+          errorContext,
           genericsContext,
-          // eslint-disable-next-line max-len
-        )).toThrow(/^The value "xyz" for parameter ".*" is not of required range type "abc \| def"/u);
+        )).toEqual({
+          description: `no union values are valid`,
+          context: expect.anything(),
+          causes: [
+            {
+              description: `literal value is unequal`,
+              context: expect.anything(),
+            },
+            {
+              description: `literal value is unequal`,
+              context: expect.anything(),
+            },
+          ],
+        });
       });
 
       it('should handle keyof type with valid value', () => {
-        expect(handler.captureType(
+        expect(handler.hasValueType(
           objectLoader.createCompactedResource('"fieldB"'),
           objectLoader.createCompactedResource({
-            range: {
-              '@type': 'ParameterRangeKeyof',
-              parameterRangeValue: {
-                '@id': 'ex:SomeType1',
-                memberKeys: [ '"fieldA"', '"fieldB"' ],
-              },
+            '@type': 'ParameterRangeKeyof',
+            parameterRangeValue: {
+              '@id': 'ex:SomeType1',
+              memberKeys: [ '"fieldA"', '"fieldB"' ],
             },
           }),
+          errorContext,
           genericsContext,
-        )).toBeTruthy();
+        )).toBeUndefined();
       });
 
-      it('should throw on keyof type without valid value', () => {
-        expect(() => handler.captureType(
+      it('should return an error on keyof type without valid value', () => {
+        expect(handler.hasValueType(
           objectLoader.createCompactedResource('"fieldC"'),
           objectLoader.createCompactedResource({
-            range: {
-              '@type': 'ParameterRangeKeyof',
-              parameterRangeValue: {
-                '@id': 'ex:SomeType1',
-                memberKeys: [ '"fieldA"', '"fieldB"' ],
-              },
+            '@type': 'ParameterRangeKeyof',
+            parameterRangeValue: {
+              '@id': 'ex:SomeType1',
+              memberKeys: [ '"fieldA"', '"fieldB"' ],
             },
           }),
+          errorContext,
           genericsContext,
-          // eslint-disable-next-line max-len
-        )).toThrow(/^The value "fieldC" for parameter ".*" is not of required range type "keyof ex:SomeType1"/u);
+        )).toEqual({
+          description: `keyof value is invalid`,
+          context: expect.anything(),
+          causes: [
+            {
+              description: `no union values are valid`,
+              context: expect.anything(),
+              causes: [
+                {
+                  description: `literal value is unequal`,
+                  context: expect.anything(),
+                },
+                {
+                  description: `literal value is unequal`,
+                  context: expect.anything(),
+                },
+              ],
+            },
+          ],
+        });
       });
 
       describe('with generics', () => {
@@ -1054,30 +1421,30 @@ describe('ParameterPropertyHandlerRange', () => {
             objectLoader.createCompactedResource('ex:GEN_T'),
           ]);
 
-          expect(handler.captureType(
+          expect(handler.hasValueType(
             objectLoader.createCompactedResource('"def"'),
             objectLoader.createCompactedResource({
-              range: {
-                '@type': 'ParameterRangeGenericTypeReference',
-                parameterRangeGenericType: 'ex:GEN_T',
-              },
+              '@type': 'ParameterRangeGenericTypeReference',
+              parameterRangeGenericType: 'ex:GEN_T',
             }),
+            errorContext,
             genericsContext,
-          )).toBeTruthy();
+          )).toBeUndefined();
         });
 
-        it('should throw on an unknown generic type reference', () => {
-          expect(() => handler.captureType(
+        it('should return an error on an unknown generic type reference', () => {
+          expect(handler.hasValueType(
             objectLoader.createCompactedResource('"def"'),
             objectLoader.createCompactedResource({
-              range: {
-                '@type': 'ParameterRangeGenericTypeReference',
-                parameterRangeGenericType: 'ex:GEN_T',
-              },
+              '@type': 'ParameterRangeGenericTypeReference',
+              parameterRangeGenericType: 'ex:GEN_T',
             }),
+            errorContext,
             genericsContext,
-            // eslint-disable-next-line max-len
-          )).toThrow(/^The value "def" for parameter ".*" is not of required range type "UNKNOWN GENERIC: ex:GEN_T"/u);
+          )).toEqual({
+            description: `unknown generic <ex:GEN_T> is being referenced`,
+            context: expect.anything(),
+          });
         });
 
         it('should handle a bound generic type reference with a compatible literal value', () => {
@@ -1086,16 +1453,15 @@ describe('ParameterPropertyHandlerRange', () => {
           ]);
           genericsContext.bindings['ex:GEN_T'] = objectLoader.createCompactedResource(IRIS_XSD.number);
 
-          expect(handler.captureType(
+          expect(handler.hasValueType(
             objectLoader.createCompactedResource(`"123"^^${IRIS_XSD.number}`),
             objectLoader.createCompactedResource({
-              range: {
-                '@type': 'ParameterRangeGenericTypeReference',
-                parameterRangeGenericType: 'ex:GEN_T',
-              },
+              '@type': 'ParameterRangeGenericTypeReference',
+              parameterRangeGenericType: 'ex:GEN_T',
             }),
+            errorContext,
             genericsContext,
-          )).toBeTruthy();
+          )).toBeUndefined();
         });
 
         it('should handle a generic type reference with range with a compatible literal value', () => {
@@ -1106,35 +1472,41 @@ describe('ParameterPropertyHandlerRange', () => {
             }),
           ]);
 
-          expect(handler.captureType(
+          expect(handler.hasValueType(
             objectLoader.createCompactedResource(`"123"^^${IRIS_XSD.number}`),
             objectLoader.createCompactedResource({
-              range: {
-                '@type': 'ParameterRangeGenericTypeReference',
-                parameterRangeGenericType: 'ex:GEN_T',
-              },
+              '@type': 'ParameterRangeGenericTypeReference',
+              parameterRangeGenericType: 'ex:GEN_T',
             }),
+            errorContext,
             genericsContext,
-          )).toBeTruthy();
+          )).toBeUndefined();
         });
 
-        it('should throw on a bound generic type reference with an incompatible literal value', () => {
+        it('should return an error on a bound generic type reference with an incompatible literal value', () => {
           genericsContext = new GenericsContext(objectLoader, [
             objectLoader.createCompactedResource('ex:GEN_T'),
           ]);
           genericsContext.bindings['ex:GEN_T'] = objectLoader.createCompactedResource(IRIS_XSD.number);
 
-          expect(() => handler.captureType(
+          expect(handler.hasValueType(
             objectLoader.createCompactedResource(`"true"^^${IRIS_XSD.boolean}`),
             objectLoader.createCompactedResource({
-              range: {
-                '@type': 'ParameterRangeGenericTypeReference',
-                parameterRangeGenericType: 'ex:GEN_T',
-              },
+              '@type': 'ParameterRangeGenericTypeReference',
+              parameterRangeGenericType: 'ex:GEN_T',
             }),
+            errorContext,
             genericsContext,
-            // eslint-disable-next-line max-len
-          )).toThrow(/^The value "true" for parameter ".*" is not of required range type "GENERIC: ex:GEN_T"/u);
+          )).toEqual({
+            description: `generic <ex:GEN_T> with existing range "http://www.w3.org/2001/XMLSchema#number" can not contain the given value`,
+            context: expect.anything(),
+            causes: [
+              {
+                description: `value is not a number`,
+                context: expect.anything(),
+              },
+            ],
+          });
         });
 
         it('should handle an unbound generic type reference with a component value', () => {
@@ -1142,19 +1514,18 @@ describe('ParameterPropertyHandlerRange', () => {
             objectLoader.createCompactedResource('ex:GEN_T'),
           ]);
 
-          expect(handler.captureType(
+          expect(handler.hasValueType(
             objectLoader.createCompactedResource({
               '@id': 'ex:component',
               '@type': [ 'ex:SomeType1' ],
             }),
             objectLoader.createCompactedResource({
-              range: {
-                '@type': 'ParameterRangeGenericTypeReference',
-                parameterRangeGenericType: 'ex:GEN_T',
-              },
+              '@type': 'ParameterRangeGenericTypeReference',
+              parameterRangeGenericType: 'ex:GEN_T',
             }),
+            errorContext,
             genericsContext,
-          )).toBeTruthy();
+          )).toBeUndefined();
         });
 
         it('should handle a bound generic type reference with a compatible component value', () => {
@@ -1163,41 +1534,54 @@ describe('ParameterPropertyHandlerRange', () => {
           ]);
           genericsContext.bindings['ex:GEN_T'] = objectLoader.createCompactedResource('ex:SomeType1');
 
-          expect(handler.captureType(
+          expect(handler.hasValueType(
             objectLoader.createCompactedResource({
               '@id': 'ex:component',
               '@type': [ 'ex:SomeType1' ],
             }),
             objectLoader.createCompactedResource({
-              range: {
-                '@type': 'ParameterRangeGenericTypeReference',
-                parameterRangeGenericType: 'ex:GEN_T',
-              },
+              '@type': 'ParameterRangeGenericTypeReference',
+              parameterRangeGenericType: 'ex:GEN_T',
             }),
+            errorContext,
             genericsContext,
-          )).toBeTruthy();
+          )).toBeUndefined();
         });
 
-        it('should throw on a bound generic type reference with an incompatible component value', () => {
+        it('should return an error on a bound generic type reference with an incompatible component value', () => {
           genericsContext = new GenericsContext(objectLoader, [
             objectLoader.createCompactedResource('ex:GEN_T'),
           ]);
           genericsContext.bindings['ex:GEN_T'] = objectLoader.createCompactedResource('ex:SomeType2');
 
-          expect(() => handler.captureType(
+          expect(handler.hasValueType(
             objectLoader.createCompactedResource({
               '@id': 'ex:component',
               '@type': [ 'ex:SomeType1' ],
             }),
             objectLoader.createCompactedResource({
-              range: {
-                '@type': 'ParameterRangeGenericTypeReference',
-                parameterRangeGenericType: 'ex:GEN_T',
-              },
+              '@type': 'ParameterRangeGenericTypeReference',
+              parameterRangeGenericType: 'ex:GEN_T',
             }),
+            errorContext,
             genericsContext,
-            // eslint-disable-next-line max-len
-          )).toThrow(/^The value "ex:component" with types "ex:SomeType1" for parameter ".*" is not of required range type "GENERIC: ex:GEN_T"/u);
+          )).toEqual({
+            description: `generic <ex:GEN_T> with existing range "ex:SomeType2" can not contain the given value`,
+            context: expect.anything(),
+            causes: [
+              {
+                description: `value is not a subtype of "ex:SomeType2"`,
+                context: expect.anything(),
+                causes: [
+                  {
+                    description: `value is not a subtype of "ex:SomeType2"`,
+                    context: expect.anything(),
+                    causes: [],
+                  },
+                ],
+              },
+            ],
+          });
         });
 
         it('should handle a bound generic type reference with a compatible undefined value', () => {
@@ -1207,63 +1591,71 @@ describe('ParameterPropertyHandlerRange', () => {
           genericsContext.bindings['ex:GEN_T'] = objectLoader
             .createCompactedResource({ '@type': 'ParameterRangeUndefined' });
 
-          expect(handler.captureType(
+          expect(handler.hasValueType(
             undefined,
             objectLoader.createCompactedResource({
-              range: {
-                '@type': 'ParameterRangeGenericTypeReference',
-                parameterRangeGenericType: 'ex:GEN_T',
-              },
+              '@type': 'ParameterRangeGenericTypeReference',
+              parameterRangeGenericType: 'ex:GEN_T',
             }),
+            errorContext,
             genericsContext,
           )).toBeUndefined();
         });
 
-        it('should throw on a bound generic type reference with an incompatible undefined value', () => {
+        it('should return an error on a bound generic type reference with an incompatible undefined value', () => {
           genericsContext = new GenericsContext(objectLoader, [
             objectLoader.createCompactedResource('ex:GEN_T'),
           ]);
           genericsContext.bindings['ex:GEN_T'] = objectLoader
             .createCompactedResource({ '@type': 'ParameterRangeUndefined' });
 
-          expect(() => handler.captureType(
+          expect(handler.hasValueType(
             objectLoader.createCompactedResource(`"true"^^${IRIS_XSD.boolean}`),
             objectLoader.createCompactedResource({
-              range: {
-                '@type': 'ParameterRangeGenericTypeReference',
-                parameterRangeGenericType: 'ex:GEN_T',
-              },
+              '@type': 'ParameterRangeGenericTypeReference',
+              parameterRangeGenericType: 'ex:GEN_T',
             }),
+            errorContext,
             genericsContext,
-            // eslint-disable-next-line max-len
-          )).toThrow(/^The value "true" for parameter ".*" is not of required range type "GENERIC: ex:GEN_T"/u);
+          )).toEqual({
+            description: `generic <ex:GEN_T> with existing range "undefined" can not contain the given value`,
+            context: expect.anything(),
+            causes: [
+              {
+                description: expect.anything(),
+                context: expect.anything(),
+                causes: [
+                ],
+              },
+            ],
+          });
         });
 
         it('should handle a generic component without generic binding', () => {
-          const value = handler.captureType(
+          const value = objectLoader.createCompactedResource({
+            '@type': [ 'ex:SomeType1' ],
+          });
+          const conflict = handler.hasValueType(
+            value,
             objectLoader.createCompactedResource({
-              '@type': [ 'ex:SomeType1' ],
-            }),
-            objectLoader.createCompactedResource({
-              range: {
-                '@type': 'ParameterRangeGenericComponent',
-                component: {
-                  '@id': 'ex:SomeType1',
-                  genericTypeParameters: [
-                    'ex:SomeType1__generic_T',
-                  ],
-                },
-                genericTypeInstances: [
-                  {
-                    '@type': 'ParameterRangeGenericTypeReference',
-                    parameterRangeGenericType: 'ex:GEN_T',
-                  },
+              '@type': 'ParameterRangeGenericComponent',
+              component: {
+                '@id': 'ex:SomeType1',
+                genericTypeParameters: [
+                  'ex:SomeType1__generic_T',
                 ],
               },
+              genericTypeInstances: [
+                {
+                  '@type': 'ParameterRangeGenericTypeReference',
+                  parameterRangeGenericType: 'ex:GEN_T',
+                },
+              ],
             }),
+            errorContext,
             genericsContext,
           );
-          expect(value).toBeTruthy();
+          expect(conflict).toBeUndefined();
           expectOutputProperties(value, objectLoader.createCompactedResource({
             '@type': [ 'ex:SomeType1' ],
             genericTypeInstancesComponentScope: 'ex:SomeType1',
@@ -1277,29 +1669,36 @@ describe('ParameterPropertyHandlerRange', () => {
           }));
         });
 
-        it('should throw on a generic component without generic binding and undefined value', () => {
-          expect(() => handler.captureType(
+        it('should return an error on a generic component without generic binding and undefined value', () => {
+          expect(handler.hasValueType(
             undefined,
             objectLoader.createCompactedResource({
-              range: {
-                '@type': 'ParameterRangeGenericComponent',
-                component: {
-                  '@id': 'ex:SomeType1',
-                  genericTypeParameters: [
-                    'ex:SomeType1__generic_T',
-                  ],
-                },
-                genericTypeInstances: [
-                  {
-                    '@type': 'ParameterRangeGenericTypeReference',
-                    parameterRangeGenericType: 'ex:GEN_T',
-                  },
+              '@type': 'ParameterRangeGenericComponent',
+              component: {
+                '@id': 'ex:SomeType1',
+                genericTypeParameters: [
+                  'ex:SomeType1__generic_T',
                 ],
               },
+              genericTypeInstances: [
+                {
+                  '@type': 'ParameterRangeGenericTypeReference',
+                  parameterRangeGenericType: 'ex:GEN_T',
+                },
+              ],
             }),
+            errorContext,
             genericsContext,
-            // eslint-disable-next-line max-len
-          )).toThrow(/^The value "undefined" for parameter ".*" is not of required range type "\(ex:SomeType1\)<UNKNOWN GENERIC: ex:GEN_T>"/u);
+          )).toEqual({
+            description: `generic component is invalid`,
+            context: expect.anything(),
+            causes: [
+              {
+                description: `unknown parameter type`,
+                context: expect.anything(),
+              },
+            ],
+          });
         });
 
         it('should handle a generic component with generic binding', () => {
@@ -1308,30 +1707,30 @@ describe('ParameterPropertyHandlerRange', () => {
           ]);
           genericsContext.bindings['ex:GEN_T'] = objectLoader.createCompactedResource('ex:SomeType2');
 
-          const value = handler.captureType(
+          const value = objectLoader.createCompactedResource({
+            '@type': [ 'ex:SomeType1' ],
+          });
+          const conflict = handler.hasValueType(
+            value,
             objectLoader.createCompactedResource({
-              '@type': [ 'ex:SomeType1' ],
-            }),
-            objectLoader.createCompactedResource({
-              range: {
-                '@type': 'ParameterRangeGenericComponent',
-                component: {
-                  '@id': 'ex:SomeType1',
-                  genericTypeParameters: [
-                    'ex:SomeType1__generic_T',
-                  ],
-                },
-                genericTypeInstances: [
-                  {
-                    '@type': 'ParameterRangeGenericTypeReference',
-                    parameterRangeGenericType: 'ex:GEN_T',
-                  },
+              '@type': 'ParameterRangeGenericComponent',
+              component: {
+                '@id': 'ex:SomeType1',
+                genericTypeParameters: [
+                  'ex:SomeType1__generic_T',
                 ],
               },
+              genericTypeInstances: [
+                {
+                  '@type': 'ParameterRangeGenericTypeReference',
+                  parameterRangeGenericType: 'ex:GEN_T',
+                },
+              ],
             }),
+            errorContext,
             genericsContext,
           );
-          expect(value).toBeTruthy();
+          expect(conflict).toBeUndefined();
           expectOutputProperties(value, objectLoader.createCompactedResource({
             '@type': [ 'ex:SomeType1' ],
             genericTypeInstancesComponentScope: 'ex:SomeType1',
@@ -1347,39 +1746,53 @@ describe('ParameterPropertyHandlerRange', () => {
           }));
         });
 
-        it('should throw on a generic component with an incompatible value', () => {
+        it('should return an error on a generic component with an incompatible value', () => {
           genericsContext = new GenericsContext(objectLoader, [
             objectLoader.createCompactedResource('ex:GEN_T'),
           ]);
           genericsContext.bindings['ex:GEN_T'] = objectLoader.createCompactedResource('ex:SomeType2');
 
-          expect(() => handler.captureType(
+          expect(handler.hasValueType(
             objectLoader.createCompactedResource({
               '@type': [ 'ex:SomeType1' ],
             }),
             objectLoader.createCompactedResource({
-              range: {
-                '@type': 'ParameterRangeGenericComponent',
-                component: {
-                  '@id': 'ex:SomeType2',
-                  genericTypeParameters: [
-                    'ex:SomeType2__generic_T',
-                  ],
+              '@type': 'ParameterRangeGenericComponent',
+              component: {
+                '@id': 'ex:SomeType2',
+                genericTypeParameters: [
+                  'ex:SomeType2__generic_T',
+                ],
+              },
+              genericTypeInstances: [
+                {
+                  '@type': 'ParameterRangeGenericTypeReference',
+                  parameterRangeGenericType: 'ex:GEN_T',
                 },
-                genericTypeInstances: [
+              ],
+            }),
+            errorContext,
+            genericsContext,
+          )).toEqual({
+            description: `generic component is invalid`,
+            context: expect.anything(),
+            causes: [
+              {
+                description: `value is not a subtype of "ex:SomeType2"`,
+                context: expect.anything(),
+                causes: [
                   {
-                    '@type': 'ParameterRangeGenericTypeReference',
-                    parameterRangeGenericType: 'ex:GEN_T',
+                    description: `value is not a subtype of "ex:SomeType2"`,
+                    context: expect.anything(),
+                    causes: [],
                   },
                 ],
               },
-            }),
-            genericsContext,
-            // eslint-disable-next-line max-len
-          )).toThrow(/^The value ".*" with types "ex:SomeType1" for parameter ".*" is not of required range type "\(ex:SomeType2\)<GENERIC: ex:GEN_T>"/u);
+            ],
+          });
         });
 
-        it('should throw on a generic component with an incompatible values', () => {
+        it('should return an error on a generic component with an incompatible values', () => {
           genericsContext = new GenericsContext(objectLoader, [
             objectLoader.createCompactedResource('ex:GEN_T'),
             objectLoader.createCompactedResource('ex:GEN_U'),
@@ -1387,61 +1800,75 @@ describe('ParameterPropertyHandlerRange', () => {
           genericsContext.bindings['ex:GEN_T'] = objectLoader.createCompactedResource('ex:SomeType2');
           genericsContext.bindings['ex:GEN_U'] = objectLoader.createCompactedResource('ex:SomeType2');
 
-          expect(() => handler.captureType(
+          expect(handler.hasValueType(
             objectLoader.createCompactedResource({
               '@type': [ 'ex:SomeType1' ],
             }),
             objectLoader.createCompactedResource({
-              range: {
-                '@type': 'ParameterRangeGenericComponent',
-                component: {
-                  '@id': 'ex:SomeType2',
-                  genericTypeParameters: [
-                    'ex:SomeType2__generic_T',
-                    'ex:SomeType2__generic_U',
-                  ],
+              '@type': 'ParameterRangeGenericComponent',
+              component: {
+                '@id': 'ex:SomeType2',
+                genericTypeParameters: [
+                  'ex:SomeType2__generic_T',
+                  'ex:SomeType2__generic_U',
+                ],
+              },
+              genericTypeInstances: [
+                {
+                  '@type': 'ParameterRangeGenericTypeReference',
+                  parameterRangeGenericType: 'ex:GEN_T',
                 },
-                genericTypeInstances: [
+                {
+                  '@type': 'ParameterRangeGenericTypeReference',
+                  parameterRangeGenericType: 'ex:GEN_U',
+                },
+              ],
+            }),
+            errorContext,
+            genericsContext,
+          )).toEqual({
+            description: `generic component is invalid`,
+            context: expect.anything(),
+            causes: [
+              {
+                description: `value is not a subtype of "ex:SomeType2"`,
+                context: expect.anything(),
+                causes: [
                   {
-                    '@type': 'ParameterRangeGenericTypeReference',
-                    parameterRangeGenericType: 'ex:GEN_T',
-                  },
-                  {
-                    '@type': 'ParameterRangeGenericTypeReference',
-                    parameterRangeGenericType: 'ex:GEN_U',
+                    description: `value is not a subtype of "ex:SomeType2"`,
+                    context: expect.anything(),
+                    causes: [],
                   },
                 ],
               },
-            }),
-            genericsContext,
-            // eslint-disable-next-line max-len
-          )).toThrow(/^The value ".*" with types "ex:SomeType1" for parameter ".*" is not of required range type "\(ex:SomeType2\)<GENERIC: ex:GEN_T, GENERIC: ex:GEN_U>"/u);
+            ],
+          });
         });
 
         it('should handle a generic component with a direct type value', () => {
-          const value = handler.captureType(
+          const value = objectLoader.createCompactedResource({
+            '@type': [ 'ex:SomeType1' ],
+          });
+          const conflict = handler.hasValueType(
+            value,
             objectLoader.createCompactedResource({
-              '@type': [ 'ex:SomeType1' ],
-            }),
-            objectLoader.createCompactedResource({
-              range: {
-                '@type': 'ParameterRangeGenericComponent',
-                component: {
-                  '@id': 'ex:SomeType1',
-                  genericTypeParameters: [
-                    'ex:SomeType1__generic_T',
-                  ],
-                },
-                genericTypeInstances: [
-                  {
-                    '@id': 'ex:SomeType2',
-                  },
+              '@type': 'ParameterRangeGenericComponent',
+              component: {
+                '@id': 'ex:SomeType1',
+                genericTypeParameters: [
+                  'ex:SomeType1__generic_T',
                 ],
               },
+              genericTypeInstances: [
+                {
+                  '@id': 'ex:SomeType2',
+                },
+              ],
             }),
+            errorContext,
             genericsContext,
           );
-          expect(value).toBeTruthy();
+          expect(conflict).toBeUndefined();
           expectOutputProperties(value, objectLoader.createCompactedResource({
             '@type': [ 'ex:SomeType1' ],
             genericTypeInstancesComponentScope: 'ex:SomeType1',
@@ -1453,13 +1880,13 @@ describe('ParameterPropertyHandlerRange', () => {
           }));
         });
 
-        it('should throw on a generic component with config that already has manual generics set', () => {
+        it('should return an error on a generic component with config that already has manual generics set', () => {
           genericsContext = new GenericsContext(objectLoader, [
             objectLoader.createCompactedResource('ex:GEN_T'),
           ]);
           genericsContext.bindings['ex:GEN_T'] = objectLoader.createCompactedResource('ex:SomeType2');
 
-          expect(() => handler.captureType(
+          expect(() => handler.hasValueType(
             objectLoader.createCompactedResource({
               '@type': [ 'ex:SomeType1' ],
               genericTypeInstances: [
@@ -1471,43 +1898,41 @@ describe('ParameterPropertyHandlerRange', () => {
               ],
             }),
             objectLoader.createCompactedResource({
-              range: {
-                '@type': 'ParameterRangeGenericComponent',
-                component: 'ex:SomeType1',
-                genericTypeInstances: [
-                  {
-                    '@type': 'ParameterRangeGenericTypeReference',
-                    parameterRangeGenericType: 'ex:GEN_T',
-                  },
-                ],
-              },
+              '@type': 'ParameterRangeGenericComponent',
+              component: 'ex:SomeType1',
+              genericTypeInstances: [
+                {
+                  '@type': 'ParameterRangeGenericTypeReference',
+                  parameterRangeGenericType: 'ex:GEN_T',
+                },
+              ],
             }),
+            errorContext,
             genericsContext,
-            // eslint-disable-next-line max-len
+
           )).toThrow(/^Simultaneous manual generic type passing and generic type inference are not supported yet\./u);
         });
 
-        it('should throw on a generic component without parameterRangeGenericType value', () => {
+        it('should return an error on a generic component without parameterRangeGenericType value', () => {
           genericsContext = new GenericsContext(objectLoader, [
             objectLoader.createCompactedResource('ex:GEN_T'),
           ]);
           genericsContext.bindings['ex:GEN_T'] = objectLoader.createCompactedResource('ex:SomeType2');
 
-          expect(() => handler.captureType(
+          expect(() => handler.hasValueType(
             objectLoader.createCompactedResource({
               '@type': [ 'ex:SomeType1' ],
             }),
             objectLoader.createCompactedResource({
-              range: {
-                '@type': 'ParameterRangeGenericComponent',
-                component: 'ex:SomeType1',
-                genericTypeInstances: [
-                  {
-                    '@type': 'ParameterRangeGenericTypeReference',
-                  },
-                ],
-              },
+              '@type': 'ParameterRangeGenericComponent',
+              component: 'ex:SomeType1',
+              genericTypeInstances: [
+                {
+                  '@type': 'ParameterRangeGenericTypeReference',
+                },
+              ],
             }),
+            errorContext,
             genericsContext,
           )).toThrow(`Invalid generic type instance in a ParameterRangeGenericComponent was detected: missing parameterRangeGenericType property.`);
         });
@@ -1518,39 +1943,39 @@ describe('ParameterPropertyHandlerRange', () => {
           ]);
           genericsContext.bindings['ex:GEN_T'] = objectLoader.createCompactedResource('xsd:integer');
 
-          const value = handler.captureType(
-            objectLoader.createCompactedResource({
-              '@type': {
-                '@id': 'ex:SomeType1',
-                extends: {
-                  '@type': 'GenericComponentExtension',
-                  component: {
-                    '@id': 'ex:SomeType2',
-                    genericTypeParameters: [
-                      'ex:SomeType2__generic_T',
-                    ],
-                  },
-                  genericTypeInstances: [
-                    'xsd:integer',
+          const value = objectLoader.createCompactedResource({
+            '@type': {
+              '@id': 'ex:SomeType1',
+              extends: {
+                '@type': 'GenericComponentExtension',
+                component: {
+                  '@id': 'ex:SomeType2',
+                  genericTypeParameters: [
+                    'ex:SomeType2__generic_T',
                   ],
                 },
-              },
-            }),
-            objectLoader.createCompactedResource({
-              range: {
-                '@type': 'ParameterRangeGenericComponent',
-                component: 'ex:SomeType2',
                 genericTypeInstances: [
-                  {
-                    '@type': 'ParameterRangeGenericTypeReference',
-                    parameterRangeGenericType: 'ex:GEN_T',
-                  },
+                  'xsd:integer',
                 ],
               },
+            },
+          });
+          const conflict = handler.hasValueType(
+            value,
+            objectLoader.createCompactedResource({
+              '@type': 'ParameterRangeGenericComponent',
+              component: 'ex:SomeType2',
+              genericTypeInstances: [
+                {
+                  '@type': 'ParameterRangeGenericTypeReference',
+                  parameterRangeGenericType: 'ex:GEN_T',
+                },
+              ],
             }),
+            errorContext,
             genericsContext,
           );
-          expect(value).toBeTruthy();
+          expect(conflict).toBeUndefined();
           expectOutputProperties(value, objectLoader.createCompactedResource({
             '@type': [ 'ex:SomeType1' ],
             genericTypeInstancesComponentScope: 'ex:SomeType2',
@@ -1570,39 +1995,39 @@ describe('ParameterPropertyHandlerRange', () => {
           ]);
           genericsContext.bindings['ex:GEN_T'] = objectLoader.createCompactedResource('xsd:integer');
 
-          const value = handler.captureType(
-            objectLoader.createCompactedResource({
-              '@type': {
-                '@id': 'ex:SomeType1',
-                extends: {
-                  '@type': 'GenericComponentExtension',
-                  component: {
-                    '@id': 'ex:SomeType2',
-                    genericTypeParameters: [
-                      'ex:SomeType2__generic_T',
-                    ],
-                  },
-                  genericTypeInstances: [
-                    'xsd:number',
+          const value = objectLoader.createCompactedResource({
+            '@type': {
+              '@id': 'ex:SomeType1',
+              extends: {
+                '@type': 'GenericComponentExtension',
+                component: {
+                  '@id': 'ex:SomeType2',
+                  genericTypeParameters: [
+                    'ex:SomeType2__generic_T',
                   ],
                 },
-              },
-            }),
-            objectLoader.createCompactedResource({
-              range: {
-                '@type': 'ParameterRangeGenericComponent',
-                component: 'ex:SomeType2',
                 genericTypeInstances: [
-                  {
-                    '@type': 'ParameterRangeGenericTypeReference',
-                    parameterRangeGenericType: 'ex:GEN_T',
-                  },
+                  'xsd:number',
                 ],
               },
+            },
+          });
+          const conflict = handler.hasValueType(
+            value,
+            objectLoader.createCompactedResource({
+              '@type': 'ParameterRangeGenericComponent',
+              component: 'ex:SomeType2',
+              genericTypeInstances: [
+                {
+                  '@type': 'ParameterRangeGenericTypeReference',
+                  parameterRangeGenericType: 'ex:GEN_T',
+                },
+              ],
             }),
+            errorContext,
             genericsContext,
           );
-          expect(value).toBeTruthy();
+          expect(conflict).toBeUndefined();
           expectOutputProperties(value, objectLoader.createCompactedResource({
             '@type': [ 'ex:SomeType1' ],
             genericTypeInstancesComponentScope: 'ex:SomeType2',
@@ -1616,13 +2041,13 @@ describe('ParameterPropertyHandlerRange', () => {
           }));
         });
 
-        it('should throw on a generic component with value a sub-type with incompat fixed generic', () => {
+        it('should return an error on a generic component with value a sub-type with incompat fixed generic', () => {
           genericsContext = new GenericsContext(objectLoader, [
             objectLoader.createCompactedResource('ex:GEN_T'),
           ]);
           genericsContext.bindings['ex:GEN_T'] = objectLoader.createCompactedResource('xsd:integer');
 
-          expect(() => handler.captureType(
+          expect(handler.hasValueType(
             objectLoader.createCompactedResource({
               '@type': {
                 '@id': 'ex:SomeType1',
@@ -1641,20 +2066,45 @@ describe('ParameterPropertyHandlerRange', () => {
               },
             }),
             objectLoader.createCompactedResource({
-              range: {
-                '@type': 'ParameterRangeGenericComponent',
-                component: 'ex:SomeType2',
-                genericTypeInstances: [
+              '@type': 'ParameterRangeGenericComponent',
+              component: 'ex:SomeType2',
+              genericTypeInstances: [
+                {
+                  '@type': 'ParameterRangeGenericTypeReference',
+                  parameterRangeGenericType: 'ex:GEN_T',
+                },
+              ],
+            }),
+            errorContext,
+            genericsContext,
+          )).toEqual({
+            description: `generic component is invalid`,
+            context: expect.anything(),
+            causes: [
+              {
+                description: `value is not a subtype of "ex:SomeType2"`,
+                context: expect.anything(),
+                causes: [
                   {
-                    '@type': 'ParameterRangeGenericTypeReference',
-                    parameterRangeGenericType: 'ex:GEN_T',
+                    description: `invalid parameter bindings for generic type instances for generic component extension of "ex:SomeType2"`,
+                    context: expect.anything(),
+                    causes: [
+                      {
+                        description: `invalid binding for generic <ex:SomeType2__generic_T>`,
+                        context: expect.anything(),
+                        causes: [
+                          {
+                            description: `generic <ex:SomeType2__generic_T> with existing range "http://www.w3.org/2001/XMLSchema#boolean" can not be bound to range "http://www.w3.org/2001/XMLSchema#integer"`,
+                            context: expect.anything(),
+                          },
+                        ],
+                      },
+                    ],
                   },
                 ],
               },
-            }),
-            genericsContext,
-            // eslint-disable-next-line max-len
-          )).toThrow(/The value ".*" with types "ex:SomeType1" for parameter ".*" is not of required range type "\(ex:SomeType2\)<GENERIC: ex:GEN_T>"/u);
+            ],
+          });
         });
 
         it('should handle a generic component with value a sub-type with unbound generic', () => {
@@ -1663,54 +2113,54 @@ describe('ParameterPropertyHandlerRange', () => {
           ]);
           genericsContext.bindings['ex:GEN_T'] = objectLoader.createCompactedResource('xsd:integer');
 
-          const value = handler.captureType(
-            objectLoader.createCompactedResource({
-              '@type': {
-                '@type': 'GenericComponentExtension',
-                component: {
-                  '@id': 'ex:SomeType1',
-                  genericTypeParameters: [
-                    'ex:SomeType1__generic_T',
-                  ],
-                  extends: {
-                    '@type': 'GenericComponentExtension',
-                    component: {
-                      '@id': 'ex:SomeType2',
-                      genericTypeParameters: [
-                        'ex:SomeType2__generic_T',
-                      ],
-                    },
-                    genericTypeInstances: [
-                      {
-                        '@type': 'ParameterRangeGenericTypeReference',
-                        parameterRangeGenericType: 'ex:SomeType1__generic_T',
-                      },
+          const value = objectLoader.createCompactedResource({
+            '@type': {
+              '@type': 'GenericComponentExtension',
+              component: {
+                '@id': 'ex:SomeType1',
+                genericTypeParameters: [
+                  'ex:SomeType1__generic_T',
+                ],
+                extends: {
+                  '@type': 'GenericComponentExtension',
+                  component: {
+                    '@id': 'ex:SomeType2',
+                    genericTypeParameters: [
+                      'ex:SomeType2__generic_T',
                     ],
                   },
+                  genericTypeInstances: [
+                    {
+                      '@type': 'ParameterRangeGenericTypeReference',
+                      parameterRangeGenericType: 'ex:SomeType1__generic_T',
+                    },
+                  ],
                 },
-                genericTypeInstances: [
-                  {
-                    '@type': 'ParameterRangeGenericTypeReference',
-                    parameterRangeGenericType: 'ex:GEN_T',
-                  },
-                ],
               },
-            }),
+              genericTypeInstances: [
+                {
+                  '@type': 'ParameterRangeGenericTypeReference',
+                  parameterRangeGenericType: 'ex:GEN_T',
+                },
+              ],
+            },
+          });
+          const conflict = handler.hasValueType(
+            value,
             objectLoader.createCompactedResource({
-              range: {
-                '@type': 'ParameterRangeGenericComponent',
-                component: 'ex:SomeType2',
-                genericTypeInstances: [
-                  {
-                    '@type': 'ParameterRangeGenericTypeReference',
-                    parameterRangeGenericType: 'ex:GEN_T',
-                  },
-                ],
-              },
+              '@type': 'ParameterRangeGenericComponent',
+              component: 'ex:SomeType2',
+              genericTypeInstances: [
+                {
+                  '@type': 'ParameterRangeGenericTypeReference',
+                  parameterRangeGenericType: 'ex:GEN_T',
+                },
+              ],
             }),
+            errorContext,
             genericsContext,
           );
-          expect(value).toBeTruthy();
+          expect(conflict).toBeUndefined();
           expectOutputProperties(value, objectLoader.createCompactedResource({
             '@type': {
               '@type': 'GenericComponentExtension',
@@ -1733,13 +2183,13 @@ describe('ParameterPropertyHandlerRange', () => {
           }));
         });
 
-        it('should throw on a generic component with value a sub-type with invalid fixed generic', () => {
+        it('should return an error on a generic component with value a sub-type with invalid fixed generic', () => {
           genericsContext = new GenericsContext(objectLoader, [
             objectLoader.createCompactedResource('ex:GEN_T'),
           ]);
           genericsContext.bindings['ex:GEN_T'] = objectLoader.createCompactedResource('xsd:integer');
 
-          expect(() => handler.captureType(
+          expect(handler.hasValueType(
             objectLoader.createCompactedResource({
               '@type': {
                 '@id': 'ex:SomeType1',
@@ -1761,55 +2211,80 @@ describe('ParameterPropertyHandlerRange', () => {
               },
             }),
             objectLoader.createCompactedResource({
-              range: {
-                '@type': 'ParameterRangeGenericComponent',
-                component: 'ex:SomeType2',
-                genericTypeInstances: [
+              '@type': 'ParameterRangeGenericComponent',
+              component: 'ex:SomeType2',
+              genericTypeInstances: [
+                {
+                  '@type': 'ParameterRangeGenericTypeReference',
+                  parameterRangeGenericType: 'ex:GEN_T',
+                },
+              ],
+            }),
+            errorContext,
+            genericsContext,
+          )).toEqual({
+            description: `generic component is invalid`,
+            context: expect.anything(),
+            causes: [
+              {
+                description: `value is not a subtype of "ex:SomeType2"`,
+                context: expect.anything(),
+                causes: [
                   {
-                    '@type': 'ParameterRangeGenericTypeReference',
-                    parameterRangeGenericType: 'ex:GEN_T',
+                    description: `invalid wrapped bindings for generic type instances for generic component extension of "ex:SomeType2"`,
+                    context: expect.anything(),
+                    causes: [
+                      {
+                        description: `invalid binding for generic <ex:SomeType2__generic_T>`,
+                        context: expect.anything(),
+                        causes: [
+                          {
+                            description: `generic <ex:SomeType2__generic_T> with existing range "http://www.w3.org/2001/XMLSchema#boolean" can not be bound to range "http://www.w3.org/2001/XMLSchema#integer"`,
+                            context: expect.anything(),
+                          },
+                        ],
+                      },
+                    ],
                   },
                 ],
               },
-            }),
-            genericsContext,
-            // eslint-disable-next-line max-len
-          )).toThrow(/The value ".*" with types "ex:SomeType1" for parameter ".*" is not of required range type "\(ex:SomeType2\)<GENERIC: ex:GEN_T>"/u);
+            ],
+          });
         });
 
         it(`should handle a generic component with value a sub-type with fixed generic with fixed param generic`, () => {
           genericsContext = new GenericsContext(objectLoader, []);
 
-          const value = handler.captureType(
-            objectLoader.createCompactedResource({
-              '@type': {
-                '@id': 'ex:SomeType1',
-                extends: {
-                  '@type': 'GenericComponentExtension',
-                  component: {
-                    '@id': 'ex:SomeType2',
-                    genericTypeParameters: [
-                      'ex:SomeType2__generic_T',
-                    ],
-                  },
-                  genericTypeInstances: [
-                    'xsd:integer',
+          const value = objectLoader.createCompactedResource({
+            '@type': {
+              '@id': 'ex:SomeType1',
+              extends: {
+                '@type': 'GenericComponentExtension',
+                component: {
+                  '@id': 'ex:SomeType2',
+                  genericTypeParameters: [
+                    'ex:SomeType2__generic_T',
                   ],
                 },
-              },
-            }),
-            objectLoader.createCompactedResource({
-              range: {
-                '@type': 'ParameterRangeGenericComponent',
-                component: 'ex:SomeType2',
                 genericTypeInstances: [
                   'xsd:integer',
                 ],
               },
+            },
+          });
+          const conflict = handler.hasValueType(
+            value,
+            objectLoader.createCompactedResource({
+              '@type': 'ParameterRangeGenericComponent',
+              component: 'ex:SomeType2',
+              genericTypeInstances: [
+                'xsd:integer',
+              ],
             }),
+            errorContext,
             genericsContext,
           );
-          expect(value).toBeTruthy();
+          expect(conflict).toBeUndefined();
           expectOutputProperties(value, objectLoader.createCompactedResource({
             '@type': [ 'ex:SomeType1' ],
             genericTypeInstancesComponentScope: 'ex:SomeType2',
@@ -1822,38 +2297,38 @@ describe('ParameterPropertyHandlerRange', () => {
         it(`should handle a generic component with value a sub-type with fixed generic with wildcard param generic`, () => {
           genericsContext = new GenericsContext(objectLoader, []);
 
-          const value = handler.captureType(
-            objectLoader.createCompactedResource({
-              '@type': {
-                '@id': 'ex:SomeType1',
-                extends: {
-                  '@type': 'GenericComponentExtension',
-                  component: {
-                    '@id': 'ex:SomeType2',
-                    genericTypeParameters: [
-                      'ex:SomeType2__generic_T',
-                    ],
-                  },
-                  genericTypeInstances: [
-                    'xsd:integer',
+          const value = objectLoader.createCompactedResource({
+            '@type': {
+              '@id': 'ex:SomeType1',
+              extends: {
+                '@type': 'GenericComponentExtension',
+                component: {
+                  '@id': 'ex:SomeType2',
+                  genericTypeParameters: [
+                    'ex:SomeType2__generic_T',
                   ],
                 },
-              },
-            }),
-            objectLoader.createCompactedResource({
-              range: {
-                '@type': 'ParameterRangeGenericComponent',
-                component: 'ex:SomeType2',
                 genericTypeInstances: [
-                  {
-                    '@type': 'ParameterRangeWildcard',
-                  },
+                  'xsd:integer',
                 ],
               },
+            },
+          });
+          const conflict = handler.hasValueType(
+            value,
+            objectLoader.createCompactedResource({
+              '@type': 'ParameterRangeGenericComponent',
+              component: 'ex:SomeType2',
+              genericTypeInstances: [
+                {
+                  '@type': 'ParameterRangeWildcard',
+                },
+              ],
             }),
+            errorContext,
             genericsContext,
           );
-          expect(value).toBeTruthy();
+          expect(conflict).toBeUndefined();
           expectOutputProperties(value, objectLoader.createCompactedResource({
             '@type': [ 'ex:SomeType1' ],
             genericTypeInstancesComponentScope: 'ex:SomeType2',
@@ -1865,10 +2340,10 @@ describe('ParameterPropertyHandlerRange', () => {
           }));
         });
 
-        it(`should throw on a generic component with value a sub-type with fixed generic with incompatible fixed param generic`, () => {
+        it(`should return an error on a generic component with value a sub-type with fixed generic with incompatible fixed param generic`, () => {
           genericsContext = new GenericsContext(objectLoader, []);
 
-          expect(() => handler.captureType(
+          expect(handler.hasValueType(
             objectLoader.createCompactedResource({
               '@type': {
                 '@id': 'ex:SomeType1',
@@ -1887,19 +2362,158 @@ describe('ParameterPropertyHandlerRange', () => {
               },
             }),
             objectLoader.createCompactedResource({
-              range: {
-                '@type': 'ParameterRangeGenericComponent',
-                component: 'ex:SomeType2',
-                genericTypeInstances: [
-                  'xsd:boolean',
+              '@type': 'ParameterRangeGenericComponent',
+              component: 'ex:SomeType2',
+              genericTypeInstances: [
+                'xsd:boolean',
+              ],
+            }),
+            errorContext,
+            genericsContext,
+          )).toEqual({
+            description: `generic component is invalid`,
+            context: expect.anything(),
+            causes: [
+              {
+                description: `value is not a subtype of "ex:SomeType2"`,
+                context: expect.anything(),
+                causes: [
+                  {
+                    description: `invalid binding for generic type <ex:SomeType2__generic_T> in generic component extension of "ex:SomeType2"`,
+                    context: expect.anything(),
+                    causes: [
+                      {
+                        description: `value is not a subtype of "http://www.w3.org/2001/XMLSchema#boolean"`,
+                        context: expect.anything(),
+                        causes: [],
+                      },
+                      {
+                        description: `value is not a subtype of the referenced component in the generic component extension of "ex:SomeType2"`,
+                        context: expect.anything(),
+                        causes: [
+                          {
+                            description: `value is not a subtype of "http://www.w3.org/2001/XMLSchema#boolean"`,
+                            context: expect.anything(),
+                            causes: [],
+                          },
+                        ],
+                      },
+                    ],
+                  },
                 ],
               },
-            }),
-            genericsContext,
-            // eslint-disable-next-line max-len
-          )).toThrow(/The value ".*" with types "ex:SomeType1" for parameter ".*" is not of required range type "\(ex:SomeType2\)<.*#boolean>"/u);
+            ],
+          });
         });
       });
+    });
+  });
+
+  describe('throwIncorrectTypeError', () => {
+    const conflict: IParamValueConflict = { description: 'cause', context: {}};
+
+    it('handles an undefined value', () => {
+      expect(() => ParameterPropertyHandlerRange.throwIncorrectTypeError(
+        undefined,
+        objectLoader.createCompactedResource('ex:param'),
+        genericsContext,
+        conflict,
+      )).toThrow('The value "undefined" for parameter "ex:param" is not of required range type "any"');
+    });
+
+    it('handles a defined value', () => {
+      expect(() => ParameterPropertyHandlerRange.throwIncorrectTypeError(
+        objectLoader.createCompactedResource('ex:value'),
+        objectLoader.createCompactedResource('ex:param'),
+        genericsContext,
+        conflict,
+      )).toThrow('The value "ex:value" for parameter "ex:param" is not of required range type "any"');
+    });
+
+    it('handles a defined value with types', () => {
+      expect(() => ParameterPropertyHandlerRange.throwIncorrectTypeError(
+        objectLoader.createCompactedResource({
+          '@id': 'ex:value',
+          '@type': [ 'ex:Type1', 'ex:Type2' ],
+        }),
+        objectLoader.createCompactedResource('ex:param'),
+        genericsContext,
+        conflict,
+      )).toThrow(`The value "ex:value" with types "ex:Type1,ex:Type2" for parameter "ex:param" is not of required range type "any"`);
+    });
+
+    it('handles a defined list value', () => {
+      expect(() => ParameterPropertyHandlerRange.throwIncorrectTypeError(
+        objectLoader.createCompactedResource({
+          list: [
+            'ex:value1',
+            'ex:value2',
+          ],
+        }),
+        objectLoader.createCompactedResource('ex:param'),
+        genericsContext,
+        conflict,
+      )).toThrow('The value "[ex:value1, ex:value2]" for parameter "ex:param" is not of required range type "any"');
+    });
+
+    it('handles generics', () => {
+      genericsContext.bindings['ex:T'] = objectLoader.createCompactedResource('ex:A');
+      genericsContext.bindings['ex:U'] = objectLoader.createCompactedResource('ex:B');
+      expect(() => ParameterPropertyHandlerRange.throwIncorrectTypeError(
+        objectLoader.createCompactedResource('ex:value'),
+        objectLoader.createCompactedResource('ex:param'),
+        genericsContext,
+        conflict,
+      )).toThrow(`generics: [
+  <ex:T> => ex:A,
+  <ex:U> => ex:B
+]`);
+    });
+  });
+
+  describe('conflictToString', () => {
+    it('for no inner causes', () => {
+      expect(ParameterPropertyHandlerRange.conflictToString({
+        description: 'cause',
+        context: {
+          a: 'A',
+          b: 'B',
+        },
+      }, 2)).toEqual(`cause
+  a: A
+  b: B`);
+    });
+
+    it('for inner causes', () => {
+      expect(ParameterPropertyHandlerRange.conflictToString({
+        description: 'cause',
+        context: {
+          a: 'A',
+          b: 'B',
+        },
+        causes: [
+          {
+            description: 'causeinner1',
+            context: {
+              a: 'A',
+              b: 'B',
+            },
+          },
+          {
+            description: 'causeinner2',
+            context: {
+              a: 'A',
+              b: 'B',
+            },
+          },
+        ],
+      }, 2)).toEqual(`cause
+  causeinner1
+    a: A
+    b: B
+  causeinner2
+    a: A
+    b: B`);
     });
   });
 
@@ -1920,6 +2534,90 @@ describe('ParameterPropertyHandlerRange', () => {
       expect(ParameterPropertyHandlerRange.rangeToDisplayString(objectLoader.createCompactedResource({
         '@type': 'ParameterRangeUndefined',
       }), genericsContext)).toEqual('undefined');
+    });
+
+    it('handles ParameterRangeArray range', () => {
+      expect(ParameterPropertyHandlerRange.rangeToDisplayString(objectLoader.createCompactedResource({
+        '@type': 'ParameterRangeArray',
+        parameterRangeValue: 'ex:Type',
+      }), genericsContext)).toEqual('ex:Type[]');
+    });
+
+    it('handles ParameterRangeRest range', () => {
+      expect(ParameterPropertyHandlerRange.rangeToDisplayString(objectLoader.createCompactedResource({
+        '@type': 'ParameterRangeRest',
+        parameterRangeValue: 'ex:Type',
+      }), genericsContext)).toEqual('...ex:Type');
+    });
+
+    it('handles ParameterRangeKeyof range', () => {
+      expect(ParameterPropertyHandlerRange.rangeToDisplayString(objectLoader.createCompactedResource({
+        '@type': 'ParameterRangeKeyof',
+        parameterRangeValue: 'ex:Type',
+      }), genericsContext)).toEqual('keyof ex:Type');
+    });
+
+    it('handles ParameterRangeUnion range', () => {
+      expect(ParameterPropertyHandlerRange.rangeToDisplayString(objectLoader.createCompactedResource({
+        '@type': 'ParameterRangeUnion',
+        parameterRangeElements: [
+          'ex:Type1',
+          'ex:Type2',
+        ],
+      }), genericsContext)).toEqual('ex:Type1 | ex:Type2');
+    });
+
+    it('handles ParameterRangeIntersection range', () => {
+      expect(ParameterPropertyHandlerRange.rangeToDisplayString(objectLoader.createCompactedResource({
+        '@type': 'ParameterRangeIntersection',
+        parameterRangeElements: [
+          'ex:Type1',
+          'ex:Type2',
+        ],
+      }), genericsContext)).toEqual('ex:Type1 & ex:Type2');
+    });
+
+    it('handles ParameterRangeTuple range', () => {
+      expect(ParameterPropertyHandlerRange.rangeToDisplayString(objectLoader.createCompactedResource({
+        '@type': 'ParameterRangeTuple',
+        parameterRangeElements: [
+          'ex:Type1',
+          'ex:Type2',
+        ],
+      }), genericsContext)).toEqual('[ex:Type1, ex:Type2]');
+    });
+
+    it('handles ParameterRangeLiteral range', () => {
+      expect(ParameterPropertyHandlerRange.rangeToDisplayString(objectLoader.createCompactedResource({
+        '@type': 'ParameterRangeLiteral',
+        parameterRangeValue: '"abc"',
+      }), genericsContext)).toEqual('abc');
+    });
+
+    it('handles ParameterRangeGenericTypeReference range with an unknown generic', () => {
+      expect(ParameterPropertyHandlerRange.rangeToDisplayString(objectLoader.createCompactedResource({
+        '@type': 'ParameterRangeGenericTypeReference',
+        parameterRangeGenericType: 'ex:GEN_T',
+      }), genericsContext)).toEqual('UNKNOWN GENERIC: ex:GEN_T');
+    });
+
+    it('handles ParameterRangeGenericTypeReference range with a known generic', () => {
+      genericsContext.genericTypeIds['ex:GEN_T'] = true;
+      expect(ParameterPropertyHandlerRange.rangeToDisplayString(objectLoader.createCompactedResource({
+        '@type': 'ParameterRangeGenericTypeReference',
+        parameterRangeGenericType: 'ex:GEN_T',
+      }), genericsContext)).toEqual('GENERIC: ex:GEN_T');
+    });
+
+    it('handles ParameterRangeGenericComponent range', () => {
+      expect(ParameterPropertyHandlerRange.rangeToDisplayString(objectLoader.createCompactedResource({
+        '@type': 'ParameterRangeGenericComponent',
+        component: 'ex:Component',
+        genericTypeInstances: [
+          '"A"',
+          '"B"',
+        ],
+      }), genericsContext)).toEqual('(ex:Component)<A, B>');
     });
   });
 });

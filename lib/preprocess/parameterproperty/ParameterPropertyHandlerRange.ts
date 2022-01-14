@@ -44,39 +44,42 @@ export class ParameterPropertyHandlerRange implements IParameterPropertyHandler 
     param: Resource,
     genericsContext: GenericsContext,
   ): Resource | undefined {
-    const conflict = this.hasParamValueValidType(value, param, param.property.range, genericsContext);
+    const errorContext: ErrorContext = { param };
+    const conflict = this.hasValueType(value, param.property.range, errorContext, genericsContext);
     if (!conflict) {
       return value;
     }
-    this.throwIncorrectTypeError(value, param, genericsContext, conflict);
+    ParameterPropertyHandlerRange.throwIncorrectTypeError(value, param, genericsContext, conflict);
   }
 
   /**
-   * Apply the given datatype to the given literal.
-   * Checks if the datatype is correct and casts to the correct js type.
-   * Will throw an error if the type has an invalid value.
-   * Will be ignored if the value is not a literal or the type is not recognized.
+   * Check if the given value is of the given type.
+   *
+   * For valid literals, the `valueRaw` field will be set.
+   *
    * @param value The value.
-   * @param param The parameter.
-   * @param paramRange The parameter's range.
+   * @param type The parameter's range.
    * @param genericsContext Context for generic types.
+   * @param errorContext The context for error reporting.
    * @return IParamValueConflict A conflict value if there was an error, or undefined if there was no error
    */
-  public hasParamValueValidType(
+  public hasValueType(
     value: Resource | undefined,
-    param: Resource,
-    paramRange: Resource,
+    type: Resource | undefined,
+    errorContext: ErrorContext,
     genericsContext: GenericsContext,
   ): IParamValueConflict | undefined {
-    if (!paramRange) {
+    errorContext = { ...errorContext, value, type };
+
+    if (!type) {
       return;
     }
 
-    if (paramRange.isA('ParameterRangeWildcard')) {
+    if (type.isA('ParameterRangeWildcard')) {
       return;
     }
 
-    if (!value && paramRange.isA('ParameterRangeUndefined')) {
+    if (!value && type.isA('ParameterRangeUndefined')) {
       return;
     }
 
@@ -85,10 +88,10 @@ export class ParameterPropertyHandlerRange implements IParameterPropertyHandler 
       return;
     }
 
-    const errorContext: ErrorContext = { value, param, paramRange };
+    // Handle literal values
     if (value && value.type === 'Literal') {
       let parsed;
-      switch (paramRange.value) {
+      switch (type.value) {
         case IRIS_XSD.string:
           return;
         case IRIS_XSD.boolean:
@@ -111,7 +114,7 @@ export class ParameterPropertyHandlerRange implements IParameterPropertyHandler 
           parsed = Number.parseInt(value.value, 10);
           if (Number.isNaN(parsed)) {
             return {
-              description: `value is NaN (${parsed})`,
+              description: `value is not a number`,
               context: errorContext,
             };
           }
@@ -130,7 +133,7 @@ export class ParameterPropertyHandlerRange implements IParameterPropertyHandler 
           parsed = Number.parseFloat(value.value);
           if (Number.isNaN(parsed)) {
             return {
-              description: `value is NaN (${parsed})`,
+              description: `value is not a number`,
               context: errorContext,
             };
           }
@@ -151,7 +154,7 @@ export class ParameterPropertyHandlerRange implements IParameterPropertyHandler 
     }
 
     // Allow IRIs to be casted to strings
-    if (value && paramRange.value === IRIS_XSD.string && value.type === 'NamedNode') {
+    if (value && type.value === IRIS_XSD.string && value.type === 'NamedNode') {
       return;
     }
 
@@ -161,10 +164,11 @@ export class ParameterPropertyHandlerRange implements IParameterPropertyHandler 
     if (value) {
       const hasTypeConflictInner = this.hasType(
         value,
-        paramRange,
+        type,
         genericsContext,
         value.property.genericTypeInstancesComponentScope,
         value.properties.genericTypeInstances,
+        errorContext,
       );
       if (!hasTypeConflictInner) {
         return;
@@ -175,7 +179,7 @@ export class ParameterPropertyHandlerRange implements IParameterPropertyHandler 
     }
 
     // Check if the param type is an array
-    if (value && paramRange.isA('ParameterRangeArray')) {
+    if (value && type.isA('ParameterRangeArray')) {
       if (!value.list) {
         return {
           description: `value is not an RDF list`,
@@ -183,7 +187,7 @@ export class ParameterPropertyHandlerRange implements IParameterPropertyHandler 
         };
       }
       const subConflicts = <IParamValueConflict[]> value.list.map(listElement => this
-        .hasParamValueValidType(listElement, param, paramRange.property.parameterRangeValue, genericsContext))
+        .hasValueType(listElement, type.property.parameterRangeValue, errorContext, genericsContext))
         .filter(subConflict => subConflict !== undefined);
       return subConflicts.length === 0 ?
         undefined :
@@ -195,10 +199,10 @@ export class ParameterPropertyHandlerRange implements IParameterPropertyHandler 
     }
 
     // Check if the param type is a composed type
-    if (paramRange.isA('ParameterRangeUnion')) {
+    if (type.isA('ParameterRangeUnion')) {
       const subConflicts: IParamValueConflict[] = [];
-      for (const parameterRangeElement of paramRange.properties.parameterRangeElements) {
-        const subConflict = this.hasParamValueValidType(value, param, parameterRangeElement, genericsContext);
+      for (const parameterRangeElement of type.properties.parameterRangeElements) {
+        const subConflict = this.hasValueType(value, parameterRangeElement, errorContext, genericsContext);
         if (!subConflict) {
           return;
         }
@@ -210,19 +214,19 @@ export class ParameterPropertyHandlerRange implements IParameterPropertyHandler 
         causes: subConflicts,
       };
     }
-    if (paramRange.isA('ParameterRangeIntersection')) {
-      const subConflicts = paramRange.properties.parameterRangeElements
-        .map(child => this.hasParamValueValidType(value, param, child, genericsContext));
+    if (type.isA('ParameterRangeIntersection')) {
+      const subConflicts = type.properties.parameterRangeElements
+        .map(child => this.hasValueType(value, child, errorContext, genericsContext));
       if (subConflicts.every(subConflict => subConflict === undefined)) {
         return;
       }
       return {
         description: `not all intersection values are valid`,
         context: errorContext,
-        causes: <IParamValueConflict[]> subConflicts,
+        causes: <IParamValueConflict[]> subConflicts.filter(subConflict => subConflict !== undefined),
       };
     }
-    if (paramRange.isA('ParameterRangeTuple')) {
+    if (type.isA('ParameterRangeTuple')) {
       if (!value) {
         return {
           description: `undefined value is not an RDF list`,
@@ -238,16 +242,16 @@ export class ParameterPropertyHandlerRange implements IParameterPropertyHandler 
 
       // Iterate over list elements and try to match with tuple types
       const listElements = value.list;
-      const tupleTypes = paramRange.properties.parameterRangeElements;
+      const tupleTypes = type.properties.parameterRangeElements;
       let listIndex = 0;
       let tupleIndex = 0;
       while (listIndex < listElements.length && tupleIndex < tupleTypes.length) {
         if (tupleTypes[tupleIndex].isA('ParameterRangeRest')) {
           // Rest types can match multiple list elements, so only increment index if no match is found.
-          const subConflict = this.hasParamValueValidType(
+          const subConflict = this.hasValueType(
             listElements[listIndex],
-            param,
             tupleTypes[tupleIndex].property.parameterRangeValue,
+            errorContext,
             genericsContext,
           );
           if (subConflict) {
@@ -256,10 +260,10 @@ export class ParameterPropertyHandlerRange implements IParameterPropertyHandler 
             listIndex++;
           }
         } else {
-          const subConflict = this.hasParamValueValidType(
+          const subConflict = this.hasValueType(
             listElements[listIndex],
-            param,
             tupleTypes[tupleIndex],
+            errorContext,
             genericsContext,
           );
           if (subConflict) {
@@ -284,8 +288,8 @@ export class ParameterPropertyHandlerRange implements IParameterPropertyHandler 
       }
       return;
     }
-    if (paramRange.isA('ParameterRangeLiteral')) {
-      if (value && value.term.equals(paramRange.property.parameterRangeValue.term)) {
+    if (type.isA('ParameterRangeLiteral')) {
+      if (value && value.term.equals(type.property.parameterRangeValue.term)) {
         return;
       }
       return {
@@ -295,8 +299,8 @@ export class ParameterPropertyHandlerRange implements IParameterPropertyHandler 
     }
 
     // Check if the range refers to `keyof ...`
-    if (paramRange.isA('ParameterRangeKeyof')) {
-      const component = paramRange.property.parameterRangeValue;
+    if (type.isA('ParameterRangeKeyof')) {
+      const component = type.property.parameterRangeValue;
       // Simulate a union of the member keys as literal parameter ranges
       const simulatedUnionRange = this.objectLoader.createCompactedResource({
         '@type': 'ParameterRangeUnion',
@@ -305,7 +309,7 @@ export class ParameterPropertyHandlerRange implements IParameterPropertyHandler 
           parameterRangeValue: memberKey,
         })),
       });
-      const subConflict = this.hasParamValueValidType(value, param, simulatedUnionRange, genericsContext);
+      const subConflict = this.hasValueType(value, simulatedUnionRange, errorContext, genericsContext);
       if (!subConflict) {
         return;
       }
@@ -317,34 +321,33 @@ export class ParameterPropertyHandlerRange implements IParameterPropertyHandler 
     }
 
     // Check if the range refers to a generic type
-    if (paramRange.isA('ParameterRangeGenericTypeReference')) {
+    if (type.isA('ParameterRangeGenericTypeReference')) {
       return genericsContext.bindGenericTypeToValue(
-        paramRange.property.parameterRangeGenericType.value,
+        type.property.parameterRangeGenericType.value,
         value,
-        (subValue, subType) => this.hasParamValueValidType(subValue, param, subType, genericsContext),
+        (subValue, subType) => this.hasValueType(subValue, subType, errorContext, genericsContext),
       );
     }
 
     // Check if the range refers to a component with a generic type
-    if (paramRange.isA('ParameterRangeGenericComponent')) {
+    if (type.isA('ParameterRangeGenericComponent')) {
       if (value) {
         if (value.property.genericTypeInstances) {
           // Once we support manual generics setting, we'll need to check here if we can merge with it.
-          throw new ErrorResourcesContext(`Simultaneous manual generic type passing and generic type inference are not supported yet.`, { parameter: param, value });
+          throw new ErrorResourcesContext(`Simultaneous manual generic type passing and generic type inference are not supported yet.`, errorContext);
         }
 
         // For the defined generic type instances, apply them into the instance so they can be checked later during a
         // call to GenericsContext#bindComponentGenericTypes.
-        value.property.genericTypeInstancesComponentScope = paramRange.property.component;
-        value.properties.genericTypeInstances = paramRange.properties.genericTypeInstances
+        value.property.genericTypeInstancesComponentScope = type.property.component;
+        value.properties.genericTypeInstances = type.properties.genericTypeInstances
           .map(genericTypeInstance => {
             // If we have a generic param type reference, instantiate them based on the current generics context
             if (genericTypeInstance.isA('ParameterRangeGenericTypeReference')) {
               if (!genericTypeInstance.property.parameterRangeGenericType) {
                 throw new ErrorResourcesContext(`Invalid generic type instance in a ParameterRangeGenericComponent was detected: missing parameterRangeGenericType property.`, {
-                  parameter: param,
+                  ...errorContext,
                   genericTypeInstance,
-                  value,
                 });
               }
 
@@ -361,7 +364,7 @@ export class ParameterPropertyHandlerRange implements IParameterPropertyHandler 
           });
       }
 
-      const subConflict = this.hasParamValueValidType(value, param, paramRange.property.component, genericsContext);
+      const subConflict = this.hasValueType(value, type.property.component, errorContext, genericsContext);
       if (!subConflict) {
         return;
       }
@@ -373,7 +376,7 @@ export class ParameterPropertyHandlerRange implements IParameterPropertyHandler 
     }
 
     // Check if this param defines a field with sub-params
-    if (paramRange.isA('ParameterRangeCollectEntries')) {
+    if (type.isA('ParameterRangeCollectEntries')) {
       // TODO: Add support for type-checking nested fields with collectEntries
       return;
     }
@@ -381,7 +384,7 @@ export class ParameterPropertyHandlerRange implements IParameterPropertyHandler 
     return hasTypeConflict || { description: 'unknown parameter type', context: errorContext };
   }
 
-  protected throwIncorrectTypeError(
+  public static throwIncorrectTypeError(
     value: Resource | undefined,
     parameter: Resource,
     genericsContext: GenericsContext,
@@ -391,7 +394,7 @@ export class ParameterPropertyHandlerRange implements IParameterPropertyHandler 
     // eslint-disable-next-line @typescript-eslint/no-extra-parens
     const valueString = value ? (value.list ? `[${value.list.map(subValue => subValue.value).join(', ')}]` : value.value) : 'undefined';
     throw new ErrorResourcesContext(`The value "${valueString}"${withTypes} for parameter "${parameter.value}" is not of required range type "${ParameterPropertyHandlerRange.rangeToDisplayString(parameter.property.range, genericsContext)}"`, {
-      cause: this.conflictToString(conflict, 2),
+      cause: ParameterPropertyHandlerRange.conflictToString(conflict, 2),
       value: value || 'undefined',
       ...Object.keys(genericsContext.bindings).length > 0 ?
         { generics: `[\n  ${Object.entries(genericsContext.bindings)
@@ -402,12 +405,14 @@ export class ParameterPropertyHandlerRange implements IParameterPropertyHandler 
     });
   }
 
-  protected conflictToString(conflict: IParamValueConflict, indent: number): string {
+  public static conflictToString(conflict: IParamValueConflict, indent: number): string {
     let message = `${conflict.description}`;
     if (conflict.causes) {
       for (const subConflict of conflict.causes) {
-        message += `\n${' '.repeat(indent)}${this.conflictToString(subConflict, indent + 2)}`;
+        message += `\n${' '.repeat(indent)}${ParameterPropertyHandlerRange.conflictToString(subConflict, indent + 2)}`;
       }
+    } else {
+      message += `\n${' '.repeat(indent)}${ErrorResourcesContext.contextToString(conflict.context, indent)}`;
     }
     return message;
   }
@@ -419,6 +424,7 @@ export class ParameterPropertyHandlerRange implements IParameterPropertyHandler 
    * @param genericsContext The current generics context.
    * @param genericTypeInstancesComponentScope
    * @param genericTypeInstances
+   * @param errorContext
    * @protected
    */
   protected hasType(
@@ -427,6 +433,7 @@ export class ParameterPropertyHandlerRange implements IParameterPropertyHandler 
     genericsContext: GenericsContext,
     genericTypeInstancesComponentScope: Resource | undefined,
     genericTypeInstances: Resource[],
+    errorContext: ErrorContext,
   ): IParamValueConflict | undefined {
     // Immediately return if the terms are equal
     if (value.term.equals(type.term)) {
@@ -446,6 +453,7 @@ export class ParameterPropertyHandlerRange implements IParameterPropertyHandler 
           genericsContext,
           genericTypeInstancesComponentScope,
           genericTypeInstances,
+          errorContext,
         );
         if (!hasTypeConflict) {
           // If hasType has passed, validate the generic instantiations
@@ -505,12 +513,13 @@ export class ParameterPropertyHandlerRange implements IParameterPropertyHandler 
                   genericsContext,
                   undefined,
                   [],
+                  errorContext,
                 );
                 if (subConflictType) {
                   // If the generic type instance is just a type, check it against the value in the inner context.
                   // If it does not match (either is not of that type, or the param type does not match), return false.
                   const subConflictInstance = this
-                    .hasParamValueValidType(value, type, genericTypeInstance, genericsContext);
+                    .hasValueType(value, genericTypeInstance, errorContext, genericsContext);
                   if (subConflictInstance) {
                     return {
                       description: `invalid binding for generic type <${innerGenericType}> in generic component extension of "${superComponent.value}"`,
@@ -540,6 +549,7 @@ export class ParameterPropertyHandlerRange implements IParameterPropertyHandler 
         genericsContext,
         genericTypeInstancesComponentScope,
         genericTypeInstances,
+        errorContext,
       );
       if (!subConflictType) {
         return;
@@ -605,6 +615,6 @@ export class ParameterPropertyHandlerRange implements IParameterPropertyHandler 
  */
 export interface IParamValueConflict {
   description: string;
-  context?: ErrorContext;
+  context: ErrorContext;
   causes?: IParamValueConflict[];
 }

@@ -13,7 +13,7 @@ export class ErrorResourcesContext extends Error {
     this.context = context;
   }
 
-  public static contextToString(context: ErrorContext): string {
+  public static contextToString(context: ErrorContext, indent = 0): string {
     return Object.entries(context)
       .map(([ key, value ]) => `${key}: ${typeof value === 'string' ?
         value :
@@ -21,7 +21,7 @@ export class ErrorResourcesContext extends Error {
         (Array.isArray(value) ?
           value.map(valueSub => ErrorResourcesContext.resourceToString(valueSub)) :
           ErrorResourcesContext.resourceToString(value))}`)
-      .join('\n');
+      .join(`\n${' '.repeat(indent)}`);
   }
 
   /**
