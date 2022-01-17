@@ -202,6 +202,22 @@ const myInstance = await manager.instantiate('http://example.org/myInstance');
 [RDF]: https://www.w3.org/RDF/
 [JSON-LD]: https://json-ld.org/
 
+## Cite
+
+If you are using or extending Components.js as part of a scientific publication,
+we would appreciate a citation of our [article](https://linkedsoftwaredependencies.github.io/Article-System-Components/).
+
+```bibtex
+@article{taelman_swj_componentsjs_2022,
+  author = {Taelman, Ruben and Van Herwegen, Joachim and Vander Sande, Miel and Verborgh, Ruben},
+  title = {Components.js: Semantic Dependency Injection},
+  journal = {Semantic Web Journal},
+  year = {2022},
+  month = jan,
+  url = {https://linkedsoftwaredependencies.github.io/Article-System-Components/}
+}
+```
+
 ## License
 Components.js is written by [Ruben Taelman](http://www.rubensworks.net/).
 

@@ -1,0 +1,26 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite the article."
+authors:
+- family-names: "Taelman"
+  given-names: "Ruben"
+title: "Components.js"
+version: 1.0.0
+doi: 10.5281/zenodo.1243988
+date-released: 2021-08-30
+url: "https://github.com/LinkedSoftwareDependencies/Components.js"
+preferred-citation:
+  type: article
+  authors:
+  - family-names: "Taelman"
+    given-names: "Ruben"
+  - family-names: "Van Herwegen"
+    given-names: "Joachim"
+  - family-names: "Vander Sande"
+    given-names: "Miel"
+  - family-names: "Verborgh"
+    given-names: "Ruben"
+  doi: "TODO"
+  journal: "Semantic Web Journal"
+  month: 1
+  title: "Components.js: Semantic Dependency Injection"
+  year: 2022
