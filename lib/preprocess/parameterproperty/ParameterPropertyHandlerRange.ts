@@ -340,36 +340,36 @@ export class ParameterPropertyHandlerRange implements IParameterPropertyHandler 
     // Check if the range refers to a component with a generic type
     if (type.isA('ParameterRangeGenericComponent')) {
       if (value) {
-        if (value.property.genericTypeInstances) {
-          // Once we support manual generics setting, we'll need to check here if we can merge with it.
-          throw new ErrorResourcesContext(`Simultaneous manual generic type passing and generic type inference are not supported yet.`, errorContext);
-        }
+        if (!value.property.genericTypeInstances) {
+          // For the defined generic type instances, apply them into the instance so they can be checked later during a
+          // call to GenericsContext#bindComponentGenericTypes.
+          value.property.genericTypeInstancesComponentScope = type.property.component;
+          value.properties.genericTypeInstances = type.properties.genericTypeInstances
+            .map(genericTypeInstance => {
+              // If we have a generic param type reference, instantiate them based on the current generics context
+              if (genericTypeInstance.isA('ParameterRangeGenericTypeReference')) {
+                if (!genericTypeInstance.property.parameterRangeGenericType) {
+                  throw new ErrorResourcesContext(`Invalid generic type instance in a ParameterRangeGenericComponent was detected: missing parameterRangeGenericType property.`, {
+                    ...errorContext,
+                    genericTypeInstance,
+                  });
+                }
 
-        // For the defined generic type instances, apply them into the instance so they can be checked later during a
-        // call to GenericsContext#bindComponentGenericTypes.
-        value.property.genericTypeInstancesComponentScope = type.property.component;
-        value.properties.genericTypeInstances = type.properties.genericTypeInstances
-          .map(genericTypeInstance => {
-            // If we have a generic param type reference, instantiate them based on the current generics context
-            if (genericTypeInstance.isA('ParameterRangeGenericTypeReference')) {
-              if (!genericTypeInstance.property.parameterRangeGenericType) {
-                throw new ErrorResourcesContext(`Invalid generic type instance in a ParameterRangeGenericComponent was detected: missing parameterRangeGenericType property.`, {
-                  ...errorContext,
-                  genericTypeInstance,
+                return this.objectLoader.createCompactedResource({
+                  '@type': 'ParameterRangeGenericTypeReference',
+                  parameterRangeGenericType: genericTypeInstance.property.parameterRangeGenericType.value,
+                  parameterRangeGenericBindings: genericsContext
+                    .bindings[genericTypeInstance.property.parameterRangeGenericType.value],
                 });
               }
 
-              return this.objectLoader.createCompactedResource({
-                '@type': 'ParameterRangeGenericTypeReference',
-                parameterRangeGenericType: genericTypeInstance.property.parameterRangeGenericType.value,
-                parameterRangeGenericBindings: genericsContext
-                  .bindings[genericTypeInstance.property.parameterRangeGenericType.value],
-              });
-            }
-
-            // For all other param types, return the as-is
-            return genericTypeInstance;
-          });
+              // For all other param types, return the as-is
+              return genericTypeInstance;
+            });
+        } else {
+          // TODO: Once we support manual generics setting, we'll need to check here if we can merge with it.
+          // (sometimes, it can also be identical)
+        }
       }
 
       const subConflict = this.hasValueType(value, type.property.component, errorContext, genericsContext);

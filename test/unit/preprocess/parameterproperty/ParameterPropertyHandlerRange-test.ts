@@ -1881,23 +1881,24 @@ describe('ParameterPropertyHandlerRange', () => {
           }));
         });
 
-        it('should return an error on a generic component with config that already has manual generics set', () => {
+        it('should use manual generics on a generic component with config that already has manual generics set', () => {
           genericsContext = new GenericsContext(objectLoader, [
             objectLoader.createCompactedResource('ex:GEN_T'),
           ]);
           genericsContext.bindings['ex:GEN_T'] = objectLoader.createCompactedResource('ex:SomeType2');
 
-          expect(() => handler.hasValueType(
-            objectLoader.createCompactedResource({
-              '@type': [ 'ex:SomeType1' ],
-              genericTypeInstances: [
-                {
-                  type: 'ParameterRangeGenericTypeReference',
-                  parameterRangeGenericType: 'ex:GEN_T',
-                  parameterRangeGenericBindings: undefined,
-                },
-              ],
-            }),
+          const value = objectLoader.createCompactedResource({
+            '@type': [ 'ex:SomeType1' ],
+            genericTypeInstances: [
+              {
+                type: 'ParameterRangeGenericTypeReference',
+                parameterRangeGenericType: 'ex:GEN_T',
+                parameterRangeGenericBindings: undefined,
+              },
+            ],
+          });
+          const conflict = handler.hasValueType(
+            value,
             objectLoader.createCompactedResource({
               '@type': 'ParameterRangeGenericComponent',
               component: 'ex:SomeType1',
@@ -1910,8 +1911,18 @@ describe('ParameterPropertyHandlerRange', () => {
             }),
             errorContext,
             genericsContext,
-
-          )).toThrow(/^Simultaneous manual generic type passing and generic type inference are not supported yet\./u);
+          );
+          expect(conflict).toBeUndefined();
+          expectOutputProperties(value, objectLoader.createCompactedResource({
+            '@type': [ 'ex:SomeType1' ],
+            genericTypeInstances: [
+              {
+                type: 'ParameterRangeGenericTypeReference',
+                parameterRangeGenericType: 'ex:GEN_T',
+                parameterRangeGenericBindings: undefined,
+              },
+            ],
+          }));
         });
 
         it('should return an error on a generic component without parameterRangeGenericType value', () => {
