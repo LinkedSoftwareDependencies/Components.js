@@ -374,7 +374,6 @@ describe('ParameterPropertyHandlerRange', () => {
               '@id': 'ex:abc',
             }),
           },
-          causes: [],
         });
       });
 
@@ -396,7 +395,6 @@ describe('ParameterPropertyHandlerRange', () => {
               range: 'ex:OtherType',
             }),
           },
-          causes: [],
         });
       });
 
@@ -468,7 +466,6 @@ describe('ParameterPropertyHandlerRange', () => {
                     type: objectLoader.createCompactedResource('ex:RangeType'),
                     value: objectLoader.createCompactedResource('ex:RangeTypeOther'),
                   },
-                  causes: [],
                 },
               ],
             },
@@ -551,7 +548,6 @@ describe('ParameterPropertyHandlerRange', () => {
                     type: objectLoader.createCompactedResource('ex:RangeType'),
                     value: objectLoader.createCompactedResource('ex:RangeTypeOther'),
                   },
-                  causes: [],
                 },
               ],
             },
@@ -675,7 +671,6 @@ describe('ParameterPropertyHandlerRange', () => {
                     type: objectLoader.createCompactedResource('ex:SomeTypeInvalid1'),
                     value: objectLoader.createCompactedResource('ex:SomeType'),
                   },
-                  causes: [],
                 },
               ],
             },
@@ -695,7 +690,6 @@ describe('ParameterPropertyHandlerRange', () => {
                     type: objectLoader.createCompactedResource('ex:SomeTypeInvalid2'),
                     value: objectLoader.createCompactedResource('ex:SomeType'),
                   },
-                  causes: [],
                 },
               ],
             },
@@ -755,7 +749,6 @@ describe('ParameterPropertyHandlerRange', () => {
                 {
                   description: `value is not a subtype of "ex:SomeType2"`,
                   context: expect.anything(),
-                  causes: [],
                 },
               ],
             },
@@ -793,7 +786,6 @@ describe('ParameterPropertyHandlerRange', () => {
                 {
                   description: `value is not a subtype of "ex:SomeTypeInvalid1"`,
                   context: expect.anything(),
-                  causes: [],
                 },
               ],
             },
@@ -804,7 +796,6 @@ describe('ParameterPropertyHandlerRange', () => {
                 {
                   description: `value is not a subtype of "ex:SomeTypeInvalid2"`,
                   context: expect.anything(),
-                  causes: [],
                 },
               ],
             },
@@ -903,7 +894,6 @@ describe('ParameterPropertyHandlerRange', () => {
                 {
                   description: `value is not a subtype of "ex:SomeType1"`,
                   context: expect.anything(),
-                  causes: [],
                 },
               ],
             },
@@ -961,7 +951,6 @@ describe('ParameterPropertyHandlerRange', () => {
                 {
                   description: `value is not a subtype of "ex:SomeType"`,
                   context: expect.anything(),
-                  causes: [],
                 },
               ],
             },
@@ -1073,7 +1062,6 @@ describe('ParameterPropertyHandlerRange', () => {
                 {
                   description: `value is not a subtype of "ex:SomeType3"`,
                   context: expect.anything(),
-                  causes: [],
                 },
               ],
             },
@@ -1577,7 +1565,6 @@ describe('ParameterPropertyHandlerRange', () => {
                   {
                     description: `value is not a subtype of "ex:SomeType2"`,
                     context: expect.anything(),
-                    causes: [],
                   },
                 ],
               },
@@ -1625,8 +1612,6 @@ describe('ParameterPropertyHandlerRange', () => {
               {
                 description: expect.anything(),
                 context: expect.anything(),
-                causes: [
-                ],
               },
             ],
           });
@@ -1785,7 +1770,6 @@ describe('ParameterPropertyHandlerRange', () => {
                   {
                     description: `value is not a subtype of "ex:SomeType2"`,
                     context: expect.anything(),
-                    causes: [],
                   },
                 ],
               },
@@ -1838,7 +1822,6 @@ describe('ParameterPropertyHandlerRange', () => {
                   {
                     description: `value is not a subtype of "ex:SomeType2"`,
                     context: expect.anything(),
-                    causes: [],
                   },
                 ],
               },
@@ -2397,7 +2380,6 @@ describe('ParameterPropertyHandlerRange', () => {
                       {
                         description: `value is not a subtype of "http://www.w3.org/2001/XMLSchema#boolean"`,
                         context: expect.anything(),
-                        causes: [],
                       },
                       {
                         description: `value is not a subtype of the referenced component in the generic component extension of "ex:SomeType2"`,
@@ -2406,7 +2388,6 @@ describe('ParameterPropertyHandlerRange', () => {
                           {
                             description: `value is not a subtype of "http://www.w3.org/2001/XMLSchema#boolean"`,
                             context: expect.anything(),
-                            causes: [],
                           },
                         ],
                       },

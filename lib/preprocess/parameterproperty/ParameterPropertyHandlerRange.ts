@@ -566,7 +566,7 @@ export class ParameterPropertyHandlerRange implements IParameterPropertyHandler 
     return {
       description: `value is not a subtype of "${type.value}"`,
       context: { value, type },
-      causes: subConflictTypes,
+      ...subConflictTypes.length > 0 ? { causes: subConflictTypes } : {},
     };
   }
 
