@@ -1,6 +1,30 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v5.0.0-beta.3"></a>
+## [v5.0.0-beta.3](https://github.com/LinkedSoftwareDependencies/Components.js/compare/v5.0.0-beta.2...v5.0.0-beta.3) - 2022-01-17
+
+### Added
+* [Add support for wildcard parameter ranges](https://github.com/LinkedSoftwareDependencies/Components.js/commit/83238a9fa08877f29326be562d7d3d5fff860c69)
+* Improve error reporting:
+  * [Add causes for param check failures in error messages](https://github.com/LinkedSoftwareDependencies/Components.js/commit/9be1fd0899ffb8a77ea99e5fb86e661526ef6d1a)
+  * [Improve error message on invalid generic type instantiations](https://github.com/LinkedSoftwareDependencies/Components.js/commit/6ecb9798eeb84f09fece68b3a47454fa8c857ba4)
+  * [Move error context to error state file](https://github.com/LinkedSoftwareDependencies/Components.js/commit/dbf26e072bdc63168814ef4d503777efaf4745eb)
+
+### Fixed
+* Resolve several issues related to generics:
+  * [Throw error on invalid ParameterRangeGenericComponent](https://github.com/LinkedSoftwareDependencies/Components.js/commit/c692ab6175ce466fb32fbe38b973644e2601b2e6)
+  * [Fix generic components not accepting specific types](https://github.com/LinkedSoftwareDependencies/Components.js/commit/c7739182fddcb92d46a86fe3e33d6e29fd1134b6)
+  * [Support generic type instantiation during component extension](https://github.com/LinkedSoftwareDependencies/Components.js/commit/98f70e350cc3f9bf8a4ea632db546f74624ddda7)
+  * [Support generic components in params with fixed generics](https://github.com/LinkedSoftwareDependencies/Components.js/commit/d8b30972e1306e9fe9db391d4693aa6000917e60)
+  * [Use GenericComponentExtension to refer to wrapped generic comp extensions](https://github.com/LinkedSoftwareDependencies/Components.js/commit/239895accfdb7f09a7ac8454928bd3e0be5e5f15)
+  * [Fix invalid range display with multiple generics](https://github.com/LinkedSoftwareDependencies/Components.js/commit/b98baf0bcf4546b60299ae548f929693345292bc)
+  * [Handle range merging if left or right is union](https://github.com/LinkedSoftwareDependencies/Components.js/commit/637e140106691b95f0f546cf88eb39f3f80dc61d)
+  * [Handle sub-types when merging param ranges](https://github.com/LinkedSoftwareDependencies/Components.js/commit/43290525b2e244f5fbb6d5f344760b863329c31b)
+  * [Allow merging of generic component param types](https://github.com/LinkedSoftwareDependencies/Components.js/commit/ee8de7d9b8d18bf6968a17078e493946e5fca8cd)
+  * [Allow param range merging with generic components](https://github.com/LinkedSoftwareDependencies/Components.js/commit/bcea7dcff288ce7068ee244c49c12134208c89da)
+  * [Fix generics crash when doing repeated param type checking](https://github.com/LinkedSoftwareDependencies/Components.js/commit/237572cb8a9c546b098582041ccd7a457b41aecd)
+
 <a name="v5.0.0-beta.2"></a>
 ## [v5.0.0-beta.2](https://github.com/LinkedSoftwareDependencies/Components.js/compare/v5.0.0-beta.1...v5.0.0-beta.2) - 2021-12-09
 
