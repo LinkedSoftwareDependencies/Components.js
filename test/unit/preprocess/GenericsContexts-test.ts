@@ -818,6 +818,143 @@ describe('GenericsContext', () => {
         ).toBeUndefined();
       });
 
+      it('should merge equal generic component param types', () => {
+        expectOutputProperties(
+          genericsContext.mergeRanges(
+            objectLoader.createCompactedResource({
+              '@type': 'ParameterRangeGenericComponent',
+              component: 'ex:COMP',
+              genericTypeInstances: [
+                'xsd:string',
+                'xsd:boolean',
+              ],
+            }),
+            objectLoader.createCompactedResource({
+              '@type': 'ParameterRangeGenericComponent',
+              component: 'ex:COMP',
+              genericTypeInstances: [
+                'xsd:string',
+                'xsd:boolean',
+              ],
+            }),
+            typeTypeValidatorOnlyIdentical,
+          ),
+          objectLoader.createCompactedResource({
+            '@type': 'ParameterRangeGenericComponent',
+            component: 'ex:COMP',
+            genericTypeInstances: [
+              'xsd:string',
+              'xsd:boolean',
+            ],
+          }),
+        );
+      });
+
+      it('should merge matching generic component param types', () => {
+        expectOutputProperties(
+          genericsContext.mergeRanges(
+            objectLoader.createCompactedResource({
+              '@type': 'ParameterRangeGenericComponent',
+              component: 'ex:COMP',
+              genericTypeInstances: [
+                'xsd:integer',
+                'xsd:boolean',
+              ],
+            }),
+            objectLoader.createCompactedResource({
+              '@type': 'ParameterRangeGenericComponent',
+              component: 'ex:COMP',
+              genericTypeInstances: [
+                'xsd:number',
+                'xsd:boolean',
+              ],
+            }),
+            typeTypeValidatorOnlyIdentical,
+          ),
+          objectLoader.createCompactedResource({
+            '@type': 'ParameterRangeGenericComponent',
+            component: 'ex:COMP',
+            genericTypeInstances: [
+              'xsd:integer',
+              'xsd:boolean',
+            ],
+          }),
+        );
+      });
+
+      it('should not merge unequal generic component param types', () => {
+        expect(
+          genericsContext.mergeRanges(
+            objectLoader.createCompactedResource({
+              '@type': 'ParameterRangeGenericComponent',
+              component: 'ex:COMP',
+              genericTypeInstances: [
+                'xsd:integer',
+                'xsd:boolean',
+              ],
+            }),
+            objectLoader.createCompactedResource({
+              '@type': 'ParameterRangeGenericComponent',
+              component: 'ex:COMP',
+              genericTypeInstances: [
+                'xsd:string',
+                'xsd:boolean',
+              ],
+            }),
+            typeTypeValidatorOnlyIdentical,
+          ),
+        ).toBeUndefined();
+      });
+
+      it('should not merge unequal generic component param types due to different length', () => {
+        expect(
+          genericsContext.mergeRanges(
+            objectLoader.createCompactedResource({
+              '@type': 'ParameterRangeGenericComponent',
+              component: 'ex:COMP',
+              genericTypeInstances: [
+                'xsd:integer',
+                'xsd:boolean',
+              ],
+            }),
+            objectLoader.createCompactedResource({
+              '@type': 'ParameterRangeGenericComponent',
+              component: 'ex:COMP',
+              genericTypeInstances: [
+                'xsd:integer',
+                'xsd:boolean',
+                'xsd:boolean',
+              ],
+            }),
+            typeTypeValidatorOnlyIdentical,
+          ),
+        ).toBeUndefined();
+      });
+
+      it('should not merge unequal generic component param types due to different component', () => {
+        expect(
+          genericsContext.mergeRanges(
+            objectLoader.createCompactedResource({
+              '@type': 'ParameterRangeGenericComponent',
+              component: 'ex:COMP1',
+              genericTypeInstances: [
+                'xsd:integer',
+                'xsd:boolean',
+              ],
+            }),
+            objectLoader.createCompactedResource({
+              '@type': 'ParameterRangeGenericComponent',
+              component: 'ex:COMP2',
+              genericTypeInstances: [
+                'xsd:integer',
+                'xsd:boolean',
+              ],
+            }),
+            typeTypeValidatorOnlyIdentical,
+          ),
+        ).toBeUndefined();
+      });
+
       it('should return union of matches if left is a union type and right is not', () => {
         expectOutputProperties(
           genericsContext.mergeRanges(

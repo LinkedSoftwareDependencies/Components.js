@@ -260,6 +260,32 @@ export class GenericsContext {
         });
       }
 
+      // Check sub-values for generic components
+      if (rangeA.isA('ParameterRangeGenericComponent')) {
+        const mergedComponent = this.mergeRanges(
+          rangeA.property.component,
+          rangeB.property.component,
+          typeTypeValidator,
+        );
+        if (!mergedComponent) {
+          return;
+        }
+        const valuesA = rangeA.properties.genericTypeInstances;
+        const valuesB = rangeB.properties.genericTypeInstances;
+        if (valuesA.length !== valuesB.length) {
+          return;
+        }
+        const merged = valuesA.map((valueA, i) => this.mergeRanges(valueA, valuesB[i], typeTypeValidator));
+        if (merged.some(subValue => !subValue)) {
+          return;
+        }
+        return this.objectLoader.createCompactedResource({
+          '@type': 'ParameterRangeGenericComponent',
+          component: mergedComponent,
+          genericTypeInstances: merged,
+        });
+      }
+
       return rangeA;
     }
 

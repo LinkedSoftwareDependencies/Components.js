@@ -512,28 +512,17 @@ export class ParameterPropertyHandlerRange implements IParameterPropertyHandler 
                 // bind it to the corresponding value of the inner context
                 const outerGenericType = genericTypeInstance.property.parameterRangeGenericType.value;
                 genericsContext.bindings[outerGenericType] = genericsContextInner.bindings[innerGenericType];
-              } else {
-                const subConflictType = this.hasType(
-                  genericsContextInner.bindings[innerGenericType],
-                  genericTypeInstance,
-                  genericsContext,
-                  undefined,
-                  [],
-                  errorContext,
-                );
-                if (subConflictType) {
-                  // If the generic type instance is just a type, check it against the value in the inner context.
-                  // If it does not match (either is not of that type, or the param type does not match), return false.
-                  const subConflictInstance = this
-                    .hasValueType(value, genericTypeInstance, errorContext, genericsContext);
-                  if (subConflictInstance) {
-                    return {
-                      description: `invalid binding for generic type <${innerGenericType}> in generic component extension of "${superComponent.value}"`,
-                      context: { value, type },
-                      causes: [ subConflictType, subConflictInstance ],
-                    };
-                  }
-                }
+              } else if (!genericsContextInner.mergeRanges(
+                genericsContextInner.bindings[innerGenericType],
+                genericTypeInstance,
+                typeTypeValidator,
+              )) {
+                // If the generic type instance is just a type, check it against the value in the inner context.
+                // If it does not match, return an error.
+                return {
+                  description: `invalid binding for generic type <${innerGenericType}> in generic component extension of "${superComponent.value}": existing range "${ParameterPropertyHandlerRange.rangeToDisplayString(genericsContextInner.bindings[innerGenericType], genericsContextInner)}" can not be bound to range "${ParameterPropertyHandlerRange.rangeToDisplayString(genericTypeInstance, genericsContextInner)}"`,
+                  context: { value, type },
+                };
               }
             }
           }

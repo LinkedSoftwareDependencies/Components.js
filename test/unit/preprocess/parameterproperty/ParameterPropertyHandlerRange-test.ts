@@ -2335,6 +2335,66 @@ describe('ParameterPropertyHandlerRange', () => {
           }));
         });
 
+        it(`should handle a generic component with value a sub-type with fixed generic with generic component as param generic`, () => {
+          genericsContext = new GenericsContext(objectLoader, []);
+
+          const value = objectLoader.createCompactedResource({
+            '@type': {
+              '@id': 'ex:SomeType1',
+              extends: {
+                '@type': 'GenericComponentExtension',
+                component: {
+                  '@id': 'ex:SomeType2',
+                  genericTypeParameters: [
+                    'ex:SomeType2__generic_T',
+                  ],
+                },
+                genericTypeInstances: [
+                  {
+                    '@type': 'ParameterRangeGenericComponent',
+                    component: 'ex:InnerType',
+                    genericTypeInstances: [
+                      'xsd:integer',
+                    ],
+                  },
+                ],
+              },
+            },
+          });
+          const conflict = handler.hasValueType(
+            value,
+            objectLoader.createCompactedResource({
+              '@type': 'ParameterRangeGenericComponent',
+              component: 'ex:SomeType2',
+              genericTypeInstances: [
+                {
+                  '@type': 'ParameterRangeGenericComponent',
+                  component: 'ex:InnerType',
+                  genericTypeInstances: [
+                    'xsd:integer',
+                  ],
+                },
+              ],
+            }),
+            errorContext,
+            genericsContext,
+          );
+          expect(conflict).toBeUndefined();
+          expectOutputProperties(value, objectLoader.createCompactedResource({
+            '@type': [ 'ex:SomeType1' ],
+            genericTypeInstancesComponentScope: 'ex:SomeType2',
+            genericTypeInstances: [
+              {
+                '@type': 'ParameterRangeGenericComponent',
+                component: 'ex:InnerType',
+                genericTypeInstances: [
+                  'xsd:integer',
+                ],
+              },
+            ],
+          }));
+        });
+
         it(`should return an error on a generic component with value a sub-type with fixed generic with incompatible fixed param generic`, () => {
           genericsContext = new GenericsContext(objectLoader, []);
 
@@ -2374,24 +2434,68 @@ describe('ParameterPropertyHandlerRange', () => {
                 context: expect.anything(),
                 causes: [
                   {
-                    description: `invalid binding for generic type <ex:SomeType2__generic_T> in generic component extension of "ex:SomeType2"`,
+                    description: `invalid binding for generic type <ex:SomeType2__generic_T> in generic component extension of "ex:SomeType2": existing range "http://www.w3.org/2001/XMLSchema#integer" can not be bound to range "http://www.w3.org/2001/XMLSchema#boolean"`,
                     context: expect.anything(),
-                    causes: [
-                      {
-                        description: `value is not a subtype of "http://www.w3.org/2001/XMLSchema#boolean"`,
-                        context: expect.anything(),
-                      },
-                      {
-                        description: `value is not a subtype of the referenced component in the generic component extension of "ex:SomeType2"`,
-                        context: expect.anything(),
-                        causes: [
-                          {
-                            description: `value is not a subtype of "http://www.w3.org/2001/XMLSchema#boolean"`,
-                            context: expect.anything(),
-                          },
-                        ],
-                      },
+                  },
+                ],
+              },
+            ],
+          });
+        });
+
+        it(`should return an error on a generic component with value a sub-type with fixed generic with incompatible generic components as param generic`, () => {
+          genericsContext = new GenericsContext(objectLoader, []);
+
+          expect(handler.hasValueType(
+            objectLoader.createCompactedResource({
+              '@type': {
+                '@id': 'ex:SomeType1',
+                extends: {
+                  '@type': 'GenericComponentExtension',
+                  component: {
+                    '@id': 'ex:SomeType2',
+                    genericTypeParameters: [
+                      'ex:SomeType2__generic_T',
                     ],
+                  },
+                  genericTypeInstances: [
+                    {
+                      '@type': 'ParameterRangeGenericComponent',
+                      component: 'ex:InnerType',
+                      genericTypeInstances: [
+                        'xsd:integer',
+                      ],
+                    },
+                  ],
+                },
+              },
+            }),
+            objectLoader.createCompactedResource({
+              '@type': 'ParameterRangeGenericComponent',
+              component: 'ex:SomeType2',
+              genericTypeInstances: [
+                {
+                  '@type': 'ParameterRangeGenericComponent',
+                  component: 'ex:InnerType',
+                  genericTypeInstances: [
+                    'xsd:boolean',
+                  ],
+                },
+              ],
+            }),
+            errorContext,
+            genericsContext,
+          )).toEqual({
+            description: `generic component is invalid`,
+            context: expect.anything(),
+            causes: [
+              {
+                description: `value is not a subtype of "ex:SomeType2"`,
+                context: expect.anything(),
+                causes: [
+                  {
+                    description: `invalid binding for generic type <ex:SomeType2__generic_T> in generic component extension of "ex:SomeType2": existing range "(ex:InnerType)<http://www.w3.org/2001/XMLSchema#integer>" can not be bound to range "(ex:InnerType)<http://www.w3.org/2001/XMLSchema#boolean>"`,
+                    context: expect.anything(),
                   },
                 ],
               },
