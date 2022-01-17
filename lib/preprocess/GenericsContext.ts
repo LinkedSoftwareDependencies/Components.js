@@ -270,6 +270,15 @@ export class GenericsContext {
     if (rangeB.isA('ParameterRangeUnion')) {
       return this.mergeUnion(rangeB, rangeA, typeTypeValidator);
     }
+
+    // Check if the range refers to a component with a generic type
+    // TODO: somehow pass the range's component and genericTypeInstances (like in ParameterPropertyHandlerRange)?
+    if (rangeA.isA('ParameterRangeGenericComponent')) {
+      return this.mergeRanges(rangeA.property.component, rangeB, typeTypeValidator);
+    }
+    if (rangeB.isA('ParameterRangeGenericComponent')) {
+      return this.mergeRanges(rangeB.property.component, rangeA, typeTypeValidator);
+    }
   }
 
   protected mergeUnion(

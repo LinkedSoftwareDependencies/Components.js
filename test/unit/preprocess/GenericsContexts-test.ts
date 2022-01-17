@@ -929,6 +929,58 @@ describe('GenericsContext', () => {
           typeTypeValidatorOnlyIdentical,
         )).toBeUndefined();
       });
+
+      it('should merge with left a generic component', () => {
+        expect(
+          genericsContext.mergeRanges(
+            objectLoader.createCompactedResource({
+              '@type': 'ParameterRangeGenericComponent',
+              component: 'ex:TYPE1',
+            }),
+            objectLoader.createCompactedResource('ex:TYPE1'),
+            typeTypeValidatorOnlyIdentical,
+          )!.term,
+        ).toEqualRdfTerm(objectLoader.createCompactedResource('ex:TYPE1')!.term);
+      });
+
+      it('should not merge with left a non-matching generic component', () => {
+        expect(
+          genericsContext.mergeRanges(
+            objectLoader.createCompactedResource({
+              '@type': 'ParameterRangeGenericComponent',
+              component: 'ex:TYPE1',
+            }),
+            objectLoader.createCompactedResource('ex:TYPE2'),
+            typeTypeValidatorOnlyIdentical,
+          ),
+        ).toBeUndefined();
+      });
+
+      it('should merge with right a generic component', () => {
+        expect(
+          genericsContext.mergeRanges(
+            objectLoader.createCompactedResource('ex:TYPE1'),
+            objectLoader.createCompactedResource({
+              '@type': 'ParameterRangeGenericComponent',
+              component: 'ex:TYPE1',
+            }),
+            typeTypeValidatorOnlyIdentical,
+          )!.term,
+        ).toEqualRdfTerm(objectLoader.createCompactedResource('ex:TYPE1')!.term);
+      });
+
+      it('should not merge with right a non-matching generic component', () => {
+        expect(
+          genericsContext.mergeRanges(
+            objectLoader.createCompactedResource('ex:TYPE2'),
+            objectLoader.createCompactedResource({
+              '@type': 'ParameterRangeGenericComponent',
+              component: 'ex:TYPE1',
+            }),
+            typeTypeValidatorOnlyIdentical,
+          ),
+        ).toBeUndefined();
+      });
     });
 
     describe('isXsdSubType', () => {
