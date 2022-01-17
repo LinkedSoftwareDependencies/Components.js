@@ -250,6 +250,31 @@ export class GenericsContext {
 
       return rangeA;
     }
+
+    // Handle left or right being a union
+    if (rangeA.isA('ParameterRangeUnion')) {
+      return this.mergeUnion(rangeA, rangeB);
+    }
+    if (rangeB.isA('ParameterRangeUnion')) {
+      return this.mergeUnion(rangeB, rangeA);
+    }
+  }
+
+  protected mergeUnion(rangeUnion: Resource, rangeOther: Resource): Resource | undefined {
+    const elements = rangeUnion.properties.parameterRangeElements;
+    const mergedValues = elements
+      .map(element => this.mergeRanges(rangeOther, element))
+      .filter(Boolean);
+    if (mergedValues.length === 0) {
+      return;
+    }
+    if (mergedValues.length === 1) {
+      return mergedValues[0];
+    }
+    return this.objectLoader.createCompactedResource({
+      '@type': 'ParameterRangeUnion',
+      parameterRangeElements: mergedValues,
+    });
   }
 
   /**

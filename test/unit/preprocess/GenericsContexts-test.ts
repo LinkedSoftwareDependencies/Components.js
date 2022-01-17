@@ -751,6 +751,112 @@ describe('GenericsContext', () => {
           ),
         ).toBeUndefined();
       });
+
+      it('should return union of matches if left is a union type and right is not', () => {
+        expectOutputProperties(
+          genericsContext.mergeRanges(
+            objectLoader.createCompactedResource({
+              '@type': 'ParameterRangeUnion',
+              parameterRangeElements: [
+                'xsd:integer',
+                'xsd:boolean',
+                'xsd:integer',
+              ],
+            }),
+            objectLoader.createCompactedResource('xsd:integer'),
+          ),
+          objectLoader.createCompactedResource({
+            '@type': 'ParameterRangeUnion',
+            parameterRangeElements: [
+              'xsd:integer',
+              'xsd:integer',
+            ],
+          }),
+        );
+      });
+
+      it('should return union of matches for one match if left is a union type and right is not', () => {
+        expect(
+          genericsContext.mergeRanges(
+            objectLoader.createCompactedResource({
+              '@type': 'ParameterRangeUnion',
+              parameterRangeElements: [
+                'xsd:integer',
+                'xsd:boolean',
+                'xsd:boolean',
+              ],
+            }),
+            objectLoader.createCompactedResource('xsd:integer'),
+          )!.term,
+        ).toEqualRdfTerm(objectLoader.createCompactedResource('xsd:integer')!.term);
+      });
+
+      it('should not merge if union of matches of left does not match right', () => {
+        expect(genericsContext.mergeRanges(
+          objectLoader.createCompactedResource({
+            '@type': 'ParameterRangeUnion',
+            parameterRangeElements: [
+              'xsd:boolean',
+              'xsd:boolean',
+              'xsd:boolean',
+            ],
+          }),
+          objectLoader.createCompactedResource('xsd:integer'),
+        )).toBeUndefined();
+      });
+
+      it('should return union of matches if right is a union type and left is not', () => {
+        expectOutputProperties(
+          genericsContext.mergeRanges(
+            objectLoader.createCompactedResource('xsd:integer'),
+            objectLoader.createCompactedResource({
+              '@type': 'ParameterRangeUnion',
+              parameterRangeElements: [
+                'xsd:integer',
+                'xsd:boolean',
+                'xsd:integer',
+              ],
+            }),
+          ),
+          objectLoader.createCompactedResource({
+            '@type': 'ParameterRangeUnion',
+            parameterRangeElements: [
+              'xsd:integer',
+              'xsd:integer',
+            ],
+          }),
+        );
+      });
+
+      it('should return union of matches for one match if right is a union type and left is not', () => {
+        expect(
+          genericsContext.mergeRanges(
+            objectLoader.createCompactedResource('xsd:integer'),
+            objectLoader.createCompactedResource({
+              '@type': 'ParameterRangeUnion',
+              parameterRangeElements: [
+                'xsd:integer',
+                'xsd:boolean',
+                'xsd:boolean',
+              ],
+            }),
+          )!.term,
+        ).toEqualRdfTerm(objectLoader.createCompactedResource('xsd:integer')!.term);
+      });
+
+      it('should not merge if union of matches of right does not match left', () => {
+        expect(genericsContext.mergeRanges(
+          objectLoader.createCompactedResource('xsd:integer'),
+          objectLoader.createCompactedResource({
+            '@type': 'ParameterRangeUnion',
+            parameterRangeElements: [
+              'xsd:boolean',
+              'xsd:boolean',
+              'xsd:boolean',
+            ],
+          }),
+        )).toBeUndefined();
+      });
     });
 
     describe('isXsdSubType', () => {
