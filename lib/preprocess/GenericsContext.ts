@@ -195,6 +195,14 @@ export class GenericsContext {
       return rangeB;
     }
 
+    // If a range is a wildcard, return the other type
+    if (rangeA.isA('ParameterRangeWildcard')) {
+      return rangeB;
+    }
+    if (rangeB.isA('ParameterRangeWildcard')) {
+      return rangeA;
+    }
+
     // Ranges always match with generic references
     if (rangeA.isA('ParameterRangeGenericTypeReference')) {
       return rangeB;

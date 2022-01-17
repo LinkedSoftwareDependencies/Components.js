@@ -292,6 +292,20 @@ describe('GenericsContext', () => {
         )!.term).toEqualRdfTerm(objectLoader.createCompactedResource('xsd:integer').term);
       });
 
+      it('should return right if left is a wildcard', () => {
+        expect(genericsContext.mergeRanges(
+          objectLoader.createCompactedResource({ '@type': 'ParameterRangeWildcard' }),
+          objectLoader.createCompactedResource('xsd:integer'),
+        )!.term).toEqualRdfTerm(objectLoader.createCompactedResource('xsd:integer').term);
+      });
+
+      it('should return left if right is a wildcard', () => {
+        expect(genericsContext.mergeRanges(
+          objectLoader.createCompactedResource('xsd:integer'),
+          objectLoader.createCompactedResource({ '@type': 'ParameterRangeWildcard' }),
+        )!.term).toEqualRdfTerm(objectLoader.createCompactedResource('xsd:integer').term);
+      });
+
       it('should return right if left is a generic', () => {
         expect(genericsContext.mergeRanges(
           objectLoader.createCompactedResource({ '@type': 'ParameterRangeGenericTypeReference' }),
