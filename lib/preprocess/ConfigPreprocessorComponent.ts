@@ -128,6 +128,15 @@ export class ConfigPreprocessorComponent implements IConfigPreprocessor<ICompone
         handleResponse.component,
         config.properties.genericTypeInstances,
         { config },
+        (subType, superType) => this.parameterHandler.parameterPropertyHandlerRange
+          .hasType(
+            subType,
+            superType,
+            genericsContext,
+            config.property.genericTypeInstancesComponentScope,
+            config.properties.genericTypeInstances,
+            { config },
+          ),
       );
     }
 

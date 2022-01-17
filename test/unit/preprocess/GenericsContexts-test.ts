@@ -19,12 +19,20 @@ function expectOutputProperties(output: Resource | undefined, expected: Resource
 describe('GenericsContext', () => {
   let objectLoader: RdfObjectLoader;
   let genericsContext: GenericsContext;
+  let typeTypeValidatorAlwaysFalse: (subValue: Resource, subType: Resource) => IParamValueConflict | undefined;
+  let typeTypeValidatorOnlyIdentical: (subValue: Resource, subType: Resource) => IParamValueConflict | undefined;
 
   beforeEach(async() => {
     objectLoader = new RdfObjectLoader({
       context: JSON.parse(fs.readFileSync(`${__dirname}/../../../components/context.jsonld`, 'utf8')),
     });
     await objectLoader.context;
+    typeTypeValidatorAlwaysFalse = jest.fn(() => (<any> {}));
+    typeTypeValidatorOnlyIdentical = jest.fn((left, right) => {
+      if (!left.term.equals(right.term)) {
+        return <any> {};
+      }
+    });
   });
 
   describe('constructed without genericTypeParameters', () => {
@@ -68,17 +76,18 @@ describe('GenericsContext', () => {
     });
 
     describe('bindGenericTypeToValue', () => {
-      let typeValidator: (subValue: Resource | undefined, subType: Resource) => IParamValueConflict | undefined;
+      let valueTypeValidator: (subValue: Resource | undefined, subType: Resource) => IParamValueConflict | undefined;
 
       beforeEach(() => {
-        typeValidator = jest.fn();
+        valueTypeValidator = jest.fn();
       });
 
       it('should not bind undefined generic types', () => {
         expect(genericsContext.bindGenericTypeToValue(
           'ex:UNKNOWN',
           objectLoader.createCompactedResource('"value"^^http://www.w3.org/2001/XMLSchema#string'),
-          typeValidator,
+          valueTypeValidator,
+          typeTypeValidatorAlwaysFalse,
         )).toEqual({
           description: 'unknown generic <ex:UNKNOWN> is being referenced',
           context: {
@@ -91,12 +100,13 @@ describe('GenericsContext', () => {
       });
 
       it('should not bind a range that does not match an existing range', () => {
-        typeValidator = jest.fn(() => ({ description: 'invalid type', context: {}}));
+        valueTypeValidator = jest.fn(() => ({ description: 'invalid type', context: {}}));
 
         expect(genericsContext.bindGenericTypeToValue(
           'ex:U',
           objectLoader.createCompactedResource('"value"^^http://www.w3.org/2001/XMLSchema#not-a-string'),
-          typeValidator,
+          valueTypeValidator,
+          typeTypeValidatorAlwaysFalse,
         )).toEqual({
           description: `generic <ex:U> with existing range "http://www.w3.org/2001/XMLSchema#string" can not contain the given value`,
           context: {
@@ -107,7 +117,7 @@ describe('GenericsContext', () => {
             { description: 'invalid type', context: {}},
           ],
         });
-        expect(typeValidator).toHaveBeenCalledWith(
+        expect(valueTypeValidator).toHaveBeenCalledWith(
           objectLoader.createCompactedResource('"value"^^http://www.w3.org/2001/XMLSchema#not-a-string'),
           objectLoader.createCompactedResource('xsd:string'),
         );
@@ -118,14 +128,15 @@ describe('GenericsContext', () => {
       });
 
       it('should bind a range that does match an existing range', () => {
-        typeValidator = jest.fn();
+        valueTypeValidator = jest.fn();
 
         expect(genericsContext.bindGenericTypeToValue(
           'ex:U',
           objectLoader.createCompactedResource('"value"^^http://www.w3.org/2001/XMLSchema#string'),
-          typeValidator,
+          valueTypeValidator,
+          typeTypeValidatorOnlyIdentical,
         )).toBeUndefined();
-        expect(typeValidator).toHaveBeenCalledWith(
+        expect(valueTypeValidator).toHaveBeenCalledWith(
           objectLoader.createCompactedResource('"value"^^http://www.w3.org/2001/XMLSchema#string'),
           objectLoader.createCompactedResource('xsd:string'),
         );
@@ -139,7 +150,8 @@ describe('GenericsContext', () => {
         expect(genericsContext.bindGenericTypeToValue(
           'ex:T',
           objectLoader.createCompactedResource('"value"^^http://www.w3.org/2001/XMLSchema#string'),
-          typeValidator,
+          valueTypeValidator,
+          typeTypeValidatorAlwaysFalse,
         )).toBeUndefined();
         expect(genericsContext.bindings['ex:T']).toEqual(objectLoader.createCompactedResource('xsd:string'));
 
@@ -151,7 +163,8 @@ describe('GenericsContext', () => {
         expect(genericsContext.bindGenericTypeToValue(
           'ex:T',
           objectLoader.createCompactedResource('ex:this-has-no-type'),
-          typeValidator,
+          valueTypeValidator,
+          typeTypeValidatorAlwaysFalse,
         )).toBeUndefined();
         expect(genericsContext.bindings['ex:T']).toBeUndefined();
 
@@ -165,6 +178,7 @@ describe('GenericsContext', () => {
         expect(genericsContext.bindGenericTypeToRange(
           'ex:UNKNOWN',
           objectLoader.createCompactedResource('xsd:string'),
+          typeTypeValidatorAlwaysFalse,
         )).toEqual({
           description: 'unknown generic <ex:UNKNOWN> is being referenced',
           context: {},
@@ -178,6 +192,7 @@ describe('GenericsContext', () => {
         expect(genericsContext.bindGenericTypeToRange(
           'ex:U',
           objectLoader.createCompactedResource('xsd:not-a-string'),
+          typeTypeValidatorAlwaysFalse,
         )).toEqual({
           description: `generic <ex:U> with existing range "http://www.w3.org/2001/XMLSchema#string" can not be bound to range "http://www.w3.org/2001/XMLSchema#not-a-string"`,
           context: {
@@ -195,6 +210,7 @@ describe('GenericsContext', () => {
         expect(genericsContext.bindGenericTypeToRange(
           'ex:U',
           objectLoader.createCompactedResource('xsd:string'),
+          typeTypeValidatorOnlyIdentical,
         )).toBeUndefined();
         expect(genericsContext.bindings['ex:U']).toEqual(objectLoader.createCompactedResource('xsd:string'));
 
@@ -208,6 +224,7 @@ describe('GenericsContext', () => {
         expect(genericsContext.bindGenericTypeToRange(
           'ex:U',
           objectLoader.createCompactedResource('xsd:integer'),
+          typeTypeValidatorAlwaysFalse,
         )).toBeUndefined();
         expect(genericsContext.bindings['ex:U']).toEqual(objectLoader.createCompactedResource('xsd:integer'));
 
@@ -264,17 +281,39 @@ describe('GenericsContext', () => {
     });
 
     describe('mergeRanges', () => {
-      it('should merge equal ranges', () => {
+      it('should merge equal ranges that pass the type validator', () => {
         expect(genericsContext.mergeRanges(
           objectLoader.createCompactedResource('ex:TYPE1'),
           objectLoader.createCompactedResource('ex:TYPE1'),
+          typeTypeValidatorOnlyIdentical,
         )!.term).toEqualRdfTerm(objectLoader.createCompactedResource('ex:TYPE1').term);
       });
 
-      it('should not merge unequal ranges', () => {
+      it('should merge left when left is subtype of right', () => {
+        expect(genericsContext.mergeRanges(
+          objectLoader.createCompactedResource('ex:TYPESUB'),
+          objectLoader.createCompactedResource('ex:TYPESUPER'),
+          (left, right) => left.term.value === 'ex:TYPESUB' && right.term.value === 'ex:TYPESUPER' ?
+            undefined :
+            <any> {},
+        )!.term).toEqualRdfTerm(objectLoader.createCompactedResource('ex:TYPESUB').term);
+      });
+
+      it('should merge right when right is subtype of left', () => {
+        expect(genericsContext.mergeRanges(
+          objectLoader.createCompactedResource('ex:TYPESUPER'),
+          objectLoader.createCompactedResource('ex:TYPESUB'),
+          (left, right) => left.term.value === 'ex:TYPESUB' && right.term.value === 'ex:TYPESUPER' ?
+            undefined :
+            <any> {},
+        )!.term).toEqualRdfTerm(objectLoader.createCompactedResource('ex:TYPESUB').term);
+      });
+
+      it('should not merge unequal ranges that do not pass the type validator', () => {
         expect(genericsContext.mergeRanges(
           objectLoader.createCompactedResource('ex:TYPE1'),
           objectLoader.createCompactedResource('ex:TYPE2'),
+          typeTypeValidatorOnlyIdentical,
         )).toBeUndefined();
       });
 
@@ -282,6 +321,7 @@ describe('GenericsContext', () => {
         expect(genericsContext.mergeRanges(
           objectLoader.createCompactedResource('xsd:integer'),
           objectLoader.createCompactedResource('xsd:number'),
+          typeTypeValidatorOnlyIdentical,
         )!.term).toEqualRdfTerm(objectLoader.createCompactedResource('xsd:integer').term);
       });
 
@@ -289,6 +329,7 @@ describe('GenericsContext', () => {
         expect(genericsContext.mergeRanges(
           objectLoader.createCompactedResource('xsd:number'),
           objectLoader.createCompactedResource('xsd:integer'),
+          typeTypeValidatorOnlyIdentical,
         )!.term).toEqualRdfTerm(objectLoader.createCompactedResource('xsd:integer').term);
       });
 
@@ -296,6 +337,7 @@ describe('GenericsContext', () => {
         expect(genericsContext.mergeRanges(
           objectLoader.createCompactedResource({ '@type': 'ParameterRangeWildcard' }),
           objectLoader.createCompactedResource('xsd:integer'),
+          typeTypeValidatorOnlyIdentical,
         )!.term).toEqualRdfTerm(objectLoader.createCompactedResource('xsd:integer').term);
       });
 
@@ -303,6 +345,7 @@ describe('GenericsContext', () => {
         expect(genericsContext.mergeRanges(
           objectLoader.createCompactedResource('xsd:integer'),
           objectLoader.createCompactedResource({ '@type': 'ParameterRangeWildcard' }),
+          typeTypeValidatorOnlyIdentical,
         )!.term).toEqualRdfTerm(objectLoader.createCompactedResource('xsd:integer').term);
       });
 
@@ -310,6 +353,7 @@ describe('GenericsContext', () => {
         expect(genericsContext.mergeRanges(
           objectLoader.createCompactedResource({ '@type': 'ParameterRangeGenericTypeReference' }),
           objectLoader.createCompactedResource('xsd:integer'),
+          typeTypeValidatorOnlyIdentical,
         )!.term).toEqualRdfTerm(objectLoader.createCompactedResource('xsd:integer').term);
       });
 
@@ -317,6 +361,7 @@ describe('GenericsContext', () => {
         expect(genericsContext.mergeRanges(
           objectLoader.createCompactedResource('xsd:integer'),
           objectLoader.createCompactedResource({ '@type': 'ParameterRangeGenericTypeReference' }),
+          typeTypeValidatorOnlyIdentical,
         )!.term).toEqualRdfTerm(objectLoader.createCompactedResource('xsd:integer').term);
       });
 
@@ -325,6 +370,7 @@ describe('GenericsContext', () => {
           genericsContext.mergeRanges(
             objectLoader.createCompactedResource({ '@type': 'ParameterRangeUndefined' }),
             objectLoader.createCompactedResource({ '@type': 'ParameterRangeUndefined' }),
+            typeTypeValidatorOnlyIdentical,
           ),
           objectLoader.createCompactedResource({ '@type': 'ParameterRangeUndefined' }),
         );
@@ -337,6 +383,7 @@ describe('GenericsContext', () => {
             parameterRangeValue: 'xsd:string',
           }),
           objectLoader.createCompactedResource('ex:TYPE2'),
+          typeTypeValidatorOnlyIdentical,
         )).toBeUndefined();
       });
 
@@ -351,6 +398,7 @@ describe('GenericsContext', () => {
               '@type': 'ParameterRangeArray',
               parameterRangeValue: 'xsd:string',
             }),
+            typeTypeValidatorOnlyIdentical,
           ),
           objectLoader.createCompactedResource({
             '@type': 'ParameterRangeArray',
@@ -370,6 +418,7 @@ describe('GenericsContext', () => {
               '@type': 'ParameterRangeArray',
               parameterRangeValue: 'xsd:number',
             }),
+            typeTypeValidatorAlwaysFalse,
           ),
           objectLoader.createCompactedResource({
             '@type': 'ParameterRangeArray',
@@ -389,6 +438,7 @@ describe('GenericsContext', () => {
               '@type': 'ParameterRangeArray',
               parameterRangeValue: 'xsd:boolean',
             }),
+            typeTypeValidatorOnlyIdentical,
           ),
         ).toBeUndefined();
       });
@@ -404,6 +454,7 @@ describe('GenericsContext', () => {
               '@type': 'ParameterRangeRest',
               parameterRangeValue: 'xsd:string',
             }),
+            typeTypeValidatorOnlyIdentical,
           ),
           objectLoader.createCompactedResource({
             '@type': 'ParameterRangeRest',
@@ -423,6 +474,7 @@ describe('GenericsContext', () => {
               '@type': 'ParameterRangeRest',
               parameterRangeValue: 'xsd:number',
             }),
+            typeTypeValidatorAlwaysFalse,
           ),
           objectLoader.createCompactedResource({
             '@type': 'ParameterRangeRest',
@@ -442,6 +494,7 @@ describe('GenericsContext', () => {
               '@type': 'ParameterRangeRest',
               parameterRangeValue: 'xsd:boolean',
             }),
+            typeTypeValidatorOnlyIdentical,
           ),
         ).toBeUndefined();
       });
@@ -457,6 +510,7 @@ describe('GenericsContext', () => {
               '@type': 'ParameterRangeKeyof',
               parameterRangeValue: 'xsd:string',
             }),
+            typeTypeValidatorOnlyIdentical,
           ),
           objectLoader.createCompactedResource({
             '@type': 'ParameterRangeKeyof',
@@ -476,6 +530,7 @@ describe('GenericsContext', () => {
               '@type': 'ParameterRangeKeyof',
               parameterRangeValue: 'xsd:number',
             }),
+            typeTypeValidatorAlwaysFalse,
           ),
           objectLoader.createCompactedResource({
             '@type': 'ParameterRangeKeyof',
@@ -495,6 +550,7 @@ describe('GenericsContext', () => {
               '@type': 'ParameterRangeKeyof',
               parameterRangeValue: 'xsd:boolean',
             }),
+            typeTypeValidatorOnlyIdentical,
           ),
         ).toBeUndefined();
       });
@@ -516,6 +572,7 @@ describe('GenericsContext', () => {
                 'xsd:boolean',
               ],
             }),
+            typeTypeValidatorOnlyIdentical,
           ),
           objectLoader.createCompactedResource({
             '@type': 'ParameterRangeUnion',
@@ -544,6 +601,7 @@ describe('GenericsContext', () => {
                 'xsd:boolean',
               ],
             }),
+            typeTypeValidatorOnlyIdentical,
           ),
           objectLoader.createCompactedResource({
             '@type': 'ParameterRangeUnion',
@@ -572,6 +630,7 @@ describe('GenericsContext', () => {
                 'xsd:boolean',
               ],
             }),
+            typeTypeValidatorOnlyIdentical,
           ),
         ).toBeUndefined();
       });
@@ -594,6 +653,7 @@ describe('GenericsContext', () => {
                 'xsd:boolean',
               ],
             }),
+            typeTypeValidatorOnlyIdentical,
           ),
         ).toBeUndefined();
       });
@@ -615,6 +675,7 @@ describe('GenericsContext', () => {
                 'xsd:boolean',
               ],
             }),
+            typeTypeValidatorOnlyIdentical,
           ),
           objectLoader.createCompactedResource({
             '@type': 'ParameterRangeIntersection',
@@ -643,6 +704,7 @@ describe('GenericsContext', () => {
                 'xsd:boolean',
               ],
             }),
+            typeTypeValidatorOnlyIdentical,
           ),
           objectLoader.createCompactedResource({
             '@type': 'ParameterRangeIntersection',
@@ -671,6 +733,7 @@ describe('GenericsContext', () => {
                 'xsd:boolean',
               ],
             }),
+            typeTypeValidatorOnlyIdentical,
           ),
         ).toBeUndefined();
       });
@@ -692,6 +755,7 @@ describe('GenericsContext', () => {
                 'xsd:boolean',
               ],
             }),
+            typeTypeValidatorOnlyIdentical,
           ),
           objectLoader.createCompactedResource({
             '@type': 'ParameterRangeTuple',
@@ -720,6 +784,7 @@ describe('GenericsContext', () => {
                 'xsd:boolean',
               ],
             }),
+            typeTypeValidatorOnlyIdentical,
           ),
           objectLoader.createCompactedResource({
             '@type': 'ParameterRangeTuple',
@@ -748,6 +813,7 @@ describe('GenericsContext', () => {
                 'xsd:boolean',
               ],
             }),
+            typeTypeValidatorOnlyIdentical,
           ),
         ).toBeUndefined();
       });
@@ -764,6 +830,7 @@ describe('GenericsContext', () => {
               ],
             }),
             objectLoader.createCompactedResource('xsd:integer'),
+            typeTypeValidatorOnlyIdentical,
           ),
           objectLoader.createCompactedResource({
             '@type': 'ParameterRangeUnion',
@@ -787,6 +854,7 @@ describe('GenericsContext', () => {
               ],
             }),
             objectLoader.createCompactedResource('xsd:integer'),
+            typeTypeValidatorOnlyIdentical,
           )!.term,
         ).toEqualRdfTerm(objectLoader.createCompactedResource('xsd:integer')!.term);
       });
@@ -802,6 +870,7 @@ describe('GenericsContext', () => {
             ],
           }),
           objectLoader.createCompactedResource('xsd:integer'),
+          typeTypeValidatorOnlyIdentical,
         )).toBeUndefined();
       });
 
@@ -817,6 +886,7 @@ describe('GenericsContext', () => {
                 'xsd:integer',
               ],
             }),
+            typeTypeValidatorOnlyIdentical,
           ),
           objectLoader.createCompactedResource({
             '@type': 'ParameterRangeUnion',
@@ -840,6 +910,7 @@ describe('GenericsContext', () => {
                 'xsd:boolean',
               ],
             }),
+            typeTypeValidatorOnlyIdentical,
           )!.term,
         ).toEqualRdfTerm(objectLoader.createCompactedResource('xsd:integer')!.term);
       });
@@ -855,6 +926,7 @@ describe('GenericsContext', () => {
               'xsd:boolean',
             ],
           }),
+          typeTypeValidatorOnlyIdentical,
         )).toBeUndefined();
       });
     });
@@ -991,6 +1063,7 @@ describe('GenericsContext', () => {
           }),
           [],
           {},
+          typeTypeValidatorAlwaysFalse,
         )).toEqual({
           description: 'no generic type instances are passed',
           context: {},
@@ -1012,6 +1085,7 @@ describe('GenericsContext', () => {
             }),
           ],
           {},
+          typeTypeValidatorAlwaysFalse,
         )).toThrow(`Invalid generic type instantiation: a different amount of generic types are passed (1) than are defined on the component (2).`);
       });
 
@@ -1033,6 +1107,7 @@ describe('GenericsContext', () => {
             }),
           ],
           {},
+          typeTypeValidatorAlwaysFalse,
         )).toBeUndefined();
 
         expect(genericsContext.bindings['ex:Component__generic_T'])
@@ -1057,6 +1132,7 @@ describe('GenericsContext', () => {
             objectLoader.createCompactedResource({}),
           ],
           {},
+          typeTypeValidatorAlwaysFalse,
         )).toBeUndefined();
 
         expect(genericsContext.bindings['ex:Component__generic_T'])
@@ -1067,7 +1143,7 @@ describe('GenericsContext', () => {
 
       it('should handle valid instances that match', () => {
         genericsContext.bindGenericTypeToRange('ex:Component__generic_T', objectLoader
-          .createCompactedResource('xsd:string'));
+          .createCompactedResource('xsd:string'), typeTypeValidatorAlwaysFalse);
 
         expect(genericsContext.bindComponentGenericTypes(
           objectLoader.createCompactedResource({
@@ -1086,6 +1162,7 @@ describe('GenericsContext', () => {
             }),
           ],
           {},
+          typeTypeValidatorOnlyIdentical,
         )).toBeUndefined();
 
         expect(genericsContext.bindings['ex:Component__generic_T'])
@@ -1096,7 +1173,7 @@ describe('GenericsContext', () => {
 
       it('should not handle instances that do not match', () => {
         genericsContext.bindGenericTypeToRange('ex:Component__generic_T', objectLoader
-          .createCompactedResource('xsd:boolean'));
+          .createCompactedResource('xsd:boolean'), typeTypeValidatorAlwaysFalse);
 
         expect(genericsContext.bindComponentGenericTypes(
           objectLoader.createCompactedResource({
@@ -1115,6 +1192,7 @@ describe('GenericsContext', () => {
             }),
           ],
           {},
+          typeTypeValidatorAlwaysFalse,
         )).toEqual({
           description: `invalid binding for generic <ex:Component__generic_T>`,
           context: {},

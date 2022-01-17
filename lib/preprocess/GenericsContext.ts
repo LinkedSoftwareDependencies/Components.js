@@ -70,13 +70,15 @@ export class GenericsContext {
    * Try to to bind the given value to the given generic.
    * @param genericTypeId IRI of the generic to bind.
    * @param value The value to bind to.
-   * @param typeValidator Callback for validating values against types.
+   * @param valueTypeValidator Callback for validating values against types.
+   * @param typeTypeValidator Callback for validating sub-types against super-types.
    * @return boolean True if the binding was valid and took place.
    */
   public bindGenericTypeToValue(
     genericTypeId: string,
     value: Resource | undefined,
-    typeValidator: (subValue: Resource | undefined, subType: Resource) => IParamValueConflict | undefined,
+    valueTypeValidator: (subValue: Resource | undefined, subType: Resource) => IParamValueConflict | undefined,
+    typeTypeValidator: (subValue: Resource, subType: Resource) => IParamValueConflict | undefined,
   ): IParamValueConflict | undefined {
     // Fail if an unknown generic type is referenced
     if (!(genericTypeId in this.genericTypeIds)) {
@@ -89,7 +91,7 @@ export class GenericsContext {
     // If the generic was already bound to a range, validate it
     const existingRange = this.bindings[genericTypeId];
     if (existingRange) {
-      const subConflict = typeValidator(value, existingRange);
+      const subConflict = valueTypeValidator(value, existingRange);
       if (subConflict) {
         return {
           description: `generic <${genericTypeId}> with existing range "${ParameterPropertyHandlerRange.rangeToDisplayString(existingRange, this)}" can not contain the given value`,
@@ -106,18 +108,20 @@ export class GenericsContext {
     }
 
     // Save inferred type
-    return this.bindGenericTypeToRange(genericTypeId, valueRange);
+    return this.bindGenericTypeToRange(genericTypeId, valueRange, typeTypeValidator);
   }
 
   /**
    * Try to bind the given range to the given generic.
    * @param genericTypeId IRI of the generic to bind.
    * @param range The range to bind to.
+   * @param typeTypeValidator Callback for validating sub-types against super-types.
    * @return boolean True if the binding was valid and took place.
    */
   public bindGenericTypeToRange(
     genericTypeId: string,
     range: Resource,
+    typeTypeValidator: (subType: Resource, superType: Resource) => IParamValueConflict | undefined,
   ): IParamValueConflict | undefined {
     // Fail if an unknown generic type is referenced
     if (!(genericTypeId in this.genericTypeIds)) {
@@ -129,7 +133,7 @@ export class GenericsContext {
 
     // If we already had a range, check if they match
     if (this.bindings[genericTypeId]) {
-      const mergedRange = this.mergeRanges(this.bindings[genericTypeId], range);
+      const mergedRange = this.mergeRanges(this.bindings[genericTypeId], range, typeTypeValidator);
       if (!mergedRange) {
         return {
           description: `generic <${genericTypeId}> with existing range "${ParameterPropertyHandlerRange.rangeToDisplayString(this.bindings[genericTypeId], this)}" can not be bound to range "${ParameterPropertyHandlerRange.rangeToDisplayString(range, this)}"`,
@@ -180,11 +184,19 @@ export class GenericsContext {
    *
    * @param rangeA A first range.
    * @param rangeB A second range.
+   * @param typeTypeValidator Callback for validating sub-types against super-types.
    */
-  public mergeRanges(rangeA: Resource, rangeB: Resource): Resource | undefined {
-    // Immediately return if the terms are equal
-    if (rangeA.term.equals(rangeB.term)) {
+  public mergeRanges(
+    rangeA: Resource,
+    rangeB: Resource,
+    typeTypeValidator: (subType: Resource, superType: Resource) => IParamValueConflict | undefined,
+  ): Resource | undefined {
+    // Check if one is a subtype of the other (and return the most specific type)
+    if (!typeTypeValidator(rangeA, rangeB)) {
       return rangeA;
+    }
+    if (!typeTypeValidator(rangeB, rangeA)) {
+      return rangeB;
     }
 
     // Check XSD inheritance relationship
@@ -219,7 +231,7 @@ export class GenericsContext {
         rangeA.isA('ParameterRangeKeyof')) {
         const valueA = rangeA.property.parameterRangeValue;
         const valueB = rangeB.property.parameterRangeValue;
-        const merged = this.mergeRanges(valueA, valueB);
+        const merged = this.mergeRanges(valueA, valueB, typeTypeValidator);
         if (!merged) {
           return;
         }
@@ -238,7 +250,7 @@ export class GenericsContext {
         if (valuesA.length !== valuesB.length) {
           return;
         }
-        const merged = valuesA.map((valueA, i) => this.mergeRanges(valueA, valuesB[i]));
+        const merged = valuesA.map((valueA, i) => this.mergeRanges(valueA, valuesB[i], typeTypeValidator));
         if (merged.some(subValue => !subValue)) {
           return;
         }
@@ -253,17 +265,21 @@ export class GenericsContext {
 
     // Handle left or right being a union
     if (rangeA.isA('ParameterRangeUnion')) {
-      return this.mergeUnion(rangeA, rangeB);
+      return this.mergeUnion(rangeA, rangeB, typeTypeValidator);
     }
     if (rangeB.isA('ParameterRangeUnion')) {
-      return this.mergeUnion(rangeB, rangeA);
+      return this.mergeUnion(rangeB, rangeA, typeTypeValidator);
     }
   }
 
-  protected mergeUnion(rangeUnion: Resource, rangeOther: Resource): Resource | undefined {
+  protected mergeUnion(
+    rangeUnion: Resource,
+    rangeOther: Resource,
+    typeValidator: (subType: Resource, superType: Resource) => IParamValueConflict | undefined,
+  ): Resource | undefined {
     const elements = rangeUnion.properties.parameterRangeElements;
     const mergedValues = elements
-      .map(element => this.mergeRanges(rangeOther, element))
+      .map(element => this.mergeRanges(rangeOther, element, typeValidator))
       .filter(Boolean);
     if (mergedValues.length === 0) {
       return;
@@ -296,12 +312,14 @@ export class GenericsContext {
    * @param component The component
    * @param genericTypeInstances The generic type instances to apply.
    * @param errorContext The context for error reporting.
+   * @param typeTypeValidator Callback for validating sub-types against super-types.
    * @return boolean False if the application failed due to a binding error. True otherwise
    */
   public bindComponentGenericTypes(
     component: Resource,
     genericTypeInstances: Resource[],
     errorContext: Record<string, Resource | Resource[] | string>,
+    typeTypeValidator: (subValue: Resource, subType: Resource) => IParamValueConflict | undefined,
   ): IParamValueConflict | undefined {
     const genericTypeParameters = component.properties.genericTypeParameters;
 
@@ -331,6 +349,7 @@ export class GenericsContext {
         const subConflict = this.bindGenericTypeToRange(
           genericTypeIdInner,
           genericTypeInstance.property.parameterRangeGenericBindings,
+          typeTypeValidator,
         );
         if (subConflict) {
           return {

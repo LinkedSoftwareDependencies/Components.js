@@ -14,6 +14,7 @@ import { ParameterPropertyHandlerRange } from './parameterproperty/ParameterProp
 export class ParameterHandler {
   private readonly objectLoader: RdfObjectLoader;
   private readonly parameterPropertyHandlers: IParameterPropertyHandler[];
+  public readonly parameterPropertyHandlerRange: ParameterPropertyHandlerRange;
 
   public constructor(options: IParameterHandlerOptions) {
     this.objectLoader = options.objectLoader;
@@ -21,7 +22,7 @@ export class ParameterHandler {
       new ParameterPropertyHandlerDefaultScoped(this.objectLoader),
       new ParameterPropertyHandlerDefault(this.objectLoader),
       new ParameterPropertyHandlerFixed(this.objectLoader),
-      new ParameterPropertyHandlerRange(this.objectLoader),
+      this.parameterPropertyHandlerRange = new ParameterPropertyHandlerRange(this.objectLoader),
       new ParameterPropertyHandlerLazy(),
     ];
   }

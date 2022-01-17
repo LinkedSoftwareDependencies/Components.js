@@ -326,6 +326,14 @@ export class ParameterPropertyHandlerRange implements IParameterPropertyHandler 
         type.property.parameterRangeGenericType.value,
         value,
         (subValue, subType) => this.hasValueType(subValue, subType, errorContext, genericsContext),
+        (subType, superType) => this.hasType(
+          subType,
+          superType,
+          genericsContext,
+          undefined,
+          [],
+          errorContext,
+        ),
       );
     }
 
@@ -413,9 +421,8 @@ export class ParameterPropertyHandlerRange implements IParameterPropertyHandler 
    * @param genericTypeInstancesComponentScope
    * @param genericTypeInstances
    * @param errorContext
-   * @protected
    */
-  protected hasType(
+  public hasType(
     value: Resource,
     type: Resource,
     genericsContext: GenericsContext,
@@ -451,6 +458,15 @@ export class ParameterPropertyHandlerRange implements IParameterPropertyHandler 
             this.objectLoader,
             superComponent.properties.genericTypeParameters,
           );
+          const typeTypeValidator = (subType: Resource, superType: Resource): IParamValueConflict | undefined => this
+            .hasType(
+              subType,
+              superType,
+              genericsContextInner,
+              undefined,
+              [],
+              errorContext,
+            );
 
           // Try to bind the generic instances from the wrapped generic component instantiation
           const subConflictWrapped = genericsContextInner.bindComponentGenericTypes(
@@ -460,6 +476,7 @@ export class ParameterPropertyHandlerRange implements IParameterPropertyHandler 
                 parameterRangeGenericBindings: instance,
               })),
             { value },
+            typeTypeValidator,
           );
           if (subConflictWrapped) {
             return {
@@ -476,6 +493,7 @@ export class ParameterPropertyHandlerRange implements IParameterPropertyHandler 
               superComponent,
               genericTypeInstances,
               { value },
+              typeTypeValidator,
             );
             if (subConflictParam) {
               return {
