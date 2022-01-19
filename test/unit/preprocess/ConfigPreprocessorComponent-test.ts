@@ -267,7 +267,7 @@ describe('ConfigPreprocessorComponent', () => {
       });
       const expectedArgs = objectLoader.createCompactedResource({});
       expect(() => expectTransformOutput(config, expectedArgs))
-        .toThrowError(`Detected multiple values for parameter ex:myComponentInstance#param1. RDF lists should be used for defining multiple values.`);
+        .toThrowError(`Detected multiple values for parameter ex:myComponentInstance#param1 in ex:myComponentInstance. RDF lists should be used for defining multiple values.`);
     });
 
     it('should handle one parameter with multiple values as list', () => {

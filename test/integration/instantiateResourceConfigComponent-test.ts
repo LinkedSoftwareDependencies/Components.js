@@ -126,13 +126,14 @@ describe('construction with component configs as Resource', () => {
 
     it('instantiated with a config with all parameters with multiple values should throw', async() => {
       const config = objectLoader.createCompactedResource({
+        '@id': 'ex:config',
         types: 'http://example.org/n3#Lexer',
         'http://example.org/n3#lineMode': [ '"A1"', '"A2"' ],
         'http://example.org/n3#n3': [ '"B1"', '"B2"' ],
         'http://example.org/n3#comments': [ '"C1"', '"C2"' ],
       });
       await expect(configConstructorPool.instantiate(config, settings)).rejects
-        .toThrowError(`Detected multiple values for parameter http://example.org/n3#lineMode. RDF lists should be used for defining multiple values.`);
+        .toThrowError(`Detected multiple values for parameter http://example.org/n3#lineMode in ex:config. RDF lists should be used for defining multiple values.`);
     });
 
     it('instantiated with a config with all parameters with multiple values as list', async() => {
@@ -241,13 +242,14 @@ describe('construction with component configs as Resource', () => {
 
     it('instantiated with a config with all parameters as multiple non-list values should throw', async() => {
       const config = objectLoader.createCompactedResource({
+        '@id': 'ex:config',
         types: 'http://example.org/n3#Lexer',
         'http://example.org/n3#lineMode': [ '"true"', '"false"' ],
         'http://example.org/n3#n3': [ '"true"', '"false"' ],
         'http://example.org/n3#comments': [ '"true"', '"false"' ],
       });
       await expect(configConstructorPool.instantiate(config, settings)).rejects
-        .toThrowError(`Detected multiple values for parameter http://example.org/n3#lineMode. RDF lists should be used for defining multiple values.`);
+        .toThrowError(`Detected multiple values for parameter http://example.org/n3#lineMode in ex:config. RDF lists should be used for defining multiple values.`);
     });
 
     it('instantiated with a config with all parameters as singular values as list', async() => {
@@ -318,13 +320,14 @@ describe('construction with component configs as Resource', () => {
 
     it('instantiated with a config with all parameters with multiple values should throw', async() => {
       const config = objectLoader.createCompactedResource({
+        '@id': 'ex:config',
         types: 'http://example.org/n3#Lexer',
         'http://example.org/n3#lineMode': [ '"A1"', '"A2"' ],
         'http://example.org/n3#n3': [ '"B1"', '"B2"' ],
         'http://example.org/n3#comments': [ '"C1"', '"C2"' ],
       });
       await expect(configConstructorPool.instantiate(config, settings)).rejects
-        .toThrowError(`Detected multiple values for parameter http://example.org/n3#lineMode. RDF lists should be used for defining multiple values.`);
+        .toThrowError(`Detected multiple values for parameter http://example.org/n3#lineMode in ex:config. RDF lists should be used for defining multiple values.`);
     });
 
     it('instantiated with a config with all parameters with multiple values as list should throw', async() => {
@@ -774,13 +777,14 @@ describe('construction with component configs as Resource', () => {
 
     it('instantiated with a config with all parameters as multiple values in list', async() => {
       const config = objectLoader.createCompactedResource({
+        '@id': 'ex:config',
         types: 'http://example.org/n3#Lexer',
         'http://example.org/n3#lineMode': [ '"true1"', '"true2"' ],
         'http://example.org/n3#n3': [ '"true"' ],
         'http://example.org/n3#comments': [ '"true"' ],
       });
       await expect(configConstructorPool.instantiate(config, settings)).rejects
-        .toThrowError(`Detected multiple values for parameter http://example.org/n3#lineMode. RDF lists should be used for defining multiple values.`);
+        .toThrowError(`Detected multiple values for parameter http://example.org/n3#lineMode in ex:config. RDF lists should be used for defining multiple values.`);
     });
 
     it('instantiated with a config with all parameters as singular value in RDF list', async() => {

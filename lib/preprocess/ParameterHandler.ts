@@ -48,7 +48,7 @@ export class ParameterHandler {
       value = values[0];
     } else if (values.length > 0) {
       if (values.some(subValue => !subValue.list)) {
-        throw new ErrorResourcesContext(`Detected multiple values for parameter ${parameter.value}. RDF lists should be used for defining multiple values.`, {
+        throw new ErrorResourcesContext(`Detected multiple values for parameter ${parameter.value} in ${configElement.value}. RDF lists should be used for defining multiple values.`, {
           arguments: values,
         });
       }

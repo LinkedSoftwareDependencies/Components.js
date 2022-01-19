@@ -187,6 +187,7 @@ describe('ConfigPreprocessorComponentMapped', () => {
         value: 'ex:param1',
       });
       const configElement = objectLoader.createCompactedResource({
+        '@id': 'ex:config',
         'ex:param1': [
           '"A"',
           '"B"',
@@ -195,7 +196,7 @@ describe('ConfigPreprocessorComponentMapped', () => {
       const expected = objectLoader.createCompactedResource({});
       expect(() => expectOutputProperties(preprocessor
         .applyConstructorArgumentsParameters(configRoot, constructorArgs, configElement, genericsContext), expected))
-        .toThrowError(`Detected multiple values for parameter ex:param1. RDF lists should be used for defining multiple values.`);
+        .toThrowError(`Detected multiple values for parameter ex:param1 in ex:config. RDF lists should be used for defining multiple values.`);
     });
 
     it('should pass args with literal key and multiple values as list', () => {
@@ -903,11 +904,12 @@ describe('ConfigPreprocessorComponentMapped', () => {
         ],
       });
       const configElement = objectLoader.createCompactedResource({
+        '@id': 'ex:config',
         'ex:param1': [ '"VALUE1"', '"VALUE2"' ],
       });
       expect(() => preprocessor
         .applyConstructorArgumentsParameters(configRoot, constructorArgs, configElement, genericsContext))
-        .toThrowError(`Detected multiple values for parameter ex:param1. RDF lists should be used for defining multiple values.`);
+        .toThrowError(`Detected multiple values for parameter ex:param1 in ex:config. RDF lists should be used for defining multiple values.`);
     });
 
     it('should pass args with one dynamic field with multiple values as list', () => {

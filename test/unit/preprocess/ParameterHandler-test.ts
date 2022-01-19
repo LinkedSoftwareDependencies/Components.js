@@ -69,6 +69,7 @@ describe('ParameterHandler', () => {
 
       it('should reject multiple set values', () => {
         configElement = objectLoader.createCompactedResource({
+          '@id': 'ex:config',
           'ex:myParam': [
             '"A"',
             '"B"',
@@ -76,7 +77,7 @@ describe('ParameterHandler', () => {
           ],
         });
         expect(() => handler.applyParameterValues(configRoot, param, configElement, genericsContext))
-          .toThrowError(`Detected multiple values for parameter ex:myParam. RDF lists should be used for defining multiple values.`);
+          .toThrowError(`Detected multiple values for parameter ex:myParam in ex:config. RDF lists should be used for defining multiple values.`);
       });
 
       it('should handle list values', () => {
@@ -131,6 +132,7 @@ describe('ParameterHandler', () => {
 
       it('should reject list and set values', () => {
         configElement = objectLoader.createCompactedResource({
+          '@id': 'ex:config',
           'ex:myParam': [
             '"A"',
             {
@@ -142,7 +144,7 @@ describe('ParameterHandler', () => {
           ],
         });
         expect(() => handler.applyParameterValues(configRoot, param, configElement, genericsContext))
-          .toThrowError(`Detected multiple values for parameter ex:myParam. RDF lists should be used for defining multiple values.`);
+          .toThrowError(`Detected multiple values for parameter ex:myParam in ex:config. RDF lists should be used for defining multiple values.`);
       });
     });
 
