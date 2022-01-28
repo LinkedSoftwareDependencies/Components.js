@@ -147,6 +147,17 @@
     "GenericComponentExtension": {
       "@id": "oo:GenericComponentExtension"
     },
+    "ParameterRangeIndexed": {
+      "@id": "oo:ParameterRangeIndexed"
+    },
+    "parameterRangeIndexedObject": {
+      "@id": "oo:parameterRangeIndexedObject",
+      "@type": "@id"
+    },
+    "parameterRangeIndexedIndex": {
+      "@id": "oo:parameterRangeIndexedIndex",
+      "@type": "@id"
+    },
 
     "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
     "comment": {

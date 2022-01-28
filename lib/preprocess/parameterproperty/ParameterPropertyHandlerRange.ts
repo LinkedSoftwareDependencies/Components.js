@@ -320,6 +320,43 @@ export class ParameterPropertyHandlerRange implements IParameterPropertyHandler 
       };
     }
 
+    // Check if the range refers to an indexed type such as `MyClass[myField]`
+    if (type.isA('ParameterRangeIndexed')) {
+      const object = type.property.parameterRangeIndexedObject;
+      const index = type.property.parameterRangeIndexedIndex;
+
+      // Collect field ranges
+      const fieldRanges: Record<string, Resource> = Object.fromEntries(object.properties.memberFields
+        .map(memberField => [ memberField.property.memberFieldName.value, memberField.property.range ||
+        this.objectLoader.createCompactedResource({ '@type': 'ParameterRangeWildcard' }) ]));
+
+      // Handle literal indexes
+      if (index.isA('ParameterRangeLiteral')) {
+        const field = index.property.parameterRangeValue.value;
+        const range = fieldRanges[field];
+        if (!range) {
+          return {
+            description: `indexed index does not refer to a known field`,
+            context: errorContext,
+          };
+        }
+        const subConflict = this.hasValueType(value, range, errorContext, genericsContext);
+        if (!subConflict) {
+          return;
+        }
+        return {
+          description: `indexed value is invalid`,
+          context: errorContext,
+          causes: [ subConflict ],
+        };
+      }
+
+      return {
+        description: `indexed index type can not be understood`,
+        context: errorContext,
+      };
+    }
+
     // Check if the range refers to a generic type
     if (type.isA('ParameterRangeGenericTypeReference')) {
       return genericsContext.bindGenericTypeToValue(
@@ -600,6 +637,13 @@ export class ParameterPropertyHandlerRange implements IParameterPropertyHandler 
     if (paramRange.isA('ParameterRangeGenericComponent')) {
       return `(${ParameterPropertyHandlerRange.rangeToDisplayString(paramRange.property.component, genericsContext)})<${paramRange.properties.genericTypeInstances
         .map(genericTypeInstance => ParameterPropertyHandlerRange.rangeToDisplayString(genericTypeInstance, genericsContext)).join(', ')}>`;
+    }
+    if (paramRange.isA('ParameterRangeIndexed')) {
+      const object = ParameterPropertyHandlerRange
+        .rangeToDisplayString(paramRange.property.parameterRangeIndexedObject, genericsContext);
+      const index = ParameterPropertyHandlerRange
+        .rangeToDisplayString(paramRange.property.parameterRangeIndexedIndex, genericsContext);
+      return `${object}[${index}]`;
     }
     return paramRange.value;
   }

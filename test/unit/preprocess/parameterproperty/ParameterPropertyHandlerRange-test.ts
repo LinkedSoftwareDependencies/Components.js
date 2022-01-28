@@ -1422,6 +1422,159 @@ describe('ParameterPropertyHandlerRange', () => {
         });
       });
 
+      it('should handle indexed type with valid value', () => {
+        expect(handler.hasValueType(
+          objectLoader.createCompactedResource('"abc"'),
+          objectLoader.createCompactedResource({
+            '@type': 'ParameterRangeIndexed',
+            parameterRangeIndexedObject: {
+              '@id': 'ex:SomeType1',
+              memberFields: [
+                {
+                  memberFieldName: '"fieldA"',
+                  range: 'xsd:string',
+                },
+                {
+                  memberFieldName: '"fieldB"',
+                  range: 'xsd:boolean',
+                },
+              ],
+            },
+            parameterRangeIndexedIndex: {
+              '@type': 'ParameterRangeLiteral',
+              parameterRangeValue: '"fieldA"',
+            },
+          }),
+          errorContext,
+          genericsContext,
+        )).toBeUndefined();
+      });
+
+      it('should handle indexed type with valid value for field without range', () => {
+        expect(handler.hasValueType(
+          objectLoader.createCompactedResource('"abc"'),
+          objectLoader.createCompactedResource({
+            '@type': 'ParameterRangeIndexed',
+            parameterRangeIndexedObject: {
+              '@id': 'ex:SomeType1',
+              memberFields: [
+                {
+                  memberFieldName: '"fieldA"',
+                },
+                {
+                  memberFieldName: '"fieldB"',
+                  range: 'xsd:boolean',
+                },
+              ],
+            },
+            parameterRangeIndexedIndex: {
+              '@type': 'ParameterRangeLiteral',
+              parameterRangeValue: '"fieldA"',
+            },
+          }),
+          errorContext,
+          genericsContext,
+        )).toBeUndefined();
+      });
+
+      it('should return an error on indexed type with invalid value', () => {
+        expect(handler.hasValueType(
+          objectLoader.createCompactedResource('"abc"'),
+          objectLoader.createCompactedResource({
+            '@type': 'ParameterRangeIndexed',
+            parameterRangeIndexedObject: {
+              '@id': 'ex:SomeType1',
+              memberFields: [
+                {
+                  memberFieldName: '"fieldA"',
+                  range: 'xsd:number',
+                },
+                {
+                  memberFieldName: '"fieldB"',
+                  range: 'xsd:boolean',
+                },
+              ],
+            },
+            parameterRangeIndexedIndex: {
+              '@type': 'ParameterRangeLiteral',
+              parameterRangeValue: '"fieldA"',
+            },
+          }),
+          errorContext,
+          genericsContext,
+        )).toEqual({
+          description: `indexed value is invalid`,
+          context: expect.anything(),
+          causes: [
+            {
+              description: `value is not a number`,
+              context: expect.anything(),
+            },
+          ],
+        });
+      });
+
+      it('should return an error on indexed type for an invalid field', () => {
+        expect(handler.hasValueType(
+          objectLoader.createCompactedResource('"abc"'),
+          objectLoader.createCompactedResource({
+            '@type': 'ParameterRangeIndexed',
+            parameterRangeIndexedObject: {
+              '@id': 'ex:SomeType1',
+              memberFields: [
+                {
+                  memberFieldName: '"fieldA"',
+                  range: 'xsd:number',
+                },
+                {
+                  memberFieldName: '"fieldB"',
+                  range: 'xsd:boolean',
+                },
+              ],
+            },
+            parameterRangeIndexedIndex: {
+              '@type': 'ParameterRangeLiteral',
+              parameterRangeValue: '"fieldC"',
+            },
+          }),
+          errorContext,
+          genericsContext,
+        )).toEqual({
+          description: `indexed index does not refer to a known field`,
+          context: expect.anything(),
+        });
+      });
+
+      it('should return an error on indexed type with unknown index type', () => {
+        expect(handler.hasValueType(
+          objectLoader.createCompactedResource('"abc"'),
+          objectLoader.createCompactedResource({
+            '@type': 'ParameterRangeIndexed',
+            parameterRangeIndexedObject: {
+              '@id': 'ex:SomeType1',
+              memberFields: [
+                {
+                  memberFieldName: '"fieldA"',
+                  range: 'xsd:number',
+                },
+                {
+                  memberFieldName: '"fieldB"',
+                  range: 'xsd:boolean',
+                },
+              ],
+            },
+            parameterRangeIndexedIndex: {
+              '@type': 'ParameterRangeUnknown',
+            },
+          }),
+          errorContext,
+          genericsContext,
+        )).toEqual({
+          description: `indexed index type can not be understood`,
+          context: expect.anything(),
+        });
+      });
+
       describe('with generics', () => {
         it('should handle an unbound generic type reference with a literal value', () => {
           genericsContext = new GenericsContext(objectLoader, [
@@ -2693,6 +2846,17 @@ describe('ParameterPropertyHandlerRange', () => {
           '"B"',
         ],
       }), genericsContext)).toEqual('(ex:Component)<A, B>');
+    });
+
+    it('handles ParameterRangeIndexed range', () => {
+      expect(ParameterPropertyHandlerRange.rangeToDisplayString(objectLoader.createCompactedResource({
+        '@type': 'ParameterRangeIndexed',
+        parameterRangeIndexedObject: 'ex:Component',
+        parameterRangeIndexedIndex: {
+          '@type': 'ParameterRangeLiteral',
+          parameterRangeValue: '"abc"',
+        },
+      }), genericsContext)).toEqual('ex:Component[abc]');
     });
   });
 });
