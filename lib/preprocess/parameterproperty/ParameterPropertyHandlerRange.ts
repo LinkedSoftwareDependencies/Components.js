@@ -304,9 +304,9 @@ export class ParameterPropertyHandlerRange implements IParameterPropertyHandler 
       // Simulate a union of the member keys as literal parameter ranges
       const simulatedUnionRange = this.objectLoader.createCompactedResource({
         '@type': 'ParameterRangeUnion',
-        parameterRangeElements: component.properties.memberKeys.map(memberKey => ({
+        parameterRangeElements: component.properties.memberFields.map(memberField => ({
           '@type': 'ParameterRangeLiteral',
-          parameterRangeValue: memberKey,
+          parameterRangeValue: memberField.property.memberFieldName,
         })),
       });
       const subConflict = this.hasValueType(value, simulatedUnionRange, errorContext, genericsContext);

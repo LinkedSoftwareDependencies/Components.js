@@ -32,8 +32,11 @@
     "parameters": {
       "@id": "oo:parameter"
     },
-    "memberKeys": {
-      "@id": "oo:memberKey"
+    "memberFields": {
+      "@id": "oo:memberFields"
+    },
+    "memberFieldName": {
+      "@id": "oo:memberFieldName"
     },
     "genericTypeParameters": {
       "@id": "oo:genericTypeParameter"

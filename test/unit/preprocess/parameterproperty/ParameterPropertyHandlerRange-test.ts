@@ -1362,7 +1362,16 @@ describe('ParameterPropertyHandlerRange', () => {
             '@type': 'ParameterRangeKeyof',
             parameterRangeValue: {
               '@id': 'ex:SomeType1',
-              memberKeys: [ '"fieldA"', '"fieldB"' ],
+              memberFields: [
+                {
+                  memberFieldName: '"fieldA"',
+                  memberFieldRange: 'xsd:boolean',
+                },
+                {
+                  memberFieldName: '"fieldB"',
+                  memberFieldRange: 'xsd:boolean',
+                },
+              ],
             },
           }),
           errorContext,
@@ -1377,7 +1386,16 @@ describe('ParameterPropertyHandlerRange', () => {
             '@type': 'ParameterRangeKeyof',
             parameterRangeValue: {
               '@id': 'ex:SomeType1',
-              memberKeys: [ '"fieldA"', '"fieldB"' ],
+              memberFields: [
+                {
+                  memberFieldName: '"fieldA"',
+                  range: 'xsd:boolean',
+                },
+                {
+                  memberFieldName: '"fieldB"',
+                  range: 'xsd:boolean',
+                },
+              ],
             },
           }),
           errorContext,
