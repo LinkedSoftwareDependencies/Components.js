@@ -25,15 +25,15 @@ export class ConstructionStrategyCommonJs implements IConstructionStrategy<any> 
   public createInstance(options: ICreationStrategyInstanceOptions<any>): any {
     // Call require()
     options.requireName = this.overrideRequireNames[options.requireName] || options.requireName;
+
+    // First try requiring current module, and fallback to a plain require
     let object: any;
-    try {
-      object = this.requireCurrentRunningModuleIfCurrent(options.moduleState, options.requireName);
-    } catch {
-      // Always require relative from main module, because Components.js will in most cases just be dependency.
-      object = this.req(options.requireName.startsWith('.') ?
+    const currentResult = this.requireCurrentRunningModuleIfCurrent(options.moduleState, options.requireName);
+    object = currentResult !== false ?
+      currentResult.value :
+      this.req(options.requireName.startsWith('.') ?
         Path.join(process.cwd(), options.requireName) :
         this.req.resolve(options.requireName, { paths: [ options.moduleState.mainModulePath ]}));
-    }
 
     // Determine the child of the require'd element
     let subObject;
@@ -70,18 +70,18 @@ export class ConstructionStrategyCommonJs implements IConstructionStrategy<any> 
    * @param requireName The module name that should be required.
    * @returns {any} The require() result
    */
-  public requireCurrentRunningModuleIfCurrent(moduleState: IModuleState, requireName: string): void {
+  public requireCurrentRunningModuleIfCurrent(moduleState: IModuleState, requireName: string): { value: any } | false {
     const pckg = moduleState.packageJsons[moduleState.mainModulePath];
     if (pckg) {
       if (requireName === pckg.name) {
         const mainPath: string = Path.posix.join(moduleState.mainModulePath, pckg.main);
         const required = this.req(mainPath);
         if (required) {
-          return required;
+          return { value: required };
         }
       }
     }
-    throw new Error('Component is not the main module');
+    return false;
   }
 
   public createHash(options: ICreationStrategyHashOptions<any>): any {

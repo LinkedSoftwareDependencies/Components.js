@@ -18,6 +18,7 @@ describe('construction with component configs as files', () => {
       importPaths: {
         'http://example.org/': `${__dirname}/../`,
       },
+      packageJsons: {},
     };
     jest.clearAllMocks();
   });

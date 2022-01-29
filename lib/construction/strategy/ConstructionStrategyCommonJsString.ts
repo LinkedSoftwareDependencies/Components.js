@@ -44,14 +44,16 @@ export class ConstructionStrategyCommonJsString implements IConstructionStrategy
   public createInstance(options: ICreationStrategyInstanceOptions<string>): string {
     // Call require()
     options.requireName = this.overrideRequireNames[options.requireName] || options.requireName;
-    let resultingRequirePath: string;
-    try {
-      this.strategyCommonJs.requireCurrentRunningModuleIfCurrent(options.moduleState, options.requireName);
-      resultingRequirePath = `.${Path.sep}${Path.relative(options.moduleState.mainModulePath,
-        this.getCurrentRunningModuleMain(options.moduleState))}`;
-    } catch {
-      resultingRequirePath = options.requireName;
-    }
+
+    // First try requiring current module, and fallback to a plain require
+    const currentResult = this.strategyCommonJs
+      .requireCurrentRunningModuleIfCurrent(options.moduleState, options.requireName);
+    const resultingRequirePath = currentResult !== false ?
+      `.${Path.sep}${Path.relative(
+        options.moduleState.mainModulePath,
+        this.getCurrentRunningModuleMain(options.moduleState),
+      )}` :
+      options.requireName;
     let serialization = `require('${resultingRequirePath.replace(/\\/gu, '/')}')`;
 
     // Determine the child of the require'd element

@@ -267,15 +267,15 @@ describe('ConstructionStrategyCommonJs', () => {
   describe('requireCurrentRunningModuleIfCurrent', () => {
     it('for the current module should require its main entry', () => {
       expect(constructionStrategy.requireCurrentRunningModuleIfCurrent(moduleState, 'currentmodule'))
-        .toBe(requireMain);
+        .toEqual({ value: requireMain });
     });
 
-    it('for an unknown package should throw', () => {
-      expect(() => constructionStrategy.requireCurrentRunningModuleIfCurrent(moduleState, 'unknownmodule'))
-        .toThrow(new Error('Component is not the main module'));
+    it('for an unknown package should return false', () => {
+      expect(constructionStrategy.requireCurrentRunningModuleIfCurrent(moduleState, 'unknownmodule'))
+        .toBe(false);
     });
 
-    it('for a main module path pointing to unknown package should throw', () => {
+    it('for a main module path pointing to unknown package should return false', () => {
       moduleState = {
         componentModules: {},
         contexts: {},
@@ -290,11 +290,11 @@ describe('ConstructionStrategyCommonJs', () => {
           },
         },
       };
-      expect(() => constructionStrategy.requireCurrentRunningModuleIfCurrent(moduleState, 'currentmodule'))
-        .toThrow(new Error('Component is not the main module'));
+      expect(constructionStrategy.requireCurrentRunningModuleIfCurrent(moduleState, 'currentmodule'))
+        .toBe(false);
     });
 
-    it('for a different package should throw', () => {
+    it('for a different package should return false', () => {
       moduleState = {
         componentModules: {},
         contexts: {},
@@ -309,11 +309,11 @@ describe('ConstructionStrategyCommonJs', () => {
           },
         },
       };
-      expect(() => constructionStrategy.requireCurrentRunningModuleIfCurrent(moduleState, 'currentmodule'))
-        .toThrow(new Error('Component is not the main module'));
+      expect(constructionStrategy.requireCurrentRunningModuleIfCurrent(moduleState, 'currentmodule'))
+        .toBe(false);
     });
 
-    it('for an invalid main should throw', () => {
+    it('for an empty main should return false', () => {
       moduleState = {
         componentModules: {},
         contexts: {},
@@ -328,8 +328,27 @@ describe('ConstructionStrategyCommonJs', () => {
           },
         },
       };
+      expect(constructionStrategy.requireCurrentRunningModuleIfCurrent(moduleState, 'currentmodule'))
+        .toBe(false);
+    });
+
+    it('for an invalid main should throw', () => {
+      moduleState = {
+        componentModules: {},
+        contexts: {},
+        importPaths: {},
+        mainModulePath: 'mainmodulepath',
+        nodeModuleImportPaths: [],
+        nodeModulePaths: [],
+        packageJsons: {
+          mainmodulepath: {
+            name: 'currentmodule',
+            main: 'INVALID',
+          },
+        },
+      };
       expect(() => constructionStrategy.requireCurrentRunningModuleIfCurrent(moduleState, 'currentmodule'))
-        .toThrow(new Error('Component is not the main module'));
+        .toThrow(new Error('Invalid require'));
     });
   });
 

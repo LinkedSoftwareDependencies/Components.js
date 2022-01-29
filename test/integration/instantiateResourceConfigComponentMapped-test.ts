@@ -24,6 +24,7 @@ describe('construction with mapped component configs as Resource', () => {
       mainModulePath: `${__dirname}/../../__mocks__`,
       moduleState: <any> {
         mainModulePath: `${__dirname}/../../__mocks__`,
+        packageJsons: {},
       },
       async moduleLoader() {
         // Register nothing
