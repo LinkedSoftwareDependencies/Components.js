@@ -1,6 +1,17 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v5.0.0-beta.4"></a>
+## [v5.0.0-beta.4](https://github.com/LinkedSoftwareDependencies/Components.js/compare/v5.0.0-beta.3...v5.0.0-beta.4) - 2022-01-29
+
+### Added
+* [Support ParameterRangeIndexed for fixed literals](https://github.com/LinkedSoftwareDependencies/Components.js/commit/0d97782a4a8dcca9fc5bbb3389a4213eca5a5205)
+
+### Changed
+* [Propagate original error messages to require calls, Closes #65](https://github.com/LinkedSoftwareDependencies/Components.js/commit/8934ec9b784def601730b3d3f2e60c4ff0b8776e)
+* [Include config id in invalid param error message](https://github.com/LinkedSoftwareDependencies/Components.js/commit/e724f44e2222eb9917da3b227e2ce0dc9cde15f9)
+* [Update memberKeys to memberFields](https://github.com/LinkedSoftwareDependencies/Components.js/commit/2c7437e1519c1813fb1a29f50d7c20bdbdf7f06e)
+
 <a name="v5.0.0-beta.3"></a>
 ## [v5.0.0-beta.3](https://github.com/LinkedSoftwareDependencies/Components.js/compare/v5.0.0-beta.2...v5.0.0-beta.3) - 2022-01-17
 
