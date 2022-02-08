@@ -1,6 +1,18 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v5.0.0-beta.5"></a>
+## [v5.0.0-beta.5](https://github.com/LinkedSoftwareDependencies/Components.js/compare/v5.0.0-beta.4...v5.0.0-beta.5) - 2022-02-08
+
+### Added
+* [Allow type-checking to be disabled via typeChecking](https://github.com/LinkedSoftwareDependencies/Components.js/commit/a55331085e4c5621832e6b23bc52b00068e8256a)
+
+### Changed
+* [Throw error on circular dependencies, Closes #53](https://github.com/LinkedSoftwareDependencies/Components.js/commit/e7a28d1cf87d96d5b58bb6d1f19ce41d6e55aab6)
+
+### Fixed
+* [Fix seeAlso links not handling encoded URI components, Closes #43](https://github.com/LinkedSoftwareDependencies/Components.js/commit/2b72914d2720b2982d4570af55f9b5d7dc196c27)
+
 <a name="v5.0.0-beta.4"></a>
 ## [v5.0.0-beta.4](https://github.com/LinkedSoftwareDependencies/Components.js/compare/v5.0.0-beta.3...v5.0.0-beta.4) - 2022-01-29
 
