@@ -22,7 +22,7 @@ export class ParameterHandler {
       new ParameterPropertyHandlerDefaultScoped(this.objectLoader),
       new ParameterPropertyHandlerDefault(this.objectLoader),
       new ParameterPropertyHandlerFixed(this.objectLoader),
-      this.parameterPropertyHandlerRange = new ParameterPropertyHandlerRange(this.objectLoader),
+      this.parameterPropertyHandlerRange = new ParameterPropertyHandlerRange(this.objectLoader, options.typeChecking),
       new ParameterPropertyHandlerLazy(),
     ];
   }
@@ -70,4 +70,5 @@ export class ParameterHandler {
 
 export interface IParameterHandlerOptions {
   objectLoader: RdfObjectLoader;
+  typeChecking: boolean;
 }

@@ -30,6 +30,7 @@ export class ComponentsManagerBuilder<Instance = any> {
   private readonly logger: Logger;
   private readonly moduleState?: IModuleState;
   private readonly skipContextValidation: boolean;
+  private readonly typeChecking: boolean;
 
   public constructor(options: IComponentsManagerBuilderOptions<Instance>) {
     this.mainModulePath = options.mainModulePath;
@@ -44,6 +45,9 @@ export class ComponentsManagerBuilder<Instance = any> {
     this.skipContextValidation = options.skipContextValidation === undefined ?
       true :
       Boolean(options.skipContextValidation);
+    this.typeChecking = options.typeChecking === undefined ?
+      true :
+      Boolean(options.typeChecking);
   }
 
   public static createLogger(logLevel: LogLevel = 'warn'): Logger {
@@ -117,7 +121,7 @@ export class ComponentsManagerBuilder<Instance = any> {
 
     // Build constructor pool
     const runTypeConfigs = {};
-    const parameterHandler = new ParameterHandler({ objectLoader });
+    const parameterHandler = new ParameterHandler({ objectLoader, typeChecking: this.typeChecking });
     const configConstructorPool: IConfigConstructorPool<Instance> = new ConfigConstructorPool({
       objectLoader,
       configPreprocessors: [
@@ -198,4 +202,9 @@ export interface IComponentsManagerBuilderOptions<Instance> {
    * Defaults to `true`.
    */
   skipContextValidation?: boolean;
+  /**
+   * If values for parameters should be type-checked.
+   * Defaults to `true`.
+   */
+  typeChecking?: boolean;
 }

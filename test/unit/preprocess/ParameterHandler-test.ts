@@ -18,7 +18,7 @@ describe('ParameterHandler', () => {
     });
     await objectLoader.context;
     genericsContext = new GenericsContext(objectLoader, []);
-    handler = new ParameterHandler({ objectLoader });
+    handler = new ParameterHandler({ objectLoader, typeChecking: true });
 
     configRoot = objectLoader.createCompactedResource({
       types: 'ex:Component1',

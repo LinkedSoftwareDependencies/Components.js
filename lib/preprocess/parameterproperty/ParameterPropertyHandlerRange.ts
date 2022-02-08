@@ -10,9 +10,11 @@ import type { IParameterPropertyHandler } from './IParameterPropertyHandler';
  */
 export class ParameterPropertyHandlerRange implements IParameterPropertyHandler {
   private readonly objectLoader: RdfObjectLoader;
+  private readonly typeChecking: boolean;
 
-  public constructor(objectLoader: RdfObjectLoader) {
+  public constructor(objectLoader: RdfObjectLoader, typeChecking: boolean) {
     this.objectLoader = objectLoader;
+    this.typeChecking = typeChecking;
   }
 
   public canHandle(value: Resource | undefined, configRoot: Resource, parameter: Resource): boolean {
@@ -46,7 +48,7 @@ export class ParameterPropertyHandlerRange implements IParameterPropertyHandler 
   ): Resource | undefined {
     const errorContext: IErrorContext = { param };
     const conflict = this.hasValueType(value, param.property.range, errorContext, genericsContext);
-    if (!conflict) {
+    if (!conflict || !this.typeChecking) {
       return value;
     }
     ParameterPropertyHandlerRange.throwIncorrectTypeError(value, param, genericsContext, conflict);

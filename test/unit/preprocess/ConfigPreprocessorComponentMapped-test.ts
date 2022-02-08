@@ -35,7 +35,7 @@ describe('ConfigPreprocessorComponentMapped', () => {
       objectLoader,
       componentResources,
       runTypeConfigs: {},
-      parameterHandler: new ParameterHandler({ objectLoader }),
+      parameterHandler: new ParameterHandler({ objectLoader, typeChecking: true }),
       logger: <any> { warn: jest.fn() },
     });
   });

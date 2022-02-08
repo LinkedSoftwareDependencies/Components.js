@@ -44,7 +44,7 @@ describe('ConfigConstructorPool', () => {
       moduleState,
     });
     creationSettings = {};
-    parameterHandler = new ParameterHandler({ objectLoader });
+    parameterHandler = new ParameterHandler({ objectLoader, typeChecking: true });
   });
 
   describe('with no preprocessors', () => {

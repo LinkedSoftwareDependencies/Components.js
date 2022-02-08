@@ -33,7 +33,7 @@ describe('ParameterPropertyHandlerRange', () => {
     });
     await objectLoader.context;
     genericsContext = new GenericsContext(objectLoader, []);
-    handler = new ParameterPropertyHandlerRange(objectLoader);
+    handler = new ParameterPropertyHandlerRange(objectLoader, true);
   });
 
   describe('canHandle', () => {
@@ -65,6 +65,17 @@ describe('ParameterPropertyHandlerRange', () => {
         objectLoader.createCompactedResource({}),
         genericsContext,
       )).toThrow(/The value "aaa" for parameter ".*" is not of required range type ".*integer"/u);
+    });
+
+    it('does not throw on an invalid value when type-checking is disabled', () => {
+      handler = new ParameterPropertyHandlerRange(objectLoader, false);
+      expect(() => handler.handle(
+        objectLoader.createCompactedResource('"aaa"'),
+        objectLoader.createCompactedResource({}),
+        objectLoader.createCompactedResource({ range: IRIS_XSD.integer }),
+        objectLoader.createCompactedResource({}),
+        genericsContext,
+      )).not.toThrow();
     });
   });
 

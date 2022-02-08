@@ -38,7 +38,7 @@ describe('ConfigPreprocessorComponent', () => {
       objectLoader,
       componentResources,
       runTypeConfigs: {},
-      parameterHandler: new ParameterHandler({ objectLoader }),
+      parameterHandler: new ParameterHandler({ objectLoader, typeChecking: true }),
       logger,
     });
   });
