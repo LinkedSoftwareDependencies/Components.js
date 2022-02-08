@@ -23,7 +23,7 @@ export const IRIS_RDF = {
 
 export const PREFIX_RDFS = definePrefix('http://www.w3.org/2000/01/rdf-schema#');
 export const IRIS_RDFS = {
-  imports: PREFIX_RDFS('seeAlso'),
+  seeAlso: PREFIX_RDFS('seeAlso'),
 };
 
 export const PREFIX_XSD = definePrefix('http://www.w3.org/2001/XMLSchema#');

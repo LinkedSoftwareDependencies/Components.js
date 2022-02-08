@@ -17,6 +17,7 @@ describe('construction with component configs as files', () => {
       mainModulePath: `${__dirname}/../../__mocks__`,
       importPaths: {
         'http://example.org/': `${__dirname}/../`,
+        'https://linkedsoftwaredependencies.org/bundles/npm/example/^1.0.0/config/': `${__dirname}/../assets/`,
       },
       packageJsons: {},
     };
@@ -170,6 +171,20 @@ describe('construction with component configs as files', () => {
       moduleState,
       async moduleLoader(registry) {
         await registry.registerModule(Path.join(__dirname, '../assets/module-imports.jsonld'));
+      },
+    });
+    expect(manager.componentResources)
+      .toHaveProperty([ 'http://example.org/HelloWorldModule#SayHelloComponent1' ]);
+    expect(manager.componentResources)
+      .toHaveProperty([ 'http://example.org/HelloWorldModule#SayHelloComponent2' ]);
+  });
+
+  it('for a module with imports in Turtle', async() => {
+    manager = await ComponentsManager.build({
+      mainModulePath: __dirname,
+      moduleState,
+      async moduleLoader(registry) {
+        await registry.registerModule(Path.join(__dirname, '../assets/module-imports.ttl'));
       },
     });
     expect(manager.componentResources)

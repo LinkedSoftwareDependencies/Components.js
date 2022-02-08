@@ -212,6 +212,24 @@ describe('RdfParser', () => {
         ]);
     });
 
+    it('for a Turtle stream with encoded imports', async() => {
+      const options: RdfParserOptions = {
+        path: 'path/to/file.ttl',
+      };
+      const doc = `
+<ex:s> <ex:p> <ex:o>.
+<ex:s> <http://www.w3.org/2000/01/rdf-schema#seeAlso> <http://example.org/myfile1%2Ettl>, <http://example.org/myfile2%2Ettl>.
+`;
+      expect(await arrayifyStream(parser.parse(streamifyString(doc), options)))
+        .toBeRdfIsomorphic([
+          quad('ex:s', 'ex:p', 'ex:o'),
+          quad('ex:s', 'http://www.w3.org/2000/01/rdf-schema#seeAlso', 'http://example.org/myfile1%2Ettl'),
+          quad('ex:s', 'http://www.w3.org/2000/01/rdf-schema#seeAlso', 'http://example.org/myfile2%2Ettl'),
+          quad('ex:s1', 'ex:p1', 'ex:o1'),
+          quad('ex:s2', 'ex:p2', 'ex:o2'),
+        ]);
+    });
+
     it('for a Turtle stream with import to unknown file', async() => {
       const options: RdfParserOptions = {
         path: 'path/to/file.ttl',

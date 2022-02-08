@@ -1,0 +1,9 @@
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>.
+@prefix oo: <https://linkedsoftwaredependencies.org/vocabularies/object-oriented#>.
+@prefix doap: <http://usefulinc.com/ns/doap#>.
+@prefix config: <https://linkedsoftwaredependencies.org/bundles/npm/example/%5E1.0.0/config/>.
+@prefix ex: <http://example.org/>.
+
+ex:HelloWorldModule a oo:Module;
+    doap:name "helloworld";
+    rdfs:seeAlso config:module-imported1.jsonld, config:module-imported2.jsonld.

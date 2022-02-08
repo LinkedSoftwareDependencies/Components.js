@@ -42,9 +42,9 @@ export class RdfStreamIncluder extends Transform {
    * @param quad A quad.
    */
   public handleImports(quad: RDF.Quad): void {
-    if (!this.parserOptions.ignoreImports && quad.predicate.value === IRIS_RDFS.imports) {
+    if (!this.parserOptions.ignoreImports && quad.predicate.value === IRIS_RDFS.seeAlso) {
       this.runningImporters++;
-      let relativeFilePath = quad.object.value;
+      let relativeFilePath = decodeURI(quad.object.value);
 
       // Try overriding path using defined import paths
       if (this.parserOptions.importPaths) {
