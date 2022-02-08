@@ -202,6 +202,41 @@ const myInstance = await manager.instantiate('http://example.org/myInstance');
 [RDF]: https://www.w3.org/RDF/
 [JSON-LD]: https://json-ld.org/
 
+## Advanced usage
+
+The `ComponentsManager` can be customized with the following options:
+
+```javascript
+const manager = await ComponentsManager.build({
+    // Absolute path to the package root from which module resolution should start.
+    mainModulePath: __dirname,
+    // Callback for registering components and modules
+    // Defaults to an invocation of {@link ComponentRegistry.registerAvailableModules}.
+    moduleLoader: (registry) => {},
+    // Callback for registering configurations.
+    // Defaults to no config registrations.
+    configLoader: (registry) => {},
+    // A strategy for constructing instances.
+    // Defaults to {@link ConstructionStrategyCommonJs}.
+    constructionStrategy: new ConstructionStrategyCommonJs(),
+    // If the error state should be dumped into `componentsjs-error-state.json` after failed instantiations.
+    // Defaults to `true`.
+    dumpErrorState: true,
+    // The logging level.
+    // Defaults to `'warn'`.
+    logLevel: 'warn',
+    // The module state.
+    // Defaults to a newly created instance on the {@link mainModulePath}.
+    moduleState: {},
+    // If JSON-LD context validation should be skipped.
+    // Defaults to `true`.
+    skipContextValidation: true,
+    // If values for parameters should be type-checked.
+    // Defaults to `true`.
+    typeChecking: true,
+});
+```
+
 ## Cite
 
 If you are using or extending Components.js as part of a scientific publication,
