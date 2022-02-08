@@ -244,14 +244,11 @@ describe('construction with component configs as files', () => {
         .not.toBe(run._params[0]['http://example.org/hello/say']);
     });
 
-    it('instantiated with itself as param instance should become undefined', async() => {
+    it('instantiated with itself as param instance should throw', async() => {
       await manager.configRegistry.register(Path.join(__dirname, '../assets/config-selfreferenced.jsonld'));
 
-      const run = await manager.instantiate('http://example.org/myHelloWorld1');
-      expect(run).toBeInstanceOf(Hello);
-      expect(run._params).toEqual([{
-        'http://example.org/hello/hello': undefined,
-      }]);
+      await expect(manager.instantiate('http://example.org/myHelloWorld1')).rejects
+        .toThrow('Circular dependency was detected on http://example.org/myHelloWorld1');
     });
   });
 

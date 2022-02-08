@@ -41,7 +41,7 @@ export class ConfigConstructorPool<Instance> implements IConfigConstructorPool<I
     // if so, return a dummy value, to avoid infinite recursion.
     const resourceBlacklist = settings.resourceBlacklist || {};
     if (resourceBlacklist[configResource.value]) {
-      return Promise.resolve(this.constructionStrategy.createUndefined());
+      return Promise.reject(new ErrorResourcesContext(`Circular dependency was detected on ${configResource.value}`, { config: configResource }));
     }
 
     // Before instantiating, first check if the resource is a variable

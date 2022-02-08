@@ -235,14 +235,15 @@ describe('ConfigConstructorPool', () => {
         });
       });
 
-      it('should handle a blacklisted resource', async() => {
+      it('should throw on a blacklisted resource', async() => {
         const config = objectLoader.createCompactedResource({
           '@id': 'ex:myComponentInstance',
         });
         creationSettings.resourceBlacklist = {
           'ex:myComponentInstance': true,
         };
-        expect(await pool.instantiate(config, creationSettings)).toEqual('UNDEFINED');
+        await expect(pool.instantiate(config, creationSettings)).rejects
+          .toThrow('Circular dependency was detected on ex:myComponentInstance');
       });
 
       it('should handle a variable', async() => {
