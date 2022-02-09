@@ -1,6 +1,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v5.0.0-beta.6"></a>
+## [v5.0.0-beta.6](https://github.com/LinkedSoftwareDependencies/Components.js/compare/v5.0.0-beta.5...v5.0.0-beta.6) - 2022-02-09
+
+### Fixed
+* [Fix generic errors still throwing during ignored type checking](https://github.com/LinkedSoftwareDependencies/Components.js/commit/c14adcf4757e5194db22c0f0285407bd03bf5635)
+
 <a name="v5.0.0-beta.5"></a>
 ## [v5.0.0-beta.5](https://github.com/LinkedSoftwareDependencies/Components.js/compare/v5.0.0-beta.4...v5.0.0-beta.5) - 2022-02-08
 
