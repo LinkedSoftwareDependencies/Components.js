@@ -1,6 +1,5 @@
 import type * as RDF from '@rdfjs/types';
 import type { Resource, RdfObjectLoader } from 'rdf-object';
-import { ErrorResourcesContext } from '../util/ErrorResourcesContext';
 import type { IParamValueConflict } from './parameterproperty/ParameterPropertyHandlerRange';
 import { ParameterPropertyHandlerRange } from './parameterproperty/ParameterPropertyHandlerRange';
 
@@ -368,12 +367,15 @@ export class GenericsContext {
 
     // Throw if an unexpected number of generic type instances are passed.
     if (genericTypeParameters.length !== genericTypeInstances.length) {
-      throw new ErrorResourcesContext(`Invalid generic type instantiation: a different amount of generic types are passed (${genericTypeInstances.length}) than are defined on the component (${genericTypeParameters.length}).`, {
-        passedGenerics: genericTypeInstances,
-        definedGenerics: genericTypeParameters,
-        component,
-        ...errorContext,
-      });
+      return {
+        description: `Invalid generic type instantiation: a different amount of generic types are passed (${genericTypeInstances.length}) than are defined on the component (${genericTypeParameters.length}).`,
+        context: {
+          passedGenerics: genericTypeInstances,
+          definedGenerics: genericTypeParameters,
+          component,
+          ...errorContext,
+        },
+      };
     }
 
     // Populate with manually defined generic type bindings

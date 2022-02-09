@@ -124,7 +124,7 @@ export class ConfigPreprocessorComponent implements IConfigPreprocessor<ICompone
     // ParameterPropertyHandlerRange#hasParamValueValidType)
     if (config.property.genericTypeInstancesComponentScope &&
       handleResponse.component.value === config.property.genericTypeInstancesComponentScope.value) {
-      genericsContext.bindComponentGenericTypes(
+      const conflict = genericsContext.bindComponentGenericTypes(
         handleResponse.component,
         config.properties.genericTypeInstances,
         { config },
@@ -138,6 +138,9 @@ export class ConfigPreprocessorComponent implements IConfigPreprocessor<ICompone
             { config },
           ),
       );
+      if (conflict) {
+        throw new ErrorResourcesContext(conflict.description, conflict.context);
+      }
     }
 
     return genericsContext;

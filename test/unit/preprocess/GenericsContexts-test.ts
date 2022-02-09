@@ -1259,8 +1259,8 @@ describe('GenericsContext', () => {
         });
       });
 
-      it('should throw when a different amount instances and generic params are passed', () => {
-        expect(() => genericsContext.bindComponentGenericTypes(
+      it('should not handle a different amount instances and generic params are passed', () => {
+        expect(genericsContext.bindComponentGenericTypes(
           objectLoader.createCompactedResource({
             '@id': 'ex:Component',
             genericTypeParameters: [
@@ -1275,7 +1275,10 @@ describe('GenericsContext', () => {
           ],
           {},
           typeTypeValidatorAlwaysFalse,
-        )).toThrow(`Invalid generic type instantiation: a different amount of generic types are passed (1) than are defined on the component (2).`);
+        )).toEqual({
+          description: `Invalid generic type instantiation: a different amount of generic types are passed (1) than are defined on the component (2).`,
+          context: expect.anything(),
+        });
       });
 
       it('should handle valid instances', () => {
