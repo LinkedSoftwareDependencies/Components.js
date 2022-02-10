@@ -139,7 +139,7 @@ export class ConfigPreprocessorComponent implements IConfigPreprocessor<ICompone
           ),
       );
       if (conflict) {
-        throw new ErrorResourcesContext(conflict.description, conflict.context);
+        throw new ErrorResourcesContext(conflict.description, { cause: conflict });
       }
     }
 
