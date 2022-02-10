@@ -33,7 +33,7 @@
       "@id": "oo:parameter"
     },
     "memberFields": {
-      "@id": "oo:memberFields"
+      "@id": "oo:memberField"
     },
     "memberFieldName": {
       "@id": "oo:memberFieldName"
@@ -111,8 +111,11 @@
     "ParameterRangeIntersection": {
       "@id": "oo:ParameterRangeIntersection"
     },
+    "ParameterRangeTuple": {
+      "@id": "oo:ParameterRangeTuple"
+    },
     "parameterRangeElements": {
-      "@id": "oo:parameterRangeElements",
+      "@id": "oo:parameterRangeElement",
       "@type": "@id"
     },
     "ParameterRangeCollectEntries": {
@@ -141,11 +144,8 @@
       "@type": "@id"
     },
     "parameterRangeGenericBindings": {
-      "@id": "oo:parameterRangeGenericBindings",
+      "@id": "oo:parameterRangeGenericBinding",
       "@type": "@id"
-    },
-    "GenericComponentExtension": {
-      "@id": "oo:GenericComponentExtension"
     },
     "ParameterRangeIndexed": {
       "@id": "oo:ParameterRangeIndexed"
@@ -157,6 +157,9 @@
     "parameterRangeIndexedIndex": {
       "@id": "oo:parameterRangeIndexedIndex",
       "@type": "@id"
+    },
+    "GenericComponentExtension": {
+      "@id": "oo:GenericComponentExtension"
     },
 
     "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
