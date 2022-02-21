@@ -1,6 +1,17 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v5.0.0-beta.7"></a>
+## [v5.0.0-beta.7](https://github.com/LinkedSoftwareDependencies/Components.js/compare/v5.0.0-beta.6...v5.0.0-beta.7) - 2022-02-21
+
+### Changed
+* [Lower log level of empty modules to debug](https://github.com/LinkedSoftwareDependencies/Components.js/commit/df119861bc12992e05af05b42f0a734069de6915)
+* [Bump to rdf-object 1.13.1](https://github.com/LinkedSoftwareDependencies/Components.js/commit/264be522079f86bd47bea9fe5730eaed29bbe450)
+
+### Fixed
+* [Fix incorrect error logging when generics error occurs in extends clause](https://github.com/LinkedSoftwareDependencies/Components.js/commit/1ce62d39896ca498ecba7443c9c7c298c9db0301)
+* [Fix minor context issues](https://github.com/LinkedSoftwareDependencies/Components.js/commit/7adcd5fe0de73a42c8225069752be40214f843f3)
+
 <a name="v5.0.0-beta.6"></a>
 ## [v5.0.0-beta.6](https://github.com/LinkedSoftwareDependencies/Components.js/compare/v5.0.0-beta.5...v5.0.0-beta.6) - 2022-02-09
 
