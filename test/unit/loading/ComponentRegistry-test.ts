@@ -21,6 +21,7 @@ describe('ComponentRegistry', () => {
     });
     logger = <any> {
       warn: jest.fn(),
+      debug: jest.fn(),
     };
     componentResources = {};
     componentRegistry = new ComponentRegistry({
@@ -123,7 +124,7 @@ describe('ComponentRegistry', () => {
         components: [],
       });
       componentRegistry.registerModuleResource(module);
-      expect(logger.warn).toHaveBeenCalledWith(`Registered a module ex:MyModule without components.`);
+      expect(logger.debug).toHaveBeenCalledWith(`Registered a module ex:MyModule without components.`);
     });
 
     it('should handle a module with one component that already has another module', () => {

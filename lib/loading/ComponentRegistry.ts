@@ -72,7 +72,7 @@ export class ComponentRegistry {
         this.registerComponent(component);
       }
     } else {
-      this.logger.warn(`Registered a module ${moduleResource.value} without components.`);
+      this.logger.debug(`Registered a module ${moduleResource.value} without components.`);
     }
   }
 
