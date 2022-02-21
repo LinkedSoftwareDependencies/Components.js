@@ -827,6 +827,37 @@ describe('ModuleStateBuilder', () => {
       });
     });
 
+    it('should resolve packages with the same lsd:module to the max prerelease version', async() => {
+      expect(await builder.buildComponentModules({
+        a: {
+          version: '1.1.0-alpha.1',
+          'lsd:module': 'ex:module',
+          'lsd:components': 'components/components.jsonld',
+        },
+        b: {
+          version: '1.0.0',
+          'lsd:module': 'ex:module',
+          'lsd:components': 'components/components.jsonld',
+        },
+      })).toEqual({
+        'ex:module': 'a/components/components.jsonld',
+      });
+      expect(await builder.buildComponentModules({
+        a: {
+          version: '1.0.0-alpha.1',
+          'lsd:module': 'ex:module',
+          'lsd:components': 'components/components.jsonld',
+        },
+        b: {
+          version: '1.0.0-alpha.2',
+          'lsd:module': 'ex:module',
+          'lsd:components': 'components/components.jsonld',
+        },
+      })).toEqual({
+        'ex:module': 'b/components/components.jsonld',
+      });
+    });
+
     it('should resolve packages with the same lsd:module and one invalid version to the valid version', async() => {
       expect(await builder.buildComponentModules({
         a: {
