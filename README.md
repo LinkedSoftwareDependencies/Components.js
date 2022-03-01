@@ -80,7 +80,7 @@ export class MyClass {
 ```json
 {
   "@context": [
-    "https://linkedsoftwaredependencies.org/bundles/npm/componentsjs/^4.0.0/components/context.jsonld",
+    "https://linkedsoftwaredependencies.org/bundles/npm/componentsjs/^5.0.0/components/context.jsonld",
     "https://linkedsoftwaredependencies.org/bundles/npm/my-package/^2.0.0/components/context.jsonld"
   ],
   "@id": "urn:my-package:myInstance",
@@ -132,7 +132,7 @@ export class MyClass {
 ```json
 {
   "@context": [
-    "https://linkedsoftwaredependencies.org/bundles/npm/componentsjs/^4.0.0/components/context.jsonld",
+    "https://linkedsoftwaredependencies.org/bundles/npm/componentsjs/^5.0.0/components/context.jsonld",
     { "ex": "http://example.org/" }
   ],
   "@id": "ex:MyPackage",
@@ -164,7 +164,7 @@ The constructor of `MyClass` takes a single `name` argument.
 ```json
 {
   "@context": [
-    "https://linkedsoftwaredependencies.org/bundles/npm/componentsjs/^4.0.0/components/context.jsonld",
+    "https://linkedsoftwaredependencies.org/bundles/npm/componentsjs/^5.0.0/components/context.jsonld",
     {
       "ex": "http://example.org/",
       "name": "ex:MyPackage/MyClass#name"
