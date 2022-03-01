@@ -1,6 +1,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v5.0.0"></a>
+## [v5.0.0](https://github.com/LinkedSoftwareDependencies/Components.js/compare/v5.0.0-beta.7...v5.0.0) - 2022-03-01
+
+### Changed
+* [Add incorrect version number as possible cause for remote lookup failure (#67)](https://github.com/LinkedSoftwareDependencies/Components.js/commit/adf1d7e092b95a2fc47c7d2da3dfe191fdb741aa)
+
 <a name="v5.0.0-beta.7"></a>
 ## [v5.0.0-beta.7](https://github.com/LinkedSoftwareDependencies/Components.js/compare/v5.0.0-beta.6...v5.0.0-beta.7) - 2022-02-21
 
