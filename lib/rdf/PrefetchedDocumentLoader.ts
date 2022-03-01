@@ -9,7 +9,7 @@ import type { Logger } from 'winston';
  */
 export class PrefetchedDocumentLoader extends FetchDocumentLoader {
   public static readonly CONTEXT_URL: string =
-  'https://linkedsoftwaredependencies.org/bundles/npm/componentsjs/^4.0.0/components/context.jsonld';
+  'https://linkedsoftwaredependencies.org/bundles/npm/componentsjs/^5.0.0/components/context.jsonld';
 
   // eslint-disable-next-line no-sync
   private static readonly DEFAULT_CONTEXT: any = JSON.parse(fs
@@ -18,7 +18,9 @@ export class PrefetchedDocumentLoader extends FetchDocumentLoader {
   private static readonly DEFAULT_CONTEXTS: Record<string, any> = {
     [PrefetchedDocumentLoader.CONTEXT_URL]:
     PrefetchedDocumentLoader.DEFAULT_CONTEXT,
-    // TODO: temporarily also set old context version for backwards-compatible.
+    // TODO: temporarily also set old context versions for backwards-compatible.
+    'https://linkedsoftwaredependencies.org/bundles/npm/componentsjs/^4.0.0/components/context.jsonld':
+    PrefetchedDocumentLoader.DEFAULT_CONTEXT,
     'https://linkedsoftwaredependencies.org/bundles/npm/componentsjs/^3.0.0/components/context.jsonld':
     PrefetchedDocumentLoader.DEFAULT_CONTEXT,
   };
@@ -37,8 +39,9 @@ export class PrefetchedDocumentLoader extends FetchDocumentLoader {
   public async load(url: string): Promise<IJsonLdContext> {
     // Warn on deprecated context usage
     if (this.logger &&
-      url === 'https://linkedsoftwaredependencies.org/bundles/npm/componentsjs/^3.0.0/components/context.jsonld') {
-      this.logger.warn(`Detected deprecated context URL '${url}'${this.path ? ` in ${this.path}` : ''}. Prefer using version '^4.0.0' instead.`);
+      (url === 'https://linkedsoftwaredependencies.org/bundles/npm/componentsjs/^4.0.0/components/context.jsonld' ||
+      url === 'https://linkedsoftwaredependencies.org/bundles/npm/componentsjs/^3.0.0/components/context.jsonld')) {
+      this.logger.warn(`Detected deprecated context URL '${url}'${this.path ? ` in ${this.path}` : ''}. Prefer using version '^5.0.0' instead.`);
     }
 
     // Load prefetched contexts

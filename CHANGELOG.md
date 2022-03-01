@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file.
 ## [v5.0.0](https://github.com/LinkedSoftwareDependencies/Components.js/compare/v5.0.0-beta.7...v5.0.0) - 2022-03-01
 
 ### Changed
+* [Bump context URL to 5.0.0](https://github.com/LinkedSoftwareDependencies/Components.js/commit/495654fa70f559aaaa86a0960686fd1ca23f9546)
 * [Add incorrect version number as possible cause for remote lookup failure (#67)](https://github.com/LinkedSoftwareDependencies/Components.js/commit/adf1d7e092b95a2fc47c7d2da3dfe191fdb741aa)
 
 <a name="v5.0.0-beta.7"></a>
