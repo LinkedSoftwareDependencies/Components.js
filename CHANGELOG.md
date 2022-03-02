@@ -1,6 +1,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v5.0.1"></a>
+## [v5.0.1](https://github.com/LinkedSoftwareDependencies/Components.js/compare/v5.0.0...v5.0.1) - 2022-03-02
+
+### Changed
+* [Bump to rdf-parse 2](https://github.com/LinkedSoftwareDependencies/Components.js/commit/5957c21d9ea0d8e6086be09d67ee99e64f8b2960)
+
 <a name="v5.0.0"></a>
 ## [v5.0.0](https://github.com/LinkedSoftwareDependencies/Components.js/compare/v5.0.0-beta.7...v5.0.0) - 2022-03-01
 
