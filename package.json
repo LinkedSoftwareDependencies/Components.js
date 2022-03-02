@@ -3,7 +3,7 @@
   "version": "5.0.0",
   "description": "A semantic dependency injection framework",
   "lsd:contexts": {
-    "https://linkedsoftwaredependencies.org/bundles/npm/componentsjs/^3.0.0/components/context.jsonld": "components/context.jsonld"
+    "https://linkedsoftwaredependencies.org/bundles/npm/componentsjs/^5.0.0/components/context.jsonld": "components/context.jsonld"
   },
   "main": "index.js",
   "bin": {
@@ -41,7 +41,7 @@
     "minimist": "^1.2.0",
     "rdf-data-factory": "^1.1.0",
     "rdf-object": "^1.13.1",
-    "rdf-parse": "^1.9.1",
+    "rdf-parse": "^2.0.0",
     "rdf-quad": "^1.5.0",
     "rdf-terms": "^1.7.0",
     "semver": "^7.3.2",
