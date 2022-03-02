@@ -53,7 +53,7 @@ $ npm install -D componentsjs-generator
     ...
     "build": "npm run build:ts && npm run build:components",
     "build:ts": "tsc",
-    "build:components": "componentsjs-generator --typeScopedContexts",
+    "build:components": "componentsjs-generator",
     "prepare": "npm run build",
     ...
   }
