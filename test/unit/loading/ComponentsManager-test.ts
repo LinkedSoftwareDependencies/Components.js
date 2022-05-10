@@ -59,6 +59,9 @@ describe('ComponentsManager', () => {
     dumpErrorState = false;
     configConstructorPool = <any> {
       instantiate: jest.fn(() => 'INSTANCE'),
+      getInstanceRegistry: jest.fn(() => ({
+        'http://example.org/myconfig': 'INSTANCE',
+      })),
     };
     componentsManager = new ComponentsManager({
       moduleState,
@@ -130,6 +133,13 @@ describe('ComponentsManager', () => {
         componentsManager.objectLoader.resources['http://example.org/myconfig'],
         { variables: { a: 1 }},
       );
+    });
+  });
+
+  describe('getInstantiatedResources', () => {
+    it('should return an array of instantiated Resources', async() => {
+      await componentsManager.configRegistry.register(`${__dirname}/../../assets/config.jsonld`);
+      expect(componentsManager.getInstantiatedResources()).toHaveLength(1);
     });
   });
 

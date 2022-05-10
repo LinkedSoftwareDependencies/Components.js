@@ -1,6 +1,7 @@
 import type { Readable } from 'stream';
 import type * as RDF from '@rdfjs/types';
-import type { RdfObjectLoader } from 'rdf-object';
+import type { RdfObjectLoader, Resource } from 'rdf-object';
+import { termToString } from 'rdf-string';
 import type { Logger } from 'winston';
 import { RdfParser } from '../rdf/RdfParser';
 import type { IModuleState } from './ModuleStateBuilder';
@@ -64,6 +65,14 @@ export class ConfigRegistry {
     for (const key of Object.keys(params)) {
       configResource.property[key] = this.objectLoader.createCompactedResource(`"${params[key]}"`);
     }
+  }
+
+  /**
+   * Get the instantiated Resource that was registered to the given term.
+   * @param term The term of the Resource that was instantiated
+   */
+  public getInstantiatedResource(term: RDF.Term): Resource {
+    return this.objectLoader.resources[termToString(term)];
   }
 }
 

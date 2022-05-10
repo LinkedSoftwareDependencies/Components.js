@@ -43,15 +43,16 @@
     "rdf-object": "^1.13.1",
     "rdf-parse": "^2.0.0",
     "rdf-quad": "^1.5.0",
+    "rdf-string": "^1.6.0",
     "rdf-terms": "^1.7.0",
     "semver": "^7.3.2",
     "winston": "^3.3.3"
   },
   "devDependencies": {
     "@rubensworks/eslint-config": "^1.0.1",
+    "@types/jest": "^27.0.0",
     "@typescript-eslint/eslint-plugin": "^5.0.0",
     "@typescript-eslint/parser": "^5.0.0",
-    "@types/jest": "^27.0.0",
     "eslint": "^7.12.1",
     "eslint-config-es": "3.25.3",
     "eslint-import-resolver-typescript": "^2.3.0",

@@ -273,6 +273,7 @@ describe('ConfigConstructorPool', () => {
             'ex:myComponentInstance': true,
           },
         });
+        await expect(pool.getInstanceRegistry()['ex:myComponentInstance']).resolves.toBe('INSTANCE0');
       });
 
       it('should create different instances by different id', async() => {
@@ -285,6 +286,8 @@ describe('ConfigConstructorPool', () => {
           types: 'ex:Component',
         }), creationSettings);
         expect(instance1).not.toBe(instance2);
+        await expect(pool.getInstanceRegistry()['ex:myComponentInstance1']).resolves.toBe('INSTANCE0');
+        await expect(pool.getInstanceRegistry()['ex:myComponentInstance2']).resolves.toBe('INSTANCE1');
       });
 
       it('should return the same instances by equal id', async() => {

@@ -1,4 +1,5 @@
 import type { Resource, RdfObjectLoader } from 'rdf-object';
+import { termToString } from 'rdf-string';
 import type { IModuleState } from '../loading/ModuleStateBuilder';
 import type { IConfigPreprocessor } from '../preprocess/IConfigPreprocessor';
 import { ErrorResourcesContext } from '../util/ErrorResourcesContext';
@@ -40,7 +41,8 @@ export class ConfigConstructorPool<Instance> implements IConfigConstructorPool<I
     // Check if this resource is required as argument in its own chain,
     // if so, return a dummy value, to avoid infinite recursion.
     const resourceBlacklist = settings.resourceBlacklist || {};
-    if (resourceBlacklist[configResource.value]) {
+    const configResourceId = termToString(configResource.term);
+    if (resourceBlacklist[configResourceId]) {
       return Promise.reject(new ErrorResourcesContext(`Circular dependency was detected on ${configResource.value}`, { config: configResource }));
     }
 
@@ -51,28 +53,28 @@ export class ConfigConstructorPool<Instance> implements IConfigConstructorPool<I
     }
 
     // Instantiate only once
-    if (!(configResource.value in this.instances)) {
+    if (!(configResourceId in this.instances)) {
       // The blacklist avoids infinite recursion for self-referencing configs
       const subBlackList: Record<string, boolean> = { ...resourceBlacklist };
-      subBlackList[configResource.value] = true;
+      subBlackList[configResourceId] = true;
 
       // Prepare instance parameters
       let rawConfig: Resource;
       try {
         rawConfig = this.getRawConfig(configResource);
       } catch (syncError: unknown) {
-        this.instances[configResource.value] = Promise.reject(syncError);
-        return this.instances[configResource.value];
+        this.instances[configResourceId] = Promise.reject(syncError);
+        return this.instances[configResourceId];
       }
       const subSettings = { ...settings, resourceBlacklist: subBlackList };
 
       // Invoke instance creation
-      this.instances[configResource.value] = this.configConstructor.createInstance(
+      this.instances[configResourceId] = this.configConstructor.createInstance(
         rawConfig,
         subSettings,
       );
     }
-    return this.instances[configResource.value];
+    return this.instances[configResourceId];
   }
 
   /**
@@ -127,6 +129,13 @@ export class ConfigConstructorPool<Instance> implements IConfigConstructorPool<I
     if (config.property[field].type !== type) {
       throw new ErrorResourcesContext(`Invalid config: ${field} "${config.property[field].value}" must be a ${type}, but got ${config.property[field].type}`, { config });
     }
+  }
+
+  /**
+   * Returns the instance registry.
+   */
+  public getInstanceRegistry(): Record<string, Promise<any>> {
+    return this.instances;
   }
 }
 

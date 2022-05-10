@@ -16,4 +16,10 @@ export interface IConfigConstructorPool<Instance> {
     settings: IConstructionSettings,
   ) => Promise<Instance>;
 
+  /**
+   * Return the instance regsitry.
+   * This is a hash from registered id to a Promise of the Instance.
+   */
+  getInstanceRegistry: () => Record<string, Promise<Instance>>;
+
 }

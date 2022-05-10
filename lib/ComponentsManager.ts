@@ -1,5 +1,6 @@
 import * as fs from 'fs';
 import type { Resource, RdfObjectLoader } from 'rdf-object';
+import { stringToTerm } from 'rdf-string';
 import type { Logger } from 'winston';
 import type { IConfigConstructorPool } from './construction/IConfigConstructorPool';
 import type { IConstructionSettings } from './construction/IConstructionSettings';
@@ -59,6 +60,16 @@ export class ComponentsManager<Instance> {
     } catch (error: unknown) {
       throw this.generateErrorLog(error);
     }
+  }
+
+  /**
+   * Retrieve a list of all instantiated Resources.
+   */
+  public getInstantiatedResources(): Resource[] {
+    const instances = this.configConstructorPool.getInstanceRegistry();
+    return Object.keys(instances)
+      .map(key => stringToTerm(key))
+      .map(term => this.configRegistry.getInstantiatedResource(term));
   }
 
   /**

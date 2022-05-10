@@ -1,5 +1,6 @@
 import * as fs from 'fs';
 import { RdfObjectLoader } from 'rdf-object';
+import { stringToTerm } from 'rdf-string';
 import type { Logger } from 'winston';
 import { ConfigRegistry } from '../../../lib/loading/ConfigRegistry';
 import type { IModuleState } from '../../../lib/loading/ModuleStateBuilder';
@@ -60,6 +61,14 @@ describe('ConfigRegistry', () => {
           ],
         },
       });
+    });
+  });
+
+  describe('getInstantiatedResource', () => {
+    it('can return an instantiated Resource', async() => {
+      await configRegistry.register(`${__dirname}/../../assets/config.jsonld`);
+      expect(configRegistry.getInstantiatedResource(stringToTerm('http://example.org/myconfig')).property.type.value)
+        .toBe('http://example.org/HelloWorldModule#SayHelloComponent');
     });
   });
 });
