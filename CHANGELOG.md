@@ -1,6 +1,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v5.1.0"></a>
+## [v5.1.0](https://github.com/LinkedSoftwareDependencies/Components.js/compare/v5.0.0...v5.1.0) - 2022-05-10
+
+### Added
+* [Expose instantiated resources from ComponentsManager](https://github.com/LinkedSoftwareDependencies/Components.js/commit/19c8d669a081dc413091a413d1c42c71b691cfbc)
+
 <a name="v5.0.1"></a>
 ## [v5.0.1](https://github.com/LinkedSoftwareDependencies/Components.js/compare/v5.0.0...v5.0.1) - 2022-03-02
 
