@@ -1,0 +1,58 @@
+{
+  "@context": [
+    "https://linkedsoftwaredependencies.org/bundles/npm/componentsjs/^4.0.0/components/context.jsonld",
+    {
+      "hello": "http://example.org/hello/",
+      "ex": "http://example.org/"
+    }
+  ],
+  "@graph": [
+    {
+      "@id": "ex:HelloWorldModule",
+      "@type": "Module",
+      "requireName": "helloworld",
+      "components": [
+        {
+          "@id": "ex:HelloWorldModule#SayHelloComponent2",
+          "@type": "Class",
+          "requireElement": "Hello",
+          "parameters": [
+            {
+              "@id": "hello:key",
+              "range": "xsd:string"
+            },
+            {
+              "@id": "hello:value",
+              "range": {
+                "@type": "ParameterRangeUnion",
+                "parameterRangeElements": [
+                  {
+                    "@type": "ParameterRangeWildcard"
+                  },
+                  {
+                    "@type": "ParameterRangeUndefined"
+                  }
+                ]
+              }
+            }
+          ],
+          "constructorArguments": [
+  {
+              "@id": "ex:HelloWorldModule#SayHelloComponent2_constructorArgumentsObject",
+              "fields": [
+                {
+                  "keyRaw": "key",
+                  "value": "hello:key"
+                },
+                {
+                  "keyRaw": "value",
+                  "value": "hello:value"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
