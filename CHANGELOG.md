@@ -1,6 +1,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v5.2.0"></a>
+## [v5.2.0](https://github.com/LinkedSoftwareDependencies/Components.js/compare/v5.1.0...v5.2.0) - 2022-05-20
+
+### Added
+* [Preserve literal values for params with type unknown](https://github.com/LinkedSoftwareDependencies/Components.js/commit/ad52da8afc2340ddc63e8a45c4d560e11ecb3ceb)
+
 <a name="v5.1.0"></a>
 ## [v5.1.0](https://github.com/LinkedSoftwareDependencies/Components.js/compare/v5.0.0...v5.1.0) - 2022-05-10
 
