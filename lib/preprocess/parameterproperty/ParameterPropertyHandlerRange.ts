@@ -1,3 +1,4 @@
+import type { NamedNode } from '@rdfjs/types';
 import type { RdfObjectLoader, Resource } from 'rdf-object';
 import { IRIS_RDF, IRIS_XSD } from '../../rdf/Iris';
 import type { IErrorContext } from '../../util/ErrorResourcesContext';
@@ -78,6 +79,11 @@ export class ParameterPropertyHandlerRange implements IParameterPropertyHandler 
     }
 
     if (type.isA('ParameterRangeWildcard')) {
+      if (value && value.term.termType === 'Literal') {
+        // Get datatype of the configured value
+        const configuredDataType = value.term.datatype;
+        return this.interpretValueAsType(value, configuredDataType, errorContext, genericsContext).value;
+      }
       return;
     }
 
@@ -92,66 +98,10 @@ export class ParameterPropertyHandlerRange implements IParameterPropertyHandler 
 
     // Handle literal values
     if (value && value.type === 'Literal') {
-      let parsed;
-      switch (type.value) {
-        case IRIS_XSD.string:
-          return;
-        case IRIS_XSD.boolean:
-          if (value.value === 'true') {
-            (<any>value.term).valueRaw = true;
-          } else if (value.value === 'false') {
-            (<any>value.term).valueRaw = false;
-          } else {
-            return {
-              description: 'value must either be "true" or "false"',
-              context: errorContext,
-            };
-          }
-          return;
-        case IRIS_XSD.integer:
-        case IRIS_XSD.number:
-        case IRIS_XSD.int:
-        case IRIS_XSD.byte:
-        case IRIS_XSD.long:
-          parsed = Number.parseInt(value.value, 10);
-          if (Number.isNaN(parsed)) {
-            return {
-              description: `value is not a number`,
-              context: errorContext,
-            };
-          }
-          // ParseInt also parses floats to ints!
-          if (String(parsed) !== value.value) {
-            return {
-              description: `value can not be a float`,
-              context: errorContext,
-            };
-          }
-          (<any>value.term).valueRaw = parsed;
-          return;
-        case IRIS_XSD.float:
-        case IRIS_XSD.decimal:
-        case IRIS_XSD.double:
-          parsed = Number.parseFloat(value.value);
-          if (Number.isNaN(parsed)) {
-            return {
-              description: `value is not a number`,
-              context: errorContext,
-            };
-          }
-          (<any>value.term).valueRaw = parsed;
-          return;
-        case IRIS_RDF.JSON:
-          try {
-            parsed = JSON.parse(value.value);
-            (<any>value.term).valueRaw = parsed;
-          } catch (error: unknown) {
-            return {
-              description: `JSON parse exception: ${(<Error> error).message}`,
-              context: errorContext,
-            };
-          }
-          return;
+      const result = this.interpretValueAsType(value, type, errorContext, genericsContext);
+      if (result.match) {
+        // Stop processing and return (with a possible IParamValueConflict) if a match was found.
+        return result.value;
       }
     }
 
@@ -431,6 +381,96 @@ export class ParameterPropertyHandlerRange implements IParameterPropertyHandler 
     return hasTypeConflict || { description: 'unknown parameter type', context: errorContext };
   }
 
+  /**
+   * Utility function for handling Literals.
+   * If the provided value represents a valid Literal, the `valueRaw` field will be set.
+   */
+  private interpretValueAsType(
+    value: Resource,
+    type: Resource | NamedNode,
+    errorContext: IErrorContext,
+    genericsContext: GenericsContext,
+  ): ILiteralAsTypeInterpretationResult {
+    let parsed;
+    switch (type.value) {
+      case IRIS_XSD.string:
+        return { match: true };
+      case IRIS_XSD.boolean:
+        if (value.value === 'true') {
+          (<any>value.term).valueRaw = true;
+        } else if (value.value === 'false') {
+          (<any>value.term).valueRaw = false;
+        } else {
+          return {
+            match: true,
+            value: {
+              description: 'value must either be "true" or "false"',
+              context: errorContext,
+            },
+          };
+        }
+        return { match: true };
+      case IRIS_XSD.integer:
+      case IRIS_XSD.number:
+      case IRIS_XSD.int:
+      case IRIS_XSD.byte:
+      case IRIS_XSD.long:
+        parsed = Number.parseInt(value.value, 10);
+        if (Number.isNaN(parsed)) {
+          return {
+            match: true,
+            value: {
+              description: `value is not a number`,
+              context: errorContext,
+            },
+          };
+        }
+        // ParseInt also parses floats to ints!
+        if (String(parsed) !== value.value) {
+          return {
+            match: true,
+            value: {
+              description: `value can not be a float`,
+              context: errorContext,
+            },
+          };
+        }
+        (<any>value.term).valueRaw = parsed;
+        return { match: true };
+      case IRIS_XSD.float:
+      case IRIS_XSD.decimal:
+      case IRIS_XSD.double:
+        parsed = Number.parseFloat(value.value);
+        if (Number.isNaN(parsed)) {
+          return {
+            match: true,
+            value: {
+              description: `value is not a number`,
+              context: errorContext,
+            },
+          };
+        }
+        (<any>value.term).valueRaw = parsed;
+        return { match: true };
+      case IRIS_RDF.JSON:
+        try {
+          parsed = JSON.parse(value.value);
+          (<any>value.term).valueRaw = parsed;
+        } catch (error: unknown) {
+          return {
+            match: true,
+            value: {
+              description: `JSON parse exception: ${(<Error> error).message}`,
+              context: errorContext,
+            },
+          };
+        }
+        return { match: true };
+      default:
+        return { match: false };
+    }
+  }
+
   public static throwIncorrectTypeError(
     value: Resource | undefined,
     parameter: Resource,
@@ -658,4 +698,15 @@ export interface IParamValueConflict {
   description: string;
   context: IErrorContext;
   causes?: IParamValueConflict[];
+}
+
+/**
+ * Represents the result of an interpretValuesAsType operation.
+ */
+export interface ILiteralAsTypeInterpretationResult {
+  /**
+   * Value is true if a matching literal type was found.
+   */
+  match: boolean;
+  value?: IParamValueConflict;
 }

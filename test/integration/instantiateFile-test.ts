@@ -831,4 +831,52 @@ describe('construction with component configs as files', () => {
       expect(val2).toEqual('bla');
     });
   });
+
+  describe(`for a component using params of type unknown`, () => {
+    beforeEach(async() => {
+      manager = await ComponentsManager.build({
+        mainModulePath: __dirname,
+        moduleState,
+        async moduleLoader(registry) {
+          await registry.registerModule(Path.join(__dirname, '../assets/module-paramranges-unknown.jsonld'));
+        },
+      });
+    });
+
+    it('should parse numerical instantations of the unknown parameter as number.', async() => {
+      await manager.configRegistry
+        .register(Path.join(__dirname, '../assets/config-paramranges-unknown-number.jsonld'));
+      manager.logger.error = jest.fn();
+
+      const run1 = await manager.instantiate('http://example.org/myconfig4');
+      expect(run1).toBeInstanceOf(Hello);
+      const value = run1._params[0].value;
+      expect(typeof value).toBe('number');
+      expect(value).toBe(456);
+    });
+
+    it('should parse boolean instantations of the unknown parameter as boolean.', async() => {
+      await manager.configRegistry
+        .register(Path.join(__dirname, '../assets/config-paramranges-unknown-boolean.jsonld'));
+      manager.logger.error = jest.fn();
+
+      const run1 = await manager.instantiate('http://example.org/myconfig4');
+      expect(run1).toBeInstanceOf(Hello);
+      const value = run1._params[0].value;
+      expect(typeof value).toBe('boolean');
+      expect(value).toBeTruthy();
+    });
+
+    it('should parse string instantations of the unknown parameter, containing a number, as string.', async() => {
+      await manager.configRegistry
+        .register(Path.join(__dirname, '../assets/config-paramranges-unknown-string.jsonld'));
+      manager.logger.error = jest.fn();
+
+      const run1 = await manager.instantiate('http://example.org/myconfig4');
+      expect(run1).toBeInstanceOf(Hello);
+      const value = run1._params[0].value;
+      expect(typeof value).toBe('string');
+      expect(value).toBe('456');
+    });
+  });
 });
