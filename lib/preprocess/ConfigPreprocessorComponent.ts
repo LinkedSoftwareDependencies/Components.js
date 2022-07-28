@@ -3,7 +3,7 @@ import type { Logger } from 'winston';
 import { IRIS_OWL } from '../rdf/Iris';
 import { ErrorResourcesContext } from '../util/ErrorResourcesContext';
 import { GenericsContext } from './GenericsContext';
-import type { IConfigPreprocessor } from './IConfigPreprocessor';
+import type { IConfigPreprocessorTransform, IConfigPreprocessor } from './IConfigPreprocessor';
 import type { ParameterHandler } from './ParameterHandler';
 
 /**
@@ -74,7 +74,8 @@ export class ConfigPreprocessorComponent implements IConfigPreprocessor<ICompone
     }
   }
 
-  public transform(config: Resource, handleResponse: IComponentConfigPreprocessorHandleResponse): Resource {
+  public transform(config: Resource, handleResponse: IComponentConfigPreprocessorHandleResponse):
+  IConfigPreprocessorTransform {
     // Inherit parameter values
     this.inheritParameterValues(config, handleResponse.component);
 
@@ -105,7 +106,7 @@ export class ConfigPreprocessorComponent implements IConfigPreprocessor<ICompone
     // Validate the input config
     this.validateConfig(config, handleResponse);
 
-    return configRaw;
+    return { rawConfig: configRaw, finishTransformation: true };
   }
 
   protected createGenericsContext(
@@ -300,6 +301,10 @@ export class ConfigPreprocessorComponent implements IConfigPreprocessor<ICompone
         }
       }
     }
+  }
+
+  public reset(): void {
+    // There is nothing to reset here
   }
 }
 

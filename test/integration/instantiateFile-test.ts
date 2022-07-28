@@ -879,4 +879,65 @@ describe('construction with component configs as files', () => {
       expect(value).toBe('456');
     });
   });
+
+  describe(`for a component using the override predicate`, () => {
+    beforeEach(async() => {
+      manager = await ComponentsManager.build({
+        mainModulePath: __dirname,
+        moduleState,
+        async moduleLoader(registry) {
+          await registry.registerModule(Path.join(__dirname, '../assets/module.jsonld'));
+        },
+      });
+    });
+
+    it('overrides the values specified', async() => {
+      await manager.configRegistry.register(Path.join(__dirname, '../assets/config-override.jsonld'));
+
+      const run = await manager.instantiate('http://example.org/myHelloWorldWithOverride');
+      expect(run).toBeInstanceOf(Hello);
+      expect(run._params).toEqual([{
+        'http://example.org/hello/hello': 'EVEN BETTER WORLD',
+        'http://example.org/hello/say': 'HI',
+      }]);
+    });
+
+    it('overrides values indepentent of the component order', async() => {
+      await manager.configRegistry.register(Path.join(__dirname, '../assets/config-override-reverse.jsonld'));
+
+      const run = await manager.instantiate('http://example.org/myHelloWorldWithOverride');
+      expect(run).toBeInstanceOf(Hello);
+      expect(run._params).toEqual([{
+        'http://example.org/hello/hello': 'EVEN BETTER WORLD',
+        'http://example.org/hello/say': 'HI',
+      }]);
+    });
+
+    it('can reset the internal state to add more overrides.', async(): Promise<void> => {
+      await manager.configRegistry.register(Path.join(__dirname, '../assets/config-override.jsonld'));
+
+      await manager.instantiate('http://example.org/myHelloWorldWithOverride');
+      manager.configConstructorPool.reset();
+      await manager.configRegistry.register(Path.join(__dirname, '../assets/config-override-additional.jsonld'));
+      const run = await manager.instantiate('http://example.org/myHelloWorldWithOverride');
+
+      expect(run._params).toEqual([{
+        'http://example.org/hello/hello': 'ADDITIONAL WORLD',
+        'http://example.org/hello/say': 'HI',
+      }]);
+    });
+
+    it('fails to add new overrides if no reset was done.', async(): Promise<void> => {
+      await manager.configRegistry.register(Path.join(__dirname, '../assets/config-override.jsonld'));
+
+      await manager.instantiate('http://example.org/myHelloWorldWithOverride');
+      await manager.configRegistry.register(Path.join(__dirname, '../assets/config-override-additional.jsonld'));
+      const run = await manager.instantiate('http://example.org/myHelloWorldWithOverride');
+
+      expect(run._params).toEqual([{
+        'http://example.org/hello/hello': 'EVEN BETTER WORLD',
+        'http://example.org/hello/say': 'HI',
+      }]);
+    });
+  });
 });

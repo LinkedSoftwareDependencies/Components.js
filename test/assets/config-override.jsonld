@@ -1,0 +1,31 @@
+{
+  "@context": {
+    "@vocab": "https://linkedsoftwaredependencies.org/vocabularies/object-oriented#",
+    "ex": "http://example.org/",
+    "hello": "http://example.org/hello/"
+  },
+  "@graph": [
+    {
+      "@id": "ex:myHelloWorldWithOverride",
+      "@type": "ex:HelloWorldModule#SayHelloComponent",
+      "hello:hello": "WORLD",
+      "hello:say": "HI"
+    },
+    {
+      "@id": "ex:myObjectOverride",
+      "@type": "Override",
+      "overrideInstance": { "@id": "ex:myHelloWorldWithOverride" },
+      "overrideParameters": {
+        "hello:hello": "BETTER WORLD"
+      }
+    },
+    {
+      "@id": "ex:myObjectOverrideFinal",
+      "@type": "Override",
+      "overrideInstance": { "@id": "ex:myObjectOverride" },
+      "overrideParameters": {
+        "hello:hello": "EVEN BETTER WORLD"
+      }
+    }
+  ]
+}

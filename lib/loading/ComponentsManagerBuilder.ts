@@ -10,6 +10,7 @@ import { ConstructionStrategyCommonJs } from '../construction/strategy/Construct
 import type { IConstructionStrategy } from '../construction/strategy/IConstructionStrategy';
 import { ConfigPreprocessorComponent } from '../preprocess/ConfigPreprocessorComponent';
 import { ConfigPreprocessorComponentMapped } from '../preprocess/ConfigPreprocessorComponentMapped';
+import { ConfigPreprocessorOverride } from '../preprocess/ConfigPreprocessorOverride';
 import { ParameterHandler } from '../preprocess/ParameterHandler';
 import type { LogLevel } from '../util/LogLevel';
 import { ComponentRegistry } from './ComponentRegistry';
@@ -125,6 +126,11 @@ export class ComponentsManagerBuilder<Instance = any> {
     const configConstructorPool: IConfigConstructorPool<Instance> = new ConfigConstructorPool({
       objectLoader,
       configPreprocessors: [
+        new ConfigPreprocessorOverride({
+          objectLoader,
+          componentResources,
+          logger: this.logger,
+        }),
         new ConfigPreprocessorComponentMapped({
           objectLoader,
           runTypeConfigs,

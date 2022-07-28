@@ -313,6 +313,19 @@ describe('ConfigConstructorPool', () => {
         ]);
         expect(instance1).toBe(instance2);
       });
+
+      it('should return different instances by equal id after reset', async() => {
+        const instance1 = await pool.instantiate(objectLoader.createCompactedResource({
+          '@id': 'ex:myComponentInstance1',
+          types: 'ex:Component',
+        }), creationSettings);
+        pool.reset();
+        const instance2 = await pool.instantiate(objectLoader.createCompactedResource({
+          '@id': 'ex:myComponentInstance1',
+          types: 'ex:Component',
+        }), creationSettings);
+        expect(instance1).not.toBe(instance2);
+      });
     });
   });
 
