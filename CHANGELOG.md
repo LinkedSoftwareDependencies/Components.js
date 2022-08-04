@@ -1,6 +1,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v5.3.0"></a>
+## [v5.3.0](https://github.com/LinkedSoftwareDependencies/Components.js/compare/v5.2.0...v5.3.0) - 2022-08-04
+
+### Added
+* [Add support for overriding values](https://github.com/LinkedSoftwareDependencies/Components.js/commit/ceeea28258e4471baaa60255c892a23f866b694c)
+
 <a name="v5.2.0"></a>
 ## [v5.2.0](https://github.com/LinkedSoftwareDependencies/Components.js/compare/v5.1.0...v5.2.0) - 2022-05-20
 
