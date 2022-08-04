@@ -440,8 +440,9 @@ describe('ConfigPreprocessorComponent', () => {
   describe('transform', () => {
     function expectTransformOutput(config: Resource, expectedResource: Resource) {
       const hr = <IComponentConfigPreprocessorHandleResponse> preprocessor.canHandle(config);
-      const ret = preprocessor.transform(config, hr);
-      expect(expectedResource.toQuads()).toBeRdfIsomorphic(ret.toQuads());
+      const { finishTransformation, rawConfig } = preprocessor.transform(config, hr);
+      expect(expectedResource.toQuads()).toBeRdfIsomorphic(rawConfig.toQuads());
+      expect(finishTransformation).toBe(true);
     }
 
     it('should handle no parameters', () => {

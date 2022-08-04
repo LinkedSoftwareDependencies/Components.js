@@ -22,4 +22,9 @@ export interface IConfigConstructorPool<Instance> {
    */
   getInstanceRegistry: () => Record<string, Promise<Instance>>;
 
+  /**
+   * Resets any internal state to what it originally was.
+   * Used when new components are added inbetween 2 instantiations.
+   */
+  reset: () => void;
 }

@@ -9,6 +9,7 @@ import { ComponentsManagerBuilder } from '../../../lib/loading/ComponentsManager
 import { ConfigRegistry } from '../../../lib/loading/ConfigRegistry';
 import { ConfigPreprocessorComponent } from '../../../lib/preprocess/ConfigPreprocessorComponent';
 import { ConfigPreprocessorComponentMapped } from '../../../lib/preprocess/ConfigPreprocessorComponentMapped';
+import { ConfigPreprocessorOverride } from '../../../lib/preprocess/ConfigPreprocessorOverride';
 
 const mainModulePath = __dirname;
 jest.mock('winston', () => ({
@@ -69,9 +70,10 @@ describe('ComponentsManagerBuilder', () => {
     expect(mgr.dumpErrorState).toBe(true);
     expect(mgr.configConstructorPool).toBeInstanceOf(ConfigConstructorPool);
     expect((<any> mgr.configConstructorPool).constructionStrategy).toBeInstanceOf(ConstructionStrategyCommonJs);
-    expect((<any> mgr.configConstructorPool).configPreprocessors.length).toBe(2);
-    expect((<any> mgr.configConstructorPool).configPreprocessors[0]).toBeInstanceOf(ConfigPreprocessorComponentMapped);
-    expect((<any> mgr.configConstructorPool).configPreprocessors[1]).toBeInstanceOf(ConfigPreprocessorComponent);
+    expect((<any> mgr.configConstructorPool).configPreprocessors.length).toBe(3);
+    expect((<any> mgr.configConstructorPool).configPreprocessors[0]).toBeInstanceOf(ConfigPreprocessorOverride);
+    expect((<any> mgr.configConstructorPool).configPreprocessors[1]).toBeInstanceOf(ConfigPreprocessorComponentMapped);
+    expect((<any> mgr.configConstructorPool).configPreprocessors[2]).toBeInstanceOf(ConfigPreprocessorComponent);
     expect(mgr.logger).toBeTruthy();
     expect(createLogger).toHaveBeenCalledWith({
       level: 'warn',
@@ -95,9 +97,10 @@ describe('ComponentsManagerBuilder', () => {
     expect(mgr.dumpErrorState).toBe(true);
     expect(mgr.configConstructorPool).toBeInstanceOf(ConfigConstructorPool);
     expect((<any> mgr.configConstructorPool).constructionStrategy).toBeInstanceOf(ConstructionStrategyCommonJs);
-    expect((<any> mgr.configConstructorPool).configPreprocessors.length).toBe(2);
-    expect((<any> mgr.configConstructorPool).configPreprocessors[0]).toBeInstanceOf(ConfigPreprocessorComponentMapped);
-    expect((<any> mgr.configConstructorPool).configPreprocessors[1]).toBeInstanceOf(ConfigPreprocessorComponent);
+    expect((<any> mgr.configConstructorPool).configPreprocessors.length).toBe(3);
+    expect((<any> mgr.configConstructorPool).configPreprocessors[0]).toBeInstanceOf(ConfigPreprocessorOverride);
+    expect((<any> mgr.configConstructorPool).configPreprocessors[1]).toBeInstanceOf(ConfigPreprocessorComponentMapped);
+    expect((<any> mgr.configConstructorPool).configPreprocessors[2]).toBeInstanceOf(ConfigPreprocessorComponent);
     expect(mgr.logger).toBeTruthy();
     expect(createLogger).toHaveBeenCalledWith({
       level: 'warn',
@@ -127,9 +130,10 @@ describe('ComponentsManagerBuilder', () => {
     expect(mgr.dumpErrorState).toBe(true);
     expect(mgr.configConstructorPool).toBeInstanceOf(ConfigConstructorPool);
     expect((<any> mgr.configConstructorPool).constructionStrategy).toBeInstanceOf(ConstructionStrategyCommonJs);
-    expect((<any> mgr.configConstructorPool).configPreprocessors.length).toBe(2);
-    expect((<any> mgr.configConstructorPool).configPreprocessors[0]).toBeInstanceOf(ConfigPreprocessorComponentMapped);
-    expect((<any> mgr.configConstructorPool).configPreprocessors[1]).toBeInstanceOf(ConfigPreprocessorComponent);
+    expect((<any> mgr.configConstructorPool).configPreprocessors.length).toBe(3);
+    expect((<any> mgr.configConstructorPool).configPreprocessors[0]).toBeInstanceOf(ConfigPreprocessorOverride);
+    expect((<any> mgr.configConstructorPool).configPreprocessors[1]).toBeInstanceOf(ConfigPreprocessorComponentMapped);
+    expect((<any> mgr.configConstructorPool).configPreprocessors[2]).toBeInstanceOf(ConfigPreprocessorComponent);
     expect(mgr.logger).toBeTruthy();
     expect(createLogger).toHaveBeenCalledWith({
       level: 'warn',
@@ -157,9 +161,10 @@ describe('ComponentsManagerBuilder', () => {
     expect(mgr.dumpErrorState).toBe(true);
     expect(mgr.configConstructorPool).toBeInstanceOf(ConfigConstructorPool);
     expect((<any> mgr.configConstructorPool).constructionStrategy).toBeInstanceOf(ConstructionStrategyCommonJs);
-    expect((<any> mgr.configConstructorPool).configPreprocessors.length).toBe(2);
-    expect((<any> mgr.configConstructorPool).configPreprocessors[0]).toBeInstanceOf(ConfigPreprocessorComponentMapped);
-    expect((<any> mgr.configConstructorPool).configPreprocessors[1]).toBeInstanceOf(ConfigPreprocessorComponent);
+    expect((<any> mgr.configConstructorPool).configPreprocessors.length).toBe(3);
+    expect((<any> mgr.configConstructorPool).configPreprocessors[0]).toBeInstanceOf(ConfigPreprocessorOverride);
+    expect((<any> mgr.configConstructorPool).configPreprocessors[1]).toBeInstanceOf(ConfigPreprocessorComponentMapped);
+    expect((<any> mgr.configConstructorPool).configPreprocessors[2]).toBeInstanceOf(ConfigPreprocessorComponent);
     expect(mgr.logger).toBeTruthy();
     expect(createLogger).toHaveBeenCalledWith({
       level: 'warn',
@@ -183,9 +188,10 @@ describe('ComponentsManagerBuilder', () => {
     expect(mgr.dumpErrorState).toBe(true);
     expect(mgr.configConstructorPool).toBeInstanceOf(ConfigConstructorPool);
     expect((<any> mgr.configConstructorPool).constructionStrategy).toBe(constructionStrategy);
-    expect((<any> mgr.configConstructorPool).configPreprocessors.length).toBe(2);
-    expect((<any> mgr.configConstructorPool).configPreprocessors[0]).toBeInstanceOf(ConfigPreprocessorComponentMapped);
-    expect((<any> mgr.configConstructorPool).configPreprocessors[1]).toBeInstanceOf(ConfigPreprocessorComponent);
+    expect((<any> mgr.configConstructorPool).configPreprocessors.length).toBe(3);
+    expect((<any> mgr.configConstructorPool).configPreprocessors[0]).toBeInstanceOf(ConfigPreprocessorOverride);
+    expect((<any> mgr.configConstructorPool).configPreprocessors[1]).toBeInstanceOf(ConfigPreprocessorComponentMapped);
+    expect((<any> mgr.configConstructorPool).configPreprocessors[2]).toBeInstanceOf(ConfigPreprocessorComponent);
     expect(mgr.logger).toBeTruthy();
     expect(createLogger).toHaveBeenCalledWith({
       level: 'warn',
@@ -208,9 +214,10 @@ describe('ComponentsManagerBuilder', () => {
     expect(mgr.dumpErrorState).toBe(true);
     expect(mgr.configConstructorPool).toBeInstanceOf(ConfigConstructorPool);
     expect((<any> mgr.configConstructorPool).constructionStrategy).toBeInstanceOf(ConstructionStrategyCommonJs);
-    expect((<any> mgr.configConstructorPool).configPreprocessors.length).toBe(2);
-    expect((<any> mgr.configConstructorPool).configPreprocessors[0]).toBeInstanceOf(ConfigPreprocessorComponentMapped);
-    expect((<any> mgr.configConstructorPool).configPreprocessors[1]).toBeInstanceOf(ConfigPreprocessorComponent);
+    expect((<any> mgr.configConstructorPool).configPreprocessors.length).toBe(3);
+    expect((<any> mgr.configConstructorPool).configPreprocessors[0]).toBeInstanceOf(ConfigPreprocessorOverride);
+    expect((<any> mgr.configConstructorPool).configPreprocessors[1]).toBeInstanceOf(ConfigPreprocessorComponentMapped);
+    expect((<any> mgr.configConstructorPool).configPreprocessors[2]).toBeInstanceOf(ConfigPreprocessorComponent);
     expect(mgr.logger).toBeTruthy();
     expect(createLogger).toHaveBeenCalledWith({
       level: 'warn',
@@ -233,9 +240,10 @@ describe('ComponentsManagerBuilder', () => {
     expect(mgr.dumpErrorState).toBe(false);
     expect(mgr.configConstructorPool).toBeInstanceOf(ConfigConstructorPool);
     expect((<any> mgr.configConstructorPool).constructionStrategy).toBeInstanceOf(ConstructionStrategyCommonJs);
-    expect((<any> mgr.configConstructorPool).configPreprocessors.length).toBe(2);
-    expect((<any> mgr.configConstructorPool).configPreprocessors[0]).toBeInstanceOf(ConfigPreprocessorComponentMapped);
-    expect((<any> mgr.configConstructorPool).configPreprocessors[1]).toBeInstanceOf(ConfigPreprocessorComponent);
+    expect((<any> mgr.configConstructorPool).configPreprocessors.length).toBe(3);
+    expect((<any> mgr.configConstructorPool).configPreprocessors[0]).toBeInstanceOf(ConfigPreprocessorOverride);
+    expect((<any> mgr.configConstructorPool).configPreprocessors[1]).toBeInstanceOf(ConfigPreprocessorComponentMapped);
+    expect((<any> mgr.configConstructorPool).configPreprocessors[2]).toBeInstanceOf(ConfigPreprocessorComponent);
     expect(mgr.logger).toBeTruthy();
     expect(createLogger).toHaveBeenCalledWith({
       level: 'warn',
@@ -258,9 +266,10 @@ describe('ComponentsManagerBuilder', () => {
     expect(mgr.dumpErrorState).toBe(true);
     expect(mgr.configConstructorPool).toBeInstanceOf(ConfigConstructorPool);
     expect((<any> mgr.configConstructorPool).constructionStrategy).toBeInstanceOf(ConstructionStrategyCommonJs);
-    expect((<any> mgr.configConstructorPool).configPreprocessors.length).toBe(2);
-    expect((<any> mgr.configConstructorPool).configPreprocessors[0]).toBeInstanceOf(ConfigPreprocessorComponentMapped);
-    expect((<any> mgr.configConstructorPool).configPreprocessors[1]).toBeInstanceOf(ConfigPreprocessorComponent);
+    expect((<any> mgr.configConstructorPool).configPreprocessors.length).toBe(3);
+    expect((<any> mgr.configConstructorPool).configPreprocessors[0]).toBeInstanceOf(ConfigPreprocessorOverride);
+    expect((<any> mgr.configConstructorPool).configPreprocessors[1]).toBeInstanceOf(ConfigPreprocessorComponentMapped);
+    expect((<any> mgr.configConstructorPool).configPreprocessors[2]).toBeInstanceOf(ConfigPreprocessorComponent);
     expect(mgr.logger).toBeTruthy();
     expect(createLogger).toBeCalledTimes(1);
     expect(createLogger).toHaveBeenCalledWith({
@@ -291,9 +300,10 @@ describe('ComponentsManagerBuilder', () => {
     expect(mgr.dumpErrorState).toBe(true);
     expect(mgr.configConstructorPool).toBeInstanceOf(ConfigConstructorPool);
     expect((<any> mgr.configConstructorPool).constructionStrategy).toBeInstanceOf(ConstructionStrategyCommonJs);
-    expect((<any> mgr.configConstructorPool).configPreprocessors.length).toBe(2);
-    expect((<any> mgr.configConstructorPool).configPreprocessors[0]).toBeInstanceOf(ConfigPreprocessorComponentMapped);
-    expect((<any> mgr.configConstructorPool).configPreprocessors[1]).toBeInstanceOf(ConfigPreprocessorComponent);
+    expect((<any> mgr.configConstructorPool).configPreprocessors.length).toBe(3);
+    expect((<any> mgr.configConstructorPool).configPreprocessors[0]).toBeInstanceOf(ConfigPreprocessorOverride);
+    expect((<any> mgr.configConstructorPool).configPreprocessors[1]).toBeInstanceOf(ConfigPreprocessorComponentMapped);
+    expect((<any> mgr.configConstructorPool).configPreprocessors[2]).toBeInstanceOf(ConfigPreprocessorComponent);
     expect(mgr.logger).toBeTruthy();
     expect(createLogger).toBeCalledTimes(1);
     expect(createLogger).toHaveBeenCalledWith({
@@ -317,9 +327,10 @@ describe('ComponentsManagerBuilder', () => {
     expect(mgr.dumpErrorState).toBe(true);
     expect(mgr.configConstructorPool).toBeInstanceOf(ConfigConstructorPool);
     expect((<any> mgr.configConstructorPool).constructionStrategy).toBeInstanceOf(ConstructionStrategyCommonJs);
-    expect((<any> mgr.configConstructorPool).configPreprocessors.length).toBe(2);
-    expect((<any> mgr.configConstructorPool).configPreprocessors[0]).toBeInstanceOf(ConfigPreprocessorComponentMapped);
-    expect((<any> mgr.configConstructorPool).configPreprocessors[1]).toBeInstanceOf(ConfigPreprocessorComponent);
+    expect((<any> mgr.configConstructorPool).configPreprocessors.length).toBe(3);
+    expect((<any> mgr.configConstructorPool).configPreprocessors[0]).toBeInstanceOf(ConfigPreprocessorOverride);
+    expect((<any> mgr.configConstructorPool).configPreprocessors[1]).toBeInstanceOf(ConfigPreprocessorComponentMapped);
+    expect((<any> mgr.configConstructorPool).configPreprocessors[2]).toBeInstanceOf(ConfigPreprocessorComponent);
     expect(mgr.logger).toBeTruthy();
     expect(createLogger).toBeCalledTimes(1);
     expect(createLogger).toHaveBeenCalledWith({

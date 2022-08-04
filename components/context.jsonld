@@ -77,6 +77,15 @@
     "undefined": {
       "@id": "oo:isUndefined"
     },
+    "Override": {
+      "@id": "oo:Override"
+    },
+    "overrideInstance": {
+      "@id": "oo:overrideInstance"
+    },
+    "overrideParameters": {
+      "@id": "oo:overrideParameters"
+    },
     "ParameterRange": {
       "@id": "oo:ParameterRange"
     },

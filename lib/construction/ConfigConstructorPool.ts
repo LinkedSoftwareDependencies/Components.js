@@ -21,7 +21,7 @@ export class ConfigConstructorPool<Instance> implements IConfigConstructorPool<I
   private readonly configConstructor: ConfigConstructor<Instance>;
   private readonly constructionStrategy: IConstructionStrategy<Instance>;
 
-  private readonly instances: Record<string, Promise<any>> = {};
+  private instances: Record<string, Promise<any>> = {};
 
   public constructor(options: IInstancePoolOptions<Instance>) {
     this.configPreprocessors = options.configPreprocessors;
@@ -89,9 +89,12 @@ export class ConfigConstructorPool<Instance> implements IConfigConstructorPool<I
     for (const rawConfigFactory of this.configPreprocessors) {
       const handleResponse = rawConfigFactory.canHandle(config);
       if (handleResponse) {
-        const rawConfig = rawConfigFactory.transform(config, handleResponse);
-        this.validateRawConfig(rawConfig);
-        return rawConfig;
+        const { rawConfig, finishTransformation } = rawConfigFactory.transform(config, handleResponse);
+        if (finishTransformation) {
+          this.validateRawConfig(rawConfig);
+          return rawConfig;
+        }
+        config = rawConfig;
       }
     }
 
@@ -136,6 +139,16 @@ export class ConfigConstructorPool<Instance> implements IConfigConstructorPool<I
    */
   public getInstanceRegistry(): Record<string, Promise<any>> {
     return this.instances;
+  }
+
+  /**
+   * Resets all preprocessors and clears the cached instances.
+   */
+  public reset(): void {
+    this.instances = {};
+    for (const preprocessor of this.configPreprocessors) {
+      preprocessor.reset();
+    }
   }
 }
 
