@@ -8,6 +8,9 @@ export const IRIS_OO = {
   ComponentInstance: PREFIX_OO('ComponentInstance'),
   component: PREFIX_OO('component'),
   componentPath: PREFIX_OO('componentPath'),
+  Override: PREFIX_OO('Override'),
+  overrideInstance: PREFIX_OO('overrideInstance'),
+  overrideParameters: PREFIX_OO('overrideParameters'),
   parameter: PREFIX_OO('parameter'),
 };
 

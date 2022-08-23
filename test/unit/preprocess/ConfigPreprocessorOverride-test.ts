@@ -5,6 +5,7 @@ import type { Resource } from 'rdf-object';
 import { RdfObjectLoader } from 'rdf-object';
 import type { Logger } from 'winston';
 import { ConfigPreprocessorOverride } from '../../../lib/preprocess/ConfigPreprocessorOverride';
+import { IRIS_OO } from '../../../lib/rdf/Iris';
 
 const DF = new DataFactory();
 
@@ -13,15 +14,12 @@ describe('ConfigPreprocessorOverride', () => {
   let componentResources: Record<string, Resource>;
   let logger: Logger;
   let preprocessor: ConfigPreprocessorOverride;
-  let overrideParameters: string;
 
   beforeEach(async() => {
     objectLoader = new RdfObjectLoader({
       context: JSON.parse(fs.readFileSync(`${__dirname}/../../../components/context.jsonld`, 'utf8')),
     });
     await objectLoader.context;
-
-    overrideParameters = objectLoader.contextResolved.expandTerm('oo:overrideParameters')!;
 
     componentResources = {
       'ex:Component': objectLoader.createCompactedResource({
@@ -31,6 +29,10 @@ describe('ConfigPreprocessorOverride', () => {
           { '@id': 'ex:param1' },
           { '@id': 'ex:param2' },
         ],
+      }),
+      'ex:ExtraType': objectLoader.createCompactedResource({
+        '@id': 'ex:ExtraType',
+        module: 'ex:Module',
       }),
     };
     logger = <any> {
@@ -64,7 +66,7 @@ describe('ConfigPreprocessorOverride', () => {
         'ex:param1': '"hello"',
       },
     });
-    const overrideProperties = overrideInstance.properties[overrideParameters][0].properties;
+    const overrideProperties = overrideInstance.properties[IRIS_OO.overrideParameters][0].properties;
     const override = preprocessor.canHandle(config);
     expect(override).not.toBeUndefined();
     expect(Object.keys(override!).length).toBe(1);
@@ -86,7 +88,7 @@ describe('ConfigPreprocessorOverride', () => {
         'ex:param1': '"updatedValue"',
       },
     });
-    const overrideProperties = overrideInstance.properties[overrideParameters][0].properties;
+    const overrideProperties = overrideInstance.properties[IRIS_OO.overrideParameters][0].properties;
     const override = preprocessor.canHandle(config)!;
     const { rawConfig, finishTransformation } = preprocessor.transform(config, override);
     expect(finishTransformation).toBe(false);
@@ -120,8 +122,8 @@ describe('ConfigPreprocessorOverride', () => {
         'ex:param1': '"value1-2"',
       },
     });
-    const override1Properties = overrideInstance1.properties[overrideParameters][0].properties;
-    const override2Properties = overrideInstance2.properties[overrideParameters][0].properties;
+    const override1Properties = overrideInstance1.properties[IRIS_OO.overrideParameters][0].properties;
+    const override2Properties = overrideInstance2.properties[IRIS_OO.overrideParameters][0].properties;
     const override = preprocessor.canHandle(config)!;
     const { rawConfig, finishTransformation } = preprocessor.transform(config, override);
     expect(finishTransformation).toBe(false);
@@ -145,7 +147,7 @@ describe('ConfigPreprocessorOverride', () => {
         'ex:param1': '"value1-1"',
       },
     });
-    const override1Properties = overrideInstance1.properties[overrideParameters][0].properties;
+    const override1Properties = overrideInstance1.properties[IRIS_OO.overrideParameters][0].properties;
     let override = preprocessor.canHandle(config);
     expect(override).not.toBeUndefined();
     expect(Object.keys(override!).length).toBe(1);
@@ -180,7 +182,7 @@ describe('ConfigPreprocessorOverride', () => {
         'ex:param1': '"value1-1"',
       },
     });
-    const override1Properties = overrideInstance1.properties[overrideParameters][0].properties;
+    const override1Properties = overrideInstance1.properties[IRIS_OO.overrideParameters][0].properties;
     let override = preprocessor.canHandle(config);
     expect(override).not.toBeUndefined();
     expect(Object.keys(override!).length).toBe(1);
@@ -194,7 +196,7 @@ describe('ConfigPreprocessorOverride', () => {
         'ex:param1': '"value1-2"',
       },
     });
-    const override2Properties = overrideInstance2.properties[overrideParameters][0].properties;
+    const override2Properties = overrideInstance2.properties[IRIS_OO.overrideParameters][0].properties;
     // `ex:myOverride2` is applied if we reset
     preprocessor.reset();
     override = preprocessor.canHandle(config);
@@ -306,6 +308,26 @@ describe('ConfigPreprocessorOverride', () => {
       },
     });
     expect(() => preprocessor.canHandle(config)).toThrow(`Found multiple types for override target ex:myComponentInstance of Override ex:myOverride`);
+  });
+
+  it('does not error if the multiple types are duplicates', () => {
+    const config = objectLoader.createCompactedResource({
+      '@id': 'ex:myComponentInstance',
+      types: [ 'ex:Component', 'ex:Component' ],
+    });
+    const overrideInstance = objectLoader.createCompactedResource({
+      '@id': 'ex:myOverride',
+      types: 'oo:Override',
+      overrideInstance: 'ex:myComponentInstance',
+      overrideParameters: {
+        'ex:param1': '"hello"',
+      },
+    });
+    const overrideProperties = overrideInstance.properties[IRIS_OO.overrideParameters][0].properties;
+    const override = preprocessor.canHandle(config);
+    expect(override).not.toBeUndefined();
+    expect(Object.keys(override!).length).toBe(1);
+    expect(override!['ex:param1']).toBe(overrideProperties['ex:param1'][0]);
   });
 
   it('errors if an Override has multiple overrideParameters objects', () => {

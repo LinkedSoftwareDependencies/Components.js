@@ -1,6 +1,7 @@
 import type { Resource, RdfObjectLoader } from 'rdf-object';
 import type { Logger } from 'winston';
 import { IRIS_OWL } from '../rdf/Iris';
+import { uniqueTypes } from '../rdf/ResourceUtil';
 import { ErrorResourcesContext } from '../util/ErrorResourcesContext';
 import { GenericsContext } from './GenericsContext';
 import type { IConfigPreprocessorTransform, IConfigPreprocessor } from './IConfigPreprocessor';
@@ -28,14 +29,7 @@ export class ConfigPreprocessorComponent implements IConfigPreprocessor<ICompone
   public canHandle(config: Resource): IComponentConfigPreprocessorHandleResponse | undefined {
     if (!config.property.requireName) {
       // Collect all component types from the resource
-      const componentTypesIndex: Record<string, Resource> = {};
-      for (const type of config.properties.types) {
-        const componentResource: Resource = this.componentResources[type.value];
-        if (componentResource) {
-          componentTypesIndex[componentResource.value] = componentResource;
-        }
-      }
-      const componentTypes: Resource[] = Object.values(componentTypesIndex);
+      const componentTypes: Resource[] = uniqueTypes(config, this.componentResources);
 
       // Require either exactly one component type, or a requireName
       if (componentTypes.length > 1) {
