@@ -1,6 +1,8 @@
 import type { Resource } from 'rdf-object';
 import type { RdfObjectLoader } from 'rdf-object/lib/RdfObjectLoader';
 import type { Logger } from 'winston';
+import { IRIS_OO } from '../rdf/Iris';
+import { uniqueTypes } from '../rdf/ResourceUtil';
 import { ErrorResourcesContext } from '../util/ErrorResourcesContext';
 import type { IConfigPreprocessor, IConfigPreprocessorTransform } from './IConfigPreprocessor';
 
@@ -80,11 +82,9 @@ export class ConfigPreprocessorOverride implements IConfigPreprocessor<Record<st
    * Finds all Override resources in the object loader and links them to their target resource.
    */
   protected * findOverrideTargets(): Iterable<{ override: Resource; target: Resource }> {
-    const overrideUri = this.objectLoader.contextResolved.expandTerm('oo:Override')!;
-    const overrideInstanceUri = this.objectLoader.contextResolved.expandTerm('oo:overrideInstance')!;
     for (const [ id, resource ] of Object.entries(this.objectLoader.resources)) {
-      if (resource.isA(overrideUri) && resource.value !== overrideUri) {
-        const targets = resource.properties[overrideInstanceUri];
+      if (resource.isA(IRIS_OO.Override) && resource.value !== IRIS_OO.Override) {
+        const targets = resource.properties[IRIS_OO.overrideInstance];
         if (!targets || targets.length === 0) {
           this.logger.warn(`Missing overrideInstance for ${id}. This Override will be ignored.`);
           continue;
@@ -186,9 +186,8 @@ export class ConfigPreprocessorOverride implements IConfigPreprocessor<Record<st
    * @param chain - The chain to find the target of.
    */
   protected getChainTarget(chain: Resource[]): { target: Resource; type: Resource } {
-    const rdfTypeUri = this.objectLoader.contextResolved.expandTerm('rdf:type')!;
     const target = chain[chain.length - 1];
-    const types = target.properties[rdfTypeUri];
+    const types = uniqueTypes(target, this.componentResources);
     if (!types || types.length === 0) {
       throw new ErrorResourcesContext(`Missing type for override target ${target.value} of Override ${chain[chain.length - 2].value}`, {
         target,
@@ -212,8 +211,7 @@ export class ConfigPreprocessorOverride implements IConfigPreprocessor<Record<st
    */
   protected filterOverrideObject(override: Resource, target: Resource, parameters: Resource[]):
   Record<string, Resource> {
-    const overrideParametersUri = this.objectLoader.contextResolved.expandTerm('oo:overrideParameters')!;
-    const overrideObjects = override.properties[overrideParametersUri];
+    const overrideObjects = override.properties[IRIS_OO.overrideParameters];
     if (!overrideObjects || overrideObjects.length === 0) {
       this.logger.warn(`No overrideParameters found for ${override.value}.`);
       return {};
