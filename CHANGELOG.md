@@ -1,6 +1,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v5.3.1"></a>
+## [v5.3.1](https://github.com/LinkedSoftwareDependencies/Components.js/compare/v5.3.0...v5.3.1) - 2022-08-23
+
+### Fixed
+* [Ignore duplicate types when overriding components](https://github.com/LinkedSoftwareDependencies/Components.js/commit/7f06aa15888d42071fb3441b3ef1ae71ad32b750)
+
 <a name="v5.3.0"></a>
 ## [v5.3.0](https://github.com/LinkedSoftwareDependencies/Components.js/compare/v5.2.0...v5.3.0) - 2022-08-04
 
