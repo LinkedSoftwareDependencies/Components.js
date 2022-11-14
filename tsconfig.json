@@ -13,7 +13,8 @@
     "preserveConstEnums": true,
     "sourceMap": true,
     "declaration": true,
-    "strict": true
+    "strict": true,
+    "resolveJsonModule": true
   },
   "include": [
     "index.ts",

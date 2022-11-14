@@ -11,3 +11,4 @@ index.js.map
 index.d.ts
 coverage
 .eslintcache
+components/*.json

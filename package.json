@@ -23,9 +23,13 @@
     "node": ">=8.0"
   },
   "scripts": {
-    "test": "jest ${1}",
+    "test": "npm run test:jest && npm run test:webpack",
+    "test:jest": "jest ${1}",
+    "test:webpack": "npm run test:webpack:node && npm run test:webpack:web",
+    "test:webpack:node": "webpack -c test/webpack/webpack.config.js && node test/webpack/build/test.min.js",
+    "test:webpack:web": "webpack -c test/webpack/webpack.config-web.js && node test/webpack/build-web/test.min.js",
     "test-watch": "jest ${1} --watch",
-    "build": "tsc && chmod +x ./bin/compile-config.js",
+    "build": "scopy ./components/context.jsonld ./components/context.json && tsc && chmod +x ./bin/compile-config.js",
     "build-watch": "tsc --watch",
     "lint": "eslint . --ext .ts --cache",
     "validate": "npm ls",
@@ -51,6 +55,8 @@
   "devDependencies": {
     "@rubensworks/eslint-config": "^1.0.1",
     "@types/jest": "^27.0.0",
+    "@types/stream-to-array": "^2.3.0",
+    "@types/streamify-string": "^1.0.0",
     "@typescript-eslint/eslint-plugin": "^5.0.0",
     "@typescript-eslint/parser": "^5.0.0",
     "eslint": "^7.12.1",
@@ -65,10 +71,16 @@
     "jshint": "^2.1.10",
     "manual-git-changelog": "^1.0.1",
     "n3": "^1.11.1",
+    "node-polyfill-webpack-plugin": "^2.0.1",
     "pre-commit": "^1.2.2",
+    "simple-copy": "^2.2.1",
+    "stream-to-array": "^2.3.0",
     "streamify-string": "^1.0.1",
     "ts-jest": "^27.0.1",
-    "typescript": "^4.3.5"
+    "ts-loader": "^9.4.1",
+    "typescript": "^4.3.5",
+    "webpack": "^5.75.0",
+    "webpack-cli": "^4.10.0"
   },
   "files": [
     "components",
