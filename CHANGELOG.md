@@ -1,6 +1,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v5.3.2"></a>
+## [v5.3.2](https://github.com/LinkedSoftwareDependencies/Components.js/compare/v5.3.1...v5.3.2) - 2022-11-14
+
+### Fixed
+* [Replace fs.readFile with require on JSON documents](https://github.com/LinkedSoftwareDependencies/Components.js/commit/2049acb692745b94006439bb3fb3e17bd2d44f51)
+
 <a name="v5.3.1"></a>
 ## [v5.3.1](https://github.com/LinkedSoftwareDependencies/Components.js/compare/v5.3.0...v5.3.1) - 2022-08-23
 
