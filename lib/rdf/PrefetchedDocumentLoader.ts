@@ -1,4 +1,3 @@
-import * as fs from 'fs';
 import type { IJsonLdContext } from 'jsonld-context-parser';
 import { FetchDocumentLoader } from 'jsonld-context-parser';
 import type { Logger } from 'winston';
@@ -11,9 +10,7 @@ export class PrefetchedDocumentLoader extends FetchDocumentLoader {
   public static readonly CONTEXT_URL: string =
   'https://linkedsoftwaredependencies.org/bundles/npm/componentsjs/^5.0.0/components/context.jsonld';
 
-  // eslint-disable-next-line no-sync
-  private static readonly DEFAULT_CONTEXT: any = JSON.parse(fs
-    .readFileSync(`${__dirname}/../../components/context.jsonld`, 'utf8'));
+  private static readonly DEFAULT_CONTEXT: any = require('../../components/context.json');
 
   private static readonly DEFAULT_CONTEXTS: Record<string, any> = {
     [PrefetchedDocumentLoader.CONTEXT_URL]:

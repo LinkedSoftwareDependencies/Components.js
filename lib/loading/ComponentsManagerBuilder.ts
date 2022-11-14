@@ -1,4 +1,3 @@
-import * as fs from 'fs';
 import type { Resource } from 'rdf-object';
 import { RdfObjectLoader } from 'rdf-object';
 import type { Logger } from 'winston';
@@ -69,7 +68,7 @@ export class ComponentsManagerBuilder<Instance = any> {
 
   public static createObjectLoader(): RdfObjectLoader {
     return new RdfObjectLoader({
-      context: JSON.parse(fs.readFileSync(`${__dirname}/../../components/context.jsonld`, 'utf8')),
+      context: require('../../components/context.json'),
     });
   }
 
