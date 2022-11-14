@@ -1,13 +1,13 @@
 const path = require('path');
+const NodePolyfillPlugin = require('node-polyfill-webpack-plugin');
 
 module.exports = [
   {
-    target: "node",
-    mode: "production",
-    entry: path.join(__dirname, 'test.ts'),
+    target: "web",
+    entry: path.join(__dirname, 'test-web.ts'),
     output: {
       filename: 'test.min.js',
-      path: path.join(__dirname, '/build'),
+      path: path.join(__dirname, '/build-web'),
       libraryTarget: 'commonjs2',
     },
     devtool: 'source-map',
@@ -23,5 +23,13 @@ module.exports = [
     resolveLoader: {
       modules: ['node_modules', path.resolve(__dirname, 'node_modules')],
     },
+    plugins: [
+      new NodePolyfillPlugin()
+    ],
+    resolve: {
+      fallback: {
+        fs: false
+      }
+    }
   },
 ];

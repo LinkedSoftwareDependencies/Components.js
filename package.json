@@ -25,7 +25,9 @@
   "scripts": {
     "test": "npm run test:jest && npm run test:webpack",
     "test:jest": "jest ${1}",
-    "test:webpack": "webpack -c test/webpack/webpack.config.js && node test/webpack/build/test.min.js",
+    "test:webpack": "npm run test:webpack:node && npm run test:webpack:web",
+    "test:webpack:node": "webpack -c test/webpack/webpack.config.js && node test/webpack/build/test.min.js",
+    "test:webpack:web": "webpack -c test/webpack/webpack.config-web.js && node test/webpack/build-web/test.min.js",
     "test-watch": "jest ${1} --watch",
     "build": "scopy ./components/context.jsonld ./components/context.json && tsc && chmod +x ./bin/compile-config.js",
     "build-watch": "tsc --watch",
@@ -69,6 +71,7 @@
     "jshint": "^2.1.10",
     "manual-git-changelog": "^1.0.1",
     "n3": "^1.11.1",
+    "node-polyfill-webpack-plugin": "^2.0.1",
     "pre-commit": "^1.2.2",
     "simple-copy": "^2.2.1",
     "stream-to-array": "^2.3.0",
