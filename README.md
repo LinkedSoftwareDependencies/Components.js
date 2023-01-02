@@ -48,6 +48,8 @@ $ npm install -D componentsjs-generator
   "name": "my-package",
   "version": "2.3.4",
   "lsd:module": true,
+  "main": "index.js",
+  "types": "index.d.ts",
   ...
   "scripts": {
     ...
@@ -63,6 +65,9 @@ $ npm install -D componentsjs-generator
 `"lsd:module"` will allow Components.js to find your module(s) when they are included from other packages.
 
 The `"scripts"` entry will make sure that all required component files will be generated when building your package.
+
+The `componentsjs-generator` will look for your compiled TypeScript files (`.d.ts`) in the `lib/` directory.
+If you use a different output directory for TypeScript (e.g. `dist/`), you must pass this to the generator using `-s` flag (e.g. `componentsjs-generator -s dist`).
 
 #### 3. Create a configuration file to instantiate our class
 
@@ -106,6 +111,8 @@ const myInstance = await manager.instantiate('urn:my-package:myInstance');
 ```
 
 `myInstance` is an instance of type `MyClass`, as defined in the config file.
+
+After running `npm run build`, you can now execute your program.
 
 ## Quick Start (JavaScript)
 
