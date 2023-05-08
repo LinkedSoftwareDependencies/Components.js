@@ -362,4 +362,77 @@ describe('ConfigPreprocessorOverride', () => {
     });
     expect(() => preprocessor.canHandle(config)).toThrow(`Detected multiple values for override parameter ex:param1 in Override ex:myOverride. RDF lists should be used for defining multiple values.`);
   });
+
+  it('can replace the type of an object.', async(): Promise<void> => {
+    const config = objectLoader.createCompactedResource({
+      '@id': 'ex:myComponentInstance',
+      types: 'ex:Component',
+      'ex:param1': '"value1"',
+      'ex:param2': '"value2"',
+    });
+    const overrideInstance = objectLoader.createCompactedResource({
+      '@id': 'ex:myOverride',
+      types: 'oo:Override',
+      overrideInstance: 'ex:myComponentInstance',
+      overrideParameters: {
+        '@type': 'ex:ExtraType',
+        'ex:param3': '"hello"',
+      },
+    });
+    const overrideProperties = overrideInstance.properties[IRIS_OO.overrideParameters][0].properties;
+    const override = preprocessor.canHandle(config)!;
+    const { rawConfig, finishTransformation } = preprocessor.transform(config, override);
+    expect(finishTransformation).toBe(false);
+    expect(rawConfig).toBe(config);
+    expect(rawConfig.properties['ex:param3'][0]).toBe(overrideProperties['ex:param3'][0]);
+    expect(rawConfig.properties['ex:param1']).toHaveLength(0);
+    expect(rawConfig.properties['ex:param2']).toHaveLength(0);
+  });
+
+  it('can chain type changes', () => {
+    const config = objectLoader.createCompactedResource({
+      '@id': 'ex:myComponentInstance',
+      types: 'ex:Component',
+      'ex:param1': '"value1"',
+      'ex:param2': '"value2"',
+    });
+    const overrideInstance1 = objectLoader.createCompactedResource({
+      '@id': 'ex:myOverride1',
+      types: 'oo:Override',
+      overrideInstance: 'ex:myComponentInstance',
+      overrideParameters: {
+        'ex:param1': '"value1-1"',
+      },
+    });
+    const overrideInstance2 = objectLoader.createCompactedResource({
+      '@id': 'ex:myOverride2',
+      types: 'oo:Override',
+      overrideInstance: 'ex:myOverride1',
+      overrideParameters: {
+        '@type': 'ex:ExtraType',
+        'ex:param3': '"value3"',
+        'ex:param4': '"value4"',
+      },
+    });
+    const overrideInstance3 = objectLoader.createCompactedResource({
+      '@id': 'ex:myOverride3',
+      types: 'oo:Override',
+      overrideInstance: 'ex:myOverride2',
+      overrideParameters: {
+        'ex:param4': '"value4-2"',
+      },
+    });
+    const override2Properties = overrideInstance2.properties[IRIS_OO.overrideParameters][0].properties;
+    const override3Properties = overrideInstance3.properties[IRIS_OO.overrideParameters][0].properties;
+    const override = preprocessor.canHandle(config)!;
+    const { rawConfig, finishTransformation } = preprocessor.transform(config, override);
+    expect(finishTransformation).toBe(false);
+    expect(rawConfig).toBe(config);
+    expect(rawConfig.properties['ex:param1']).toHaveLength(0);
+    expect(rawConfig.properties['ex:param2']).toHaveLength(0);
+    expect(rawConfig.properties['ex:param3'][0]).toBe(override2Properties['ex:param3'][0]);
+    expect(rawConfig.properties['ex:param3'][0].value).toBe('value3');
+    expect(rawConfig.properties['ex:param4'][0]).toBe(override3Properties['ex:param4'][0]);
+    expect(rawConfig.properties['ex:param4'][0].value).toBe('value4-2');
+  });
 });
