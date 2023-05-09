@@ -12,7 +12,7 @@ const DF = new DataFactory();
 describe('ConfigConstructor', () => {
   let objectLoader: RdfObjectLoader;
   let componentResources: Record<string, Resource>;
-  let configConstructorPool: ConfigConstructorPool<any>;
+  let configConstructorPool: jest.Mocked<ConfigConstructorPool<any>>;
   let constructor: ConfigConstructor<any>;
   let constructionStrategy: IConstructionStrategy<any>;
   let moduleState: IModuleState;
@@ -223,7 +223,7 @@ describe('ConfigConstructor', () => {
           .toThrowError(/^Missing key in fields entry/u);
       });
 
-      it('should throw on IRI key', async() => {
+      it('can use dereferenced IRI values as keys', async() => {
         const resource = objectLoader.createCompactedResource({
           fields: {
             list: [
@@ -234,8 +234,39 @@ describe('ConfigConstructor', () => {
             ],
           },
         });
+        expect(await constructor.getArgumentValue(resource, settings)).toEqual({
+          entries: [
+            {
+              key: 'INSTANCE',
+              value: 'ABC',
+            },
+          ],
+        });
+        expect(constructionStrategy.createHash).toHaveBeenCalledWith({
+          settings,
+          entries: [
+            {
+              key: 'INSTANCE',
+              value: 'ABC',
+            },
+          ],
+        });
+      });
+
+      it('should throw on non-string keys', async() => {
+        configConstructorPool.instantiate.mockResolvedValueOnce(new Error('this is an object'));
+        const resource = objectLoader.createCompactedResource({
+          fields: {
+            list: [
+              {
+                key: `ex:abc`,
+                value: '"ABC"',
+              },
+            ],
+          },
+        });
         await expect(constructor.getArgumentValue(resource, settings)).rejects
-          .toThrowError(/^Illegal non-literal key \(ex:abc as NamedNode\) in fields entry/u);
+          .toThrowError(/^Illegal non-string key \(ex:abc as NamedNode\) in fields entry/u);
       });
 
       it('should ignore fields without value', async() => {
