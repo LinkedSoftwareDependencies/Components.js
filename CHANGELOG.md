@@ -1,6 +1,13 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v5.4.0"></a>
+## [v5.4.0](https://github.com/LinkedSoftwareDependencies/Components.js/compare/v5.3.2...v5.4.0) - 2023-05-15
+
+### Added
+* [Allow hash keys to be URIs that dereference to a string](https://github.com/LinkedSoftwareDependencies/Components.js/commit/b35b725f266c93ae8cee63f54175b3fef970d562)
+* [Allow types to be replaced when using an Override](https://github.com/LinkedSoftwareDependencies/Components.js/commit/e016312cae660246fa776b1c861e348e396042cf)
+
 <a name="v5.3.2"></a>
 ## [v5.3.2](https://github.com/LinkedSoftwareDependencies/Components.js/compare/v5.3.1...v5.3.2) - 2022-11-14
 
