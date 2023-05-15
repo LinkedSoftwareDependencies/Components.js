@@ -1,7 +1,7 @@
 import type { Resource } from 'rdf-object';
 import type { RdfObjectLoader } from 'rdf-object/lib/RdfObjectLoader';
 import type { Logger } from 'winston';
-import { IRIS_OO } from '../rdf/Iris';
+import { IRIS_OO, IRIS_RDF } from '../rdf/Iris';
 import { uniqueTypes } from '../rdf/ResourceUtil';
 import { ErrorResourcesContext } from '../util/ErrorResourcesContext';
 import type { IConfigPreprocessor, IConfigPreprocessorTransform } from './IConfigPreprocessor';
@@ -43,17 +43,24 @@ export class ConfigPreprocessorOverride implements IConfigPreprocessor<Record<st
    * @param handleResponse - Override values that were found for this resource.
    */
   public transform(config: Resource, handleResponse: Record<string, Resource>): IConfigPreprocessorTransform {
-    for (const id of Object.keys(config.properties)) {
-      const overrideValue = handleResponse[id];
-      if (overrideValue) {
-        config.properties[id] = [ overrideValue ];
+    // We know this has exactly 1 result due to the canHandle call
+    const configType = uniqueTypes(config, this.componentResources)[0];
+    const overrideType = handleResponse[IRIS_RDF.type]?.value;
+    // In case the type changes we have to delete all the original properties as those correspond to the old type
+    if (overrideType && configType.value !== overrideType) {
+      for (const id of Object.keys(config.properties)) {
+        delete config.properties[id];
       }
     }
+    for (const property of Object.keys(handleResponse)) {
+      config.properties[property] = [ handleResponse[property] ];
+    }
+
     return { rawConfig: config, finishTransformation: false };
   }
 
   /**
-   * Clear all cached overrides so they will be calculated again on the next call.
+   * Clear all cached overrides, so they will be calculated again on the next call.
    */
   public reset(): void {
     this.overrides = undefined;
@@ -168,24 +175,31 @@ export class ConfigPreprocessorOverride implements IConfigPreprocessor<Record<st
    * @param chain - The chain of Overrides, with a normal resource as the last entry in the array.
    */
   protected chainToOverrideObject(chain: Resource[]): { target: string; values: Record<string, Resource> } {
-    const { target, type } = this.getChainTarget(chain);
+    const target = this.getChainTarget(chain);
 
     // Apply all overrides sequentially, starting from the one closest to the target.
     // This ensures the most recent override has priority.
-    const parameters = this.componentResources[type.value].properties.parameters;
-    const mergedOverride: Record<string, Resource> = {};
+    let mergedOverride: Record<string, Resource> = {};
     for (let i = chain.length - 2; i >= 0; --i) {
-      const filteredObject = this.filterOverrideObject(chain[i], target, parameters);
-      Object.assign(mergedOverride, filteredObject);
+      const validatedObject = this.extractOverrideParameters(chain[i], target);
+      // In case an Override has a different type, the properties of the target don't matter any more,
+      // as the object is being replaced completely.
+      const mergedType = mergedOverride[IRIS_RDF.type]?.value;
+      const overrideType = validatedObject[IRIS_RDF.type]?.value;
+      if (overrideType && overrideType !== mergedType) {
+        mergedOverride = validatedObject;
+      } else {
+        Object.assign(mergedOverride, validatedObject);
+      }
     }
     return { target: target.value, values: mergedOverride };
   }
 
   /**
-   * Finds the final target and its type in an override chain.
+   * Finds the final target and validates its type value.
    * @param chain - The chain to find the target of.
    */
-  protected getChainTarget(chain: Resource[]): { target: Resource; type: Resource } {
+  protected getChainTarget(chain: Resource[]): Resource {
     const target = chain[chain.length - 1];
     const types = uniqueTypes(target, this.componentResources);
     if (!types || types.length === 0) {
@@ -200,17 +214,15 @@ export class ConfigPreprocessorOverride implements IConfigPreprocessor<Record<st
         override: chain[chain.length - 2],
       });
     }
-    return { target, type: types[0] };
+    return target;
   }
 
   /**
-   * Extracts all relevant parameters of an Override with their corresponding new value.
+   * Extracts all parameters of an Override with their corresponding value.
    * @param override - The Override to apply.
-   * @param target - The target resource to apply the Override to.
-   * @param parameters - The parameters that are relevant for the target.
+   * @param target - The target resource to apply the Override to. Only used for error messages.
    */
-  protected filterOverrideObject(override: Resource, target: Resource, parameters: Resource[]):
-  Record<string, Resource> {
+  protected extractOverrideParameters(override: Resource, target: Resource): Record<string, Resource> {
     const overrideObjects = override.properties[IRIS_OO.overrideParameters];
     if (!overrideObjects || overrideObjects.length === 0) {
       this.logger.warn(`No overrideParameters found for ${override.value}.`);
@@ -224,22 +236,19 @@ export class ConfigPreprocessorOverride implements IConfigPreprocessor<Record<st
     const overrideObject = overrideObjects[0];
 
     // Only keep the parameters that are known to the type of the target object
-    const filteredObject: Record<string, Resource> = {};
-    for (const parameter of parameters) {
-      const overrideValues = overrideObject.properties[parameter.value];
-      if (!overrideValues || overrideValues.length === 0) {
-        continue;
-      }
+    const validatedObject: Record<string, Resource> = {};
+    for (const parameter of Object.keys(overrideObject.properties)) {
+      const overrideValues = overrideObject.properties[parameter];
       if (overrideValues.length > 1) {
-        throw new ErrorResourcesContext(`Detected multiple values for override parameter ${parameter.value} in Override ${override.value}. RDF lists should be used for defining multiple values.`, {
+        throw new ErrorResourcesContext(`Detected multiple values for override parameter ${parameter} in Override ${override.value}. RDF lists should be used for defining multiple values.`, {
           arguments: overrideValues,
           target,
           override,
         });
       }
-      filteredObject[parameter.value] = overrideValues[0];
+      validatedObject[parameter] = overrideValues[0];
     }
-    return filteredObject;
+    return validatedObject;
   }
 }
 
