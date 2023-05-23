@@ -1,6 +1,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v5.4.1"></a>
+## [v5.4.1](https://github.com/LinkedSoftwareDependencies/Components.js/compare/v5.4.0...v5.4.1) - 2023-05-23
+
+### TODO: categorize commits, choose titles from: Added, Changed, Deprecated, Removed, Fixed, Security.
+* [Revert "Allow hash keys to be URIs that dereference to a string", as it caused parameter assignment to break](https://github.com/LinkedSoftwareDependencies/Components.js/commit/3e60a409f39f29de1fce4468315548d949a7a143)
+
 <a name="v5.4.0"></a>
 ## [v5.4.0](https://github.com/LinkedSoftwareDependencies/Components.js/compare/v5.3.2...v5.4.0) - 2023-05-15
 
