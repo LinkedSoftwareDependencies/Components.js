@@ -94,7 +94,7 @@ export class ConstructionStrategyCommonJsString implements IConstructionStrategy
         }
         sb.push('\n');
         sb.push('  ');
-        sb.push(`'${entry.key}'`);
+        sb.push(`${entry.key}`);
         sb.push(': ');
         sb.push(entry.value);
       }

@@ -290,14 +290,14 @@ module.exports = urn_comunica_sparqlinit;
       expect(constructionStrategy.createHash({
         settings,
         entries: [
-          { key: 'a', value: '1' },
-          { key: 'b', value: '2' },
-          { key: 'c', value: '3' },
+          { key: '"a"', value: '1' },
+          { key: '"b"', value: '2' },
+          { key: '"c"', value: '3' },
         ],
       })).toEqual(`{
-  'a': 1,
-  'b': 2,
-  'c': 3
+  "a": 1,
+  "b": 2,
+  "c": 3
 }`);
     });
 
@@ -305,13 +305,13 @@ module.exports = urn_comunica_sparqlinit;
       expect(constructionStrategy.createHash({
         settings,
         entries: [
-          { key: 'a', value: '1' },
+          { key: '"a"', value: '1' },
           undefined,
-          { key: 'c', value: '3' },
+          { key: '"c"', value: '3' },
         ],
       })).toEqual(`{
-  'a': 1,
-  'c': 3
+  "a": 1,
+  "c": 3
 }`);
     });
 
@@ -319,10 +319,10 @@ module.exports = urn_comunica_sparqlinit;
       expect(constructionStrategy.createHash({
         settings,
         entries: [
-          { key: 'a', value: '[\n  a,\n  b\n]' },
+          { key: '"a"', value: '[\n  a,\n  b\n]' },
         ],
       })).toEqual(`{
-  'a': [
+  "a": [
   a,
   b
 ]
