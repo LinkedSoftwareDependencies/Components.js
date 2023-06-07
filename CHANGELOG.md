@@ -1,6 +1,13 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v5.4.2"></a>
+## [v5.4.2](https://github.com/LinkedSoftwareDependencies/Components.js/compare/v5.4.1...v5.4.2) - 2023-06-07
+
+### Fixed
+* [Allow hash keys to be URIs that dereference to a string](https://github.com/LinkedSoftwareDependencies/Components.js/commit/04341502cf54dc04683da5cd043513d40e76e351)
+* [Prevent literals from being cached](https://github.com/LinkedSoftwareDependencies/Components.js/commit/f3df62f9fe6ec99fb3eb317d5f1601b669310f9e)
+
 <a name="v5.4.1"></a>
 ## [v5.4.1](https://github.com/LinkedSoftwareDependencies/Components.js/compare/v5.4.0...v5.4.1) - 2023-05-23
 
