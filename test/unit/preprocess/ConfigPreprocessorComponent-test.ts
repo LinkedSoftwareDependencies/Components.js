@@ -19,6 +19,7 @@ describe('ConfigPreprocessorComponent', () => {
 
   beforeEach(async() => {
     objectLoader = new RdfObjectLoader({
+      uniqueLiterals: true,
       context: JSON.parse(fs.readFileSync(`${__dirname}/../../../components/context.jsonld`, 'utf8')),
     });
     await objectLoader.context;
