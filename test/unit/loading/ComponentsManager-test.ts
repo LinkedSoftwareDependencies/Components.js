@@ -43,6 +43,7 @@ describe('ComponentsManager', () => {
       nodeModulePaths: [],
     };
     objectLoader = new RdfObjectLoader({
+      uniqueLiterals: true,
       context: JSON.parse(fs.readFileSync(`${__dirname}/../../../components/context.jsonld`, 'utf8')),
     });
     componentResources = {};

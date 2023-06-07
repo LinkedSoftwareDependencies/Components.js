@@ -68,6 +68,7 @@ export class ComponentsManagerBuilder<Instance = any> {
 
   public static createObjectLoader(): RdfObjectLoader {
     return new RdfObjectLoader({
+      uniqueLiterals: true,
       context: require('../../components/context.json'),
     });
   }

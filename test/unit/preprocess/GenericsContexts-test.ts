@@ -24,6 +24,7 @@ describe('GenericsContext', () => {
 
   beforeEach(async() => {
     objectLoader = new RdfObjectLoader({
+      uniqueLiterals: true,
       context: JSON.parse(fs.readFileSync(`${__dirname}/../../../components/context.jsonld`, 'utf8')),
     });
     await objectLoader.context;
@@ -83,15 +84,16 @@ describe('GenericsContext', () => {
       });
 
       it('should not bind undefined generic types', () => {
+        const value = objectLoader.createCompactedResource('"value"^^http://www.w3.org/2001/XMLSchema#string');
         expect(genericsContext.bindGenericTypeToValue(
           'ex:UNKNOWN',
-          objectLoader.createCompactedResource('"value"^^http://www.w3.org/2001/XMLSchema#string'),
+          value,
           valueTypeValidator,
           typeTypeValidatorAlwaysFalse,
         )).toEqual({
           description: 'unknown generic <ex:UNKNOWN> is being referenced',
           context: {
-            value: objectLoader.createCompactedResource('"value"^^http://www.w3.org/2001/XMLSchema#string'),
+            value,
           },
         });
 
@@ -100,25 +102,26 @@ describe('GenericsContext', () => {
       });
 
       it('should not bind a range that does not match an existing range', () => {
+        const value = objectLoader.createCompactedResource('"value"^^http://www.w3.org/2001/XMLSchema#not-a-string');
         valueTypeValidator = jest.fn(() => ({ description: 'invalid type', context: {}}));
 
         expect(genericsContext.bindGenericTypeToValue(
           'ex:U',
-          objectLoader.createCompactedResource('"value"^^http://www.w3.org/2001/XMLSchema#not-a-string'),
+          value,
           valueTypeValidator,
           typeTypeValidatorAlwaysFalse,
         )).toEqual({
           description: `generic <ex:U> with existing range "http://www.w3.org/2001/XMLSchema#string" can not contain the given value`,
           context: {
             existingRange: objectLoader.createCompactedResource('http://www.w3.org/2001/XMLSchema#string'),
-            value: objectLoader.createCompactedResource('"value"^^http://www.w3.org/2001/XMLSchema#not-a-string'),
+            value,
           },
           causes: [
             { description: 'invalid type', context: {}},
           ],
         });
         expect(valueTypeValidator).toHaveBeenCalledWith(
-          objectLoader.createCompactedResource('"value"^^http://www.w3.org/2001/XMLSchema#not-a-string'),
+          value,
           objectLoader.createCompactedResource('xsd:string'),
         );
         expect(genericsContext.bindings['ex:U']).toEqual(objectLoader.createCompactedResource('xsd:string'));
@@ -128,16 +131,17 @@ describe('GenericsContext', () => {
       });
 
       it('should bind a range that does match an existing range', () => {
+        const type = objectLoader.createCompactedResource('"value"^^http://www.w3.org/2001/XMLSchema#string');
         valueTypeValidator = jest.fn();
 
         expect(genericsContext.bindGenericTypeToValue(
           'ex:U',
-          objectLoader.createCompactedResource('"value"^^http://www.w3.org/2001/XMLSchema#string'),
+          type,
           valueTypeValidator,
           typeTypeValidatorOnlyIdentical,
         )).toBeUndefined();
         expect(valueTypeValidator).toHaveBeenCalledWith(
-          objectLoader.createCompactedResource('"value"^^http://www.w3.org/2001/XMLSchema#string'),
+          type,
           objectLoader.createCompactedResource('xsd:string'),
         );
         expect(genericsContext.bindings['ex:U']).toEqual(objectLoader.createCompactedResource('xsd:string'));
