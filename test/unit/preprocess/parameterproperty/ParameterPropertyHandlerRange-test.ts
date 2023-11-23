@@ -2730,7 +2730,9 @@ describe('ParameterPropertyHandlerRange', () => {
         .toEqual({
           match: true,
           value: {
-            description: `JSON parse exception: Unexpected token a in JSON at position 1`,
+            description: expect.stringMatching(
+              /JSON parse exception: (Unexpected token a|Expected property name or '\}') in JSON at position 1/u,
+            ),
             context: errorContext,
           },
         });
