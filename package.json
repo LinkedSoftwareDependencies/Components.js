@@ -20,7 +20,7 @@
   "author": "Ruben Taelman <ruben.taelman@ugent.be>",
   "license": "MIT",
   "engines": {
-    "node": ">=8.0"
+    "node": ">=14"
   },
   "scripts": {
     "test": "npm run test:jest && npm run test:webpack",
