@@ -24,17 +24,17 @@
     "node": ">=16.9"
   },
   "scripts": {
-    "test": "npm run test:jest && npm run test:webpack",
-    "test:jest": "jest ${1}",
-    "test:webpack": "npm run test:webpack:node && npm run test:webpack:web",
+    "test": "yarn test:jest && yarn test:webpack",
+    "test:jest": "jest",
+    "test:webpack": "yarn test:webpack:node && yarn test:webpack:web",
     "test:webpack:node": "webpack -c test/webpack/webpack.config.js && node test/webpack/build/test.min.js",
     "test:webpack:web": "webpack -c test/webpack/webpack.config-web.js && node test/webpack/build-web/test.min.js",
-    "test-watch": "jest ${1} --watch",
+    "test-watch": "jest --watch",
     "build": "scopy ./components/context.jsonld ./components/context.json && tsc && chmod +x ./bin/compile-config.js",
     "build-watch": "tsc --watch",
     "lint": "eslint . --ext .ts --cache",
-    "validate": "npm ls",
-    "prepare": "npm run build",
+    "validate": "yarn info",
+    "postinstall": "yarn build",
     "version": "manual-git-changelog onversion"
   },
   "dependencies": {
