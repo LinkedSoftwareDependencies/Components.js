@@ -19,6 +19,7 @@
   ],
   "author": "Ruben Taelman <ruben.taelman@ugent.be>",
   "license": "MIT",
+  "packageManager": "yarn@3.4.1",
   "engines": {
     "node": ">=16.9"
   },
