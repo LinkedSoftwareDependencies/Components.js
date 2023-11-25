@@ -8,7 +8,7 @@ Start by cloning this repository.
 $ git clone git@github.com:LinkedSoftwareDependencies/Components.js.git
 ```
 
-This project requires [Node.js](https://nodejs.org/en/) `>=16.9` and [Yarn](https://yarnpkg.com/) `>=3.2.4` to be installed. Preferable, use the Yarn version provided and managed by Node.js' integrated [CorePack](https://yarnpkg.com/corepack) by running `corepack enable`.
+This project requires [Node.js](https://nodejs.org/en/) `>=18.12` and [Yarn](https://yarnpkg.com/) `>=4` to be installed. Preferable, use the Yarn version provided and managed by Node.js' integrated [CorePack](https://yarnpkg.com/corepack) by running `corepack enable`.
 
 After that, you can install the project by running `yarn install`. This will automatically also run `yarn build`, which you can run again at any time to compile any changed code.
 

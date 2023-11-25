@@ -19,9 +19,9 @@
   ],
   "author": "Ruben Taelman <ruben.taelman@ugent.be>",
   "license": "MIT",
-  "packageManager": "yarn@3.4.1",
+  "packageManager": "yarn@4.0.1",
   "engines": {
-    "node": ">=16.9"
+    "node": ">=18.12"
   },
   "scripts": {
     "test": "yarn test:jest && yarn test:webpack",
