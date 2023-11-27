@@ -1,7 +1,7 @@
 import * as fs from 'fs';
+import { mocked } from 'jest-mock';
 import type { Resource } from 'rdf-object';
 import { RdfObjectLoader } from 'rdf-object';
-import { mocked } from 'ts-jest/utils';
 import type { Logger } from 'winston';
 import { ComponentsManager } from '../../../lib/ComponentsManager';
 import type { IConfigConstructorPool } from '../../../lib/construction/IConfigConstructorPool';

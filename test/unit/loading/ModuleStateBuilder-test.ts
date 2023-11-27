@@ -1,4 +1,4 @@
-import { mocked } from 'ts-jest/utils';
+import { mocked } from 'jest-mock';
 import { ModuleStateBuilder } from '../../../lib/loading/ModuleStateBuilder';
 
 // Import syntax only works in Node > 12
