@@ -1406,10 +1406,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:^18.0.0":
-  version: 18.11.9
-  resolution: "@types/node@npm:18.11.9"
-  checksum: aeaa925406f841c41679b32def9391a9892171e977105e025050e9f66e2830b4c50d0d974a1af0077ead3337a1f3bdf49ee7e7f402ebf2e034a3f97d9d240dba
+"@types/node@npm:^20.0.0":
+  version: 20.10.1
+  resolution: "@types/node@npm:20.10.1"
+  dependencies:
+    undici-types: "npm:~5.26.4"
+  checksum: c1b4b5a33f57bd39a8a0d074f27e3e370fccc6cda6a1c46caa48cc4c1687677cfdbffd9dc93fc803c6d355696dd9c73cd6f6507c749f61f83beb7326aec077d2
   languageName: node
   linkType: hard
 
@@ -2908,7 +2910,7 @@ __metadata:
     "@rubensworks/eslint-config": "npm:^1.0.1"
     "@types/jest": "npm:^27.0.0"
     "@types/minimist": "npm:^1.2.0"
-    "@types/node": "npm:^18.0.0"
+    "@types/node": "npm:^20.0.0"
     "@types/semver": "npm:^7.3.4"
     "@types/stream-to-array": "npm:^2.3.0"
     "@types/streamify-string": "npm:^1.0.0"
@@ -8891,6 +8893,13 @@ __metadata:
     has-symbols: "npm:^1.0.2"
     which-boxed-primitive: "npm:^1.0.2"
   checksum: 6f0b91b0744c6f9fd05afa70484914b70686596be628543a143fab018733f902ff39fad2c3cf8f00fd5d32ba8bce8edf9cf61cee940c1af892316e112b25812b
+  languageName: node
+  linkType: hard
+
+"undici-types@npm:~5.26.4":
+  version: 5.26.5
+  resolution: "undici-types@npm:5.26.5"
+  checksum: bb673d7876c2d411b6eb6c560e0c571eef4a01c1c19925175d16e3a30c4c428181fb8d7ae802a261f283e4166a0ac435e2f505743aa9e45d893f9a3df017b501
   languageName: node
   linkType: hard
 
