@@ -1,59 +1,80 @@
 import type { Resource } from 'rdf-object';
 import type { RdfObjectLoader } from 'rdf-object/lib/RdfObjectLoader';
 import type { Logger } from 'winston';
-import { IRIS_OO, IRIS_RDF } from '../rdf/Iris';
+import { IRIS_OO, PREFIX_OO } from '../rdf/Iris';
 import { uniqueTypes } from '../rdf/ResourceUtil';
 import { ErrorResourcesContext } from '../util/ErrorResourcesContext';
 import type { IConfigPreprocessor, IConfigPreprocessorTransform } from './IConfigPreprocessor';
+import type { IOverrideStep } from './overridesteps/IOverrideStep';
+import { OverrideListInsertAfter } from './overridesteps/OverrideListInsertAfter';
+import { OverrideListInsertAt } from './overridesteps/OverrideListInsertAt';
+import { OverrideListInsertBefore } from './overridesteps/OverrideListInsertBefore';
+import { OverrideListRemove } from './overridesteps/OverrideListRemove';
+import { OverrideMapEntry } from './overridesteps/OverrideMapEntry';
+import { OverrideParameters } from './overridesteps/OverrideParameters';
 
 /**
  * An {@link IConfigPreprocessor} that handles the overriding of parameters.
  * Values in the given {@link Resource}s will be replaced if any overriding object is found,
  * targeting this resource.
  */
-export class ConfigPreprocessorOverride implements IConfigPreprocessor<Record<string, Resource>> {
+export class ConfigPreprocessorOverride implements IConfigPreprocessor<Resource[]> {
   public readonly objectLoader: RdfObjectLoader;
   public readonly componentResources: Record<string, Resource>;
   public readonly logger: Logger;
 
-  private overrides: Record<string, Record<string, Resource>> | undefined;
+  private readonly stepHandlers: IOverrideStep[];
+  private overrides: Record<string, Resource[]> | undefined;
 
   public constructor(options: IComponentConfigPreprocessorOverrideOptions) {
     this.objectLoader = options.objectLoader;
     this.componentResources = options.componentResources;
     this.logger = options.logger;
+
+    this.stepHandlers = [
+      new OverrideParameters(),
+      new OverrideListInsertBefore(),
+      new OverrideListInsertAfter(),
+      new OverrideListInsertAt(),
+      new OverrideListRemove(),
+      new OverrideMapEntry(),
+    ];
   }
 
   /**
    * Checks if there are any overrides targeting the given resource.
    * @param config - Resource to find overrides for.
    *
-   * @returns A key/value object with keys being the properties that have an override.
+   * @returns A list of override steps to apply to the target, in order.
    */
-  public canHandle(config: Resource): Record<string, Resource> | undefined {
+  public canHandle(config: Resource): Resource[] | undefined {
     if (!this.overrides) {
-      this.overrides = this.createOverrideObjects();
+      this.overrides = this.createOverrideSteps();
     }
     return this.overrides[config.value];
   }
 
   /**
-   * Override the resource with the stored values.
+   * Override the resource with the stored override steps.
    * @param config - The resource to override.
-   * @param handleResponse - Override values that were found for this resource.
+   * @param handleResponse - Override steps that were found for this resource.
    */
-  public transform(config: Resource, handleResponse: Record<string, Resource>): IConfigPreprocessorTransform {
-    // We know this has exactly 1 result due to the canHandle call
-    const configType = uniqueTypes(config, this.componentResources)[0];
-    const overrideType = handleResponse[IRIS_RDF.type]?.value;
-    // In case the type changes we have to delete all the original properties as those correspond to the old type
-    if (overrideType && configType.value !== overrideType) {
-      for (const id of Object.keys(config.properties)) {
-        delete config.properties[id];
+  public transform(config: Resource, handleResponse: Resource[]): IConfigPreprocessorTransform {
+    // Apply all override steps sequentially
+    for (const step of handleResponse) {
+      let handler: IOverrideStep | undefined;
+      for (const stepHandler of this.stepHandlers) {
+        if (stepHandler.canHandle(config, step)) {
+          handler = stepHandler;
+          break;
+        }
       }
-    }
-    for (const property of Object.keys(handleResponse)) {
-      config.properties[property] = [ handleResponse[property] ];
+      if (!handler) {
+        throw new ErrorResourcesContext(`Found no handler supporting an override step of type ${step.property.type.value}`, {
+          step,
+        });
+      }
+      handler.handle(config, step);
     }
 
     return { rawConfig: config, finishTransformation: false };
@@ -71,18 +92,18 @@ export class ConfigPreprocessorOverride implements IConfigPreprocessor<Record<st
    * Keys of the object are the identifiers of the resources that need to be modified,
    * values are key/value maps listing all parameters with their new values.
    */
-  public createOverrideObjects(): Record<string, Record<string, Resource>> {
+  public createOverrideSteps(): Record<string, Resource[]> {
     const overrides = [ ...this.findOverrideTargets() ];
     const chains = this.createOverrideChains(overrides);
     this.validateChains(chains);
-    const overrideObjects: Record<string, Record<string, Resource>> = {};
+    const overrideSteps: Record<string, Resource[]> = {};
     for (const chain of chains) {
-      const { target, values } = this.chainToOverrideObject(chain);
-      if (Object.keys(values).length > 0) {
-        overrideObjects[target] = values;
+      const { target, steps } = this.chainToOverrideSteps(chain);
+      if (Object.keys(steps).length > 0) {
+        overrideSteps[target.value] = steps;
       }
     }
-    return overrideObjects;
+    return overrideSteps;
   }
 
   /**
@@ -110,6 +131,7 @@ export class ConfigPreprocessorOverride implements IConfigPreprocessor<Record<st
    * Chains all Overrides together if they reference each other.
    * E.g., if the input is a list of Overrides A -> B, B -> C, D -> E,
    * the result wil be [[ A, B, C ], [ D, E ]].
+   * The last element in the array will always be the non-Override resource being targeted.
    *
    * @param overrides - All Overrides that have to be combined.
    */
@@ -169,30 +191,39 @@ export class ConfigPreprocessorOverride implements IConfigPreprocessor<Record<st
   }
 
   /**
-   * Merges all Overrides in a chain to create a single override object
-   * containing replacement values for all relevant parameters of the final entry in the chain.
+   * Merges all Overrides in a chain to create a single list of override steps.
+   * The order of the steps is the order in which they should be applied,
+   * with the first entry being the first step of the override closest to the target resource.
    *
    * @param chain - The chain of Overrides, with a normal resource as the last entry in the array.
    */
-  protected chainToOverrideObject(chain: Resource[]): { target: string; values: Record<string, Resource> } {
+  protected chainToOverrideSteps(chain: Resource[]): { target: Resource; steps: Resource[] } {
     const target = this.getChainTarget(chain);
-
-    // Apply all overrides sequentially, starting from the one closest to the target.
-    // This ensures the most recent override has priority.
-    let mergedOverride: Record<string, Resource> = {};
+    const steps: Resource[] = [];
     for (let i = chain.length - 2; i >= 0; --i) {
-      const validatedObject = this.extractOverrideParameters(chain[i], target);
-      // In case an Override has a different type, the properties of the target don't matter any more,
-      // as the object is being replaced completely.
-      const mergedType = mergedOverride[IRIS_RDF.type]?.value;
-      const overrideType = validatedObject[IRIS_RDF.type]?.value;
-      if (overrideType && overrideType !== mergedType) {
-        mergedOverride = validatedObject;
-      } else {
-        Object.assign(mergedOverride, validatedObject);
+      const subStepProperties = chain[i].properties[IRIS_OO.overrideSteps];
+
+      if (subStepProperties.length > 1) {
+        throw new ErrorResourcesContext(`Detected multiple values for overrideSteps in Override ${chain[i].value}. RDF lists should be used for defining multiple values.`, {
+          override: chain[i],
+        });
       }
+
+      let subSteps = subStepProperties[0]?.list ?? subStepProperties;
+
+      // Translate simplified format to override step
+      if (chain[i].properties[IRIS_OO.overrideParameters].length > 0) {
+        subSteps = [ this.simplifiedOverrideToStep(chain[i]) ];
+      }
+
+      if (subSteps.length === 0) {
+        this.logger.warn(`No steps found for Override ${chain[i].value}. This Override will be ignored.`);
+        continue;
+      }
+
+      steps.push(...subSteps);
     }
-    return { target: target.value, values: mergedOverride };
+    return { target, steps };
   }
 
   /**
@@ -218,37 +249,21 @@ export class ConfigPreprocessorOverride implements IConfigPreprocessor<Record<st
   }
 
   /**
-   * Extracts all parameters of an Override with their corresponding value.
-   * @param override - The Override to apply.
-   * @param target - The target resource to apply the Override to. Only used for error messages.
+   *
+   * @param override
+   * @protected
    */
-  protected extractOverrideParameters(override: Resource, target: Resource): Record<string, Resource> {
+  protected simplifiedOverrideToStep(override: Resource): Resource {
     const overrideObjects = override.properties[IRIS_OO.overrideParameters];
-    if (!overrideObjects || overrideObjects.length === 0) {
-      this.logger.warn(`No overrideParameters found for ${override.value}.`);
-      return {};
-    }
     if (overrideObjects.length > 1) {
       throw new ErrorResourcesContext(`Detected multiple values for overrideParameters in Override ${override.value}`, {
         override,
       });
     }
-    const overrideObject = overrideObjects[0];
-
-    // Only keep the parameters that are known to the type of the target object
-    const validatedObject: Record<string, Resource> = {};
-    for (const parameter of Object.keys(overrideObject.properties)) {
-      const overrideValues = overrideObject.properties[parameter];
-      if (overrideValues.length > 1) {
-        throw new ErrorResourcesContext(`Detected multiple values for override parameter ${parameter} in Override ${override.value}. RDF lists should be used for defining multiple values.`, {
-          arguments: overrideValues,
-          target,
-          override,
-        });
-      }
-      validatedObject[parameter] = overrideValues[0];
-    }
-    return validatedObject;
+    return this.objectLoader.createCompactedResource({
+      types: PREFIX_OO('OverrideParameters'),
+      overrideValue: overrideObjects[0],
+    });
   }
 }
 
