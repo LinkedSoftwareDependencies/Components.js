@@ -12,3 +12,4 @@ index.d.ts
 coverage
 .eslintcache
 components/*.json
+.yarn/

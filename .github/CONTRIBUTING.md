@@ -2,13 +2,15 @@ This page contains several pointers for people that want to contribute to this p
 
 ## Setup development environment
 
-This project requires [Node.js](https://nodejs.org/en/) and [Yarn](https://yarnpkg.com/) to be installed.
-After that, you can clone and install the project as follows:
+Start by cloning this repository.
 
 ```bash
 $ git clone git@github.com:LinkedSoftwareDependencies/Components.js.git
-$ yarn install
 ```
+
+This project requires [Node.js](https://nodejs.org/en/) `>=18.12` and [Yarn](https://yarnpkg.com/) `>=4` to be installed. Preferable, use the Yarn version provided and managed by Node.js' integrated [CorePack](https://yarnpkg.com/corepack) by running `corepack enable`.
+
+After that, you can install the project by running `yarn install`. This will automatically also run `yarn build`, which you can run again at any time to compile any changed code.
 
 ## Continuous integration
 
@@ -19,8 +21,8 @@ These checks are run automatically upon each commit, and via continuous integrat
 
 You can run them manually as follows:
 ```bash
-$ yarn run test
-$ yarn run lint
+$ yarn test
+$ yarn lint
 ```
 
 ## Code architecture
