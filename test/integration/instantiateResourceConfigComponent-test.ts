@@ -1,5 +1,5 @@
+import { mocked } from 'jest-mock';
 import type { Resource, RdfObjectLoader } from 'rdf-object';
-import { mocked } from 'ts-jest/utils';
 import { ComponentsManager } from '../../lib/ComponentsManager';
 import type { IConfigConstructorPool } from '../../lib/construction/IConfigConstructorPool';
 import type { IConstructionSettings } from '../../lib/construction/IConstructionSettings';

@@ -9,6 +9,23 @@ const quad = require('rdf-quad');
 
 const Hello = require('../../__mocks__/helloworld').Hello;
 
+jest.mock('winston', () => ({
+  format: {
+    colorize: jest.fn(),
+    combine: jest.fn(),
+    label: jest.fn(),
+    timestamp: jest.fn(),
+    printf: jest.fn(),
+  },
+  createLogger: jest.fn().mockReturnValue({
+    warn: jest.fn(),
+    info: jest.fn(),
+  }),
+  transports: {
+    Console: jest.fn(),
+  },
+}));
+
 describe('construction with component configs as files', () => {
   let moduleState: IModuleState;
   let manager: ComponentsManager<any>;
