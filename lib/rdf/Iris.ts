@@ -11,6 +11,7 @@ export const IRIS_OO = {
   Override: PREFIX_OO('Override'),
   overrideInstance: PREFIX_OO('overrideInstance'),
   overrideParameters: PREFIX_OO('overrideParameters'),
+  overrideSteps: PREFIX_OO('overrideSteps'),
   parameter: PREFIX_OO('parameter'),
 };
 

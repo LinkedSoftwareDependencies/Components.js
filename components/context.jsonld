@@ -80,11 +80,45 @@
     "Override": {
       "@id": "oo:Override"
     },
+    "OverrideParameters": {
+      "@id": "oo:OverrideParameters"
+    },
+    "OverrideMapEntry": {
+      "@id": "oo:OverrideMapEntry"
+    },
+    "OverrideListInsertBefore": {
+      "@id": "oo:OverrideListInsertBefore"
+    },
+    "OverrideListInsertAfter": {
+      "@id": "oo:OverrideListInsertAfter"
+    },
+    "OverrideListInsertAt": {
+      "@id": "oo:OverrideListInsertAt"
+    },
+    "OverrideListRemove": {
+      "@id": "oo:OverrideListRemove"
+    },
     "overrideInstance": {
       "@id": "oo:overrideInstance"
     },
     "overrideParameters": {
       "@id": "oo:overrideParameters"
+    },
+    "overrideSteps": {
+      "@id": "oo:overrideSteps",
+      "@container": "@list"
+    },
+    "overrideParameter": {
+      "@id": "oo:overrideParameter",
+      "@container": "@list"
+    },
+    "overrideTarget": {
+      "@id": "oo:overrideTarget",
+      "@container": "@list"
+    },
+    "overrideValue": {
+      "@id": "oo:overrideValue",
+      "@container": "@list"
     },
     "ParameterRange": {
       "@id": "oo:ParameterRange"
