@@ -21,7 +21,7 @@
   "license": "MIT",
   "packageManager": "yarn@4.0.1",
   "scripts": {
-    "test": "yarn test:jest && yarn test:webpack",
+    "test": "yarn test:jest",
     "test:jest": "jest",
     "test:webpack": "yarn test:webpack:node && yarn test:webpack:web",
     "test:webpack:node": "webpack -c test/webpack/webpack.config.js && node test/webpack/build/test.min.js",

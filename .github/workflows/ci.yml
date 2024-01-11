@@ -46,7 +46,9 @@ jobs:
       - name: Build project
         run: yarn run build
       - name: Run tests
-        run: yarn run test
+        run: yarn run test:jest
+      - name: Run webpack
+        run: yarn run test:webpack
       - name: Submit coverage results
         uses: coverallsapp/github-action@master
         with:
