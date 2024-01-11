@@ -31,7 +31,7 @@
     "build-watch": "tsc --watch",
     "lint": "eslint . --ext .ts --cache",
     "validate": "yarn info",
-    "postinstall": "yarn build",
+    "prepare": "yarn build",
     "version": "manual-git-changelog onversion"
   },
   "dependencies": {
