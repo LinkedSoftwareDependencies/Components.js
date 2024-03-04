@@ -1,6 +1,16 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v6.0.0"></a>
+## [v6.0.0](https://github.com/LinkedSoftwareDependencies/Components.js/compare/v5.5.1...v6.0.0) - 2024-03-04
+
+### Changed
+* [Allow multiple (major) versions of modules to co-exist](https://github.com/LinkedSoftwareDependencies/Components.js/commit/5ee784336612cc0bfa92471446f08db0b92cccdb)
+* [Clarify error message on undefined component instances, Closes #108](https://github.com/LinkedSoftwareDependencies/Components.js/commit/0d5c097c6483598f3bbf4300a775f0c476ba8e7b)
+
+### BREAKING CHANGES
+* [Disable remote context lookups by default](https://github.com/LinkedSoftwareDependencies/Components.js/commit/179a6ad111a812a568628efb27aff6c7cf7421b9)
+
 <a name="v5.5.1"></a>
 ## [v5.5.1](https://github.com/LinkedSoftwareDependencies/Components.js/compare/v5.5.0...v5.5.1) - 2024-01-11
 
