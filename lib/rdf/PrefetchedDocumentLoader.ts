@@ -1,5 +1,6 @@
 import type { IJsonLdContext } from 'jsonld-context-parser';
 import { FetchDocumentLoader } from 'jsonld-context-parser';
+import semverMajor = require('semver/functions/major');
 import type { Logger } from 'winston';
 
 /**
@@ -7,20 +8,28 @@ import type { Logger } from 'winston';
  * and only then does an HTTP(S) lookup for the context.
  */
 export class PrefetchedDocumentLoader extends FetchDocumentLoader {
+  public static readonly CJS_MAJOR_VERSION: number = semverMajor(require('../../package.json').version);
   public static readonly CONTEXT_URL: string =
-  'https://linkedsoftwaredependencies.org/bundles/npm/componentsjs/^5.0.0/components/context.jsonld';
+  `https://linkedsoftwaredependencies.org/bundles/npm/componentsjs/^${PrefetchedDocumentLoader.CJS_MAJOR_VERSION}.0.0/components/context.jsonld`;
+
+  public static readonly CONTEXT_PATTERN: RegExp =
+  /https:\/\/linkedsoftwaredependencies.org\/bundles\/npm\/componentsjs\/\^([0-9]+).0.0\/components\/context.jsonld/u;
 
   private static readonly DEFAULT_CONTEXT: any = require('../../components/context.json');
 
   private static readonly DEFAULT_CONTEXTS: Record<string, any> = {
     [PrefetchedDocumentLoader.CONTEXT_URL]:
     PrefetchedDocumentLoader.DEFAULT_CONTEXT,
-    // TODO: temporarily also set old context versions for backwards-compatible.
-    'https://linkedsoftwaredependencies.org/bundles/npm/componentsjs/^4.0.0/components/context.jsonld':
-    PrefetchedDocumentLoader.DEFAULT_CONTEXT,
-    'https://linkedsoftwaredependencies.org/bundles/npm/componentsjs/^3.0.0/components/context.jsonld':
-    PrefetchedDocumentLoader.DEFAULT_CONTEXT,
   };
+
+  static {
+    // TODO: temporarily also set old context versions for backwards-compatible.
+    for (let i = 3; i < PrefetchedDocumentLoader.CJS_MAJOR_VERSION; i++) {
+      PrefetchedDocumentLoader.DEFAULT_CONTEXTS[
+        `https://linkedsoftwaredependencies.org/bundles/npm/componentsjs/^${i}.0.0/components/context.jsonld`
+      ] = PrefetchedDocumentLoader.DEFAULT_CONTEXT;
+    }
+  }
 
   private readonly contexts: Record<string, any>;
   private readonly path?: string;
@@ -37,10 +46,10 @@ export class PrefetchedDocumentLoader extends FetchDocumentLoader {
 
   public async load(url: string): Promise<IJsonLdContext> {
     // Warn on deprecated context usage
-    if (this.logger &&
-      (url === 'https://linkedsoftwaredependencies.org/bundles/npm/componentsjs/^4.0.0/components/context.jsonld' ||
-      url === 'https://linkedsoftwaredependencies.org/bundles/npm/componentsjs/^3.0.0/components/context.jsonld')) {
-      this.logger.warn(`Detected deprecated context URL '${url}'${this.path ? ` in ${this.path}` : ''}. Prefer using version '^5.0.0' instead.`);
+    // eslint-disable-next-line max-len
+    const match = PrefetchedDocumentLoader.CONTEXT_PATTERN.exec(url);
+    if (this.logger && match && Number.parseInt(match[1], 10) < PrefetchedDocumentLoader.CJS_MAJOR_VERSION) {
+      this.logger.warn(`Detected deprecated context URL '${url}'${this.path ? ` in ${this.path}` : ''}. Prefer using version '^${PrefetchedDocumentLoader.CJS_MAJOR_VERSION}.0.0' instead.`);
     }
 
     // Load prefetched contexts
