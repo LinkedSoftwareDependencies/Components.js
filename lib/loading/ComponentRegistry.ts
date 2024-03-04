@@ -19,6 +19,7 @@ export class ComponentRegistry {
   private readonly logger: Logger;
   private readonly componentResources: Record<string, Resource>;
   private readonly skipContextValidation: boolean;
+  private readonly remoteContextLookups: boolean;
 
   public constructor(options: IComponentLoaderRegistryOptions) {
     this.moduleState = options.moduleState;
@@ -26,6 +27,7 @@ export class ComponentRegistry {
     this.logger = options.logger;
     this.componentResources = options.componentResources;
     this.skipContextValidation = options.skipContextValidation;
+    this.remoteContextLookups = options.remoteContextLookups;
   }
 
   /**
@@ -51,6 +53,7 @@ export class ComponentRegistry {
       importPaths: this.moduleState.importPaths,
       logger: this.logger,
       skipContextValidation: this.skipContextValidation,
+      remoteContextLookups: this.remoteContextLookups,
     }));
   }
 
@@ -119,4 +122,5 @@ export interface IComponentLoaderRegistryOptions {
   logger: Logger;
   componentResources: Record<string, Resource>;
   skipContextValidation: boolean;
+  remoteContextLookups: boolean;
 }

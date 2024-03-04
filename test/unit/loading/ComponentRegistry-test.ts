@@ -31,6 +31,7 @@ describe('ComponentRegistry', () => {
       logger,
       componentResources,
       skipContextValidation: false,
+      remoteContextLookups: false,
     });
   });
 

@@ -27,6 +27,7 @@ describe('ConfigRegistry', () => {
       objectLoader,
       logger,
       skipContextValidation: false,
+      remoteContextLookups: false,
     });
   });
 

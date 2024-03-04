@@ -342,4 +342,31 @@ describe('ComponentsManagerBuilder', () => {
       transports: expect.anything(),
     });
   });
+
+  it('should build with true remoteContextLookups', async() => {
+    const componentsManagerBuilder = new ComponentsManagerBuilder({
+      mainModulePath,
+      remoteContextLookups: true,
+    });
+    const mgr = await componentsManagerBuilder.build();
+
+    expect(mgr).toBeTruthy();
+    expect(mgr.moduleState).toBe(dummyModuleState);
+    expect(mgr.objectLoader).toBeInstanceOf(RdfObjectLoader);
+    expect(Object.keys(mgr.componentResources).length).toBe(2);
+    expect(mgr.configRegistry).toBeInstanceOf(ConfigRegistry);
+    expect(mgr.dumpErrorState).toBe(true);
+    expect(mgr.configConstructorPool).toBeInstanceOf(ConfigConstructorPool);
+    expect((<any> mgr.configConstructorPool).constructionStrategy).toBeInstanceOf(ConstructionStrategyCommonJs);
+    expect((<any> mgr.configConstructorPool).configPreprocessors.length).toBe(3);
+    expect((<any> mgr.configConstructorPool).configPreprocessors[0]).toBeInstanceOf(ConfigPreprocessorOverride);
+    expect((<any> mgr.configConstructorPool).configPreprocessors[1]).toBeInstanceOf(ConfigPreprocessorComponentMapped);
+    expect((<any> mgr.configConstructorPool).configPreprocessors[2]).toBeInstanceOf(ConfigPreprocessorComponent);
+    expect(mgr.logger).toBeTruthy();
+    expect(createLogger).toBeCalledTimes(1);
+    expect(createLogger).toHaveBeenCalledWith({
+      level: 'warn',
+      transports: expect.anything(),
+    });
+  });
 });

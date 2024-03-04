@@ -77,8 +77,8 @@ describe('PrefetchedDocumentLoader', () => {
     });
 
     it('for a non-prefetched context', async() => {
-      expect(await loader.load('http://remote.org/context'))
-        .toEqual({ x: 'y' });
+      await expect(loader.load('http://remote.org/context')).rejects
+        .toThrow(`Detected remote context lookup for 'http://remote.org/context' in PATH. This may indicate a missing or invalid dependency, incorrect version number, or an invalid context URL.`);
     });
 
     it('for a non-prefetched context with a logger', async() => {
@@ -90,9 +90,8 @@ describe('PrefetchedDocumentLoader', () => {
         logger,
         path: 'PATH',
       });
-      expect(await loader.load('http://remote.org/context'))
-        .toEqual({ x: 'y' });
-      expect(logger.warn).toHaveBeenCalledWith(`Detected remote context lookup for 'http://remote.org/context' in PATH. This may indicate a missing or invalid dependency, incorrect version number, or an invalid context URL.`);
+      await expect(loader.load('http://remote.org/context')).rejects
+        .toThrow(`Detected remote context lookup for 'http://remote.org/context' in PATH. This may indicate a missing or invalid dependency, incorrect version number, or an invalid context URL.`);
     });
 
     it('for a non-prefetched context with a logger without path', async() => {
@@ -102,6 +101,46 @@ describe('PrefetchedDocumentLoader', () => {
       loader = new PrefetchedDocumentLoader({
         contexts: {},
         logger,
+      });
+      await expect(loader.load('http://remote.org/context')).rejects
+        .toThrow(`Detected remote context lookup for 'http://remote.org/context'. This may indicate a missing or invalid dependency, incorrect version number, or an invalid context URL.`);
+    });
+
+    it('for a non-prefetched context with remoteContextLookups: true', async() => {
+      loader = new PrefetchedDocumentLoader({
+        contexts: {
+          'http://example.org/context': { a: 'b' },
+        },
+        path: 'PATH',
+        remoteContextLookups: true,
+      });
+      expect(await loader.load('http://remote.org/context'))
+        .toEqual({ x: 'y' });
+    });
+
+    it('for a non-prefetched context with a logger with remoteContextLookups: true', async() => {
+      const logger: any = {
+        warn: jest.fn(),
+      };
+      loader = new PrefetchedDocumentLoader({
+        contexts: {},
+        logger,
+        path: 'PATH',
+        remoteContextLookups: true,
+      });
+      expect(await loader.load('http://remote.org/context'))
+        .toEqual({ x: 'y' });
+      expect(logger.warn).toHaveBeenCalledWith(`Detected remote context lookup for 'http://remote.org/context' in PATH. This may indicate a missing or invalid dependency, incorrect version number, or an invalid context URL.`);
+    });
+
+    it('for a non-prefetched context with a logger without path with remoteContextLookups: true', async() => {
+      const logger: any = {
+        warn: jest.fn(),
+      };
+      loader = new PrefetchedDocumentLoader({
+        contexts: {},
+        logger,
+        remoteContextLookups: true,
       });
       expect(await loader.load('http://remote.org/context'))
         .toEqual({ x: 'y' });

@@ -56,6 +56,7 @@ describe('ComponentsManager', () => {
       objectLoader,
       logger,
       skipContextValidation: false,
+      remoteContextLookups: false,
     });
     dumpErrorState = false;
     configConstructorPool = <any> {

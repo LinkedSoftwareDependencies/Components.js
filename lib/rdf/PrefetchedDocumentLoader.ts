@@ -25,12 +25,14 @@ export class PrefetchedDocumentLoader extends FetchDocumentLoader {
   private readonly contexts: Record<string, any>;
   private readonly path?: string;
   private readonly logger?: Logger;
+  private readonly remoteContextLookups?: boolean;
 
   public constructor(options: IPrefetchedDocumentLoaderOptions) {
     super();
     this.contexts = { ...options.contexts, ...PrefetchedDocumentLoader.DEFAULT_CONTEXTS };
     this.logger = options.logger;
     this.path = options.path;
+    this.remoteContextLookups = options.remoteContextLookups;
   }
 
   public async load(url: string): Promise<IJsonLdContext> {
@@ -47,8 +49,12 @@ export class PrefetchedDocumentLoader extends FetchDocumentLoader {
     }
 
     // Warn before doing a remote context lookup
+    const errorMessage = `Detected remote context lookup for '${url}'${this.path ? ` in ${this.path}` : ''}. This may indicate a missing or invalid dependency, incorrect version number, or an invalid context URL.`;
+    if (!this.remoteContextLookups) {
+      throw new Error(errorMessage);
+    }
     if (this.logger) {
-      this.logger.warn(`Detected remote context lookup for '${url}'${this.path ? ` in ${this.path}` : ''}. This may indicate a missing or invalid dependency, incorrect version number, or an invalid context URL.`);
+      this.logger.warn(errorMessage);
     }
     return super.load(url);
   }
@@ -58,4 +64,5 @@ export interface IPrefetchedDocumentLoaderOptions {
   contexts: Record<string, any>;
   logger?: Logger;
   path?: string;
+  remoteContextLookups?: boolean;
 }

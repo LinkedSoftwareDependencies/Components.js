@@ -31,6 +31,7 @@ export class ComponentsManagerBuilder<Instance = any> {
   private readonly moduleState?: IModuleState;
   private readonly skipContextValidation: boolean;
   private readonly typeChecking: boolean;
+  private readonly remoteContextLookups: boolean;
 
   public constructor(options: IComponentsManagerBuilderOptions<Instance>) {
     this.mainModulePath = options.mainModulePath;
@@ -47,6 +48,9 @@ export class ComponentsManagerBuilder<Instance = any> {
       Boolean(options.skipContextValidation);
     this.typeChecking = options.typeChecking === undefined ?
       true :
+      Boolean(options.typeChecking);
+    this.remoteContextLookups = options.remoteContextLookups === undefined ?
+      false :
       Boolean(options.typeChecking);
   }
 
@@ -100,6 +104,7 @@ export class ComponentsManagerBuilder<Instance = any> {
       logger: this.logger,
       componentResources,
       skipContextValidation: this.skipContextValidation,
+      remoteContextLookups: this.remoteContextLookups,
     });
     await this.componentLoader(componentRegistry);
     const componentFinalizer = new ComponentRegistryFinalizer({
@@ -116,6 +121,7 @@ export class ComponentsManagerBuilder<Instance = any> {
       objectLoader,
       logger: this.logger,
       skipContextValidation: this.skipContextValidation,
+      remoteContextLookups: this.remoteContextLookups,
     });
     await this.configLoader(configRegistry);
     this.logger.info(`Loaded configs`);
@@ -213,4 +219,11 @@ export interface IComponentsManagerBuilderOptions<Instance> {
    * Defaults to `true`.
    */
   typeChecking?: boolean;
+  /**
+   * If remote context lookups are allowed.
+   * If not allowed, an error is thrown if a remote lookup occurs.
+   * If allowed, only a warning is emitted.
+   * Defaults to `false`.
+   */
+  remoteContextLookups?: boolean;
 }

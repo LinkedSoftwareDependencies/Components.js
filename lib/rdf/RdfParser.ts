@@ -50,6 +50,7 @@ export class RdfParser {
         contexts: options.contexts || {},
         logger: options.logger,
         path: options.path,
+        remoteContextLookups: options.remoteContextLookups,
       }),
       // Enable strict parsing of JSON-LD to error on potential user config errors
       strictValues: true,
@@ -124,4 +125,10 @@ export type RdfParserOptions = ParseOptions & {
    * If JSON-LD context validation should be skipped.
    */
   skipContextValidation?: boolean;
+  /**
+   * If remote context lookups are allowed.
+   * If not allowed, an error is thrown if a remote lookup occurs.
+   * If allowed, only a warning is emitted.
+   */
+  remoteContextLookups?: boolean;
 };
