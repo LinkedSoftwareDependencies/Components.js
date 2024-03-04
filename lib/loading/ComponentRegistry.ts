@@ -35,6 +35,7 @@ export class ComponentRegistry {
    */
   public async registerAvailableModules(): Promise<void> {
     await Promise.all(Object.values(this.moduleState.componentModules)
+      .flatMap(Object.values)
       .map((moduleResourceUrl: string) => this.registerModule(moduleResourceUrl)));
   }
 

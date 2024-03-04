@@ -34,7 +34,9 @@ jest.mock('winston', () => ({
 const dummyModuleState = {
   mainModulePath,
   componentModules: {
-    A: `${__dirname}/../../assets/module.jsonld`,
+    A: {
+      1: `${__dirname}/../../assets/module.jsonld`,
+    },
   },
   nodeModulePaths: [],
 };
@@ -282,7 +284,9 @@ describe('ComponentsManagerBuilder', () => {
     const customModuleState = <any> {
       mainModulePath,
       componentModules: {
-        B: `${__dirname}/../../assets/module.jsonld`,
+        B: {
+          1: `${__dirname}/../../assets/module.jsonld`,
+        },
       },
       nodeModulePaths: [],
     };

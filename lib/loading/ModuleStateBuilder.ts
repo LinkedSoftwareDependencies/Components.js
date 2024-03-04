@@ -222,14 +222,14 @@ export class ModuleStateBuilder {
   protected shouldOverrideVersion(
     version: string,
     key: string,
-    componentVersions: Record<string, string>,
-    warningSuffix: string,
+    componentVersion: string | undefined,
+    warningSuffix?: () => string,
   ): boolean {
-    if (key in componentVersions) {
-      if (semverMajor(version) !== semverMajor(componentVersions[key])) {
-        this.warn(`Detected multiple incompatible occurrences of '${key}'${warningSuffix}`);
+    if (componentVersion !== undefined) {
+      if (warningSuffix && semverMajor(version) !== semverMajor(componentVersion)) {
+        this.warn(`Detected multiple incompatible occurrences of '${key}'${warningSuffix()}`);
       }
-      if (semverGt(version, componentVersions[key])) {
+      if (semverGt(version, componentVersion)) {
         return true;
       }
       return false;
@@ -242,23 +242,31 @@ export class ModuleStateBuilder {
    * @param packageJsons A hash of Node module path to package.json contents.
    * @return A hash of module id (`lsd:module`) to absolute component paths (`lsd:components`).
    */
-  public async buildComponentModules(packageJsons: Record<string, any>): Promise<Record<string, string>> {
-    const componentModules: Record<string, string> = {};
-    const componentVersions: Record<string, string> = {};
+  public async buildComponentModules(
+    packageJsons: Record<string, any>,
+  ): Promise<Record<string, Record<number, string>>> {
+    const componentModules: Record<string, Record<number, string>> = {};
+    const componentVersions: Record<string, Record<number, string>> = {};
     for (const [ modulePath, pckg ] of Object.entries(packageJsons)) {
       const currentModuleUri: string = pckg['lsd:module'];
       const relativePath: string = pckg['lsd:components'];
       const version: string = pckg.version;
+
       if (version && currentModuleUri && relativePath && semverValid(version)) {
+        if (!componentModules[currentModuleUri]) {
+          componentModules[currentModuleUri] = {};
+          componentVersions[currentModuleUri] = {};
+        }
+
+        const versionMajor: number = semverMajor(version);
         const absolutePath = Path.posix.join(modulePath, relativePath);
         if (this.shouldOverrideVersion(
           version,
           currentModuleUri,
-          componentVersions,
-          `, in '${componentModules[currentModuleUri]}'@${componentVersions[currentModuleUri]} and '${absolutePath}'@${version}`,
+          componentVersions[currentModuleUri][versionMajor],
         )) {
-          componentModules[currentModuleUri] = absolutePath;
-          componentVersions[currentModuleUri] = version;
+          componentModules[currentModuleUri][versionMajor] = absolutePath;
+          componentVersions[currentModuleUri][versionMajor] = version;
         }
       }
     }
@@ -270,7 +278,9 @@ export class ModuleStateBuilder {
    * @param packageJsons A hash of Node module path to package.json contents.
    * @return A hash of context id (key of `lsd:contexts`) to absolute context paths (value of `lsd:contexts`).
    */
-  public async buildComponentContexts(packageJsons: Record<string, any>): Promise<Record<string, string>> {
+  public async buildComponentContexts(
+    packageJsons: Record<string, any>,
+  ): Promise<Record<string, string>> {
     const componentContexts: Record<string, string> = {};
     const componentVersions: Record<string, string> = {};
     await Promise.all(Object.entries(packageJsons).map(async([ modulePath, pckg ]) => {
@@ -283,8 +293,8 @@ export class ModuleStateBuilder {
           if (this.shouldOverrideVersion(
             version,
             key,
-            componentVersions,
-            ` for version ${componentVersions[key]} and '${filePath}'@${version}`,
+            componentVersions[key],
+            () => ` for version ${componentVersions[key]} and '${filePath}'@${version}`,
           )) {
             componentContexts[key] = fileContents;
             componentVersions[key] = version;
@@ -300,7 +310,9 @@ export class ModuleStateBuilder {
    * @param packageJsons A hash of Node module path to package.json contents.
    * @return A hash of context id (key of `lsd:importPaths`) to absolute context paths (value of `lsd:importPaths`).
    */
-  public async buildComponentImportPaths(packageJsons: Record<string, any>): Promise<Record<string, string>> {
+  public async buildComponentImportPaths(
+    packageJsons: Record<string, any>,
+  ): Promise<Record<string, string>> {
     const componentImportPaths: Record<string, string> = {};
     const componentVersions: Record<string, string> = {};
     await Promise.all(Object.entries(packageJsons).map(async([ modulePath, pckg ]) => {
@@ -312,8 +324,8 @@ export class ModuleStateBuilder {
           if (this.shouldOverrideVersion(
             version,
             key,
-            componentVersions,
-            ` for version ${componentVersions[key]} and '${filePath}'@${version}`,
+            componentVersions[key],
+            () => ` for version ${componentVersions[key]} and '${filePath}'@${version}`,
           )) {
             componentImportPaths[key] = filePath;
             componentVersions[key] = version;
@@ -366,10 +378,10 @@ export interface IModuleState {
   packageJsons: Record<string, any>;
   /**
    * All Components.js modules.
-   * This hash maps module IRIs (`lsd:module`)
+   * This hash maps module IRIs (`lsd:module`) to major version
    * to absolute component paths (`lsd:components`).
    */
-  componentModules: Record<string, string>;
+  componentModules: Record<string, Record<number, string>>;
   /**
    * All Components.js contexts.
    * This hash maps context IRIs (key of `lsd:contexts`)

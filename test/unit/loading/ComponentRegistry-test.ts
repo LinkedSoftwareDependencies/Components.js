@@ -42,7 +42,9 @@ describe('ComponentRegistry', () => {
 
     it('should handle discovered modules', async() => {
       moduleState.componentModules = {
-        A: `${__dirname}/../../assets/module.jsonld`,
+        A: {
+          1: `${__dirname}/../../assets/module.jsonld`,
+        },
       };
       await componentRegistry.registerAvailableModules();
       expect(Object.keys(objectLoader.resources)

@@ -153,8 +153,12 @@ describe('ModuleStateBuilder', () => {
       };
       expect(await builder.buildModuleState(req, '/a/b')).toEqual({
         componentModules: {
-          'https://linkedsoftwaredependencies.org/bundles/npm/a': '/a/components/components.jsonld',
-          'https://linkedsoftwaredependencies.org/bundles/npm/b': '/a/node_modules/b/components/components.jsonld',
+          'https://linkedsoftwaredependencies.org/bundles/npm/a': {
+            1: '/a/components/components.jsonld',
+          },
+          'https://linkedsoftwaredependencies.org/bundles/npm/b': {
+            1: '/a/node_modules/b/components/components.jsonld',
+          },
         },
         contexts: {
           'https://linkedsoftwaredependencies.org/bundles/npm/a/^1.0.0/components/context.jsonld': {
@@ -774,7 +778,9 @@ describe('ModuleStateBuilder', () => {
           'lsd:components': 'components/components.jsonld',
         },
       })).toEqual({
-        'ex:module': 'a/components/components.jsonld',
+        'ex:module': {
+          1: 'a/components/components.jsonld',
+        },
       });
     });
 
@@ -791,8 +797,12 @@ describe('ModuleStateBuilder', () => {
           'lsd:components': 'components/components2.jsonld',
         },
       })).toEqual({
-        'ex:module1': 'a/components/components1.jsonld',
-        'ex:module2': 'b/components/components2.jsonld',
+        'ex:module1': {
+          1: 'a/components/components1.jsonld',
+        },
+        'ex:module2': {
+          1: 'b/components/components2.jsonld',
+        },
       });
     });
 
@@ -809,7 +819,9 @@ describe('ModuleStateBuilder', () => {
           'lsd:components': 'components/components.jsonld',
         },
       })).toEqual({
-        'ex:module': 'a/components/components.jsonld',
+        'ex:module': {
+          1: 'a/components/components.jsonld',
+        },
       });
       expect(await builder.buildComponentModules({
         a: {
@@ -823,7 +835,9 @@ describe('ModuleStateBuilder', () => {
           'lsd:components': 'components/components.jsonld',
         },
       })).toEqual({
-        'ex:module': 'b/components/components.jsonld',
+        'ex:module': {
+          1: 'b/components/components.jsonld',
+        },
       });
     });
 
@@ -840,7 +854,9 @@ describe('ModuleStateBuilder', () => {
           'lsd:components': 'components/components.jsonld',
         },
       })).toEqual({
-        'ex:module': 'a/components/components.jsonld',
+        'ex:module': {
+          1: 'a/components/components.jsonld',
+        },
       });
       expect(await builder.buildComponentModules({
         a: {
@@ -854,7 +870,9 @@ describe('ModuleStateBuilder', () => {
           'lsd:components': 'components/components.jsonld',
         },
       })).toEqual({
-        'ex:module': 'b/components/components.jsonld',
+        'ex:module': {
+          1: 'b/components/components.jsonld',
+        },
       });
     });
 
@@ -871,7 +889,9 @@ describe('ModuleStateBuilder', () => {
           'lsd:components': 'components/components.jsonld',
         },
       })).toEqual({
-        'ex:module': 'a/components/components.jsonld',
+        'ex:module': {
+          1: 'a/components/components.jsonld',
+        },
       });
       expect(await builder.buildComponentModules({
         a: {
@@ -885,7 +905,9 @@ describe('ModuleStateBuilder', () => {
           'lsd:components': 'components/components.jsonld',
         },
       })).toEqual({
-        'ex:module': 'b/components/components.jsonld',
+        'ex:module': {
+          1: 'b/components/components.jsonld',
+        },
       });
     });
 
@@ -903,11 +925,14 @@ describe('ModuleStateBuilder', () => {
           'lsd:components': 'components/components.jsonld',
         },
       })).toEqual({
-        'ex:module': 'a/components/components.jsonld',
+        'ex:module': {
+          1: 'b/components/components.jsonld',
+          2: 'a/components/components.jsonld',
+        },
       });
     });
 
-    it('should warn on packages with the same lsd:module ' +
+    it('should not warn on packages with the same lsd:module ' +
       'with different major versions with a logger', async() => {
       const logger = <any> {
         warn: jest.fn(),
@@ -925,9 +950,12 @@ describe('ModuleStateBuilder', () => {
           'lsd:components': 'components/components.jsonld',
         },
       })).toEqual({
-        'ex:module': 'a/components/components.jsonld',
+        'ex:module': {
+          1: 'b/components/components.jsonld',
+          2: 'a/components/components.jsonld',
+        },
       });
-      expect(logger.warn).toHaveBeenNthCalledWith(1, `Detected multiple incompatible occurrences of 'ex:module', in 'a/components/components.jsonld'@2.0.0 and 'b/components/components.jsonld'@1.0.0`);
+      expect(logger.warn).not.toHaveBeenCalled();
     });
   });
 
