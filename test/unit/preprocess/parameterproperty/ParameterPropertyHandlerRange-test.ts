@@ -2790,7 +2790,7 @@ describe('ParameterPropertyHandlerRange', () => {
         objectLoader.createCompactedResource('ex:param'),
         genericsContext,
         conflict,
-      )).toThrow('The value "ex:value" for parameter "ex:param" is not of required range type "any"');
+      )).toThrow(`The value "ex:value" for parameter "ex:param" is not of required range type "any". "ex:value" seems to refer to a component instance that is not defined yet. Did you forget an import?`);
     });
 
     it('handles a defined value with types', () => {

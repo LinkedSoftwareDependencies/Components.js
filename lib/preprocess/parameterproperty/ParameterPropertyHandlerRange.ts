@@ -480,7 +480,8 @@ export class ParameterPropertyHandlerRange implements IParameterPropertyHandler 
     const withTypes = value && value.properties.types.length > 0 ? ` with types "${value.properties.types.map(resource => resource.value)}"` : '';
     // eslint-disable-next-line @typescript-eslint/no-extra-parens
     const valueString = value ? (value.list ? `[${value.list.map(subValue => subValue.value).join(', ')}]` : value.value) : 'undefined';
-    throw new ErrorResourcesContext(`The value "${valueString}"${withTypes} for parameter "${parameter.value}" is not of required range type "${ParameterPropertyHandlerRange.rangeToDisplayString(parameter.property.range, genericsContext)}"`, {
+    const undefinedComponent = value && value.term.termType === 'NamedNode' && value.properties.types.length === 0 ? `. "${valueString}" seems to refer to a component instance that is not defined yet. Did you forget an import?` : '';
+    throw new ErrorResourcesContext(`The value "${valueString}"${withTypes} for parameter "${parameter.value}" is not of required range type "${ParameterPropertyHandlerRange.rangeToDisplayString(parameter.property.range, genericsContext)}"${undefinedComponent}`, {
       cause: conflict,
       value: value || 'undefined',
       ...Object.keys(genericsContext.bindings).length > 0 ?
