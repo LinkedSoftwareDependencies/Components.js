@@ -46,7 +46,7 @@ describe('PrefetchedDocumentLoader', () => {
       });
       expect(await loader.load(`https://linkedsoftwaredependencies.org/bundles/npm/componentsjs/^3.0.0/components/context.jsonld`))
         .toEqual(JSON.parse(fs.readFileSync(`${__dirname}/../../../components/context.jsonld`, 'utf8')));
-      expect(logger.warn).toHaveBeenCalledWith(`Detected deprecated context URL 'https://linkedsoftwaredependencies.org/bundles/npm/componentsjs/^3.0.0/components/context.jsonld' in PATH. Prefer using version '^${PrefetchedDocumentLoader.CJS_MAJOR_VERSION}.0.0' instead.`);
+      expect(logger.warn).not.toHaveBeenCalled();
     });
 
     it('for the built-in prefetched 4.0.0 context that is deprecated with a logger', async() => {
@@ -60,7 +60,7 @@ describe('PrefetchedDocumentLoader', () => {
       });
       expect(await loader.load(`https://linkedsoftwaredependencies.org/bundles/npm/componentsjs/^4.0.0/components/context.jsonld`))
         .toEqual(JSON.parse(fs.readFileSync(`${__dirname}/../../../components/context.jsonld`, 'utf8')));
-      expect(logger.warn).toHaveBeenCalledWith(`Detected deprecated context URL 'https://linkedsoftwaredependencies.org/bundles/npm/componentsjs/^4.0.0/components/context.jsonld' in PATH. Prefer using version '^${PrefetchedDocumentLoader.CJS_MAJOR_VERSION}.0.0' instead.`);
+      expect(logger.warn).not.toHaveBeenCalled();
     });
 
     it('for the built-in prefetched latest context that is not deprecated with a logger', async() => {
@@ -87,7 +87,7 @@ describe('PrefetchedDocumentLoader', () => {
       });
       expect(await loader.load(`https://linkedsoftwaredependencies.org/bundles/npm/componentsjs/^3.0.0/components/context.jsonld`))
         .toEqual(JSON.parse(fs.readFileSync(`${__dirname}/../../../components/context.jsonld`, 'utf8')));
-      expect(logger.warn).toHaveBeenCalledWith(`Detected deprecated context URL 'https://linkedsoftwaredependencies.org/bundles/npm/componentsjs/^3.0.0/components/context.jsonld'. Prefer using version '^${PrefetchedDocumentLoader.CJS_MAJOR_VERSION}.0.0' instead.`);
+      expect(logger.warn).not.toHaveBeenCalled();
     });
 
     it('for a non-prefetched context', async() => {

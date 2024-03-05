@@ -45,13 +45,6 @@ export class PrefetchedDocumentLoader extends FetchDocumentLoader {
   }
 
   public async load(url: string): Promise<IJsonLdContext> {
-    // Warn on deprecated context usage
-    // eslint-disable-next-line max-len
-    const match = PrefetchedDocumentLoader.CONTEXT_PATTERN.exec(url);
-    if (this.logger && match && Number.parseInt(match[1], 10) < PrefetchedDocumentLoader.CJS_MAJOR_VERSION) {
-      this.logger.warn(`Detected deprecated context URL '${url}'${this.path ? ` in ${this.path}` : ''}. Prefer using version '^${PrefetchedDocumentLoader.CJS_MAJOR_VERSION}.0.0' instead.`);
-    }
-
     // Load prefetched contexts
     if (url in this.contexts) {
       return this.contexts[url];
