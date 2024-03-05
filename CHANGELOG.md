@@ -1,6 +1,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v6.0.1"></a>
+## [v6.0.1](https://github.com/LinkedSoftwareDependencies/Components.js/compare/v6.0.0...v6.0.1) - 2024-03-05
+
+### Changed
+* [Remove deprecation warning on old CJS context URLs](https://github.com/LinkedSoftwareDependencies/Components.js/commit/b3160e5b9043efc826cce807d7c5c7cb86e67a4a)
+
 <a name="v6.0.0"></a>
 ## [v6.0.0](https://github.com/LinkedSoftwareDependencies/Components.js/compare/v5.5.1...v6.0.0) - 2024-03-04
 
