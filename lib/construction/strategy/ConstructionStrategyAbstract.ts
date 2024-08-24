@@ -13,7 +13,7 @@ import type {
  */
 export abstract class ConstructionStrategyAbstract implements IConstructionStrategy<any> {
   public abstract createInstance(options: ICreationStrategyInstanceOptions<any>): any;
-  
+
   public createHash(options: ICreationStrategyHashOptions<any>): any {
     return options.entries.reduce((data: Record<string, any>, entry: { key: string; value: any } | undefined) => {
       if (entry) {

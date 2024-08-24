@@ -2,7 +2,7 @@ import * as Path from 'path';
 import { ConstructionStrategyAbstractString } from './ConstructionStrategyAbstractString';
 import { ConstructionStrategyCommonJs, type ICreationStrategyCommonJsOptions } from './ConstructionStrategyCommonJs';
 import type {
-  ICreationStrategyInstanceOptions
+  ICreationStrategyInstanceOptions,
 } from './IConstructionStrategy';
 
 /**
@@ -24,8 +24,8 @@ import type {
 export class ConstructionStrategyCommonJsString extends ConstructionStrategyAbstractString {
   protected EXPORT_STRING = 'module.exports =';
   protected ENTRY_KEY = 'main';
-  private strategyCommonJs: ConstructionStrategyCommonJs;
-  private overrideRequireNames: Record<string, string>;
+  private readonly strategyCommonJs: ConstructionStrategyCommonJs;
+  private readonly overrideRequireNames: Record<string, string>;
 
   // eslint-disable-next-line unicorn/no-object-as-default-parameter
   public constructor(options: ICreationStrategyCommonJsStringOptions = { req: require }) {

@@ -1,6 +1,5 @@
 import * as Path from 'path';
 import type { IModuleState } from '../../loading/ModuleStateBuilder';
-import type { ICreationStrategyCommonJsOptions } from './ConstructionStrategyCommonJs';
 import type {
   IConstructionStrategy,
   ICreationStrategyArrayOptions,
@@ -32,7 +31,6 @@ export abstract class ConstructionStrategyAbstractString implements IConstructio
   protected readonly lines: string[] = [];
   protected abstract readonly EXPORT_STRING: string;
   protected abstract readonly ENTRY_KEY: string;
-
 
   // eslint-disable-next-line unicorn/no-object-as-default-parameter
   public constructor(options: IConstructionStrategyAbstractStringOptions) {

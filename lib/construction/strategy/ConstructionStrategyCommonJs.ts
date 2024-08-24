@@ -2,7 +2,7 @@ import * as Path from 'path';
 import type { IModuleState } from '../../loading/ModuleStateBuilder';
 import { ConstructionStrategyAbstract } from './ConstructionStrategyAbstract';
 import type {
-  ICreationStrategyInstanceOptions
+  ICreationStrategyInstanceOptions,
 } from './IConstructionStrategy';
 
 /**

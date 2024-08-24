@@ -1,17 +1,9 @@
 import * as Path from 'path';
-import type { IModuleState } from '../../loading/ModuleStateBuilder';
-import type { ICreationStrategyCommonJsOptions } from './ConstructionStrategyCommonJs';
-import { ConstructionStrategyCommonJs } from './ConstructionStrategyCommonJs';
-import type {
-  IConstructionStrategy,
-  ICreationStrategyHashOptions,
-  ICreationStrategyInstanceOptions,
-  ICreationStrategyArrayOptions,
-  ICreationStrategyPrimitiveOptions,
-  ICreationStrategySupplierOptions,
-  ICreationStrategyVariableOptions,
-} from './IConstructionStrategy';
 import { ConstructionStrategyAbstractString } from './ConstructionStrategyAbstractString';
+import type { ICreationStrategyCommonJsOptions } from './ConstructionStrategyCommonJs';
+import type {
+  ICreationStrategyInstanceOptions,
+} from './IConstructionStrategy';
 
 /**
  * A creation strategy for a string representation of CommonJS.
@@ -54,14 +46,14 @@ export class ConstructionStrategyESMString extends ConstructionStrategyAbstractS
 
     let serializationVariableName = ConstructionStrategyESMString.uriToVariableName(options.instanceId);
     let serialization: string;
-    
+
     if (options.callConstructor) {
       serializationVariableName += 'Class';
     }
-    
+
     if (options.settings.esm) {
       serialization = 'import ';
-      if (options.requireElement  === serializationVariableName) {
+      if (options.requireElement === serializationVariableName) {
         serialization += `{ ${serializationVariableName} }`;
       } else if (options.requireElement) {
         serialization += `{ ${options.requireElement} as ${serializationVariableName} }`;
@@ -91,7 +83,6 @@ export class ConstructionStrategyESMString extends ConstructionStrategyAbstractS
 
     return serializationVariableName;
   }
-
 }
 
 export interface ICreationStrategyCommonJsStringOptions extends ICreationStrategyCommonJsOptions {
