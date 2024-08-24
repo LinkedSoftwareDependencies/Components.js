@@ -1,19 +1,19 @@
 import * as Path from 'path';
 import type { IModuleState } from '../../loading/ModuleStateBuilder';
-import { ConstructionStrategyAbstract } from './ConstructionStrategyAbstract';
 import type {
-  ICreationStrategyInstanceOptions
+  ICreationStrategyInstanceOptions,
 } from './IConstructionStrategy';
+import { ConstructionStrategyAbstract } from './ConstructionStrategyAbstract';
 
 /**
  * A creation strategy for creating instances with CommonJS.
  */
-export class ConstructionStrategyCommonJs extends ConstructionStrategyAbstract {
+export class ConstructionStrategyESM extends ConstructionStrategyAbstract {
   private readonly overrideRequireNames: Record<string, string>;
   private readonly req: NodeJS.Require;
 
   // eslint-disable-next-line unicorn/no-object-as-default-parameter
-  public constructor(options: ICreationStrategyCommonJsOptions = { req: require }) {
+  public constructor(options: ICreationStrategyESMoptions = { req: require }) {
     super();
     this.overrideRequireNames = options.overrideRequireNames || {};
     this.req = options.req;
@@ -82,7 +82,7 @@ export class ConstructionStrategyCommonJs extends ConstructionStrategyAbstract {
   }
 }
 
-export interface ICreationStrategyCommonJsOptions {
+export interface ICreationStrategyESMoptions {
   /**
    * Overrides for `require()` calls.
    * For example, an override entry `abc -> def` will map all calls from `require('abc')` to `require('def')`.

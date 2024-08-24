@@ -14,4 +14,8 @@ export interface IConstructionSettings {
    * Mapping of variable id's to values.
    */
   variables?: Record<string, any>;
+  /**
+   * Whether to use the ESM module format.
+   */
+  esm?: boolean;
 }

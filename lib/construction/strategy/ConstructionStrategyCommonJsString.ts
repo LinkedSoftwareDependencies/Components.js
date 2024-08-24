@@ -1,15 +1,8 @@
 import * as Path from 'path';
-import type { IModuleState } from '../../loading/ModuleStateBuilder';
-import type { ICreationStrategyCommonJsOptions } from './ConstructionStrategyCommonJs';
-import { ConstructionStrategyCommonJs } from './ConstructionStrategyCommonJs';
+import { ConstructionStrategyAbstractString } from './ConstructionStrategyAbstractString';
+import { ConstructionStrategyCommonJs, type ICreationStrategyCommonJsOptions } from './ConstructionStrategyCommonJs';
 import type {
-  IConstructionStrategy,
-  ICreationStrategyHashOptions,
-  ICreationStrategyInstanceOptions,
-  ICreationStrategyArrayOptions,
-  ICreationStrategyPrimitiveOptions,
-  ICreationStrategySupplierOptions,
-  ICreationStrategyVariableOptions,
+  ICreationStrategyInstanceOptions
 } from './IConstructionStrategy';
 
 /**
@@ -28,16 +21,14 @@ import type {
  *
  * @see compileConfig For a simplified abstraction for using this strategy.
  */
-export class ConstructionStrategyCommonJsString implements IConstructionStrategy<string> {
-  private readonly overrideRequireNames: Record<string, string>;
-  private readonly asFunction: boolean;
-  private readonly strategyCommonJs: ConstructionStrategyCommonJs;
-  private readonly lines: string[] = [];
+export class ConstructionStrategyCommonJsString extends ConstructionStrategyAbstractString {
+  protected EXPORT_STRING = 'module.exports =';
+  protected ENTRY_KEY = 'main';
+  private strategyCommonJs: ConstructionStrategyCommonJs;
 
   // eslint-disable-next-line unicorn/no-object-as-default-parameter
   public constructor(options: ICreationStrategyCommonJsStringOptions = { req: require }) {
-    this.overrideRequireNames = options.overrideRequireNames || {};
-    this.asFunction = Boolean(options.asFunction);
+    super(options);
     this.strategyCommonJs = new ConstructionStrategyCommonJs(options);
   }
 
@@ -73,121 +64,6 @@ export class ConstructionStrategyCommonJsString implements IConstructionStrategy
     serialization = serializationVariableName;
 
     return serialization;
-  }
-
-  /**
-   * Get the path to the main module's main entrypoint.
-   * @param moduleState The module state.
-   * @return {string} The index module path of the current running module (`"main"` entry in package.json).
-   */
-  public getCurrentRunningModuleMain(moduleState: IModuleState): string {
-    const pckg = moduleState.packageJsons[moduleState.mainModulePath];
-    return Path.join(moduleState.mainModulePath, pckg.main);
-  }
-
-  public createHash(options: ICreationStrategyHashOptions<string>): string {
-    const sb: string[] = [ '{' ];
-    for (const entry of options.entries) {
-      if (entry) {
-        if (sb.length > 1) {
-          sb.push(',');
-        }
-        sb.push('\n');
-        sb.push('  ');
-        sb.push(`${entry.key}`);
-        sb.push(': ');
-        sb.push(entry.value);
-      }
-    }
-    if (sb.length > 1) {
-      sb.push('\n');
-    }
-    sb.push('}');
-    return sb.join('');
-  }
-
-  public createArray(options: ICreationStrategyArrayOptions<string>): string {
-    const sb: string[] = [ '[' ];
-    for (const value of options.elements) {
-      if (sb.length > 1) {
-        sb.push(',');
-      }
-      sb.push('\n');
-      sb.push('  ');
-      sb.push(value);
-    }
-    if (sb.length > 1) {
-      sb.push('\n');
-    }
-    sb.push(']');
-    return sb.join('');
-  }
-
-  public async createLazySupplier(options: ICreationStrategySupplierOptions<string>): Promise<string> {
-    return `new function() { return Promise.resolve(${await options.supplier()}); }`;
-  }
-
-  public createPrimitive(options: ICreationStrategyPrimitiveOptions<string>): string {
-    if (typeof options.value === 'object') {
-      return JSON.stringify(options.value);
-    }
-    return typeof options.value === 'string' ? `'${options.value}'` : `${options.value}`;
-  }
-
-  public getVariableValue(options: ICreationStrategyVariableOptions<string>): string {
-    if (this.asFunction) {
-      return `getVariableValue('${options.variableName}')`;
-    }
-    throw new Error(`Detected a variable during config compilation: ${options.variableName}. Variables are not supported, but require the -f flag to expose the compiled config as function.`);
-  }
-
-  public createUndefined(): string {
-    return 'undefined';
-  }
-
-  /**
-   * Deterministically converts a URI to a variable name that is safe for usage within JavaScript.
-   * @param {string} uri A URI.
-   * @return {string} A variable name.
-   */
-  public static uriToVariableName(uri: string): string {
-    return uri.replace(/[#./:@\\^-]/gu, '_');
-  }
-
-  /**
-   * Serialize a full Common JS document to a string.
-   * @param serializationVariableName The resulting string when calling {@link ComponentsManager.instantiate}.
-   * @param exportVariableName An optional variable name that should be exported
-   *                           instead of the default (serializationVariableName).
-   */
-  public serializeDocument(serializationVariableName: string, exportVariableName?: string): string {
-    // Join all lines in the document
-    const document: string = this.lines.join('\n');
-
-    // Override main variable name if needed
-    exportVariableName = (exportVariableName ?
-      ConstructionStrategyCommonJsString.uriToVariableName(exportVariableName) :
-      exportVariableName) || serializationVariableName;
-
-    // Export as variable-based function
-    if (this.asFunction) {
-      return `module.exports = function(variables) {
-function getVariableValue(name) {
-  if (!variables || !(name in variables)) {
-    throw new Error('Undefined variable: ' + name);
-  }
-  return variables[name];
-}
-${document}
-return ${exportVariableName};
-}
-`;
-    }
-
-    // Direct export of instantiated component
-    return `${document}
-module.exports = ${exportVariableName};
-`;
   }
 }
 
