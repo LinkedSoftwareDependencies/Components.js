@@ -25,11 +25,13 @@ export class ConstructionStrategyCommonJsString extends ConstructionStrategyAbst
   protected EXPORT_STRING = 'module.exports =';
   protected ENTRY_KEY = 'main';
   private strategyCommonJs: ConstructionStrategyCommonJs;
+  private overrideRequireNames: Record<string, string>;
 
   // eslint-disable-next-line unicorn/no-object-as-default-parameter
   public constructor(options: ICreationStrategyCommonJsStringOptions = { req: require }) {
     super(options);
     this.strategyCommonJs = new ConstructionStrategyCommonJs(options);
+    this.overrideRequireNames = options.overrideRequireNames || {};
   }
 
   public createInstance(options: ICreationStrategyInstanceOptions<string>): string {

@@ -1,12 +1,11 @@
-import * as Path from 'path';
-import type { IModuleState } from '../../loading/ModuleStateBuilder';
 import type {
-  ICreationStrategyInstanceOptions,
   IConstructionStrategy,
-  ICreationStrategyHashOptions,
   ICreationStrategyArrayOptions,
+  ICreationStrategyHashOptions,
+  ICreationStrategyInstanceOptions,
+  ICreationStrategyPrimitiveOptions,
   ICreationStrategySupplierOptions,
-  ICreationStrategyPrimitiveOptions, ICreationStrategyVariableOptions,
+  ICreationStrategyVariableOptions,
 } from './IConstructionStrategy';
 
 /**
@@ -47,16 +46,4 @@ export abstract class ConstructionStrategyAbstract implements IConstructionStrat
   public createUndefined(): any {
     // Return undefined
   }
-}
-
-export interface ICreationStrategyCommonJsOptions {
-  /**
-   * Overrides for `require()` calls.
-   * For example, an override entry `abc -> def` will map all calls from `require('abc')` to `require('def')`.
-   */
-  overrideRequireNames?: Record<string, string>;
-  /**
-   * The `require` instance.
-   */
-  req: NodeJS.Require;
 }

@@ -28,7 +28,6 @@ import type {
  * @see compileConfig For a simplified abstraction for using this strategy.
  */
 export abstract class ConstructionStrategyAbstractString implements IConstructionStrategy<string> {
-  protected readonly overrideRequireNames: Record<string, string>;
   protected readonly asFunction: boolean;
   protected readonly lines: string[] = [];
   protected abstract readonly EXPORT_STRING: string;
@@ -36,8 +35,7 @@ export abstract class ConstructionStrategyAbstractString implements IConstructio
 
 
   // eslint-disable-next-line unicorn/no-object-as-default-parameter
-  public constructor(options: ICreationStrategyCommonJsStringOptions = { req: require }) {
-    this.overrideRequireNames = options.overrideRequireNames || {};
+  public constructor(options: IConstructionStrategyAbstractStringOptions) {
     this.asFunction = Boolean(options.asFunction);
   }
 
@@ -157,7 +155,7 @@ ${this.EXPORT_STRING} ${exportVariableName};
   }
 }
 
-export interface ICreationStrategyCommonJsStringOptions extends ICreationStrategyCommonJsOptions {
+export interface IConstructionStrategyAbstractStringOptions {
   /**
    * If the exported instance should be exposed as a function, which accepts an optional hash of variables.
    * If this is true, variables will be extracted from the `variables` hash.
