@@ -1,5 +1,5 @@
 import * as Path from 'path';
-import { ConstructionStrategyAbstractString } from './ConstructionStrategyAbstractString';
+import { ConstructionStrategyAbstractString, IConstructionStrategyAbstractStringOptions } from './ConstructionStrategyAbstractString';
 import { ConstructionStrategyCommonJs, type ICreationStrategyCommonJsOptions } from './ConstructionStrategyCommonJs';
 import type {
   ICreationStrategyInstanceOptions,
@@ -69,10 +69,5 @@ export class ConstructionStrategyCommonJsString extends ConstructionStrategyAbst
   }
 }
 
-export interface ICreationStrategyCommonJsStringOptions extends ICreationStrategyCommonJsOptions {
-  /**
-   * If the exported instance should be exposed as a function, which accepts an optional hash of variables.
-   * If this is true, variables will be extracted from the `variables` hash.
-   */
-  asFunction?: boolean;
+export interface ICreationStrategyCommonJsStringOptions extends ICreationStrategyCommonJsOptions, IConstructionStrategyAbstractStringOptions {
 }

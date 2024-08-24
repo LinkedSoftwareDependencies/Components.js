@@ -21,14 +21,14 @@ export class RdfStreamIncluder extends Transform {
     this.parserOptions = parserOptions;
   }
 
-  public _transform(quad: RDF.Quad, encoding: string, callback: TransformCallback): boolean {
+  public override _transform(quad: RDF.Quad, encoding: string, callback: TransformCallback): boolean {
     this.handleImports(quad);
     this.validateIris(quad);
     callback(null, quad);
     return true;
   }
 
-  public _flush(callback: TransformCallback): void {
+  public override _flush(callback: TransformCallback): void {
     if (--this.runningImporters === 0) {
       // eslint-disable-next-line callback-return
       callback();

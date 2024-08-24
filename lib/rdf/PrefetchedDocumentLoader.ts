@@ -44,7 +44,7 @@ export class PrefetchedDocumentLoader extends FetchDocumentLoader {
     this.remoteContextLookups = options.remoteContextLookups;
   }
 
-  public async load(url: string): Promise<IJsonLdContext> {
+  public override async load(url: string): Promise<IJsonLdContext> {
     // Load prefetched contexts
     if (url in this.contexts) {
       return this.contexts[url];

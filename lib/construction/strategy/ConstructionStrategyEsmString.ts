@@ -1,6 +1,6 @@
 import * as Path from 'path';
-import { ConstructionStrategyAbstractString } from './ConstructionStrategyAbstractString';
-import type { ICreationStrategyCommonJsOptions } from './ConstructionStrategyCommonJs';
+import { ConstructionStrategyAbstractString, IConstructionStrategyAbstractStringOptions } from './ConstructionStrategyAbstractString';
+import type { ICreationStrategyESMoptions } from './ConstructionStrategyEsm';
 import type {
   ICreationStrategyInstanceOptions,
 } from './IConstructionStrategy';
@@ -31,64 +31,60 @@ export class ConstructionStrategyESMString extends ConstructionStrategyAbstractS
   }
 
   public createInstance(options: ICreationStrategyInstanceOptions<string>): string {
-    // Call require()
-    options.requireName = this.overrideRequireNames[options.requireName] || options.requireName;
+    return '';
+    // // Call require()
+    // options.requireName = this.overrideRequireNames[options.requireName] || options.requireName;
 
-    // First try requiring current module, and fallback to a plain require
-    const currentResult = this.strategyCommonJs
-      .requireCurrentRunningModuleIfCurrent(options.moduleState, options.requireName);
-    const resultingRequirePath = currentResult !== false ?
-      `.${Path.sep}${Path.relative(
-        options.moduleState.mainModulePath,
-        this.getCurrentRunningModuleMain(options.moduleState),
-      )}` :
-      options.requireName;
+    // // First try requiring current module, and fallback to a plain require
+    // const currentResult = this.strategyCommonJs
+    //   .requireCurrentRunningModuleIfCurrent(options.moduleState, options.requireName);
+    // const resultingRequirePath = currentResult !== false ?
+    //   `.${Path.sep}${Path.relative(
+    //     options.moduleState.mainModulePath,
+    //     this.getCurrentRunningModuleMain(options.moduleState),
+    //   )}` :
+    //   options.requireName;
 
-    let serializationVariableName = ConstructionStrategyESMString.uriToVariableName(options.instanceId);
-    let serialization: string;
+    // let serializationVariableName = ConstructionStrategyESMString.uriToVariableName(options.instanceId);
+    // let serialization: string;
 
-    if (options.callConstructor) {
-      serializationVariableName += 'Class';
-    }
+    // if (options.callConstructor) {
+    //   serializationVariableName += 'Class';
+    // }
 
-    if (options.settings.esm) {
-      serialization = 'import ';
-      if (options.requireElement === serializationVariableName) {
-        serialization += `{ ${serializationVariableName} }`;
-      } else if (options.requireElement) {
-        serialization += `{ ${options.requireElement} as ${serializationVariableName} }`;
-      } else {
-        serialization += `* as ${serializationVariableName}`;
-      }
-      serialization += ` from '${resultingRequirePath.replace(/\\/gu, '/')}';`;
-    } else {
-      serialization = `require('${resultingRequirePath.replace(/\\/gu, '/')}')`;
+    // if (options.settings.esm) {
+    //   serialization = 'import ';
+    //   if (options.requireElement === serializationVariableName) {
+    //     serialization += `{ ${serializationVariableName} }`;
+    //   } else if (options.requireElement) {
+    //     serialization += `{ ${options.requireElement} as ${serializationVariableName} }`;
+    //   } else {
+    //     serialization += `* as ${serializationVariableName}`;
+    //   }
+    //   serialization += ` from '${resultingRequirePath.replace(/\\/gu, '/')}';`;
+    // } else {
+    //   serialization = `require('${resultingRequirePath.replace(/\\/gu, '/')}')`;
 
-      // Determine the child of the require'd element
-      if (options.requireElement) {
-        serialization += `.${options.requireElement}`;
-      }
+    //   // Determine the child of the require'd element
+    //   if (options.requireElement) {
+    //     serialization += `.${options.requireElement}`;
+    //   }
 
-      // Add a line to our file to declare the instantiated element as a const
-      serialization = `const ${serializationVariableName} = ${serialization};`;
-    }
+    //   // Add a line to our file to declare the instantiated element as a const
+    //   serialization = `const ${serializationVariableName} = ${serialization};`;
+    // }
 
-    this.lines.push(serialization);
+    // this.lines.push(serialization);
 
-    // Call the constructor of the element
-    if (options.callConstructor) {
-      this.lines.push(`const ${serializationVariableName.slice(0, -5)} = new ${serializationVariableName}(${options.args.join(', ')});`);
-      return serializationVariableName.slice(0, -5);
-    }
+    // // Call the constructor of the element
+    // if (options.callConstructor) {
+    //   this.lines.push(`const ${serializationVariableName.slice(0, -5)} = new ${serializationVariableName}(${options.args.join(', ')});`);
+    //   return serializationVariableName.slice(0, -5);
+    // }
 
-    return serializationVariableName;
+    // return serializationVariableName;
   }
 }
 
-export interface ICreationStrategyCommonJsStringOptions extends ICreationStrategyCommonJsOptions {
-  /**
-   * If the exported instance should be exposed as a function, which accepts an optional hash of variables.
-   * If this is true, variables will be extracted from the `variables` hash.
-   */
-  asFunction?: boolean;
+export interface ICreationStrategyCommonJsStringOptions extends ICreationStrategyESMoptions, IConstructionStrategyAbstractStringOptions {
 }

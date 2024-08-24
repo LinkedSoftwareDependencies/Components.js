@@ -44,7 +44,7 @@ export class ConfigPreprocessorComponentMapped extends ConfigPreprocessorCompone
     new ConstructorArgumentsElementMappingHandlerList(),
   ];
 
-  public canHandle(config: Resource): IComponentConfigPreprocessorHandleResponse | undefined {
+  public override canHandle(config: Resource): IComponentConfigPreprocessorHandleResponse | undefined {
     const handleResponse = super.canHandle(config);
     if (handleResponse && !handleResponse.component.property.constructorArguments) {
       return;
@@ -52,7 +52,7 @@ export class ConfigPreprocessorComponentMapped extends ConfigPreprocessorCompone
     return handleResponse;
   }
 
-  public transformConstructorArguments(
+  public override transformConstructorArguments(
     config: Resource,
     handleResponse: IComponentConfigPreprocessorHandleResponse,
   ): Resource {

@@ -29,6 +29,7 @@
     "test-watch": "jest --watch",
     "build": "scopy ./components/context.jsonld ./components/context.json && tsc && chmod +x ./bin/compile-config.js",
     "build-watch": "tsc --watch",
+    "build:tsc": "tsc",
     "lint": "eslint . --ext .ts --cache",
     "validate": "yarn info",
     "prepare": "yarn build",
@@ -77,7 +78,7 @@
     "streamify-string": "^1.0.1",
     "ts-jest": "^29.1.0",
     "ts-loader": "^9.4.1",
-    "typescript": "^5.0.0",
+    "typescript": "^5.5.4",
     "webpack": "^5.75.0",
     "webpack-cli": "^5.0.0"
   },
