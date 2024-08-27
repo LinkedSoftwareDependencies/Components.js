@@ -25,7 +25,7 @@ import { ConstructionStrategyCommonJs } from './ConstructionStrategyCommonJs';
 export class ConstructionStrategyESMString extends ConstructionStrategyAbstractString {
   protected EXPORT_STRING = 'export default';
   protected ENTRY_KEY = 'module';
-  private CLASS_STRING = 'Class';
+  private CLASS_STRING = '_class';
   private overrideRequireNames: Record<string, string>;
   private strategyCommonJs: ConstructionStrategyCommonJs;
 
@@ -67,7 +67,7 @@ export class ConstructionStrategyESMString extends ConstructionStrategyAbstractS
     }
     serialization += ` from '${resultingRequirePath.replace(/\\/gu, '/')}';`;
 
-    this.lines.push(serialization);
+    this.outerLines.push(serialization);
 
     // Call the constructor of the element
     if (options.callConstructor) {

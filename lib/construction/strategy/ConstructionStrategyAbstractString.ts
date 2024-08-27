@@ -29,6 +29,7 @@ import type {
 export abstract class ConstructionStrategyAbstractString implements IConstructionStrategy<string> {
   protected readonly asFunction: boolean;
   protected readonly lines: string[] = [];
+  protected readonly outerLines: string[] = [];
   protected abstract readonly EXPORT_STRING: string;
   protected abstract readonly ENTRY_KEY: string;
 
@@ -123,8 +124,12 @@ export abstract class ConstructionStrategyAbstractString implements IConstructio
    *                           instead of the default (serializationVariableName).
    */
   public serializeDocument(serializationVariableName: string, exportVariableName?: string): string {
+    console.error('serializationVariableName', serializationVariableName, 'exportVariableName', exportVariableName);
     // Join all lines in the document
     const document: string = this.lines.join('\n');
+
+    // Join all lines that belong strictly at the top of the document
+    const documentTop: string = this.outerLines.length === 0 ? '' : this.outerLines.join('\n') + '\n';
 
     // Override main variable name if needed
     exportVariableName = (exportVariableName ?
@@ -133,7 +138,7 @@ export abstract class ConstructionStrategyAbstractString implements IConstructio
 
     // Export as variable-based function
     if (this.asFunction) {
-      return `${this.EXPORT_STRING} function(variables) {
+      return `${documentTop}${this.EXPORT_STRING} function(variables) {
 function getVariableValue(name) {
   if (!variables || !(name in variables)) {
     throw new Error('Undefined variable: ' + name);
@@ -147,7 +152,7 @@ return ${exportVariableName};
     }
 
     // Direct export of instantiated component
-    return `${document}
+    return `${documentTop}${document}
 ${this.EXPORT_STRING} ${exportVariableName};
 `;
   }
