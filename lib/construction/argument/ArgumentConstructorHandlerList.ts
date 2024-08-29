@@ -7,18 +7,18 @@ import type { IArgumentsConstructor } from './IArgumentsConstructor';
  * Handles arguments with RDF list values.
  */
 export class ArgumentConstructorHandlerList implements IArgumentConstructorHandler {
-  public canHandle<Instance>(
+  public canHandle<Instance, InstanceOut = Instance>(
     value: Resource,
     settings: IConstructionSettings,
-    argsCreator: IArgumentsConstructor<Instance>,
+    argsCreator: IArgumentsConstructor<Instance, InstanceOut>,
   ): boolean {
     return Boolean(value.list);
   }
 
-  public async handle<Instance>(
+  public async handle<Instance, InstanceOut = Instance>(
     argument: Resource,
     settings: IConstructionSettings,
-    argsCreator: IArgumentsConstructor<Instance>,
+    argsCreator: IArgumentsConstructor<Instance, InstanceOut>,
   ): Promise<Instance> {
     // Recursively handle all sub-args in the list
     const elements = await Promise.all(argument.list!

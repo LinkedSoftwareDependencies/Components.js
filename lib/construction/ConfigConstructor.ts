@@ -28,7 +28,7 @@ import type { IConstructionStrategy } from './strategy/IConstructionStrategy';
  * If you want to make sure that instances are reused,
  * be sure to call {@link ConfigConstructorPool} instead.
  */
-export class ConfigConstructor<Instance> implements IArgumentsConstructor<Instance> {
+export class ConfigConstructor<Instance, InstanceOut = Instance> implements IArgumentsConstructor<Instance, InstanceOut> {
   private static readonly ARGS_HANDLERS: IArgumentConstructorHandler[] = [
     new ArgumentConstructorHandlerUndefined(),
     new ArgumentConstructorHandlerHash(),
@@ -41,10 +41,10 @@ export class ConfigConstructor<Instance> implements IArgumentsConstructor<Instan
 
   public readonly objectLoader: RdfObjectLoader;
   public readonly configConstructorPool: IConfigConstructorPool<Instance>;
-  public readonly constructionStrategy: IConstructionStrategy<Instance>;
+  public readonly constructionStrategy: IConstructionStrategy<Instance, InstanceOut>;
   private readonly moduleState: IModuleState;
 
-  public constructor(options: IConfigConstructorOptions<Instance>) {
+  public constructor(options: IConfigConstructorOptions<Instance, InstanceOut>) {
     this.objectLoader = options.objectLoader;
     this.configConstructorPool = options.configConstructorPool;
     this.constructionStrategy = options.constructionStrategy;
@@ -110,7 +110,7 @@ export class ConfigConstructor<Instance> implements IArgumentsConstructor<Instan
   public async createInstance(
     config: Resource,
     settings: IConstructionSettings,
-  ): Promise<Instance> {
+  ): Promise<InstanceOut> {
     const args: Instance[] = await this.createArguments(config, settings);
     return this.constructionStrategy.createInstance({
       settings,
@@ -128,7 +128,7 @@ export class ConfigConstructor<Instance> implements IArgumentsConstructor<Instan
 /**
  * Options for a component factory.
  */
-export interface IConfigConstructorOptions<Instance> {
+export interface IConfigConstructorOptions<Instance, InstanceOut = Instance> {
   /**
    * The RDF object loader.
    */
@@ -140,7 +140,7 @@ export interface IConfigConstructorOptions<Instance> {
   /**
    * The strategy for construction.
    */
-  constructionStrategy: IConstructionStrategy<Instance>;
+  constructionStrategy: IConstructionStrategy<Instance, InstanceOut>;
   /**
    * The module state.
    */

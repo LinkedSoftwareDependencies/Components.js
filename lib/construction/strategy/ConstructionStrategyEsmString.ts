@@ -1,6 +1,6 @@
 import * as Path from 'path';
 import { ConstructionStrategyAbstractString, IConstructionStrategyAbstractStringOptions } from './ConstructionStrategyAbstractString';
-import type { ICreationStrategyESMoptions } from './ConstructionStrategyEsm';
+import { ConstructionStrategyESM, type ICreationStrategyESMoptions } from './ConstructionStrategyEsm';
 import type {
   ICreationStrategyInstanceOptions,
 } from './IConstructionStrategy';
@@ -27,21 +27,21 @@ export class ConstructionStrategyESMString extends ConstructionStrategyAbstractS
   protected ENTRY_KEY = 'module';
   private CLASS_STRING = '_class';
   private overrideRequireNames: Record<string, string>;
-  private strategyCommonJs: ConstructionStrategyCommonJs;
+  private strategyStrategyEsm: ConstructionStrategyESM;
 
   // eslint-disable-next-line unicorn/no-object-as-default-parameter
-  public constructor(options: ICreationStrategyCommonJsStringOptions = { req: require }) {
+  public constructor(options: ICreationStrategyCommonEsmStringOptions) {
     super(options);
     this.overrideRequireNames = options.overrideRequireNames || {};
-    this.strategyCommonJs = new ConstructionStrategyCommonJs(options);
+    this.strategyStrategyEsm = new ConstructionStrategyESM(options);
   }
 
-  public createInstance(options: ICreationStrategyInstanceOptions<string>): string {
+  public async createInstance(options: ICreationStrategyInstanceOptions<string>): Promise<string> {
     // Call require()
     options.requireName = this.overrideRequireNames[options.requireName] || options.requireName;
 
     // First try requiring current module, and fallback to a plain require
-    const currentResult = this.strategyCommonJs
+    const currentResult = await this.strategyStrategyEsm
       .requireCurrentRunningModuleIfCurrent(options.moduleState, options.requireName);
     const resultingRequirePath = currentResult !== false ?
       `.${Path.sep}${Path.relative(
@@ -79,5 +79,5 @@ export class ConstructionStrategyESMString extends ConstructionStrategyAbstractS
   }
 }
 
-export interface ICreationStrategyCommonJsStringOptions extends ICreationStrategyESMoptions, IConstructionStrategyAbstractStringOptions {
+export interface ICreationStrategyCommonEsmStringOptions extends ICreationStrategyESMoptions, IConstructionStrategyAbstractStringOptions {
 }

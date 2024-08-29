@@ -7,18 +7,18 @@ import type { IArgumentsConstructor } from './IArgumentsConstructor';
  * Handles primitive argument values.
  */
 export class ArgumentConstructorHandlerPrimitive implements IArgumentConstructorHandler {
-  public canHandle<Instance>(
+  public canHandle<Instance, InstanceOut = Instance>(
     value: Resource,
     settings: IConstructionSettings,
-    argsCreator: IArgumentsConstructor<Instance>,
+    argsCreator: IArgumentsConstructor<Instance, InstanceOut>,
   ): boolean {
     return Boolean(value.type === 'Literal');
   }
 
-  public async handle<Instance>(
+  public async handle<Instance, InstanceOut = Instance>(
     value: Resource,
     settings: IConstructionSettings,
-    argsCreator: IArgumentsConstructor<Instance>,
+    argsCreator: IArgumentsConstructor<Instance, InstanceOut>,
   ): Promise<Instance> {
     // ValueRaw can be set in Util.captureType
     // TODO: improve this, so that the hacked valueRaw is not needed

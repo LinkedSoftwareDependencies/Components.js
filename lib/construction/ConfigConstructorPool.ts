@@ -16,16 +16,16 @@ import type { IConstructionStrategy } from './strategy/IConstructionStrategy';
  * This will make sure that configs with the same id will only be instantiated once,
  * and multiple references to configs will always reuse the same instance.
  */
-export class ConfigConstructorPool<Instance> implements IConfigConstructorPool<Instance> {
+export class ConfigConstructorPool<Instance, InstanceOut = Instance> implements IConfigConstructorPool<Instance> {
   private readonly configPreprocessors: IConfigPreprocessor<any>[];
-  private readonly configConstructor: ConfigConstructor<Instance>;
-  private readonly constructionStrategy: IConstructionStrategy<Instance>;
+  private readonly configConstructor: ConfigConstructor<Instance, InstanceOut>;
+  private readonly constructionStrategy: IConstructionStrategy<Instance, InstanceOut>;
 
   private instances: Record<string, Promise<any>> = {};
 
-  public constructor(options: IInstancePoolOptions<Instance>) {
+  public constructor(options: IInstancePoolOptions<Instance, InstanceOut>) {
     this.configPreprocessors = options.configPreprocessors;
-    this.configConstructor = new ConfigConstructor({
+    this.configConstructor = new ConfigConstructor<Instance, InstanceOut>({
       objectLoader: options.objectLoader,
       configConstructorPool: this,
       constructionStrategy: options.constructionStrategy,
@@ -152,7 +152,7 @@ export class ConfigConstructorPool<Instance> implements IConfigConstructorPool<I
   }
 }
 
-export interface IInstancePoolOptions<Instance> {
+export interface IInstancePoolOptions<Instance, InstanceOut = Instance> {
   /**
    * The RDF object loader.
    */
@@ -164,7 +164,7 @@ export interface IInstancePoolOptions<Instance> {
   /**
    * The strategy for construction.
    */
-  constructionStrategy: IConstructionStrategy<Instance>;
+  constructionStrategy: IConstructionStrategy<Instance, InstanceOut>;
   /**
    * The module state.
    */

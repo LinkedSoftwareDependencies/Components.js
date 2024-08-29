@@ -38,7 +38,7 @@ export class ComponentsManager<Instance> {
    * @see IComponentsManagerBuilderOptions
    * @param options Settings of the new manager.
    */
-  public static build<I>(options: IComponentsManagerBuilderOptions<I>): Promise<ComponentsManager<I>> {
+  public static build<I>(options: IComponentsManagerBuilderOptions<I, I | Promise<I>>): Promise<ComponentsManager<I>> {
     return new ComponentsManagerBuilder(options).build();
   }
 

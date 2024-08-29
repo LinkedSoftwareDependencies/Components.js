@@ -10,6 +10,9 @@ import type {
   ICreationStrategyVariableOptions,
 } from './IConstructionStrategy';
 
+type Promiseish<T> = T | Promise<T>;
+
+
 /**
  * A creation strategy for a string representation of CommonJS.
  *
@@ -26,7 +29,7 @@ import type {
  *
  * @see compileConfig For a simplified abstraction for using this strategy.
  */
-export abstract class ConstructionStrategyAbstractString implements IConstructionStrategy<string> {
+export abstract class ConstructionStrategyAbstractString implements IConstructionStrategy<string, Promiseish<string>> {
   protected readonly asFunction: boolean;
   protected readonly lines: string[] = [];
   protected readonly outerLines: string[] = [];
@@ -38,7 +41,7 @@ export abstract class ConstructionStrategyAbstractString implements IConstructio
     this.asFunction = Boolean(options.asFunction);
   }
 
-  public abstract createInstance(options: ICreationStrategyInstanceOptions<string>): string;
+  public abstract createInstance(options: ICreationStrategyInstanceOptions<Promiseish<string>>): Promiseish<string>;
 
   /**
    * Get the path to the main module's main entrypoint.

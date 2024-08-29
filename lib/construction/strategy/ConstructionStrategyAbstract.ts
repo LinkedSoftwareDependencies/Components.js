@@ -46,4 +46,33 @@ export abstract class ConstructionStrategyAbstract implements IConstructionStrat
   public createUndefined(): any {
     // Return undefined
   }
+
+  public createObject(options: ICreationStrategyInstanceOptions<any>, object: any) {
+    // Determine the child of the require'd element
+    let subObject;
+    if (options.requireElement) {
+      const requireElementPath = options.requireElement.split('.');
+      try {
+        subObject = requireElementPath.reduce((acc: any, subRequireElement: string) => acc[subRequireElement], object);
+      } catch {
+        throw new Error(`Failed to get module element ${options.requireElement} from module ${options.requireName}`);
+      }
+    } else {
+      subObject = object;
+    }
+    if (!subObject) {
+      throw new Error(`Failed to get module element ${options.requireElement} from module ${options.requireName}`);
+    }
+
+    // Call the constructor of the element
+    object = subObject;
+    if (options.callConstructor) {
+      if (typeof object !== 'function') {
+        throw new Error(`Attempted to construct ${options.requireElement} from module ${options.requireName} that does not have a constructor`);
+      }
+      object = new (Function.prototype.bind.apply(object, <[any, ...any]>[{}].concat(options.args)))();
+    }
+
+    return object;
+  }
 }

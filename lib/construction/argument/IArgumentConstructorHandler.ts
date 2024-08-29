@@ -12,10 +12,10 @@ export interface IArgumentConstructorHandler {
    * @param settings Creation settings.
    * @param argsCreator Instance of the arguments creator that can be used to handle recursive args.
    */
-  canHandle: <Instance>(
+  canHandle: <Instance, InstanceOut = Instance>(
     value: Resource,
     settings: IConstructionSettings,
-    argsCreator: IArgumentsConstructor<Instance>,
+    argsCreator: IArgumentsConstructor<Instance, InstanceOut>,
   ) => boolean;
 
   /**
@@ -24,9 +24,9 @@ export interface IArgumentConstructorHandler {
    * @param settings Creation settings.
    * @param argsCreator Instance of the arguments creator that can be used to handle recursive args.
    */
-  handle: <Instance>(
+  handle: <Instance, InstanceOut = Instance>(
     value: Resource,
     settings: IConstructionSettings,
-    argsCreator: IArgumentsConstructor<Instance>,
+    argsCreator: IArgumentsConstructor<Instance, InstanceOut>,
   ) => Promise<Instance>;
 }
