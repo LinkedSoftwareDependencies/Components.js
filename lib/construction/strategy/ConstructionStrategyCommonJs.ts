@@ -24,9 +24,8 @@ export class ConstructionStrategyCommonJs extends ConstructionStrategyAbstract {
     options.requireName = this.overrideRequireNames[options.requireName] || options.requireName;
 
     // First try requiring current module, and fallback to a plain require
-    let object: any;
     const currentResult = this.requireCurrentRunningModuleIfCurrent(options.moduleState, options.requireName);
-    object = currentResult !== false ?
+    const object = currentResult !== false ?
       currentResult.value :
       this.req(options.requireName.startsWith('.') ?
         Path.join(process.cwd(), options.requireName) :

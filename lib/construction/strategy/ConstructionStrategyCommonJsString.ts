@@ -1,5 +1,6 @@
 import * as Path from 'path';
-import { ConstructionStrategyAbstractString, IConstructionStrategyAbstractStringOptions } from './ConstructionStrategyAbstractString';
+import type { IConstructionStrategyAbstractStringOptions } from './ConstructionStrategyAbstractString';
+import { ConstructionStrategyAbstractString } from './ConstructionStrategyAbstractString';
 import { ConstructionStrategyCommonJs, type ICreationStrategyCommonJsOptions } from './ConstructionStrategyCommonJs';
 import type {
   ICreationStrategyInstanceOptions,
@@ -69,5 +70,7 @@ export class ConstructionStrategyCommonJsString extends ConstructionStrategyAbst
   }
 }
 
-export interface ICreationStrategyCommonJsStringOptions extends ICreationStrategyCommonJsOptions, IConstructionStrategyAbstractStringOptions {
+export interface ICreationStrategyCommonJsStringOptions extends
+  ICreationStrategyCommonJsOptions,
+  IConstructionStrategyAbstractStringOptions {
 }

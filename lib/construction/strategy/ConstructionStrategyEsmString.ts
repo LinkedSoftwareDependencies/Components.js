@@ -1,10 +1,10 @@
 import * as Path from 'path';
-import { ConstructionStrategyAbstractString, IConstructionStrategyAbstractStringOptions } from './ConstructionStrategyAbstractString';
+import type { IConstructionStrategyAbstractStringOptions } from './ConstructionStrategyAbstractString';
+import { ConstructionStrategyAbstractString } from './ConstructionStrategyAbstractString';
 import { ConstructionStrategyESM, type ICreationStrategyESMoptions } from './ConstructionStrategyEsm';
 import type {
   ICreationStrategyInstanceOptions,
 } from './IConstructionStrategy';
-import { ConstructionStrategyCommonJs } from './ConstructionStrategyCommonJs';
 
 /**
  * A creation strategy for a string representation of CommonJS.
@@ -25,9 +25,9 @@ import { ConstructionStrategyCommonJs } from './ConstructionStrategyCommonJs';
 export class ConstructionStrategyESMString extends ConstructionStrategyAbstractString {
   protected EXPORT_STRING = 'export default';
   protected ENTRY_KEY = 'module';
-  private CLASS_STRING = '_class';
-  private overrideRequireNames: Record<string, string>;
-  private strategyStrategyEsm: ConstructionStrategyESM;
+  private readonly CLASS_STRING = '_class';
+  private readonly overrideRequireNames: Record<string, string>;
+  private readonly strategyStrategyEsm: ConstructionStrategyESM;
 
   // eslint-disable-next-line unicorn/no-object-as-default-parameter
   public constructor(options: ICreationStrategyCommonEsmStringOptions) {
@@ -79,5 +79,6 @@ export class ConstructionStrategyESMString extends ConstructionStrategyAbstractS
   }
 }
 
-export interface ICreationStrategyCommonEsmStringOptions extends ICreationStrategyESMoptions, IConstructionStrategyAbstractStringOptions {
+export interface ICreationStrategyCommonEsmStringOptions extends
+  ICreationStrategyESMoptions, IConstructionStrategyAbstractStringOptions {
 }

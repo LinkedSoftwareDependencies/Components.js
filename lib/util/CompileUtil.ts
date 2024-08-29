@@ -23,9 +23,9 @@ export async function compileConfig(
   asEsm?: boolean,
 ): Promise<string> {
   // Set up the components manager
-  const constructionStrategy = asEsm
-    ? new ConstructionStrategyESMString({ asFunction })
-    : new ConstructionStrategyCommonJsString({ asFunction, req: require });
+  const constructionStrategy = asEsm ?
+    new ConstructionStrategyESMString({ asFunction }) :
+    new ConstructionStrategyCommonJsString({ asFunction, req: require });
   const manager = await ComponentsManager.build({
     mainModulePath,
     constructionStrategy,

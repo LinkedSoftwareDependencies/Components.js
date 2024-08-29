@@ -47,7 +47,7 @@ export abstract class ConstructionStrategyAbstract implements IConstructionStrat
     // Return undefined
   }
 
-  public createObject(options: ICreationStrategyInstanceOptions<any>, object: any) {
+  public createObject(options: ICreationStrategyInstanceOptions<any>, object: any): any {
     // Determine the child of the require'd element
     let subObject;
     if (options.requireElement) {

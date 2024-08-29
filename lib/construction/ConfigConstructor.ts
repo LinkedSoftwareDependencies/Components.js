@@ -28,7 +28,7 @@ import type { IConstructionStrategy } from './strategy/IConstructionStrategy';
  * If you want to make sure that instances are reused,
  * be sure to call {@link ConfigConstructorPool} instead.
  */
-export class ConfigConstructor<Instance, InstanceOut = Instance> implements IArgumentsConstructor<Instance, InstanceOut> {
+export class ConfigConstructor<Instance, IOut = Instance> implements IArgumentsConstructor<Instance, IOut> {
   private static readonly ARGS_HANDLERS: IArgumentConstructorHandler[] = [
     new ArgumentConstructorHandlerUndefined(),
     new ArgumentConstructorHandlerHash(),
@@ -41,10 +41,10 @@ export class ConfigConstructor<Instance, InstanceOut = Instance> implements IArg
 
   public readonly objectLoader: RdfObjectLoader;
   public readonly configConstructorPool: IConfigConstructorPool<Instance>;
-  public readonly constructionStrategy: IConstructionStrategy<Instance, InstanceOut>;
+  public readonly constructionStrategy: IConstructionStrategy<Instance, IOut>;
   private readonly moduleState: IModuleState;
 
-  public constructor(options: IConfigConstructorOptions<Instance, InstanceOut>) {
+  public constructor(options: IConfigConstructorOptions<Instance, IOut>) {
     this.objectLoader = options.objectLoader;
     this.configConstructorPool = options.configConstructorPool;
     this.constructionStrategy = options.constructionStrategy;
@@ -110,7 +110,7 @@ export class ConfigConstructor<Instance, InstanceOut = Instance> implements IArg
   public async createInstance(
     config: Resource,
     settings: IConstructionSettings,
-  ): Promise<InstanceOut> {
+  ): Promise<IOut> {
     const args: Instance[] = await this.createArguments(config, settings);
     return this.constructionStrategy.createInstance({
       settings,

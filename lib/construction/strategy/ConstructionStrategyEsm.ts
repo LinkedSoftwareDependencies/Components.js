@@ -22,16 +22,15 @@ export class ConstructionStrategyESM extends ConstructionStrategyAbstract {
     options.requireName = this.overrideRequireNames[options.requireName] || options.requireName;
 
     // First try requiring current module, and fallback to a plain require
-    let object: any;
     const currentResult = await this.requireCurrentRunningModuleIfCurrent(options.moduleState, options.requireName);
-    object = currentResult !== false ?
+    const object = currentResult !== false ?
       currentResult.value :
       await import(
         options.requireName.startsWith('.') ?
-        Path.join(process.cwd(), options.requireName) :
+          Path.join(process.cwd(), options.requireName) :
         // TODO See if we need to supply { paths: [ options.moduleState.mainModulePath ]} somehow
-        options.requireName
-      )
+          options.requireName
+      );
 
     return this.createObject(options, object);
   }
@@ -43,7 +42,10 @@ export class ConstructionStrategyESM extends ConstructionStrategyAbstract {
    * @param requireName The module name that should be required.
    * @returns {any} The require() result
    */
-  public async requireCurrentRunningModuleIfCurrent(moduleState: IModuleState, requireName: string): Promise<{ value: any } | false> {
+  public async requireCurrentRunningModuleIfCurrent(
+    moduleState: IModuleState,
+    requireName: string,
+  ): Promise<{ value: any } | false> {
     const pckg = moduleState.packageJsons[moduleState.mainModulePath];
     if (pckg) {
       if (requireName === pckg.name) {

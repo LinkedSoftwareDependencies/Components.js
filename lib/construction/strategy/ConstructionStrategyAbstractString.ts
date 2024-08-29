@@ -12,7 +12,6 @@ import type {
 
 type Promiseish<T> = T | Promise<T>;
 
-
 /**
  * A creation strategy for a string representation of CommonJS.
  *
@@ -127,12 +126,11 @@ export abstract class ConstructionStrategyAbstractString implements IConstructio
    *                           instead of the default (serializationVariableName).
    */
   public serializeDocument(serializationVariableName: string, exportVariableName?: string): string {
-    console.error('serializationVariableName', serializationVariableName, 'exportVariableName', exportVariableName);
     // Join all lines in the document
     const document: string = this.lines.join('\n');
 
     // Join all lines that belong strictly at the top of the document
-    const documentTop: string = this.outerLines.length === 0 ? '' : this.outerLines.join('\n') + '\n';
+    const documentTop: string = this.outerLines.length === 0 ? '' : `${this.outerLines.join('\n')}\n`;
 
     // Override main variable name if needed
     exportVariableName = (exportVariableName ?
