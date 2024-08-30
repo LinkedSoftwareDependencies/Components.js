@@ -1,12 +1,12 @@
 import type { Resource, RdfObjectLoader } from 'rdf-object';
 import { termToString } from 'rdf-string';
-import type { IModuleState } from '../loading/ModuleStateBuilder';
-import type { IConfigPreprocessor } from '../preprocess/IConfigPreprocessor';
-import { ErrorResourcesContext } from '../util/ErrorResourcesContext';
-import { ConfigConstructor } from './ConfigConstructor';
-import type { IConfigConstructorPool } from './IConfigConstructorPool';
-import type { IConstructionSettings } from './IConstructionSettings';
-import type { IConstructionStrategy } from './strategy/IConstructionStrategy';
+import type { IModuleState } from '../loading/ModuleStateBuilder.js';
+import type { IConfigPreprocessor } from '../preprocess/IConfigPreprocessor.js';
+import { ErrorResourcesContext } from '../util/ErrorResourcesContext.js';
+import { ConfigConstructor } from './ConfigConstructor.js';
+import type { IConfigConstructorPool } from './IConfigConstructorPool.js';
+import type { IConstructionSettings } from './IConstructionSettings.js';
+import type { IConstructionStrategy } from './strategy/IConstructionStrategy.js';
 
 /**
  * Manages and creates instances of components based on a given config.

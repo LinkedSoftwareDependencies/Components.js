@@ -2,13 +2,13 @@ import * as fs from 'fs';
 import type { Resource, RdfObjectLoader } from 'rdf-object';
 import { stringToTerm } from 'rdf-string';
 import type { Logger } from 'winston';
-import type { IConfigConstructorPool } from './construction/IConfigConstructorPool';
-import type { IConstructionSettings } from './construction/IConstructionSettings';
-import type { IComponentsManagerBuilderOptions } from './loading/ComponentsManagerBuilder';
-import { ComponentsManagerBuilder } from './loading/ComponentsManagerBuilder';
-import type { ConfigRegistry } from './loading/ConfigRegistry';
-import type { IModuleState } from './loading/ModuleStateBuilder';
-import { ErrorResourcesContext } from './util/ErrorResourcesContext';
+import type { IConfigConstructorPool } from './construction/IConfigConstructorPool.js';
+import type { IConstructionSettings } from './construction/IConstructionSettings.js';
+import type { IComponentsManagerBuilderOptions } from './loading/ComponentsManagerBuilder.js';
+import { ComponentsManagerBuilder } from './loading/ComponentsManagerBuilder.js';
+import type { ConfigRegistry } from './loading/ConfigRegistry.js';
+import type { IModuleState } from './loading/ModuleStateBuilder.js';
+import { ErrorResourcesContext } from './util/ErrorResourcesContext.js';
 
 /**
  * A components manager can instantiate components.

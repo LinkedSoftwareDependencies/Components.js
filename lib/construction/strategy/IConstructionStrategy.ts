@@ -1,5 +1,5 @@
-import type { IModuleState } from '../../loading/ModuleStateBuilder';
-import type { IConstructionSettings } from '../IConstructionSettings';
+import type { IModuleState } from '../../loading/ModuleStateBuilder.js';
+import type { IConstructionSettings } from '../IConstructionSettings.js';
 
 /**
  * Implementations of this interface represent a certain strategy for creating instances.

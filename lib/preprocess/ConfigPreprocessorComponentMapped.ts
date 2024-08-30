@@ -1,33 +1,33 @@
 import type { Resource } from 'rdf-object';
-import { IRIS_RDF } from '../rdf/Iris';
+import { IRIS_RDF } from '../rdf/Iris.js';
 import type {
   IComponentConfigPreprocessorHandleResponse,
-} from './ConfigPreprocessorComponent';
+} from './ConfigPreprocessorComponent.js';
 import {
   ConfigPreprocessorComponent,
-} from './ConfigPreprocessorComponent';
+} from './ConfigPreprocessorComponent.js';
 import {
   ConstructorArgumentsElementMappingHandlerCollectEntries,
-} from './constructorargumentsmapping/ConstructorArgumentsElementMappingHandlerCollectEntries';
+} from './constructorargumentsmapping/ConstructorArgumentsElementMappingHandlerCollectEntries.js';
 import {
   ConstructorArgumentsElementMappingHandlerElements,
-} from './constructorargumentsmapping/ConstructorArgumentsElementMappingHandlerElements';
+} from './constructorargumentsmapping/ConstructorArgumentsElementMappingHandlerElements.js';
 import {
   ConstructorArgumentsElementMappingHandlerFields,
-} from './constructorargumentsmapping/ConstructorArgumentsElementMappingHandlerFields';
+} from './constructorargumentsmapping/ConstructorArgumentsElementMappingHandlerFields.js';
 import {
   ConstructorArgumentsElementMappingHandlerKeyValue,
-} from './constructorargumentsmapping/ConstructorArgumentsElementMappingHandlerKeyValue';
+} from './constructorargumentsmapping/ConstructorArgumentsElementMappingHandlerKeyValue.js';
 import {
   ConstructorArgumentsElementMappingHandlerList,
-} from './constructorargumentsmapping/ConstructorArgumentsElementMappingHandlerList';
+} from './constructorargumentsmapping/ConstructorArgumentsElementMappingHandlerList.js';
 import type {
   IConstructorArgumentsElementMappingHandler,
-} from './constructorargumentsmapping/IConstructorArgumentsElementMappingHandler';
+} from './constructorargumentsmapping/IConstructorArgumentsElementMappingHandler.js';
 import type {
   IConstructorArgumentsMapper,
-} from './constructorargumentsmapping/IConstructorArgumentsMapper';
-import type { GenericsContext } from './GenericsContext';
+} from './constructorargumentsmapping/IConstructorArgumentsMapper.js';
+import type { GenericsContext } from './GenericsContext.js';
 
 /**
  * Handles config that refer to a component as type.

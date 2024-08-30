@@ -1,12 +1,12 @@
 import type { RdfObjectLoader, Resource } from 'rdf-object';
-import { ErrorResourcesContext } from '../util/ErrorResourcesContext';
-import type { GenericsContext } from './GenericsContext';
-import type { IParameterPropertyHandler } from './parameterproperty/IParameterPropertyHandler';
-import { ParameterPropertyHandlerDefault } from './parameterproperty/ParameterPropertyHandlerDefault';
-import { ParameterPropertyHandlerDefaultScoped } from './parameterproperty/ParameterPropertyHandlerDefaultScoped';
-import { ParameterPropertyHandlerFixed } from './parameterproperty/ParameterPropertyHandlerFixed';
-import { ParameterPropertyHandlerLazy } from './parameterproperty/ParameterPropertyHandlerLazy';
-import { ParameterPropertyHandlerRange } from './parameterproperty/ParameterPropertyHandlerRange';
+import { ErrorResourcesContext } from '../util/ErrorResourcesContext.js';
+import type { GenericsContext } from './GenericsContext.js';
+import type { IParameterPropertyHandler } from './parameterproperty/IParameterPropertyHandler.js';
+import { ParameterPropertyHandlerDefault } from './parameterproperty/ParameterPropertyHandlerDefault.js';
+import { ParameterPropertyHandlerDefaultScoped } from './parameterproperty/ParameterPropertyHandlerDefaultScoped.js';
+import { ParameterPropertyHandlerFixed } from './parameterproperty/ParameterPropertyHandlerFixed.js';
+import { ParameterPropertyHandlerLazy } from './parameterproperty/ParameterPropertyHandlerLazy.js';
+import { ParameterPropertyHandlerRange } from './parameterproperty/ParameterPropertyHandlerRange.js';
 
 /**
  * Handles component parameters in the context of a config.

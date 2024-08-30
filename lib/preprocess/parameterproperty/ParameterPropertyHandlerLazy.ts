@@ -1,5 +1,5 @@
 import type { Resource } from 'rdf-object';
-import type { IParameterPropertyHandler } from './IParameterPropertyHandler';
+import type { IParameterPropertyHandler } from './IParameterPropertyHandler.js';
 
 /**
  * If the parameter is marked as lazy,

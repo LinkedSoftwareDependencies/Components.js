@@ -1,10 +1,10 @@
 import type { NamedNode } from '@rdfjs/types';
 import type { RdfObjectLoader, Resource } from 'rdf-object';
-import { IRIS_RDF, IRIS_XSD } from '../../rdf/Iris';
-import type { IErrorContext } from '../../util/ErrorResourcesContext';
-import { ErrorResourcesContext } from '../../util/ErrorResourcesContext';
-import { GenericsContext } from '../GenericsContext';
-import type { IParameterPropertyHandler } from './IParameterPropertyHandler';
+import { IRIS_RDF, IRIS_XSD } from '../../rdf/Iris.js';
+import type { IErrorContext } from '../../util/ErrorResourcesContext.js';
+import { ErrorResourcesContext } from '../../util/ErrorResourcesContext.js';
+import { GenericsContext } from '../GenericsContext.js';
+import type { IParameterPropertyHandler } from './IParameterPropertyHandler.js';
 
 /**
  * If a param range is defined, apply the type and validate the range.

@@ -1,5 +1,5 @@
 import type { Resource } from 'rdf-object';
-import type { IConstructionSettings } from './IConstructionSettings';
+import type { IConstructionSettings } from './IConstructionSettings.js';
 
 /**
  * Manages and creates instances of components.

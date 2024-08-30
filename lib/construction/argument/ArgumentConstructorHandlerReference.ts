@@ -1,7 +1,7 @@
 import type { Resource } from 'rdf-object';
-import type { IConstructionSettings } from '../IConstructionSettings';
-import type { IArgumentConstructorHandler } from './IArgumentConstructorHandler';
-import type { IArgumentsConstructor } from './IArgumentsConstructor';
+import type { IConstructionSettings } from '../IConstructionSettings.js';
+import type { IArgumentConstructorHandler } from './IArgumentConstructorHandler.js';
+import type { IArgumentsConstructor } from './IArgumentsConstructor.js';
 
 /**
  * Handles IRI and blank node arguments as reference to another argument or instance.

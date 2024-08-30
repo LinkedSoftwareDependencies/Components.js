@@ -1,18 +1,18 @@
 import type { Resource, RdfObjectLoader } from 'rdf-object';
-import type { IModuleState } from '../loading/ModuleStateBuilder';
-import { ErrorResourcesContext } from '../util/ErrorResourcesContext';
-import { ArgumentConstructorHandlerArray } from './argument/ArgumentConstructorHandlerArray';
-import { ArgumentConstructorHandlerHash } from './argument/ArgumentConstructorHandlerHash';
-import { ArgumentConstructorHandlerList } from './argument/ArgumentConstructorHandlerList';
-import { ArgumentConstructorHandlerPrimitive } from './argument/ArgumentConstructorHandlerPrimitive';
-import { ArgumentConstructorHandlerReference } from './argument/ArgumentConstructorHandlerReference';
-import { ArgumentConstructorHandlerUndefined } from './argument/ArgumentConstructorHandlerUndefined';
-import { ArgumentConstructorHandlerValue } from './argument/ArgumentConstructorHandlerValue';
-import type { IArgumentConstructorHandler } from './argument/IArgumentConstructorHandler';
-import type { IArgumentsConstructor } from './argument/IArgumentsConstructor';
-import type { IConfigConstructorPool } from './IConfigConstructorPool';
-import type { IConstructionSettings } from './IConstructionSettings';
-import type { IConstructionStrategy } from './strategy/IConstructionStrategy';
+import type { IModuleState } from '../loading/ModuleStateBuilder.js';
+import { ErrorResourcesContext } from '../util/ErrorResourcesContext.js';
+import { ArgumentConstructorHandlerArray } from './argument/ArgumentConstructorHandlerArray.js';
+import { ArgumentConstructorHandlerHash } from './argument/ArgumentConstructorHandlerHash.js';
+import { ArgumentConstructorHandlerList } from './argument/ArgumentConstructorHandlerList.js';
+import { ArgumentConstructorHandlerPrimitive } from './argument/ArgumentConstructorHandlerPrimitive.js';
+import { ArgumentConstructorHandlerReference } from './argument/ArgumentConstructorHandlerReference.js';
+import { ArgumentConstructorHandlerUndefined } from './argument/ArgumentConstructorHandlerUndefined.js';
+import { ArgumentConstructorHandlerValue } from './argument/ArgumentConstructorHandlerValue.js';
+import type { IArgumentConstructorHandler } from './argument/IArgumentConstructorHandler.js';
+import type { IArgumentsConstructor } from './argument/IArgumentsConstructor.js';
+import type { IConfigConstructorPool } from './IConfigConstructorPool.js';
+import type { IConstructionSettings } from './IConstructionSettings.js';
+import type { IConstructionStrategy } from './strategy/IConstructionStrategy.js';
 
 /**
  * Creates instances of raw configs using the configured creation strategy.

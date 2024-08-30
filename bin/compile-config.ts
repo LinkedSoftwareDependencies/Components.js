@@ -5,7 +5,7 @@
 import * as Path from 'path';
 import type { ParsedArgs } from 'minimist';
 import minimist = require('minimist');
-import { compileConfig } from '..';
+import { compileConfig } from '../index.js';
 
 const args: ParsedArgs = minimist(process.argv.slice(2));
 if (args._.length !== 1 || args.h || args.help) {

@@ -1,10 +1,10 @@
 import type { Resource } from 'rdf-object';
-import { IRIS_RDF } from '../../rdf/Iris';
-import { ErrorResourcesContext } from '../../util/ErrorResourcesContext';
-import type { GenericsContext } from '../GenericsContext';
-import type { ParameterHandler } from '../ParameterHandler';
-import type { IConstructorArgumentsElementMappingHandler } from './IConstructorArgumentsElementMappingHandler';
-import type { IConstructorArgumentsMapper } from './IConstructorArgumentsMapper';
+import { IRIS_RDF } from '../../rdf/Iris.js';
+import { ErrorResourcesContext } from '../../util/ErrorResourcesContext.js';
+import type { GenericsContext } from '../GenericsContext.js';
+import type { ParameterHandler } from '../ParameterHandler.js';
+import type { IConstructorArgumentsElementMappingHandler } from './IConstructorArgumentsElementMappingHandler.js';
+import type { IConstructorArgumentsMapper } from './IConstructorArgumentsMapper.js';
 
 /**
  * Handler for dynamic key-value pairs via collectEntries.

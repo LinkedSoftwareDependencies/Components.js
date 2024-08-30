@@ -6,7 +6,7 @@ import type {
   ICreationStrategyPrimitiveOptions,
   ICreationStrategySupplierOptions,
   ICreationStrategyVariableOptions,
-} from './IConstructionStrategy';
+} from './IConstructionStrategy.js';
 
 /**
  * A creation strategy for creating instances with CommonJS.

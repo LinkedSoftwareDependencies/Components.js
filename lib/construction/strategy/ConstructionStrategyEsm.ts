@@ -1,9 +1,9 @@
 import * as Path from 'path';
-import type { IModuleState } from '../../loading/ModuleStateBuilder';
-import { ConstructionStrategyAbstract } from './ConstructionStrategyAbstract';
+import type { IModuleState } from '../../loading/ModuleStateBuilder.js';
+import { ConstructionStrategyAbstract } from './ConstructionStrategyAbstract.js';
 import type {
   ICreationStrategyInstanceOptions,
-} from './IConstructionStrategy';
+} from './IConstructionStrategy.js';
 
 /**
  * A creation strategy for creating instances with CommonJS.

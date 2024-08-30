@@ -1,6 +1,6 @@
 import type { Resource } from 'rdf-object';
-import type { IConstructionSettings } from '../IConstructionSettings';
-import type { IArgumentsConstructor } from './IArgumentsConstructor';
+import type { IConstructionSettings } from '../IConstructionSettings.js';
+import type { IArgumentsConstructor } from './IArgumentsConstructor.js';
 
 /**
  * Creates instances for specific types of arguments.

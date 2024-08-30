@@ -1,17 +1,17 @@
 import type { Resource } from 'rdf-object';
-import type { RdfObjectLoader } from 'rdf-object/lib/RdfObjectLoader';
+import type { RdfObjectLoader } from 'rdf-object/lib/RdfObjectLoader.js';
 import type { Logger } from 'winston';
-import { IRIS_OO, PREFIX_OO } from '../rdf/Iris';
-import { uniqueTypes } from '../rdf/ResourceUtil';
-import { ErrorResourcesContext } from '../util/ErrorResourcesContext';
-import type { IConfigPreprocessor, IConfigPreprocessorTransform } from './IConfigPreprocessor';
-import type { IOverrideStep } from './overridesteps/IOverrideStep';
-import { OverrideListInsertAfter } from './overridesteps/OverrideListInsertAfter';
-import { OverrideListInsertAt } from './overridesteps/OverrideListInsertAt';
-import { OverrideListInsertBefore } from './overridesteps/OverrideListInsertBefore';
-import { OverrideListRemove } from './overridesteps/OverrideListRemove';
-import { OverrideMapEntry } from './overridesteps/OverrideMapEntry';
-import { OverrideParameters } from './overridesteps/OverrideParameters';
+import { IRIS_OO, PREFIX_OO } from '../rdf/Iris.js';
+import { uniqueTypes } from '../rdf/ResourceUtil.js';
+import { ErrorResourcesContext } from '../util/ErrorResourcesContext.js';
+import type { IConfigPreprocessor, IConfigPreprocessorTransform } from './IConfigPreprocessor.js';
+import type { IOverrideStep } from './overridesteps/IOverrideStep.js';
+import { OverrideListInsertAfter } from './overridesteps/OverrideListInsertAfter.js';
+import { OverrideListInsertAt } from './overridesteps/OverrideListInsertAt.js';
+import { OverrideListInsertBefore } from './overridesteps/OverrideListInsertBefore.js';
+import { OverrideListRemove } from './overridesteps/OverrideListRemove.js';
+import { OverrideMapEntry } from './overridesteps/OverrideMapEntry.js';
+import { OverrideParameters } from './overridesteps/OverrideParameters.js';
 
 /**
  * An {@link IConfigPreprocessor} that handles the overriding of parameters.

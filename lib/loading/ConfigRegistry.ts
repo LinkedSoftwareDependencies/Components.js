@@ -3,8 +3,8 @@ import type * as RDF from '@rdfjs/types';
 import type { RdfObjectLoader, Resource } from 'rdf-object';
 import { termToString } from 'rdf-string';
 import type { Logger } from 'winston';
-import { RdfParser } from '../rdf/RdfParser';
-import type { IModuleState } from './ModuleStateBuilder';
+import { RdfParser } from '../rdf/RdfParser.js';
+import type { IModuleState } from './ModuleStateBuilder.js';
 
 /**
  * Accepts registrations for configurations that contain instantiations of components.

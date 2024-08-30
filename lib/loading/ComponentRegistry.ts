@@ -2,8 +2,8 @@ import type { Readable } from 'stream';
 import type * as RDF from '@rdfjs/types';
 import type { Resource, RdfObjectLoader } from 'rdf-object';
 import type { Logger } from 'winston';
-import { RdfParser } from '../rdf/RdfParser';
-import type { IModuleState } from './ModuleStateBuilder';
+import { RdfParser } from '../rdf/RdfParser.js';
+import type { IModuleState } from './ModuleStateBuilder.js';
 
 /**
  * Accepts component registrations and modules containing zero or more components.

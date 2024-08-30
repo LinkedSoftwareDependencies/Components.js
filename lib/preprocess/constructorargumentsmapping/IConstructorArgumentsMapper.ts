@@ -1,5 +1,5 @@
 import type { RdfObjectLoader, Resource } from 'rdf-object';
-import type { GenericsContext } from '../GenericsContext';
+import type { GenericsContext } from '../GenericsContext.js';
 
 /**
  * Instances of this interfaces can apply constructor arguments on configs.

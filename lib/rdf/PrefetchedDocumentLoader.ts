@@ -1,5 +1,4 @@
-import type { IJsonLdContext } from 'jsonld-context-parser';
-import { FetchDocumentLoader } from 'jsonld-context-parser';
+import { FetchDocumentLoader, type IJsonLdContext } from 'jsonld-context-parser';
 import semverMajor = require('semver/functions/major');
 import type { Logger } from 'winston';
 

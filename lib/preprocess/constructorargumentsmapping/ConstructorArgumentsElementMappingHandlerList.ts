@@ -1,7 +1,7 @@
 import type { Resource } from 'rdf-object';
-import type { GenericsContext } from '../GenericsContext';
-import type { IConstructorArgumentsElementMappingHandler } from './IConstructorArgumentsElementMappingHandler';
-import type { IConstructorArgumentsMapper } from './IConstructorArgumentsMapper';
+import type { GenericsContext } from '../GenericsContext.js';
+import type { IConstructorArgumentsElementMappingHandler } from './IConstructorArgumentsElementMappingHandler.js';
+import type { IConstructorArgumentsMapper } from './IConstructorArgumentsMapper.js';
 
 /**
  * Handler for an RDF list.

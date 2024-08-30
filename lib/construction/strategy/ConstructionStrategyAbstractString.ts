@@ -1,5 +1,5 @@
 import * as Path from 'path';
-import type { IModuleState } from '../../loading/ModuleStateBuilder';
+import type { IModuleState } from '../../loading/ModuleStateBuilder.js';
 import type {
   IConstructionStrategy,
   ICreationStrategyArrayOptions,
@@ -8,7 +8,7 @@ import type {
   ICreationStrategyPrimitiveOptions,
   ICreationStrategySupplierOptions,
   ICreationStrategyVariableOptions,
-} from './IConstructionStrategy';
+} from './IConstructionStrategy.js';
 
 type Promiseish<T> = T | Promise<T>;
 

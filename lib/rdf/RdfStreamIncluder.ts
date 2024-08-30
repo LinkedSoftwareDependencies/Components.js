@@ -3,9 +3,9 @@ import type { Readable, TransformCallback } from 'stream';
 import { Transform } from 'stream';
 import type * as RDF from '@rdfjs/types';
 import { getNamedNodes, getTerms } from 'rdf-terms';
-import { IRIS_RDFS } from './Iris';
-import { RdfParser } from './RdfParser';
-import type { RdfParserOptions } from './RdfParser';
+import { IRIS_RDFS } from './Iris.js';
+import { RdfParser } from './RdfParser.js';
+import type { RdfParserOptions } from './RdfParser.js';
 
 /**
  * A RdfStreamIncluder takes a triple stream and detects owl:includes to automatically include other files.

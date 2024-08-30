@@ -1,5 +1,5 @@
 import { Resource } from 'rdf-object';
-import type { IParamValueConflict } from '../preprocess/parameterproperty/ParameterPropertyHandlerRange';
+import type { IParamValueConflict } from '../preprocess/parameterproperty/ParameterPropertyHandlerRange.js';
 
 /**
  * An error that can include a context containing resources for display.

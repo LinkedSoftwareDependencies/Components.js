@@ -1,7 +1,7 @@
 import type { Resource, RdfObjectLoader } from 'rdf-object';
-import type { IConfigConstructorPool } from '../IConfigConstructorPool';
-import type { IConstructionSettings } from '../IConstructionSettings';
-import type { IConstructionStrategy } from '../strategy/IConstructionStrategy';
+import type { IConfigConstructorPool } from '../IConfigConstructorPool.js';
+import type { IConstructionSettings } from '../IConstructionSettings.js';
+import type { IConstructionStrategy } from '../strategy/IConstructionStrategy.js';
 
 /**
  * Instances of this interfaces can instantiate argument values.

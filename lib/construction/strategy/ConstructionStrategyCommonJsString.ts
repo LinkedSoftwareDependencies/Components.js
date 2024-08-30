@@ -1,10 +1,10 @@
 import * as Path from 'path';
-import type { IConstructionStrategyAbstractStringOptions } from './ConstructionStrategyAbstractString';
-import { ConstructionStrategyAbstractString } from './ConstructionStrategyAbstractString';
-import { ConstructionStrategyCommonJs, type ICreationStrategyCommonJsOptions } from './ConstructionStrategyCommonJs';
+import type { IConstructionStrategyAbstractStringOptions } from './ConstructionStrategyAbstractString.js';
+import { ConstructionStrategyAbstractString } from './ConstructionStrategyAbstractString.js';
+import { ConstructionStrategyCommonJs, type ICreationStrategyCommonJsOptions } from './ConstructionStrategyCommonJs.js';
 import type {
   ICreationStrategyInstanceOptions,
-} from './IConstructionStrategy';
+} from './IConstructionStrategy.js';
 
 /**
  * A creation strategy for a string representation of CommonJS.
