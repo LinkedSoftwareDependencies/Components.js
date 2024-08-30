@@ -79,6 +79,7 @@ export class ConstructionStrategyESMString extends ConstructionStrategyAbstractS
   }
 }
 
-export interface ICreationStrategyCommonEsmStringOptions extends
-  ICreationStrategyESMoptions, IConstructionStrategyAbstractStringOptions {
+export interface ICreationStrategyCommonEsmStringOptions extends 
+  ICreationStrategyESMoptions,
+  IConstructionStrategyAbstractStringOptions {
 }

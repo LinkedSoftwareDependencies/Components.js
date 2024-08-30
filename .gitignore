@@ -13,3 +13,4 @@ coverage
 .eslintcache
 components/*.json
 .yarn/
+dist/

@@ -1,4 +1,4 @@
-import Path = require('path');
+import Path from 'path';
 import type { Readable, TransformCallback } from 'stream';
 import { Transform } from 'stream';
 import type * as RDF from '@rdfjs/types';

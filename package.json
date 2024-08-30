@@ -21,6 +21,7 @@
   "license": "MIT",
   "packageManager": "yarn@4.0.1",
   "scripts": {
+    "build:module": "rm -rf ./dist && NODE_OPTIONS=\"--experimental-default-type=module\" tsc  && ./.change-extension d.mts dist/*.d.ts && ./.change-extension mjs dist/*.js",
     "test": "yarn test:jest",
     "test:jest": "jest",
     "test:webpack": "yarn test:webpack:node && yarn test:webpack:web",
@@ -122,5 +123,6 @@
         "statements": 100
       }
     }
-  }
+  },
+  "type": "module"
 }
