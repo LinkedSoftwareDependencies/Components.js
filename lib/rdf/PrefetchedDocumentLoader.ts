@@ -1,5 +1,4 @@
-import type { IJsonLdContext } from 'jsonld-context-parser';
-import { FetchDocumentLoader } from 'jsonld-context-parser';
+import { FetchDocumentLoader, type IJsonLdContext } from 'jsonld-context-parser';
 import semverMajor = require('semver/functions/major');
 import type { Logger } from 'winston';
 
@@ -44,7 +43,7 @@ export class PrefetchedDocumentLoader extends FetchDocumentLoader {
     this.remoteContextLookups = options.remoteContextLookups;
   }
 
-  public async load(url: string): Promise<IJsonLdContext> {
+  public override async load(url: string): Promise<IJsonLdContext> {
     // Load prefetched contexts
     if (url in this.contexts) {
       return this.contexts[url];

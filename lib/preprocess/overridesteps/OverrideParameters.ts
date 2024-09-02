@@ -1,7 +1,7 @@
 import type { Resource } from 'rdf-object';
-import { PREFIX_OO } from '../../rdf/Iris';
-import type { IOverrideStep } from './IOverrideStep';
-import { extractOverrideStepFields } from './OverrideUtil';
+import { PREFIX_OO } from '../../rdf/Iris.js';
+import type { IOverrideStep } from './IOverrideStep.js';
+import { extractOverrideStepFields } from './OverrideUtil.js';
 
 /**
  * Override step that replaces properties of the target object.

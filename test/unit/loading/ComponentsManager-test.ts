@@ -9,6 +9,10 @@ import { ConfigRegistry } from '../../../lib/loading/ConfigRegistry';
 import type { IModuleState } from '../../../lib/loading/ModuleStateBuilder';
 import { ErrorResourcesContext } from '../../../lib/util/ErrorResourcesContext';
 
+jest.mock('fs', () => ({
+  __esModule: true, // this property makes it work
+  ...jest.requireActual('fs')
+}));
 jest.spyOn(fs, 'writeFileSync');
 mocked(fs.writeFileSync).mockReturnValue();
 jest.mock('../../../lib/loading/ComponentsManagerBuilder', () => ({

@@ -1,11 +1,11 @@
-import Path = require('path');
+import Path from 'path';
 import type { Readable, TransformCallback } from 'stream';
 import { Transform } from 'stream';
 import type * as RDF from '@rdfjs/types';
 import { getNamedNodes, getTerms } from 'rdf-terms';
-import { IRIS_RDFS } from './Iris';
-import { RdfParser } from './RdfParser';
-import type { RdfParserOptions } from './RdfParser';
+import { IRIS_RDFS } from './Iris.js';
+import { RdfParser } from './RdfParser.js';
+import type { RdfParserOptions } from './RdfParser.js';
 
 /**
  * A RdfStreamIncluder takes a triple stream and detects owl:includes to automatically include other files.
@@ -21,14 +21,14 @@ export class RdfStreamIncluder extends Transform {
     this.parserOptions = parserOptions;
   }
 
-  public _transform(quad: RDF.Quad, encoding: string, callback: TransformCallback): boolean {
+  public override _transform(quad: RDF.Quad, encoding: string, callback: TransformCallback): boolean {
     this.handleImports(quad);
     this.validateIris(quad);
     callback(null, quad);
     return true;
   }
 
-  public _flush(callback: TransformCallback): void {
+  public override _flush(callback: TransformCallback): void {
     if (--this.runningImporters === 0) {
       // eslint-disable-next-line callback-return
       callback();

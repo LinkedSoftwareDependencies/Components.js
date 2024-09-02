@@ -1,18 +1,18 @@
 import type { Resource, RdfObjectLoader } from 'rdf-object';
-import type { IModuleState } from '../loading/ModuleStateBuilder';
-import { ErrorResourcesContext } from '../util/ErrorResourcesContext';
-import { ArgumentConstructorHandlerArray } from './argument/ArgumentConstructorHandlerArray';
-import { ArgumentConstructorHandlerHash } from './argument/ArgumentConstructorHandlerHash';
-import { ArgumentConstructorHandlerList } from './argument/ArgumentConstructorHandlerList';
-import { ArgumentConstructorHandlerPrimitive } from './argument/ArgumentConstructorHandlerPrimitive';
-import { ArgumentConstructorHandlerReference } from './argument/ArgumentConstructorHandlerReference';
-import { ArgumentConstructorHandlerUndefined } from './argument/ArgumentConstructorHandlerUndefined';
-import { ArgumentConstructorHandlerValue } from './argument/ArgumentConstructorHandlerValue';
-import type { IArgumentConstructorHandler } from './argument/IArgumentConstructorHandler';
-import type { IArgumentsConstructor } from './argument/IArgumentsConstructor';
-import type { IConfigConstructorPool } from './IConfigConstructorPool';
-import type { IConstructionSettings } from './IConstructionSettings';
-import type { IConstructionStrategy } from './strategy/IConstructionStrategy';
+import type { IModuleState } from '../loading/ModuleStateBuilder.js';
+import { ErrorResourcesContext } from '../util/ErrorResourcesContext.js';
+import { ArgumentConstructorHandlerArray } from './argument/ArgumentConstructorHandlerArray.js';
+import { ArgumentConstructorHandlerHash } from './argument/ArgumentConstructorHandlerHash.js';
+import { ArgumentConstructorHandlerList } from './argument/ArgumentConstructorHandlerList.js';
+import { ArgumentConstructorHandlerPrimitive } from './argument/ArgumentConstructorHandlerPrimitive.js';
+import { ArgumentConstructorHandlerReference } from './argument/ArgumentConstructorHandlerReference.js';
+import { ArgumentConstructorHandlerUndefined } from './argument/ArgumentConstructorHandlerUndefined.js';
+import { ArgumentConstructorHandlerValue } from './argument/ArgumentConstructorHandlerValue.js';
+import type { IArgumentConstructorHandler } from './argument/IArgumentConstructorHandler.js';
+import type { IArgumentsConstructor } from './argument/IArgumentsConstructor.js';
+import type { IConfigConstructorPool } from './IConfigConstructorPool.js';
+import type { IConstructionSettings } from './IConstructionSettings.js';
+import type { IConstructionStrategy } from './strategy/IConstructionStrategy.js';
 
 /**
  * Creates instances of raw configs using the configured creation strategy.
@@ -28,7 +28,7 @@ import type { IConstructionStrategy } from './strategy/IConstructionStrategy';
  * If you want to make sure that instances are reused,
  * be sure to call {@link ConfigConstructorPool} instead.
  */
-export class ConfigConstructor<Instance> implements IArgumentsConstructor<Instance> {
+export class ConfigConstructor<Instance, IOut = Instance> implements IArgumentsConstructor<Instance, IOut> {
   private static readonly ARGS_HANDLERS: IArgumentConstructorHandler[] = [
     new ArgumentConstructorHandlerUndefined(),
     new ArgumentConstructorHandlerHash(),
@@ -41,10 +41,10 @@ export class ConfigConstructor<Instance> implements IArgumentsConstructor<Instan
 
   public readonly objectLoader: RdfObjectLoader;
   public readonly configConstructorPool: IConfigConstructorPool<Instance>;
-  public readonly constructionStrategy: IConstructionStrategy<Instance>;
+  public readonly constructionStrategy: IConstructionStrategy<Instance, IOut>;
   private readonly moduleState: IModuleState;
 
-  public constructor(options: IConfigConstructorOptions<Instance>) {
+  public constructor(options: IConfigConstructorOptions<Instance, IOut>) {
     this.objectLoader = options.objectLoader;
     this.configConstructorPool = options.configConstructorPool;
     this.constructionStrategy = options.constructionStrategy;
@@ -110,7 +110,7 @@ export class ConfigConstructor<Instance> implements IArgumentsConstructor<Instan
   public async createInstance(
     config: Resource,
     settings: IConstructionSettings,
-  ): Promise<Instance> {
+  ): Promise<IOut> {
     const args: Instance[] = await this.createArguments(config, settings);
     return this.constructionStrategy.createInstance({
       settings,
@@ -128,7 +128,7 @@ export class ConfigConstructor<Instance> implements IArgumentsConstructor<Instan
 /**
  * Options for a component factory.
  */
-export interface IConfigConstructorOptions<Instance> {
+export interface IConfigConstructorOptions<Instance, InstanceOut = Instance> {
   /**
    * The RDF object loader.
    */
@@ -140,7 +140,7 @@ export interface IConfigConstructorOptions<Instance> {
   /**
    * The strategy for construction.
    */
-  constructionStrategy: IConstructionStrategy<Instance>;
+  constructionStrategy: IConstructionStrategy<Instance, InstanceOut>;
   /**
    * The module state.
    */

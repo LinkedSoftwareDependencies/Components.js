@@ -1,6 +1,6 @@
 import type { RdfObjectLoader, Resource } from 'rdf-object';
-import { ErrorResourcesContext } from '../../util/ErrorResourcesContext';
-import type { IParameterPropertyHandler } from './IParameterPropertyHandler';
+import { ErrorResourcesContext } from '../../util/ErrorResourcesContext.js';
+import type { IParameterPropertyHandler } from './IParameterPropertyHandler.js';
 
 /**
  * If no value has been set, and a given default-scope applies, its default value will be set.

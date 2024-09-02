@@ -5,9 +5,23 @@
   "lsd:contexts": {
     "https://linkedsoftwaredependencies.org/bundles/npm/componentsjs/^5.0.0/components/context.jsonld": "components/context.jsonld"
   },
-  "main": "index.js",
+  "main": "cjs/index.js",
+  "module": "esm/index.js",
+  "types": "esm/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "default": "./esm/index.js",
+        "types": "./esm/index.d.ts"
+      },
+      "require": {
+        "default": "./cjs/index.js",
+        "types": "./esm/index.d.ts"
+      }
+    }
+  },
   "bin": {
-    "componentsjs-compile-config": "./bin/compile-config.js"
+    "componentsjs-compile-config": "./cjs/bin/compile-config.js"
   },
   "typings": "index",
   "repository": "https://github.com/LinkedSoftwareDependencies/Components.js",
@@ -21,14 +35,18 @@
   "license": "MIT",
   "packageManager": "yarn@4.0.1",
   "scripts": {
+    "build:esm": "tsc",
+    "build:cjs": "babel lib --out-dir cjs/lib --extensions .ts --out-file-extension .cjs && tsc --emitDeclarationOnly --outDir cjs",
+    "build:ts": "yarn run build:esm and yarn run build:cjs",
     "test": "yarn test:jest",
     "test:jest": "jest",
     "test:webpack": "yarn test:webpack:node && yarn test:webpack:web",
     "test:webpack:node": "webpack -c test/webpack/webpack.config.js && node test/webpack/build/test.min.js",
     "test:webpack:web": "webpack -c test/webpack/webpack.config-web.js && node test/webpack/build-web/test.min.js",
     "test-watch": "jest --watch",
-    "build": "scopy ./components/context.jsonld ./components/context.json && tsc && chmod +x ./bin/compile-config.js",
+    "build": "scopy ./components/context.jsonld ./components/context.json && yarn run build:ts && chmod +x ./bin/compile-config.js",
     "build-watch": "tsc --watch",
+    "build:tsc": "tsc",
     "lint": "eslint . --ext .ts --cache",
     "validate": "yarn info",
     "prepare": "yarn build",
@@ -43,7 +61,7 @@
     "minimist": "^1.2.0",
     "rdf-data-factory": "^1.1.0",
     "rdf-object": "^1.14.0",
-    "rdf-parse": "^2.0.0",
+    "rdf-parse": "^3.0.0",
     "rdf-quad": "^1.5.0",
     "rdf-string": "^1.6.0",
     "rdf-terms": "^1.7.0",
@@ -51,12 +69,19 @@
     "winston": "^3.3.3"
   },
   "devDependencies": {
+    "@babel/cli": "^7.25.6",
+    "@babel/core": "^7.25.2",
+    "@babel/preset-env": "^7.25.4",
+    "@babel/preset-typescript": "^7.24.7",
     "@rubensworks/eslint-config": "^1.0.1",
+    "@types/babel__core": "^7",
+    "@types/babel__preset-env": "^7",
     "@types/jest": "^29.0.0",
     "@types/stream-to-array": "^2.3.0",
     "@types/streamify-string": "^1.0.0",
     "@typescript-eslint/eslint-plugin": "^5.0.0",
     "@typescript-eslint/parser": "^5.0.0",
+    "babel-plugin-add-import-extension": "^1.6.0",
     "eslint": "^7.12.1",
     "eslint-config-es": "3.25.3",
     "eslint-import-resolver-typescript": "^2.3.0",
@@ -76,8 +101,9 @@
     "stream-to-array": "^2.3.0",
     "streamify-string": "^1.0.1",
     "ts-jest": "^29.1.0",
+    "ts-jest-resolver": "^2.0.1",
     "ts-loader": "^9.4.1",
-    "typescript": "^5.0.0",
+    "typescript": "^5.5.4",
     "webpack": "^5.75.0",
     "webpack-cli": "^5.0.0"
   },
@@ -120,6 +146,8 @@
         "lines": 100,
         "statements": 100
       }
-    }
-  }
+    },
+    "resolver": "ts-jest-resolver"
+  },
+  "type": "module"
 }

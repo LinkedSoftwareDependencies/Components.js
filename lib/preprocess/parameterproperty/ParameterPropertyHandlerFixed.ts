@@ -1,6 +1,6 @@
 import type { Resource, RdfObjectLoader } from 'rdf-object';
-import { ErrorResourcesContext } from '../../util/ErrorResourcesContext';
-import type { IParameterPropertyHandler } from './IParameterPropertyHandler';
+import { ErrorResourcesContext } from '../../util/ErrorResourcesContext.js';
+import type { IParameterPropertyHandler } from './IParameterPropertyHandler.js';
 
 /**
  * Irrespective of any set values, prepend the parameter's fixed values.

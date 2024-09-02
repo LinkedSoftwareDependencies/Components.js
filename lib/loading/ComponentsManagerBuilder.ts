@@ -2,21 +2,23 @@ import type { Resource } from 'rdf-object';
 import { RdfObjectLoader } from 'rdf-object';
 import type { Logger } from 'winston';
 import { createLogger, format, transports } from 'winston';
-import { ComponentsManager } from '../ComponentsManager';
-import { ConfigConstructorPool } from '../construction/ConfigConstructorPool';
-import type { IConfigConstructorPool } from '../construction/IConfigConstructorPool';
-import { ConstructionStrategyCommonJs } from '../construction/strategy/ConstructionStrategyCommonJs';
-import type { IConstructionStrategy } from '../construction/strategy/IConstructionStrategy';
-import { ConfigPreprocessorComponent } from '../preprocess/ConfigPreprocessorComponent';
-import { ConfigPreprocessorComponentMapped } from '../preprocess/ConfigPreprocessorComponentMapped';
-import { ConfigPreprocessorOverride } from '../preprocess/ConfigPreprocessorOverride';
-import { ParameterHandler } from '../preprocess/ParameterHandler';
-import type { LogLevel } from '../util/LogLevel';
-import { ComponentRegistry } from './ComponentRegistry';
-import { ComponentRegistryFinalizer } from './ComponentRegistryFinalizer';
-import { ConfigRegistry } from './ConfigRegistry';
-import { ModuleStateBuilder } from './ModuleStateBuilder';
-import type { IModuleState } from './ModuleStateBuilder';
+import { ComponentsManager } from '../ComponentsManager.js';
+import { ConfigConstructorPool } from '../construction/ConfigConstructorPool.js';
+import type { IConfigConstructorPool } from '../construction/IConfigConstructorPool.js';
+import { ConstructionStrategyCommonJs } from '../construction/strategy/ConstructionStrategyCommonJs.js';
+import type { IConstructionStrategy } from '../construction/strategy/IConstructionStrategy.js';
+import { ConfigPreprocessorComponent } from '../preprocess/ConfigPreprocessorComponent.js';
+import { ConfigPreprocessorComponentMapped } from '../preprocess/ConfigPreprocessorComponentMapped.js';
+import { ConfigPreprocessorOverride } from '../preprocess/ConfigPreprocessorOverride.js';
+import { ParameterHandler } from '../preprocess/ParameterHandler.js';
+import type { LogLevel } from '../util/LogLevel.js';
+import { ComponentRegistry } from './ComponentRegistry.js';
+import { ComponentRegistryFinalizer } from './ComponentRegistryFinalizer.js';
+import { ConfigRegistry } from './ConfigRegistry.js';
+import { ModuleStateBuilder } from './ModuleStateBuilder.js';
+import type { IModuleState } from './ModuleStateBuilder.js';
+
+type Promiseish<T> = T | Promise<T>;
 
 /**
  * Builds {@link ComponentsManager}'s based on given options.
@@ -25,7 +27,7 @@ export class ComponentsManagerBuilder<Instance = any> {
   private readonly mainModulePath: string;
   private readonly componentLoader: (registry: ComponentRegistry) => Promise<void>;
   private readonly configLoader: (registry: ConfigRegistry) => Promise<void>;
-  private readonly constructionStrategy: IConstructionStrategy<Instance>;
+  private readonly constructionStrategy: IConstructionStrategy<Instance, Promiseish<Instance>>;
   private readonly dumpErrorState: boolean;
   private readonly logger: Logger;
   private readonly moduleState?: IModuleState;
@@ -33,7 +35,7 @@ export class ComponentsManagerBuilder<Instance = any> {
   private readonly typeChecking: boolean;
   private readonly remoteContextLookups: boolean;
 
-  public constructor(options: IComponentsManagerBuilderOptions<Instance>) {
+  public constructor(options: IComponentsManagerBuilderOptions<Instance, Promiseish<Instance>>) {
     this.mainModulePath = options.mainModulePath;
     this.componentLoader = options.moduleLoader || (async registry => registry.registerAvailableModules());
     this.configLoader = options.configLoader || (async() => {
@@ -168,7 +170,7 @@ export class ComponentsManagerBuilder<Instance = any> {
   }
 }
 
-export interface IComponentsManagerBuilderOptions<Instance> {
+export interface IComponentsManagerBuilderOptions<Instance, InstanceOut = Instance> {
   /* ----- REQUIRED FIELDS ----- */
   /**
    * Absolute path to the package root from which module resolution should start.
@@ -192,7 +194,7 @@ export interface IComponentsManagerBuilderOptions<Instance> {
    * A strategy for constructing instances.
    * Defaults to {@link ConstructionStrategyCommonJs}.
    */
-  constructionStrategy?: IConstructionStrategy<Instance>;
+  constructionStrategy?: IConstructionStrategy<Instance, InstanceOut>;
   /**
    * If the error state should be dumped into `componentsjs-error-state.json`
    * after failed instantiations.

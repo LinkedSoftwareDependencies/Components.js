@@ -1,6 +1,6 @@
 import type { Resource } from 'rdf-object';
-import type { GenericsContext } from '../GenericsContext';
-import type { IConstructorArgumentsMapper } from './IConstructorArgumentsMapper';
+import type { GenericsContext } from '../GenericsContext.js';
+import type { IConstructorArgumentsMapper } from './IConstructorArgumentsMapper.js';
 
 /**
  * Handles a specific type of a constructor argument element.

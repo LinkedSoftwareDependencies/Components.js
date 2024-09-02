@@ -1,7 +1,7 @@
 import type { Resource, RdfObjectLoader } from 'rdf-object';
-import { IRIS_RDF } from '../../rdf/Iris';
-import { ErrorResourcesContext } from '../../util/ErrorResourcesContext';
-import type { IParameterPropertyHandler } from './IParameterPropertyHandler';
+import { IRIS_RDF } from '../../rdf/Iris.js';
+import { ErrorResourcesContext } from '../../util/ErrorResourcesContext.js';
+import type { IParameterPropertyHandler } from './IParameterPropertyHandler.js';
 
 /**
  * If no value has been set, its default value will be set.

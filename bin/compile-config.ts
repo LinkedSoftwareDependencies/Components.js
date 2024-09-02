@@ -5,7 +5,7 @@
 import * as Path from 'path';
 import type { ParsedArgs } from 'minimist';
 import minimist = require('minimist');
-import { compileConfig } from '..';
+import { compileConfig } from '../index.js';
 
 const args: ParsedArgs = minimist(process.argv.slice(2));
 if (args._.length !== 1 || args.h || args.help) {
@@ -19,6 +19,7 @@ Options:
   -p      The main module path, if not provided, this defaults to the working directory
   -e      The instance by config URI that will be exported, by default this is the provided instance URI.
   -f      If the exported instance should be exposed as a function, which accepts an optional hash of variables.
+  -m      A flag to endicate that an ESM [m]odule should be generated instead of CommonJS.
   --help  print this help message
 `);
   process.exit(1);
@@ -32,6 +33,7 @@ if (args.e) {
   exportVariableName = args.e;
 }
 const asFunction = !!args.f;
+const asEsm = !!args.m;
 
 compileConfig(
   mainModulePath,
@@ -39,6 +41,7 @@ compileConfig(
   configResourceUri,
   exportVariableName,
   asFunction,
+  asEsm,
 )
   .then((output: string) => process.stdout.write(`${output}\n`))
   .catch(error => {

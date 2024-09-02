@@ -1,15 +1,15 @@
-import type { IModuleState } from '../../loading/ModuleStateBuilder';
-import type { IConstructionSettings } from '../IConstructionSettings';
+import type { IModuleState } from '../../loading/ModuleStateBuilder.js';
+import type { IConstructionSettings } from '../IConstructionSettings.js';
 
 /**
  * Implementations of this interface represent a certain strategy for creating instances.
  */
-export interface IConstructionStrategy<Instance> {
+export interface IConstructionStrategy<Instance, InstanceOut = Instance> {
   /**
    * Create a new instance of the given referenced element.
    * @param options Options
    */
-  createInstance: (options: ICreationStrategyInstanceOptions<Instance>) => Instance;
+  createInstance: (options: ICreationStrategyInstanceOptions<Instance>) => InstanceOut;
   /**
    * Create a hash object.
    * @param options Options

@@ -1,13 +1,10 @@
-import { createReadStream } from 'fs';
+import { createReadStream, promises as fs } from 'fs';
 import type { Readable } from 'stream';
 import type * as RDF from '@rdfjs/types';
-import type { ParseOptions } from 'rdf-parse';
-import rdfParser from 'rdf-parse';
+import { rdfParser, type ParseOptions } from 'rdf-parse';
 import type { Logger } from 'winston';
-import { PrefetchedDocumentLoader } from './PrefetchedDocumentLoader';
-import { RdfStreamIncluder } from './RdfStreamIncluder';
-// Import syntax only works in Node > 12
-const fs = require('fs').promises;
+import { PrefetchedDocumentLoader } from './PrefetchedDocumentLoader.js';
+import { RdfStreamIncluder } from './RdfStreamIncluder.js';
 
 /**
  * Parses a data stream to a triple stream.

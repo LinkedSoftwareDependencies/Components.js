@@ -1,8 +1,8 @@
 import type { Resource } from 'rdf-object';
-import { ErrorResourcesContext } from '../../util/ErrorResourcesContext';
-import type { GenericsContext } from '../GenericsContext';
-import type { IConstructorArgumentsElementMappingHandler } from './IConstructorArgumentsElementMappingHandler';
-import type { IConstructorArgumentsMapper } from './IConstructorArgumentsMapper';
+import { ErrorResourcesContext } from '../../util/ErrorResourcesContext.js';
+import type { GenericsContext } from '../GenericsContext.js';
+import type { IConstructorArgumentsElementMappingHandler } from './IConstructorArgumentsElementMappingHandler.js';
+import type { IConstructorArgumentsMapper } from './IConstructorArgumentsMapper.js';
 
 /**
  * Handler for field definitions that contain key-value pairs to form a hash.

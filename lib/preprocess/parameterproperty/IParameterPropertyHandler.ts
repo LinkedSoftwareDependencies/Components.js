@@ -1,5 +1,5 @@
 import type { Resource } from 'rdf-object';
-import type { GenericsContext } from '../GenericsContext';
+import type { GenericsContext } from '../GenericsContext.js';
 
 /**
  * Transforms a parameter value based on some kind of parameter property.

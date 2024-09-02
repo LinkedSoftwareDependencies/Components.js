@@ -1,7 +1,7 @@
 import type * as RDF from '@rdfjs/types';
 import type { Resource, RdfObjectLoader } from 'rdf-object';
-import type { IParamValueConflict } from './parameterproperty/ParameterPropertyHandlerRange';
-import { ParameterPropertyHandlerRange } from './parameterproperty/ParameterPropertyHandlerRange';
+import type { IParamValueConflict } from './parameterproperty/ParameterPropertyHandlerRange.js';
+import { ParameterPropertyHandlerRange } from './parameterproperty/ParameterPropertyHandlerRange.js';
 
 /**
  * Context for binding generic types to a concrete range value.

@@ -1,7 +1,7 @@
 import type { Resource } from 'rdf-object';
-import { PREFIX_OO } from '../../rdf/Iris';
-import type { IOverrideStep } from './IOverrideStep';
-import { extractOverrideStepFields, findResourceIndex, getPropertyResourceList } from './OverrideUtil';
+import { PREFIX_OO } from '../../rdf/Iris.js';
+import type { IOverrideStep } from './IOverrideStep.js';
+import { extractOverrideStepFields, findResourceIndex, getPropertyResourceList } from './OverrideUtil.js';
 
 /**
  * Override step that inserts elements in a list after a specific element.

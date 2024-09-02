@@ -1,11 +1,11 @@
 import type { Resource, RdfObjectLoader } from 'rdf-object';
 import type { Logger } from 'winston';
-import { IRIS_OWL } from '../rdf/Iris';
-import { uniqueTypes } from '../rdf/ResourceUtil';
-import { ErrorResourcesContext } from '../util/ErrorResourcesContext';
-import { GenericsContext } from './GenericsContext';
-import type { IConfigPreprocessorTransform, IConfigPreprocessor } from './IConfigPreprocessor';
-import type { ParameterHandler } from './ParameterHandler';
+import { IRIS_OWL } from '../rdf/Iris.js';
+import { uniqueTypes } from '../rdf/ResourceUtil.js';
+import { ErrorResourcesContext } from '../util/ErrorResourcesContext.js';
+import { GenericsContext } from './GenericsContext.js';
+import type { IConfigPreprocessorTransform, IConfigPreprocessor } from './IConfigPreprocessor.js';
+import type { ParameterHandler } from './ParameterHandler.js';
 
 /**
  * Handles config that refer to a component as type.

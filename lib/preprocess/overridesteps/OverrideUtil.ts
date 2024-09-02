@@ -1,6 +1,6 @@
 import type { Resource } from 'rdf-object';
-import { PREFIX_OO } from '../../rdf/Iris';
-import { ErrorResourcesContext } from '../../util/ErrorResourcesContext';
+import { PREFIX_OO } from '../../rdf/Iris.js';
+import { ErrorResourcesContext } from '../../util/ErrorResourcesContext.js';
 
 export const OVERRIDE_STEP_FIELD_NAMES = [ 'parameter', 'target', 'value' ] as const;
 export type OverrideStepFieldName = `${typeof OVERRIDE_STEP_FIELD_NAMES[number]}s`;

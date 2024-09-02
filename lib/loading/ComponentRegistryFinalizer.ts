@@ -1,8 +1,8 @@
 import type { RdfObjectLoader, Resource } from 'rdf-object';
 import type { Logger } from 'winston';
-import { IRIS_OO } from '../rdf/Iris';
-import { ErrorResourcesContext } from '../util/ErrorResourcesContext';
-import type { ComponentRegistry } from './ComponentRegistry';
+import { IRIS_OO } from '../rdf/Iris.js';
+import { ErrorResourcesContext } from '../util/ErrorResourcesContext.js';
+import type { ComponentRegistry } from './ComponentRegistry.js';
 
 /**
  * Finalizes module registrations of a {@link ComponentRegistry}.

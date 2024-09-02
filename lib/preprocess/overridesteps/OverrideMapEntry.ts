@@ -1,8 +1,8 @@
 import type { Resource } from 'rdf-object';
-import { PREFIX_OO } from '../../rdf/Iris';
-import { ErrorResourcesContext } from '../../util/ErrorResourcesContext';
-import type { IOverrideStep } from './IOverrideStep';
-import { extractOverrideStepFields, getPropertyResourceList } from './OverrideUtil';
+import { PREFIX_OO } from '../../rdf/Iris.js';
+import { ErrorResourcesContext } from '../../util/ErrorResourcesContext.js';
+import type { IOverrideStep } from './IOverrideStep.js';
+import { extractOverrideStepFields, getPropertyResourceList } from './OverrideUtil.js';
 
 /**
  * Override step that updates an entry in a key/value map.

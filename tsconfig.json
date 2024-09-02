@@ -1,20 +1,26 @@
 {
   "compilerOptions": {
-    "module": "commonjs",
-    "lib": [
-      "es6",
-      "es2019",
-      "dom",
-      "esnext.asynciterable"
-    ],
-    "target": "es2017",
-    "noImplicitAny": true,
-    "removeComments": false,
-    "preserveConstEnums": true,
+    "target": "ESNext",
+    "outDir": "esm",
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
+    "skipLibCheck": true,
+    "module": "NodeNext",
+    // "lib": [
+    //   "es6",
+    //   "es2019",
+    //   "dom",
+    //   "esnext.asynciterable"
+    // ],
+    // "target": "es2017",
+    // "noImplicitAny": true,
+    // "removeComments": false,
+    // "preserveConstEnums": true,
     "sourceMap": true,
     "declaration": true,
-    "strict": true,
-    "resolveJsonModule": true
+    // "strict": true,
+    // "skipLibCheck": true
   },
   "include": [
     "index.ts",
