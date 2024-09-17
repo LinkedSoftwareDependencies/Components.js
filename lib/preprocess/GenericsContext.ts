@@ -357,6 +357,12 @@ export class GenericsContext {
   ): IParamValueConflict | undefined {
     const genericTypeParameters = component.properties.genericTypeParameters;
 
+    // Populate generic type instances with default generic values if applicable
+    while (genericTypeInstances.length < genericTypeParameters.length &&
+    genericTypeParameters[genericTypeInstances.length].property.default) {
+      genericTypeInstances.push(genericTypeParameters[genericTypeInstances.length].property.default);
+    }
+
     // Don't do anything if no generic type instances are passed.
     if (genericTypeInstances.length === 0) {
       return {

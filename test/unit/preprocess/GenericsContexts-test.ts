@@ -1367,6 +1367,34 @@ describe('GenericsContext', () => {
           .toEqual(objectLoader.createCompactedResource('xsd:number'));
       });
 
+      it('should handle missing instances that have default values', () => {
+        genericsContext.bindGenericTypeToRange('ex:Component__generic_T', objectLoader
+          .createCompactedResource('xsd:string'), typeTypeValidatorAlwaysFalse);
+
+        expect(genericsContext.bindComponentGenericTypes(
+          objectLoader.createCompactedResource({
+            '@id': 'ex:Component',
+            genericTypeParameters: [
+              'ex:Component__generic_T',
+              {
+                '@id': 'ex:Component__generic_U',
+                default: 'xsd:number',
+              },
+            ],
+          }),
+          [
+            objectLoader.createCompactedResource({
+              parameterRangeGenericBindings: 'xsd:string',
+            }),
+          ],
+          {},
+          typeTypeValidatorOnlyIdentical,
+        )).toBeUndefined();
+
+        expect(genericsContext.bindings['ex:Component__generic_T'])
+          .toEqual(objectLoader.createCompactedResource('xsd:string'));
+      });
+
       it('should not handle instances that do not match', () => {
         genericsContext.bindGenericTypeToRange('ex:Component__generic_T', objectLoader
           .createCompactedResource('xsd:boolean'), typeTypeValidatorAlwaysFalse);
