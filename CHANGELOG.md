@@ -1,6 +1,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v6.1.0"></a>
+## [v6.1.0](https://github.com/LinkedSoftwareDependencies/Components.js/compare/v6.0.1...v6.1.0) - 2024-09-17
+
+### Added
+* [Support generics with default values](https://github.com/LinkedSoftwareDependencies/Components.js/commit/5edd29449537db07f3a732efbb0d95f4fc96d255)
+
 <a name="v6.0.1"></a>
 ## [v6.0.1](https://github.com/LinkedSoftwareDependencies/Components.js/compare/v6.0.0...v6.0.1) - 2024-03-05
 
