@@ -703,6 +703,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@comunica/actor-abstract-mediatyped@npm:^2.10.0":
+  version: 2.10.0
+  resolution: "@comunica/actor-abstract-mediatyped@npm:2.10.0"
+  dependencies:
+    "@comunica/core": "npm:^2.10.0"
+    "@comunica/types": "npm:^2.10.0"
+  checksum: 2e73b9f7ef1e24d36dcd8294b45dcffb4d97ed8862567131aa069e5734449d2d272fe4fb48b50dbd8cc1f0400538101bb152aa6eaf46d1aad8249fb5a1960cd5
+  languageName: node
+  linkType: hard
+
 "@comunica/actor-abstract-parse@npm:^2.0.1":
   version: 2.0.1
   resolution: "@comunica/actor-abstract-parse@npm:2.0.1"
@@ -710,6 +720,16 @@ __metadata:
     "@comunica/actor-abstract-mediatyped": "npm:^2.0.1"
     "@comunica/core": "npm:^2.0.1"
   checksum: 4c3e5c8ce6c34583f183e31cdbbe3f8f178f407beb6e87033e8039e02e8f539e0bce680d0bacb9c07d2fce03c16c134ded2bcbb76cbf2fd6ae832bee3100afc0
+  languageName: node
+  linkType: hard
+
+"@comunica/actor-abstract-parse@npm:^2.10.0":
+  version: 2.10.0
+  resolution: "@comunica/actor-abstract-parse@npm:2.10.0"
+  dependencies:
+    "@comunica/core": "npm:^2.10.0"
+    readable-stream: "npm:^4.4.2"
+  checksum: b308efb425e3839ed606a123cb17e2495b4aa12320bc46ad284aead4f1364b867ad5147099158f06a509b96af88cf08cc8c080deaabf49864aa1ba37feeb0a60
   languageName: node
   linkType: hard
 
@@ -827,6 +847,21 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@comunica/actor-rdf-parse-shaclc@npm:^2.6.2":
+  version: 2.10.0
+  resolution: "@comunica/actor-rdf-parse-shaclc@npm:2.10.0"
+  dependencies:
+    "@comunica/bus-rdf-parse": "npm:^2.10.0"
+    "@comunica/types": "npm:^2.10.0"
+    "@rdfjs/types": "npm:*"
+    asynciterator: "npm:^3.8.1"
+    readable-stream: "npm:^4.4.2"
+    shaclc-parse: "npm:^1.4.0"
+    stream-to-string: "npm:^1.2.0"
+  checksum: 5a4105c06a0cfddae87509d44f8436036e02369456d29baa2f90cafcee9a6baf89f9fd4853ceeb2b2d572e49dac586ae049e95d3ef66b1f53c8e7f5c74b01951
+  languageName: node
+  linkType: hard
+
 "@comunica/actor-rdf-parse-xml-rdfa@npm:^2.0.1":
   version: 2.0.1
   resolution: "@comunica/actor-rdf-parse-xml-rdfa@npm:2.0.1"
@@ -883,6 +918,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@comunica/bus-rdf-parse@npm:^2.10.0":
+  version: 2.10.0
+  resolution: "@comunica/bus-rdf-parse@npm:2.10.0"
+  dependencies:
+    "@comunica/actor-abstract-mediatyped": "npm:^2.10.0"
+    "@comunica/actor-abstract-parse": "npm:^2.10.0"
+    "@comunica/core": "npm:^2.10.0"
+    "@rdfjs/types": "npm:*"
+  checksum: eb78249eb05a0a55551078bbc1471c98c59bf5c88bb35abe30fc5fd4bdc6128fd09f5acab9cc90edcf1dbec591ab92d1e362d43ef758cac05f4e930de020ce31
+  languageName: node
+  linkType: hard
+
 "@comunica/config-query-sparql@npm:^2.0.1":
   version: 2.0.1
   resolution: "@comunica/config-query-sparql@npm:2.0.1"
@@ -908,6 +955,16 @@ __metadata:
     "@comunica/types": "npm:^2.0.1"
     immutable: "npm:^3.8.2"
   checksum: ac8f0ce5284e023f00567ea6ff00f1b40f2b03531836c5eb0d56900f14419bb5868fd0a7ecb70726196044db43040a5ba09167a1777fd73f300a8ceed8c6d499
+  languageName: node
+  linkType: hard
+
+"@comunica/core@npm:^2.10.0":
+  version: 2.10.0
+  resolution: "@comunica/core@npm:2.10.0"
+  dependencies:
+    "@comunica/types": "npm:^2.10.0"
+    immutable: "npm:^4.1.0"
+  checksum: ffb9926b591eaa47ae6ff56713d6769afed55c214e5124e0d92224acb3980fa36dd8f2deb503b5f913072b35a04e32e05bdc518dd4d73c2dea3521d4cfbcb7f2
   languageName: node
   linkType: hard
 
@@ -965,6 +1022,18 @@ __metadata:
     asynciterator: "npm:^3.3.0"
     sparqlalgebrajs: "npm:^4.0.0"
   checksum: ef67bc7f34a41ab8b0b28887881df0024f2a907636e2fdbc0843a4a1ada71aa9a28bf481c3d8eeff8468855b7c9cbda0142c8895218ec7e7cd7ff0a00dc5710b
+  languageName: node
+  linkType: hard
+
+"@comunica/types@npm:^2.10.0":
+  version: 2.10.0
+  resolution: "@comunica/types@npm:2.10.0"
+  dependencies:
+    "@rdfjs/types": "npm:*"
+    "@types/yargs": "npm:^17.0.24"
+    asynciterator: "npm:^3.8.1"
+    sparqlalgebrajs: "npm:^4.2.0"
+  checksum: c322c54f93aa93d2bf3a97458286cd994e7c254b01b700f189f6602b7a20f4436ebc320f1f81519686aae16accf08b687d7b9673fc41932b7ed34c45a243e5c5
   languageName: node
   linkType: hard
 
@@ -1487,6 +1556,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@rdfjs/types@npm:^1.1.0":
+  version: 1.1.2
+  resolution: "@rdfjs/types@npm:1.1.2"
+  dependencies:
+    "@types/node": "npm:*"
+  checksum: 128242157d44453d1f5eac9d93cecfddb44acc4e6675751b2cccbc6c33b44492573785eb748e1841fd4a29921ba8e0412ba038824103d97c38a19f72033d9a5c
+  languageName: node
+  linkType: hard
+
 "@rubensworks/eslint-config@npm:^1.0.1":
   version: 1.0.1
   resolution: "@rubensworks/eslint-config@npm:1.0.1"
@@ -1787,6 +1865,15 @@ __metadata:
   dependencies:
     "@types/yargs-parser": "npm:*"
   checksum: faa83e1e99d6fea55bd323e78f807ee56108231684b5ff6ae92cc4ea12fea4facaa1e3082d43472fc620ff776b6812ab84dd9a79296a350a677fcb02c6339dec
+  languageName: node
+  linkType: hard
+
+"@types/yargs@npm:^17.0.24":
+  version: 17.0.33
+  resolution: "@types/yargs@npm:17.0.33"
+  dependencies:
+    "@types/yargs-parser": "npm:*"
+  checksum: d16937d7ac30dff697801c3d6f235be2166df42e4a88bf730fa6dc09201de3727c0a9500c59a672122313341de5f24e45ee0ff579c08ce91928e519090b7906b
   languageName: node
   linkType: hard
 
@@ -2515,6 +2602,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"asynciterator@npm:^3.8.1":
+  version: 3.9.0
+  resolution: "asynciterator@npm:3.9.0"
+  checksum: 62e4c76ca2f2bbc8f3eae6a685c9b5c8ed82afd969f24cfb9aff1347b50d5e92a7dae61d2a3c24e834f193b303082d855cf688720059d6236cc06650a4fe2c22
+  languageName: node
+  linkType: hard
+
 "available-typed-arrays@npm:^1.0.5":
   version: 1.0.5
   resolution: "available-typed-arrays@npm:1.0.5"
@@ -3207,7 +3301,7 @@ __metadata:
     pre-commit: "npm:^1.2.2"
     rdf-data-factory: "npm:^1.1.0"
     rdf-object: "npm:^2.0.0"
-    rdf-parse: "npm:^2.0.0"
+    rdf-parse: "npm:^3.0.0"
     rdf-quad: "npm:^1.5.0"
     rdf-string: "npm:^1.6.0"
     rdf-terms: "npm:^1.7.0"
@@ -5039,6 +5133,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"immutable@npm:^4.1.0":
+  version: 4.3.7
+  resolution: "immutable@npm:4.3.7"
+  checksum: 9b099197081b22f6433003e34929da8ecddbbdc1474cdc8aa3b7669dee4adda349c06143de22def36016d1b6de5322b043eccd7a11db1dad2ca85dad4fff5435
+  languageName: node
+  linkType: hard
+
 "import-fresh@npm:^3.0.0, import-fresh@npm:^3.2.1":
   version: 3.3.0
   resolution: "import-fresh@npm:3.3.0"
@@ -6605,6 +6706,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"minimist@npm:^1.2.6":
+  version: 1.2.8
+  resolution: "minimist@npm:1.2.8"
+  checksum: 19d3fcdca050087b84c2029841a093691a91259a47def2f18222f41e7645a0b7c44ef4b40e88a1e58a40c84d2ef0ee6047c55594d298146d0eb3f6b737c20ce6
+  languageName: node
+  linkType: hard
+
 "minipass-collect@npm:^1.0.2":
   version: 1.0.2
   resolution: "minipass-collect@npm:1.0.2"
@@ -6733,6 +6841,17 @@ __metadata:
     queue-microtask: "npm:^1.1.2"
     readable-stream: "npm:^3.6.0"
   checksum: 210c019d2be9a81738fed4c25e20d6018ad2f6a29d289e25a372c0f922e7eaab6e772aed162262b7e2156197988ef836fd1a6468fb8bc87bf4300667590111c9
+  languageName: node
+  linkType: hard
+
+"n3@npm:^1.16.3":
+  version: 1.22.1
+  resolution: "n3@npm:1.22.1"
+  dependencies:
+    buffer: "npm:^6.0.3"
+    queue-microtask: "npm:^1.1.2"
+    readable-stream: "npm:^4.0.0"
+  checksum: b50803e332bff66e30ad83cdcd811a3e190a5fde05ff25ef60e6c4b8102624c565e1b15cca28c99d813e2bc15869feef71d5ba5466ad3106e082cf9e760c6b87
   languageName: node
   linkType: hard
 
@@ -7507,6 +7626,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"rdf-data-factory@npm:^1.1.2":
+  version: 1.1.2
+  resolution: "rdf-data-factory@npm:1.1.2"
+  dependencies:
+    "@rdfjs/types": "npm:*"
+  checksum: 8b18f77d99fe5cbb4b4125f3c345752baf46f00e4d80e77e9541c194f4c225ba4c6e539f2f8a018e1ace32b50214102e5d556bd966f6d5e374f2548b454f9837
+  languageName: node
+  linkType: hard
+
 "rdf-isomorphic@npm:^1.3.0":
   version: 1.3.0
   resolution: "rdf-isomorphic@npm:1.3.0"
@@ -7551,9 +7679,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"rdf-parse@npm:^2.0.0":
-  version: 2.0.0
-  resolution: "rdf-parse@npm:2.0.0"
+"rdf-parse@npm:^3.0.0":
+  version: 3.0.0
+  resolution: "rdf-parse@npm:3.0.0"
   dependencies:
     "@comunica/actor-http-fetch": "npm:^2.0.1"
     "@comunica/actor-http-proxy": "npm:^2.0.1"
@@ -7564,6 +7692,7 @@ __metadata:
     "@comunica/actor-rdf-parse-jsonld": "npm:^2.0.1"
     "@comunica/actor-rdf-parse-n3": "npm:^2.0.1"
     "@comunica/actor-rdf-parse-rdfxml": "npm:^2.0.1"
+    "@comunica/actor-rdf-parse-shaclc": "npm:^2.6.2"
     "@comunica/actor-rdf-parse-xml-rdfa": "npm:^2.0.1"
     "@comunica/bus-http": "npm:^2.0.1"
     "@comunica/bus-init": "npm:^2.0.1"
@@ -7576,8 +7705,9 @@ __metadata:
     "@comunica/mediator-number": "npm:^2.0.1"
     "@comunica/mediator-race": "npm:^2.0.1"
     "@rdfjs/types": "npm:*"
+    readable-stream: "npm:^4.3.0"
     stream-to-string: "npm:^1.2.0"
-  checksum: 40007ec37cf013ae546b192b54cf9c2d1f85e745c6ac592bde3531716666a79b2085f20fcff619099e38c45a69ee776d9c3f1d0ff5434c9b79572cf4b7d54b0a
+  checksum: c85c1caed0772e69a3862ca6875c986ad44ab3d46744c6781e46395333f751b4f505ba490a983771d2eeddf791cae5fefb404fd1f3ff414a493962c009016335
   languageName: node
   linkType: hard
 
@@ -7602,6 +7732,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"rdf-terms@npm:^1.10.0, rdf-terms@npm:^1.9.1":
+  version: 1.11.0
+  resolution: "rdf-terms@npm:1.11.0"
+  dependencies:
+    "@rdfjs/types": "npm:*"
+    rdf-data-factory: "npm:^1.1.0"
+    rdf-string: "npm:^1.6.0"
+  checksum: 9603eef8b05c8254f1d12a75db894de85eb291fd1cff167d5dd4a3854ff7677ad6baea9ebbb164bc0ad0cbe37ab4317e96de61e98297937ea9237956ac951fab
+  languageName: node
+  linkType: hard
+
 "rdf-terms@npm:^1.7.0":
   version: 1.7.1
   resolution: "rdf-terms@npm:1.7.1"
@@ -7610,17 +7751,6 @@ __metadata:
     rdf-data-factory: "npm:^1.1.0"
     rdf-string: "npm:^1.6.0"
   checksum: 5d3326174a067de88f9b90acc40591789897205a51a0e4d8ea8367c765ccf1785682a4acf961cd25b2f7f248ac197cf04495bbf54b39ba662aac1bd3667405ef
-  languageName: node
-  linkType: hard
-
-"rdf-terms@npm:^1.9.1":
-  version: 1.11.0
-  resolution: "rdf-terms@npm:1.11.0"
-  dependencies:
-    "@rdfjs/types": "npm:*"
-    rdf-data-factory: "npm:^1.1.0"
-    rdf-string: "npm:^1.6.0"
-  checksum: 9603eef8b05c8254f1d12a75db894de85eb291fd1cff167d5dd4a3854ff7677ad6baea9ebbb164bc0ad0cbe37ab4317e96de61e98297937ea9237956ac951fab
   languageName: node
   linkType: hard
 
@@ -7748,6 +7878,19 @@ __metadata:
     string_decoder: "npm:~1.1.1"
     util-deprecate: "npm:~1.0.1"
   checksum: 1708755e6cf9daff6ff60fa5b4575636472289c5b95d38058a91f94732b8d024a940a0d4d955639195ce42c22cab16973ee8fea8deedd24b5fec3dd596465f86
+  languageName: node
+  linkType: hard
+
+"readable-stream@npm:^4.0.0, readable-stream@npm:^4.3.0":
+  version: 4.5.2
+  resolution: "readable-stream@npm:4.5.2"
+  dependencies:
+    abort-controller: "npm:^3.0.0"
+    buffer: "npm:^6.0.3"
+    events: "npm:^3.3.0"
+    process: "npm:^0.11.10"
+    string_decoder: "npm:^1.3.0"
+  checksum: a2c80e0e53aabd91d7df0330929e32d0a73219f9477dbbb18472f6fdd6a11a699fc5d172a1beff98d50eae4f1496c950ffa85b7cc2c4c196963f289a5f39275d
   languageName: node
   linkType: hard
 
@@ -8120,6 +8263,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"shaclc-parse@npm:^1.4.0":
+  version: 1.4.0
+  resolution: "shaclc-parse@npm:1.4.0"
+  dependencies:
+    "@rdfjs/types": "npm:^1.1.0"
+    n3: "npm:^1.16.3"
+  checksum: 4e04c606100ac16b3e266c12f907d768a9a956872d305ec492fb17cd4fed02a9ad62f5b2c8f96a44447ec5971bfe171d58098af889328564be4c527c90adfdd9
+  languageName: node
+  linkType: hard
+
 "shallow-clone@npm:^3.0.0":
   version: 3.0.1
   resolution: "shallow-clone@npm:3.0.1"
@@ -8314,6 +8467,25 @@ __metadata:
   languageName: node
   linkType: hard
 
+"sparqlalgebrajs@npm:^4.2.0":
+  version: 4.3.8
+  resolution: "sparqlalgebrajs@npm:4.3.8"
+  dependencies:
+    "@rdfjs/types": "npm:*"
+    "@types/sparqljs": "npm:^3.1.3"
+    fast-deep-equal: "npm:^3.1.3"
+    minimist: "npm:^1.2.6"
+    rdf-data-factory: "npm:^1.1.0"
+    rdf-isomorphic: "npm:^1.3.0"
+    rdf-string: "npm:^1.6.0"
+    rdf-terms: "npm:^1.10.0"
+    sparqljs: "npm:^3.7.1"
+  bin:
+    sparqlalgebrajs: bin/sparqlalgebrajs.js
+  checksum: 79088b91cad4bf4d532b6b838956d66b28e19b7ac285510dc8a530292af51f9a7a0494d9923b308562a0abacc93341968bbdd6309eb7c00689900384bb424ef8
+  languageName: node
+  linkType: hard
+
 "sparqljs@npm:^3.5.1":
   version: 3.5.1
   resolution: "sparqljs@npm:3.5.1"
@@ -8322,6 +8494,17 @@ __metadata:
   bin:
     sparqljs: bin/sparql-to-json
   checksum: 91bb42f8e6ec497c1be6812ddbd0329669d4b4619ebb3e3cefd57cc35920cbd2c6879125958db93ff58e097525ab1b85fa24e15e72c99b81db7e9230063692d0
+  languageName: node
+  linkType: hard
+
+"sparqljs@npm:^3.7.1":
+  version: 3.7.3
+  resolution: "sparqljs@npm:3.7.3"
+  dependencies:
+    rdf-data-factory: "npm:^1.1.2"
+  bin:
+    sparqljs: bin/sparql-to-json
+  checksum: 733323136c490e6454ced4cdd02023054a8893c3bf9e739ccd39f526a96ef5edcf42352c4f0cf2c90847292a239dfe4c68bd35f044699e2f585601a0c56c1c70
   languageName: node
   linkType: hard
 
