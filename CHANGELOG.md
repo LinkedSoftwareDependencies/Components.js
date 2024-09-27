@@ -1,6 +1,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v6.2.0"></a>
+## [v6.2.0](https://github.com/LinkedSoftwareDependencies/Components.js/compare/v6.1.0...v6.2.0) - 2024-09-27
+
+### Changed
+* [Update to jsonld-context-parser v3](https://github.com/LinkedSoftwareDependencies/Components.js/commit/11ea49e8de8cd74852c2c4417dd9b0b7d6e4a19b)
+
 <a name="v6.1.0"></a>
 ## [v6.1.0](https://github.com/LinkedSoftwareDependencies/Components.js/compare/v6.0.1...v6.1.0) - 2024-09-17
 
