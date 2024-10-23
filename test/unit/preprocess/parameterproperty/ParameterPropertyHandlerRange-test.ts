@@ -716,6 +716,61 @@ describe('ParameterPropertyHandlerRange', () => {
         });
       });
 
+      it('should handle array type with json array', () => {
+        const value1 = objectLoader.createCompactedResource(DF.literal(
+          '["a", "b", "c"]',
+          DF.namedNode(IRIS_RDF.JSON),
+        ));
+        expect(handler.hasValueType(
+          value1,
+          objectLoader.createCompactedResource({
+            '@type': 'ParameterRangeArray',
+            parameterRangeValue: { '@id': 'ex:SomeType1' },
+          }),
+          errorContext,
+          genericsContext,
+        )).toBeUndefined();
+        expect((<any> value1.term).valueRaw).toEqual([ 'a', 'b', 'c' ]);
+      });
+
+      it('should throw on array type with invalid json array', () => {
+        const value1 = objectLoader.createCompactedResource(DF.literal(
+          '["a" "b", "c"]',
+          DF.namedNode(IRIS_RDF.JSON),
+        ));
+        expect(handler.hasValueType(
+          value1,
+          objectLoader.createCompactedResource({
+            '@type': 'ParameterRangeArray',
+            parameterRangeValue: { '@id': 'ex:SomeType1' },
+          }),
+          errorContext,
+          genericsContext,
+        )).toEqual({
+          description: expect.stringContaining('JSON parse exception'),
+          context: expect.anything(),
+        });
+      });
+
+      it('should not handle array type with json non-array', () => {
+        const value1 = objectLoader.createCompactedResource(DF.literal(
+          '"a"',
+          DF.namedNode(IRIS_RDF.JSON),
+        ));
+        expect(handler.hasValueType(
+          value1,
+          objectLoader.createCompactedResource({
+            '@type': 'ParameterRangeArray',
+            parameterRangeValue: { '@id': 'ex:SomeType1' },
+          }),
+          errorContext,
+          genericsContext,
+        )).toEqual({
+          description: `value is not an RDF list`,
+          context: expect.anything(),
+        });
+      });
+
       it('should handle tuple type with single entry', () => {
         expect(handler.hasValueType(
           objectLoader.createCompactedResource({

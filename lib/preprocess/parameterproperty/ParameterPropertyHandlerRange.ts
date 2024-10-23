@@ -133,6 +133,23 @@ export class ParameterPropertyHandlerRange implements IParameterPropertyHandler 
     // Check if the param type is an array
     if (value && type.isA('ParameterRangeArray')) {
       if (!value.list) {
+        // If the value is a JSON literal, try to interpret as an array
+        if (value.term.termType === 'Literal' && value.term.datatype.value === IRIS_RDF.JSON) {
+          const jsonString = value.value;
+          if (jsonString.startsWith('[') && jsonString.endsWith(']')) {
+            try {
+              const parsed = JSON.parse(value.value);
+              (<any>value.term).valueRaw = parsed;
+              return;
+            } catch (error: unknown) {
+              return {
+                description: `JSON parse exception: ${(<Error> error).message}`,
+                context: errorContext,
+              };
+            }
+          }
+        }
+
         return {
           description: `value is not an RDF list`,
           context: errorContext,
