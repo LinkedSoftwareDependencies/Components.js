@@ -1,6 +1,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v6.3.0"></a>
+## [v6.3.0](https://github.com/LinkedSoftwareDependencies/Components.js/compare/v6.2.0...v6.3.0) - 2024-10-23
+
+### Added
+* [Handle JSON as ParameterRangeArray if an array](https://github.com/LinkedSoftwareDependencies/Components.js/commit/4a1d064518e1fb2885de6e8509308e0905ae3c7a)
+
 <a name="v6.2.0"></a>
 ## [v6.2.0](https://github.com/LinkedSoftwareDependencies/Components.js/compare/v6.1.0...v6.2.0) - 2024-09-27
 
