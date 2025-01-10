@@ -1487,6 +1487,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@rdfjs/types@npm:^2.0.0":
+  version: 2.0.0
+  resolution: "@rdfjs/types@npm:2.0.0"
+  dependencies:
+    "@types/node": "npm:*"
+  checksum: de53d967f9a29fd4ad729c426ea71db9bf0f51cfca98f47de504f288ccd7f9dd6e70bc6df76530b273cf267e3661a5c5163019c011c28af90d3851e5a1ace3fa
+  languageName: node
+  linkType: hard
+
 "@rubensworks/eslint-config@npm:^1.0.1":
   version: 1.0.1
   resolution: "@rubensworks/eslint-config@npm:1.0.1"
@@ -3197,7 +3206,7 @@ __metadata:
     eslint-plugin-unused-imports: "npm:^2.0.0"
     jest: "npm:^29.0.0"
     jest-mock: "npm:^29.0.0"
-    jest-rdf: "npm:^1.8.0"
+    jest-rdf: "npm:^2.0.0"
     jshint: "npm:^2.1.10"
     jsonld-context-parser: "npm:^3.0.0"
     manual-git-changelog: "npm:^1.0.1"
@@ -5737,15 +5746,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"jest-rdf@npm:^1.8.0":
-  version: 1.8.0
-  resolution: "jest-rdf@npm:1.8.0"
+"jest-rdf@npm:^2.0.0":
+  version: 2.0.0
+  resolution: "jest-rdf@npm:2.0.0"
   dependencies:
-    "@rdfjs/types": "npm:*"
-    rdf-isomorphic: "npm:^1.3.0"
-    rdf-string: "npm:^1.6.0"
-    rdf-terms: "npm:^1.9.1"
-  checksum: e287c2f46c07ae659387a2a2eb00d6affe184886996fb3d50b31fa4d518135cd12c47ce6cdc67bed654282d1ce0cd9596684cc21c71eb53cf5fe5703d3fa88a0
+    rdf-isomorphic: "npm:^2.0.0"
+    rdf-string: "npm:^2.0.0"
+    rdf-terms: "npm:^2.0.0"
+  checksum: 63d1762149bf5f8ed3c425affdebb3f54ee7f2418555e2094aebd1f6aa748b41bf4e74ed94140b6fea004a671e681f864e1173ac615f83c93bd1012f6491da22
   languageName: node
   linkType: hard
 
@@ -7516,6 +7524,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"rdf-data-factory@npm:^2.0.0":
+  version: 2.0.2
+  resolution: "rdf-data-factory@npm:2.0.2"
+  dependencies:
+    "@rdfjs/types": "npm:^2.0.0"
+  checksum: 5c72ebc22f4910fd35bf3efb1e1def10785aca6f8d22dd8cee34c9ffb764225698ebdfeaf09a2afba6c25e17733940ab52cefd5c751cc2720b29b5ee56ef32ee
+  languageName: node
+  linkType: hard
+
 "rdf-isomorphic@npm:^1.3.0":
   version: 1.3.0
   resolution: "rdf-isomorphic@npm:1.3.0"
@@ -7525,6 +7542,17 @@ __metadata:
     rdf-string: "npm:^1.6.0"
     rdf-terms: "npm:^1.7.0"
   checksum: fb9ae98ccbd4e9538501024e067ea54812674aa8fb0c31f325714cae4085312b1bfaeee6c436db88ddbe498a44e65640d76c26e9a2a65bd1dc2fd8e8411dd4be
+  languageName: node
+  linkType: hard
+
+"rdf-isomorphic@npm:^2.0.0":
+  version: 2.0.0
+  resolution: "rdf-isomorphic@npm:2.0.0"
+  dependencies:
+    hash.js: "npm:^1.1.7"
+    rdf-string: "npm:^2.0.0"
+    rdf-terms: "npm:^2.0.0"
+  checksum: 827305e30a779b6c37f026ec54a1172610d2824820cf7b840b4e32f172dd363a7aa689c383b1fd68770fd468bb0aa950dd4c96b14a07b85e93849d345d6dcd61
   languageName: node
   linkType: hard
 
@@ -7611,6 +7639,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"rdf-string@npm:^2.0.0":
+  version: 2.0.1
+  resolution: "rdf-string@npm:2.0.1"
+  dependencies:
+    rdf-data-factory: "npm:^2.0.0"
+  checksum: e3223a3d0baa0486b9c6d2ed91e8d8a9d42eca05faf5727f2798860890b17bde698a6c13faee8b1482c06b88c216c5d60aa579e3256af236dbf95224cb24c69d
+  languageName: node
+  linkType: hard
+
 "rdf-terms@npm:^1.7.0":
   version: 1.7.1
   resolution: "rdf-terms@npm:1.7.1"
@@ -7622,14 +7659,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"rdf-terms@npm:^1.9.1":
-  version: 1.11.0
-  resolution: "rdf-terms@npm:1.11.0"
+"rdf-terms@npm:^2.0.0":
+  version: 2.0.0
+  resolution: "rdf-terms@npm:2.0.0"
   dependencies:
-    "@rdfjs/types": "npm:*"
-    rdf-data-factory: "npm:^1.1.0"
-    rdf-string: "npm:^1.6.0"
-  checksum: 9603eef8b05c8254f1d12a75db894de85eb291fd1cff167d5dd4a3854ff7677ad6baea9ebbb164bc0ad0cbe37ab4317e96de61e98297937ea9237956ac951fab
+    rdf-data-factory: "npm:^2.0.0"
+    rdf-string: "npm:^2.0.0"
+  checksum: 278d75a3000b8b52e858d2fe5db2ac7c29febceffe036ac663af91b5cea2c3ed9d66ee55ec0d710e2fa3956fd93897202b463c28a5a6ce06e00e4f4f5e72b470
   languageName: node
   linkType: hard
 
