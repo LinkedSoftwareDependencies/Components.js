@@ -1487,6 +1487,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@rdfjs/types@npm:^2.0.0":
+  version: 2.0.0
+  resolution: "@rdfjs/types@npm:2.0.0"
+  dependencies:
+    "@types/node": "npm:*"
+  checksum: de53d967f9a29fd4ad729c426ea71db9bf0f51cfca98f47de504f288ccd7f9dd6e70bc6df76530b273cf267e3661a5c5163019c011c28af90d3851e5a1ace3fa
+  languageName: node
+  linkType: hard
+
 "@rubensworks/eslint-config@npm:^1.0.1":
   version: 1.0.1
   resolution: "@rubensworks/eslint-config@npm:1.0.1"
@@ -3205,7 +3214,7 @@ __metadata:
     n3: "npm:^1.11.1"
     node-polyfill-webpack-plugin: "npm:^3.0.0"
     pre-commit: "npm:^1.2.2"
-    rdf-data-factory: "npm:^1.1.0"
+    rdf-data-factory: "npm:^2.0.0"
     rdf-object: "npm:^2.0.0"
     rdf-parse: "npm:^2.0.0"
     rdf-quad: "npm:^1.5.0"
@@ -7513,6 +7522,15 @@ __metadata:
   dependencies:
     "@rdfjs/types": "npm:*"
   checksum: fdc6dc4f81db8460ce1a5977bbec1acf242bb26c8f9ea87245efd83f544cbeb2a041a5746f693f9f5a4547a6ac26be32bcb2deffd875df50db018477ce50bf8a
+  languageName: node
+  linkType: hard
+
+"rdf-data-factory@npm:^2.0.0":
+  version: 2.0.2
+  resolution: "rdf-data-factory@npm:2.0.2"
+  dependencies:
+    "@rdfjs/types": "npm:^2.0.0"
+  checksum: 5c72ebc22f4910fd35bf3efb1e1def10785aca6f8d22dd8cee34c9ffb764225698ebdfeaf09a2afba6c25e17733940ab52cefd5c751cc2720b29b5ee56ef32ee
   languageName: node
   linkType: hard
 

@@ -41,7 +41,7 @@
     "@types/semver": "^7.3.4",
     "jsonld-context-parser": "^3.0.0",
     "minimist": "^1.2.0",
-    "rdf-data-factory": "^1.1.0",
+    "rdf-data-factory": "^2.0.0",
     "rdf-object": "^2.0.0",
     "rdf-parse": "^2.0.0",
     "rdf-quad": "^1.5.0",
