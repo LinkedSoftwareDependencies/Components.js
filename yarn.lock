@@ -3218,7 +3218,7 @@ __metadata:
     rdf-object: "npm:^2.0.0"
     rdf-parse: "npm:^2.0.0"
     rdf-quad: "npm:^1.5.0"
-    rdf-string: "npm:^1.6.0"
+    rdf-string: "npm:^2.0.0"
     rdf-terms: "npm:^1.7.0"
     semver: "npm:^7.3.2"
     simple-copy: "npm:^2.2.1"
