@@ -3215,7 +3215,7 @@ __metadata:
     node-polyfill-webpack-plugin: "npm:^3.0.0"
     pre-commit: "npm:^1.2.2"
     rdf-data-factory: "npm:^1.1.0"
-    rdf-object: "npm:^2.0.0"
+    rdf-object: "npm:^3.0.0"
     rdf-parse: "npm:^2.0.0"
     rdf-quad: "npm:^1.5.0"
     rdf-string: "npm:^1.6.0"
@@ -7524,7 +7524,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"rdf-data-factory@npm:^2.0.0":
+"rdf-data-factory@npm:^2.0.0, rdf-data-factory@npm:^2.0.1":
   version: 2.0.2
   resolution: "rdf-data-factory@npm:2.0.2"
   dependencies:
@@ -7575,16 +7575,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"rdf-object@npm:^2.0.0":
-  version: 2.0.0
-  resolution: "rdf-object@npm:2.0.0"
+"rdf-object@npm:^3.0.0":
+  version: 3.0.0
+  resolution: "rdf-object@npm:3.0.0"
   dependencies:
-    "@rdfjs/types": "npm:*"
     jsonld-context-parser: "npm:^3.0.0"
-    rdf-data-factory: "npm:^1.1.0"
-    rdf-string: "npm:^1.6.0"
+    rdf-data-factory: "npm:^2.0.1"
+    rdf-string: "npm:^2.0.0"
     streamify-array: "npm:^1.0.1"
-  checksum: adda0eb7e8555c4f7fe00cbcbaad9e209d486567c6ac325ad8612ca31de26e782eba2ded610ef0f66aafc2986e5ac4ec6bf015c7fd9e25e883efdce60c3c1b11
+  checksum: 3e348d01b1dfebf79b7b8bdb3dfa43d9be1c831e7bef2191caa5e43c30ed85c5f82254e28e7692bb1542fe44c5c60c1897c0950518bb14d5695dd289001b7458
   languageName: node
   linkType: hard
 
