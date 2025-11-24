@@ -19,7 +19,7 @@
   ],
   "author": "Ruben Taelman <ruben.taelman@ugent.be>",
   "license": "MIT",
-  "packageManager": "yarn@4.0.1",
+  "packageManager": "yarn@4.12.0",
   "scripts": {
     "test": "yarn test:jest",
     "test:jest": "jest",
