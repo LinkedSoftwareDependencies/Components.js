@@ -2,7 +2,7 @@ import type { Resource } from 'rdf-object';
 import { PREFIX_OO } from '../../rdf/Iris';
 import { ErrorResourcesContext } from '../../util/ErrorResourcesContext';
 
-export const OVERRIDE_STEP_FIELD_NAMES = [ 'parameter', 'target', 'value' ] as const;
+export const OVERRIDE_STEP_FIELD_NAMES = <const> [ 'parameter', 'target', 'value' ];
 export type OverrideStepFieldName = `${typeof OVERRIDE_STEP_FIELD_NAMES[number]}s`;
 
 /**
@@ -19,7 +19,7 @@ Record<OverrideStepFieldName, Resource[]> {
 
   for (const key of OVERRIDE_STEP_FIELD_NAMES) {
     const overrideKey = `override${key[0].toUpperCase()}${key.slice(1)}`;
-    const propertiesKey = `${key}s` as const;
+    const propertiesKey = <const> `${key}s`;
     const properties = step.properties[PREFIX_OO(overrideKey)];
     if (properties.length > 1) {
       throw new ErrorResourcesContext(`Detected multiple values for ${overrideKey} in Override step ${step.value}. RDF lists should be used for defining multiple values.`, {

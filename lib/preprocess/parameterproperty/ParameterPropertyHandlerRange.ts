@@ -155,7 +155,7 @@ export class ParameterPropertyHandlerRange implements IParameterPropertyHandler 
           context: errorContext,
         };
       }
-      const subConflicts = <IParamValueConflict[]> value.list.map(listElement => this
+      const subConflicts = value.list.map(listElement => this
         .hasValueType(listElement, type.property.parameterRangeValue, errorContext, genericsContext))
         .filter(subConflict => subConflict !== undefined);
       return subConflicts.length === 0 ?
@@ -192,7 +192,7 @@ export class ParameterPropertyHandlerRange implements IParameterPropertyHandler 
       return {
         description: `not all intersection values are valid`,
         context: errorContext,
-        causes: <IParamValueConflict[]> subConflicts.filter(subConflict => subConflict !== undefined),
+        causes: subConflicts.filter(subConflict => subConflict !== undefined),
       };
     }
     if (type.isA('ParameterRangeTuple')) {
