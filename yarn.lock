@@ -3214,7 +3214,7 @@ __metadata:
     n3: "npm:^1.11.1"
     node-polyfill-webpack-plugin: "npm:^3.0.0"
     pre-commit: "npm:^1.2.2"
-    rdf-data-factory: "npm:^1.1.0"
+    rdf-data-factory: "npm:^2.0.0"
     rdf-object: "npm:^2.0.0"
     rdf-parse: "npm:^2.0.0"
     rdf-quad: "npm:^1.5.0"
