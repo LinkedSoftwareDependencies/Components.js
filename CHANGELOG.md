@@ -1,6 +1,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v6.4.0"></a>
+## [v6.4.0](https://github.com/LinkedSoftwareDependencies/Components.js/compare/v6.3.0...v6.4.0) - 2026-01-07
+
+### Changed
+* [Update to latest rdf-* dependencies](https://github.com/LinkedSoftwareDependencies/Components.js/commit/b4094a75458aa010ca0906c8d1ec13f2289833e7)
+
 <a name="v6.3.0"></a>
 ## [v6.3.0](https://github.com/LinkedSoftwareDependencies/Components.js/compare/v6.2.0...v6.3.0) - 2024-10-23
 
