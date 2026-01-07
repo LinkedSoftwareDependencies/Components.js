@@ -2,7 +2,7 @@ import { createReadStream } from 'fs';
 import type { Readable } from 'stream';
 import type * as RDF from '@rdfjs/types';
 import type { ParseOptions } from 'rdf-parse';
-import rdfParser from 'rdf-parse';
+import { rdfParser } from 'rdf-parse';
 import type { Logger } from 'winston';
 import { PrefetchedDocumentLoader } from './PrefetchedDocumentLoader';
 import { RdfStreamIncluder } from './RdfStreamIncluder';
