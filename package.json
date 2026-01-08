@@ -37,7 +37,7 @@
   "dependencies": {
     "@rdfjs/types": "*",
     "@types/minimist": "^1.2.0",
-    "@types/node": "^18.0.0",
+    "@types/node": "^24.0.0",
     "@types/semver": "^7.3.4",
     "jsonld-context-parser": "^3.0.0",
     "minimist": "^1.2.0",
