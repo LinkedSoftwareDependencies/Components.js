@@ -4716,10 +4716,18 @@ multimap@^1.1.0:
   resolved "https://registry.yarnpkg.com/multimap/-/multimap-1.1.0.tgz#5263febc085a1791c33b59bb3afc6a76a2a10ca8"
   integrity sha512-0ZIR9PasPxGXmRsEF8jsDzndzHDj7tIav+JUmvIFB/WHswliFnquxECT/De7GR4yg99ky/NlRKJT82G1y271bw==
 
-n3@^1.11.1, n3@^1.16.3, n3@^1.26.0:
+n3@^1.16.3, n3@^1.26.0:
   version "1.26.0"
   resolved "https://registry.yarnpkg.com/n3/-/n3-1.26.0.tgz#3d69de04bee680b9ebec9dbc1033dc1e6934d351"
   integrity sha512-SQknS0ua90rN+3RHuk8BeIqeYyqIH/+ecViZxX08jR4j6MugqWRjtONl3uANG/crWXnOM2WIqBJtjIhVYFha+w==
+  dependencies:
+    buffer "^6.0.3"
+    readable-stream "^4.0.0"
+
+n3@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/n3/-/n3-2.0.0.tgz#990ff360886a101608145b83efeebe29eed11a80"
+  integrity sha512-U16wgzeUvnP92QSw9q3CWpYcIMB7egm1krI79+a89HoIFf/5Qwvh1RGAV51+W9Dlwr9+1hb60JZlfPfUyzdHtw==
   dependencies:
     buffer "^6.0.3"
     readable-stream "^4.0.0"
