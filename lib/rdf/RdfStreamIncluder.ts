@@ -100,6 +100,6 @@ export class RdfStreamIncluder extends Transform {
    * @param iri A potential IRI.
    */
   public static isValidIri(iri: string): boolean {
-    return Boolean(/:((\/\/)|(.*:))/u.exec(iri));
+    return Boolean(/:((\/\/)|(.*:))/u.test(iri));
   }
 }

@@ -12,7 +12,7 @@ export type OverrideStepFieldName = `${typeof OVERRIDE_STEP_FIELD_NAMES[number]}
  * @param step - Override step to get the fields from.
  * @param expected - For each field, how many are expected. The value can be undefined if there is no fixed amount.
  */
-export function extractOverrideStepFields(step: Resource, expected: { [key in OverrideStepFieldName]?: number } = {}):
+export function extractOverrideStepFields(step: Resource, expected: {[key in OverrideStepFieldName]?: number } = {}):
 Record<OverrideStepFieldName, Resource[]> {
   // Type is not correct yet now but will be completed in the loop below
   const result = <Record<OverrideStepFieldName, Resource[]>> {};
@@ -57,7 +57,8 @@ export function getPropertyResourceList(config: Resource, parameter: Resource): 
 
   // Having multiple lists can happen if multiple config files add elements to the same list
   const list = properties.flatMap(prop => prop.list);
-  if (list.some(res => res === undefined)) {
+  // eslint-disable-next-line unicorn/no-useless-undefined
+  if (list.includes(undefined)) {
     throw new ErrorResourcesContext(`Invalid target in Override step targeting ${config.value}: ${parameter.value} does not reference a list`, {
       config,
     });

@@ -54,7 +54,7 @@ export class ConstructionStrategyCommonJsString implements IConstructionStrategy
         this.getCurrentRunningModuleMain(options.moduleState),
       )}` :
       options.requireName;
-    let serialization = `require('${resultingRequirePath.replace(/\\/gu, '/')}')`;
+    let serialization = `require('${resultingRequirePath.replaceAll('\\', '/')}')`;
 
     // Determine the child of the require'd element
     if (options.requireElement) {

@@ -8,7 +8,7 @@ const quad = require('rdf-quad');
 const stringifyStream = require('stream-to-string');
 const streamifyString = require('streamify-string');
 
-global.fetch = <any>jest.fn(async(url: string) => {
+globalThis.fetch = <any>jest.fn(async(url: string) => {
   if (url === 'http://example.org/myfile1.ttl') {
     return {
       body: streamifyString(`<ex:s1> <ex:p1> <ex:o1>.`),

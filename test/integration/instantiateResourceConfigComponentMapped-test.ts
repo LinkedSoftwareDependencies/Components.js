@@ -372,7 +372,6 @@ describe('construction with mapped component configs as Resource', () => {
         'http://example.org/n3#lineMode': { list: [ '"true"' ]},
       });
       await expect(configConstructorPool.instantiate(config, settings)).rejects
-        // eslint-disable-next-line max-len
         .toThrow(/The value "\[true\]" for parameter ".*lineMode" is not of required range type ".*string\[\]\[\]"/u);
     });
 

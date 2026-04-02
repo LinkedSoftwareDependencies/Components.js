@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import { PrefetchedDocumentLoader } from '../../../lib/rdf/PrefetchedDocumentLoader';
 
-global.fetch = <any>jest.fn(async() => ({
+globalThis.fetch = <any>jest.fn(async() => ({
   json: () => ({ x: 'y' }),
   ok: true,
   headers: new Headers({ 'Content-Type': 'application/ld+json' }),

@@ -148,7 +148,7 @@ export class ConfigPreprocessorOverride implements IConfigPreprocessor<Resource[
     while (change) {
       change = false;
       for (const [ id, chain ] of Object.entries(overrideChains)) {
-        let next = chain[chain.length - 1];
+        let next = chain.at(-1)!;
         // If the next part of the chain is found in `overrideChains` we can merge them and remove the tail entry
         while (overrideChains[next.value]) {
           change = true;
@@ -158,7 +158,7 @@ export class ConfigPreprocessorOverride implements IConfigPreprocessor<Resource[
           // In case of a cycle there will be a point where next equals the first element,
           // at which point it will delete itself.
           delete overrideChains[next.value];
-          next = chain[chain.length - 1];
+          next = chain.at(-1)!;
         }
         // Reset the loop since we are modifying the object we are iterating over
         if (change) {
@@ -175,7 +175,7 @@ export class ConfigPreprocessorOverride implements IConfigPreprocessor<Resource[
    * @param chains - The override chains to check.
    */
   protected validateChains(chains: Resource[][]): void {
-    const targets = chains.map((chain): string => chain[chain.length - 1].value);
+    const targets = chains.map((chain): string => chain.at(-1)!.value);
     for (let i = 0; i < targets.length; ++i) {
       const duplicateIdx = targets.findIndex((target, idx): boolean => idx > i && target === targets[i]);
       if (duplicateIdx > 0) {
@@ -231,18 +231,18 @@ export class ConfigPreprocessorOverride implements IConfigPreprocessor<Resource[
    * @param chain - The chain to find the target of.
    */
   protected getChainTarget(chain: Resource[]): Resource {
-    const target = chain[chain.length - 1];
+    const target = chain.at(-1)!;
     const types = uniqueTypes(target, this.componentResources);
     if (!types || types.length === 0) {
-      throw new ErrorResourcesContext(`Missing type for override target ${target.value} of Override ${chain[chain.length - 2].value}`, {
+      throw new ErrorResourcesContext(`Missing type for override target ${target.value} of Override ${chain.at(-2)!.value}`, {
         target,
-        override: chain[chain.length - 2],
+        override: chain.at(-2),
       });
     }
     if (types.length > 1) {
-      throw new ErrorResourcesContext(`Found multiple types for override target ${target.value} of Override ${chain[chain.length - 2].value}`, {
+      throw new ErrorResourcesContext(`Found multiple types for override target ${target.value} of Override ${chain.at(-2)!.value}`, {
         target,
-        override: chain[chain.length - 2],
+        override: chain.at(-2),
       });
     }
     return target;

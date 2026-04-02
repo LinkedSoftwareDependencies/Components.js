@@ -26,3 +26,4 @@ try {
   console.error(error);
   process.exit(1);
 }
+/* eslint-enable no-console, unicorn/no-process-exit, @typescript-eslint/no-implicit-any-catch */
