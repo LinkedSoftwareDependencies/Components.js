@@ -1,5 +1,4 @@
 import * as fs from 'fs';
-import { mocked } from 'jest-mock';
 import type { Resource } from 'rdf-object';
 import { RdfObjectLoader } from 'rdf-object';
 import type { Logger } from 'winston';
@@ -9,8 +8,10 @@ import { ConfigRegistry } from '../../../lib/loading/ConfigRegistry';
 import type { IModuleState } from '../../../lib/loading/ModuleStateBuilder';
 import { ErrorResourcesContext } from '../../../lib/util/ErrorResourcesContext';
 
-jest.spyOn(fs, 'writeFileSync');
-mocked(fs.writeFileSync).mockReturnValue();
+jest.mock('fs', () => ({
+  ...jest.requireActual<typeof fs>('fs'),
+  writeFileSync: jest.fn(),
+}));
 jest.mock('../../../lib/loading/ComponentsManagerBuilder', () => ({
   // eslint-disable-next-line object-shorthand
   ComponentsManagerBuilder: function(args: any) {
