@@ -289,10 +289,8 @@ export class ConfigPreprocessorComponent implements IConfigPreprocessor<ICompone
     // Emit warning on undefined parameters inside the component's scope
     const prefix = handleResponse.component.value;
     for (const property of Object.keys(config.property)) {
-      if (property.startsWith(prefix)) {
-        if (!validParameters[property]) {
-          this.logger.warn(`Detected potentially invalid component parameter '${property}' in a config`);
-        }
+      if (property.startsWith(prefix) && !validParameters[property]) {
+        this.logger.warn(`Detected potentially invalid component parameter '${property}' in a config`);
       }
     }
   }

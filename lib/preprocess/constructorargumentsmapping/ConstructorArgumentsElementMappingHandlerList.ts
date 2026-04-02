@@ -26,7 +26,7 @@ export class ConstructorArgumentsElementMappingHandlerList implements IConstruct
     // Recursively handle all field values.
     const ret = mapper.objectLoader.createCompactedResource({});
     ret.list = [];
-    for (const argument of (<Resource[]> constructorArgs.list)) {
+    for (const argument of constructorArgs.list!) {
       if (argument.property.fields || argument.property.elements) {
         ret.list.push(mapper
           .applyConstructorArgumentsParameters(configRoot, argument, configElement, genericsContext));

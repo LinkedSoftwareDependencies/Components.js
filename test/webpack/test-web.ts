@@ -2,7 +2,6 @@
 
 // Monkey patch in the window object so we can test the script in Node
 // @ts-expect-error
-// eslint-disable-next-line no-undef
 globalThis.window = globalThis;
 
 import { RdfObjectLoader } from 'rdf-object';
@@ -32,3 +31,4 @@ try {
   console.error(error);
   process.exit(1);
 }
+/* eslint-enable no-console, unicorn/no-process-exit, @typescript-eslint/no-implicit-any-catch */

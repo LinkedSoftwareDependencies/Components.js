@@ -1,7 +1,6 @@
 import * as fs from 'fs';
 import { RdfObjectLoader } from 'rdf-object/lib/RdfObjectLoader';
 import type { Resource } from 'rdf-object/lib/Resource';
-import type { IComponentConfigPreprocessorHandleResponse } from '../../../lib/preprocess/ConfigPreprocessorComponent';
 import { ConfigPreprocessorComponentMapped } from '../../../lib/preprocess/ConfigPreprocessorComponentMapped';
 import 'jest-rdf';
 import { GenericsContext } from '../../../lib/preprocess/GenericsContext';
@@ -64,7 +63,7 @@ describe('ConfigPreprocessorComponentMapped', () => {
         '@id': 'ex:myComponentInstance',
         types: 'ex:Component',
       });
-      const { module, component } = <IComponentConfigPreprocessorHandleResponse> preprocessor.canHandle(config);
+      const { module, component } = preprocessor.canHandle(config)!;
       expect(module).toBe(componentResources['ex:Component'].property.module);
       expect(component).toBe(componentResources['ex:Component']);
     });

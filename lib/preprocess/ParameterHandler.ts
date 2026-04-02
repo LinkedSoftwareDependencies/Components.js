@@ -53,7 +53,7 @@ export class ParameterHandler {
         });
       }
       value = this.objectLoader.createCompactedResource({
-        list: values.flatMap(subValue => <Resource[]> subValue.list),
+        list: values.flatMap(subValue => subValue.list!),
       });
     }
 

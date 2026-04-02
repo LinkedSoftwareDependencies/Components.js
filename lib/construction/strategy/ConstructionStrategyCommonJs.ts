@@ -57,7 +57,7 @@ export class ConstructionStrategyCommonJs implements IConstructionStrategy<any> 
       if (typeof object !== 'function') {
         throw new Error(`Attempted to construct ${options.requireElement} from module ${options.requireName} that does not have a constructor`);
       }
-      object = new (Function.prototype.bind.apply(object, <[any, ...any]>[{}].concat(options.args)))();
+      object = new (Function.prototype.bind.apply(object, <[any, ...any]>[{}, ...options.args ]))();
     }
 
     return object;
@@ -72,25 +72,22 @@ export class ConstructionStrategyCommonJs implements IConstructionStrategy<any> 
    */
   public requireCurrentRunningModuleIfCurrent(moduleState: IModuleState, requireName: string): { value: any } | false {
     const pckg = moduleState.packageJsons[moduleState.mainModulePath];
-    if (pckg) {
-      if (requireName === pckg.name) {
-        const mainPath: string = Path.posix.join(moduleState.mainModulePath, pckg.main);
-        const required = this.req(mainPath);
-        if (required) {
-          return { value: required };
-        }
+    if (pckg && requireName === pckg.name) {
+      const mainPath: string = Path.posix.join(moduleState.mainModulePath, pckg.main);
+      const required = this.req(mainPath);
+      if (required) {
+        return { value: required };
       }
     }
     return false;
   }
 
   public createHash(options: ICreationStrategyHashOptions<any>): any {
-    return options.entries.reduce((data: Record<string, any>, entry: { key: string; value: any } | undefined) => {
-      if (entry) {
-        data[entry.key] = entry.value;
-      }
-      return data;
-    }, {});
+    return Object.fromEntries(
+      options.entries
+        .filter((entry): entry is { key: string; value: any } => entry !== undefined)
+        .map(entry => [ entry.key, entry.value ]),
+    );
   }
 
   public createArray(options: ICreationStrategyArrayOptions<any>): any {

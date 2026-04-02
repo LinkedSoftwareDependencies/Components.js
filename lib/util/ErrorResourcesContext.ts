@@ -57,7 +57,6 @@ export class ErrorResourcesContext extends Error {
   }
 }
 
-// eslint-disable-next-line @typescript-eslint/consistent-indexed-object-style
 export interface IErrorContext {
   [key: string]: Resource | Resource[] | string | undefined | IErrorContext | IParamValueConflict;
 }

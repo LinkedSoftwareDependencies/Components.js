@@ -3,9 +3,7 @@ import * as fs from 'fs';
 import type { Resource } from 'rdf-object';
 import { RdfObjectLoader } from 'rdf-object';
 import type { Logger } from 'winston';
-import type {
-  IComponentConfigPreprocessorHandleResponse,
-} from '../../../lib/preprocess/ConfigPreprocessorComponent';
+
 import {
   ConfigPreprocessorComponent,
 } from '../../../lib/preprocess/ConfigPreprocessorComponent';
@@ -50,7 +48,7 @@ describe('ConfigPreprocessorComponent', () => {
         '@id': 'ex:myComponentInstance',
         types: 'ex:Component',
       });
-      const { module, component } = <IComponentConfigPreprocessorHandleResponse> preprocessor.canHandle(config);
+      const { module, component } = preprocessor.canHandle(config)!;
       expect(module).toBe(componentResources['ex:Component'].property.module);
       expect(component).toBe(componentResources['ex:Component']);
     });
@@ -112,7 +110,6 @@ describe('ConfigPreprocessorComponent', () => {
         types: [ 'ex:Component', 'ex:Component2' ],
       });
       expect(() => preprocessor.canHandle(config))
-        // eslint-disable-next-line max-len
         .toThrow(/^Detected more than one component types for config "ex:myComponentInstance"/u);
     });
 
@@ -159,7 +156,7 @@ describe('ConfigPreprocessorComponent', () => {
 
   describe('transformConstructorArguments', () => {
     function expectTransformOutput(config: Resource, expectedArgs: Resource) {
-      const hr = <IComponentConfigPreprocessorHandleResponse> preprocessor.canHandle(config);
+      const hr = preprocessor.canHandle(config)!;
       const ret = preprocessor.transformConstructorArguments(config, hr);
       expect(expectedArgs.toQuads()).toBeRdfIsomorphic(ret.toQuads());
     }
@@ -440,7 +437,7 @@ describe('ConfigPreprocessorComponent', () => {
 
   describe('transform', () => {
     function expectTransformOutput(config: Resource, expectedResource: Resource) {
-      const hr = <IComponentConfigPreprocessorHandleResponse> preprocessor.canHandle(config);
+      const hr = preprocessor.canHandle(config)!;
       const { finishTransformation, rawConfig } = preprocessor.transform(config, hr);
       expect(expectedResource.toQuads()).toBeRdfIsomorphic(rawConfig.toQuads());
       expect(finishTransformation).toBe(true);
@@ -573,9 +570,8 @@ describe('ConfigPreprocessorComponent', () => {
         '@id': 'ex:ComponentThis',
         module: 'ex:Module',
       });
-      const hr = <IComponentConfigPreprocessorHandleResponse> preprocessor.canHandle(config);
+      const hr = preprocessor.canHandle(config)!;
       expect(() => preprocessor.transform(config, hr))
-        // eslint-disable-next-line max-len
         .toThrow(/^Could not find a requireName in either the config's module or component/u);
     });
 
@@ -1025,7 +1021,7 @@ describe('ConfigPreprocessorComponent', () => {
           '@id': 'ex:ComponentThis#param1',
         },
       });
-      const hr = <IComponentConfigPreprocessorHandleResponse> preprocessor.canHandle(config);
+      const hr = preprocessor.canHandle(config)!;
       preprocessor.validateConfig(config, hr);
       expect(logger.warn).toHaveBeenCalledWith(`Detected potentially invalid component parameter 'ex:ComponentThis#param2' in a config`);
     });
@@ -1043,7 +1039,7 @@ describe('ConfigPreprocessorComponent', () => {
           '@id': 'ex:ComponentThis#param1',
         },
       });
-      const hr = <IComponentConfigPreprocessorHandleResponse> preprocessor.canHandle(config);
+      const hr = preprocessor.canHandle(config)!;
       preprocessor.validateConfig(config, hr);
       expect(logger.warn).not.toHaveBeenCalled();
     });
@@ -1061,7 +1057,7 @@ describe('ConfigPreprocessorComponent', () => {
           '@id': 'ex:ComponentThis#param1',
         },
       });
-      const hr = <IComponentConfigPreprocessorHandleResponse> preprocessor.canHandle(config);
+      const hr = preprocessor.canHandle(config)!;
       preprocessor.validateConfig(config, hr);
       expect(logger.warn).not.toHaveBeenCalled();
     });
