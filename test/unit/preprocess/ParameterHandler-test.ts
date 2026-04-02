@@ -78,7 +78,7 @@ describe('ParameterHandler', () => {
           ],
         });
         expect(() => handler.applyParameterValues(configRoot, param, configElement, genericsContext))
-          .toThrowError(`Detected multiple values for parameter ex:myParam in ex:config. RDF lists should be used for defining multiple values.`);
+          .toThrow(`Detected multiple values for parameter ex:myParam in ex:config. RDF lists should be used for defining multiple values.`);
       });
 
       it('should handle list values', () => {
@@ -145,7 +145,7 @@ describe('ParameterHandler', () => {
           ],
         });
         expect(() => handler.applyParameterValues(configRoot, param, configElement, genericsContext))
-          .toThrowError(`Detected multiple values for parameter ex:myParam in ex:config. RDF lists should be used for defining multiple values.`);
+          .toThrow(`Detected multiple values for parameter ex:myParam in ex:config. RDF lists should be used for defining multiple values.`);
       });
     });
 
@@ -208,7 +208,7 @@ describe('ParameterHandler', () => {
 
         it('should throw', () => {
           expect(() => handler.applyParameterValues(configRoot, param, configElement, genericsContext))
-            .toThrowError(`Invalid default value for parameter "ex:myParam": Only one value can be defined, or an RDF list must be provided`);
+            .toThrow(`Invalid default value for parameter "ex:myParam": Only one value can be defined, or an RDF list must be provided`);
         });
       });
 
@@ -461,7 +461,7 @@ describe('ParameterHandler', () => {
 
         it('should throw', () => {
           expect(() => handler.applyParameterValues(configRoot, param, configElement, genericsContext))
-            .toThrowError(`Invalid defaultScoped value for parameter "ex:myParam": Only one defaultScopedValue can be defined, or an RDF list must be provided`);
+            .toThrow(`Invalid defaultScoped value for parameter "ex:myParam": Only one defaultScopedValue can be defined, or an RDF list must be provided`);
         });
       });
 
@@ -679,7 +679,7 @@ describe('ParameterHandler', () => {
             ],
           });
           expect(() => handler.applyParameterValues(configRoot, param, configElement, genericsContext))
-            .toThrowError(/^Invalid defaultScoped for parameter "ex:myParam": Missing defaultScope/u);
+            .toThrow(/^Invalid defaultScoped for parameter "ex:myParam": Missing defaultScope/u);
         });
 
         it('should throw for a missing defaultScopedValue', () => {
@@ -694,7 +694,7 @@ describe('ParameterHandler', () => {
             ],
           });
           expect(() => handler.applyParameterValues(configRoot, param, configElement, genericsContext))
-            .toThrowError(/^Invalid defaultScoped for parameter "ex:myParam": Missing defaultScopedValue/u);
+            .toThrow(/^Invalid defaultScoped for parameter "ex:myParam": Missing defaultScopedValue/u);
         });
       });
     });
@@ -766,7 +766,7 @@ describe('ParameterHandler', () => {
           const expected: Resource = objectLoader.createCompactedResource('"FIXED"');
           expect(() => expectOutputOnlyTerm(handler
             .applyParameterValues(configRoot, param, configElement, genericsContext), expected))
-            .toThrowError(`Invalid fixed value for parameter "ex:myParam": Only one value can be defined, or an RDF list must be provided`);
+            .toThrow(`Invalid fixed value for parameter "ex:myParam": Only one value can be defined, or an RDF list must be provided`);
         });
       });
 

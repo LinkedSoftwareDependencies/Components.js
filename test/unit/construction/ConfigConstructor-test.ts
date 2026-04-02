@@ -76,7 +76,7 @@ describe('ConfigConstructor', () => {
         objectLoader.createCompactedResource('"GHI"'),
       ];
       await expect(constructor.getArgumentValues(values, settings)).rejects
-        .toThrowError(`Detected multiple values for an argument. RDF lists should be used for defining multiple values.`);
+        .toThrow(`Detected multiple values for an argument. RDF lists should be used for defining multiple values.`);
     });
 
     it('should handle an RDF list', async() => {
@@ -221,7 +221,7 @@ describe('ConfigConstructor', () => {
           },
         });
         await expect(constructor.getArgumentValue(resource, settings)).rejects
-          .toThrowError(/^Missing key in fields entry/u);
+          .toThrow(/^Missing key in fields entry/u);
       });
 
       it('can use dereferenced IRI values as keys', async() => {
@@ -267,7 +267,7 @@ describe('ConfigConstructor', () => {
           },
         });
         await expect(constructor.getArgumentValue(resource, settings)).rejects
-          .toThrowError(/^Illegal non-string key \(ex:abc as NamedNode\) in fields entry/u);
+          .toThrow(/^Illegal non-string key \(ex:abc as NamedNode\) in fields entry/u);
       });
 
       it('should ignore fields without value', async() => {
@@ -348,7 +348,7 @@ describe('ConfigConstructor', () => {
           ],
         });
         await expect(constructor.getArgumentValue(resource, settings)).rejects
-          .toThrowError(/^Missing value in array elements entry/u);
+          .toThrow(/^Missing value in array elements entry/u);
       });
     });
 
@@ -519,7 +519,7 @@ describe('ConfigConstructor', () => {
     it('should throw on graph terms', async() => {
       const resource = new Resource({ term: DF.defaultGraph() });
       await expect(constructor.getArgumentValue(resource, settings)).rejects
-        .toThrowError(/^Unsupported argument value during config construction/u);
+        .toThrow(/^Unsupported argument value during config construction/u);
     });
   });
 
@@ -565,7 +565,7 @@ describe('ConfigConstructor', () => {
         arguments: '"ABC"',
       });
       await expect(constructor.createArguments(config, settings)).rejects
-        .toThrowError(/^Detected non-RDF-list as value for config arguments/u);
+        .toThrow(/^Detected non-RDF-list as value for config arguments/u);
     });
   });
 
