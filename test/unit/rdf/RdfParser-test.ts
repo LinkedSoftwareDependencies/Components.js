@@ -366,7 +366,7 @@ describe('RdfParser', () => {
 <ex:s> <http://www.w3.org/2000/01/rdf-schema#seeAlso> <http://example.org/myfileunknown.ttl>.
 `;
       await expect(arrayifyStream(parser.parse(streamifyString(doc), options)))
-        .rejects.toThrowError(/^Error while parsing file/u);
+        .rejects.toThrow(/^Error while parsing file/u);
     });
 
     it('for a Turtle stream with imports, with import path to erroring file', async() => {
@@ -381,7 +381,7 @@ describe('RdfParser', () => {
 <ex:s> <http://www.w3.org/2000/01/rdf-schema#seeAlso> <http://example.org/myfileerror.ttl>.
 `;
       await expect(arrayifyStream(parser.parse(streamifyString(doc), options)))
-        .rejects.toThrowError(/^Error while parsing file/u);
+        .rejects.toThrow(/^Error while parsing file/u);
     });
 
     it('for a Turtle stream with invalid IRI should produce logger warnings', async() => {
@@ -456,12 +456,12 @@ describe('RdfParser', () => {
 
     it('for a non-existing file without protocol', async() => {
       await expect(RdfParser.fetchFileOrUrl(Path.join(__dirname, '../assets/rdf/a/myfileunknown.ttl')))
-        .rejects.toThrowError(/^ENOENT/u);
+        .rejects.toThrow(/^ENOENT/u);
     });
 
     it('for a folder without protocol', async() => {
       await expect(RdfParser.fetchFileOrUrl(Path.join(__dirname, '../assets/rdf/a/')))
-        .rejects.toThrowError(/^Path does not refer to a valid file/u);
+        .rejects.toThrow(/^Path does not refer to a valid file/u);
     });
   });
 });

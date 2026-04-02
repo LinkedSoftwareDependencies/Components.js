@@ -33,6 +33,34 @@ describe('OverrideMapEntry', (): void => {
     });
   });
 
+  it('can replace the value of a key when collectEntries is not a list.', async(): Promise<void> => {
+    const component = objectLoader.getOrMakeResource(DF.namedNode('ex:Component'));
+    // Replace collectEntries with a direct resource (not a list)
+    component.property.constructorArguments.list![0].property.fields.list![0]
+      .properties['https://linkedsoftwaredependencies.org/vocabularies/object-mapping#collectsEntriesFrom'] =
+      [ objectLoader.getOrMakeResource(DF.namedNode('ex:paramMap')) ];
+
+    const step = objectLoader.createCompactedResource({
+      types: 'oo:OverrideMapEntry',
+      overrideParameter: { '@id': 'ex:paramMap' },
+      overrideTarget: '"key"',
+      overrideValue: '"newValue"',
+    });
+
+    expect(stepHandler.canHandle(config, step)).toBe(true);
+    expect(stepHandler.handle(config, step)).toBe(config);
+
+    const entryList = config.property['ex:paramMap'].list;
+    const entries = entryList?.map((entry): { key: Term; value: Term } => ({
+      key: entry.property['ex:paramMap_key'].term,
+      value: entry.property['ex:paramMap_value'].term,
+    }));
+    expect(entries).toEqual([
+      { key: DF.literal('key'), value: DF.literal('newValue') },
+      { key: DF.literal('key2'), value: DF.literal('value2') },
+    ]);
+  });
+
   it('can only handle OverrideMapEntry steps.', async(): Promise<void> => {
     let step = objectLoader.createCompactedResource({ types: 'oo:OverrideMapEntry' });
     expect(stepHandler.canHandle(config, step)).toBe(true);

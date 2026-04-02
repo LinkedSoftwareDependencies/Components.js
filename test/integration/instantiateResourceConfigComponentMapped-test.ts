@@ -186,7 +186,7 @@ describe('construction with mapped component configs as Resource', () => {
         'http://example.org/n3#comments': [ '"C1"', '"C2"' ],
       });
       await expect(configConstructorPool.instantiate(config, settings)).rejects
-        .toThrowError(`Detected multiple values for parameter http://example.org/n3#lineMode in ex:config. RDF lists should be used for defining multiple values.`);
+        .toThrow(`Detected multiple values for parameter http://example.org/n3#lineMode in ex:config. RDF lists should be used for defining multiple values.`);
     });
 
     it('instantiated with a config with all parameters with multiple values as list', async() => {
@@ -271,7 +271,7 @@ describe('construction with mapped component configs as Resource', () => {
         'http://example.org/n3#comments': '"true"',
       });
       await expect(configConstructorPool.instantiate(config, settings)).rejects
-        .toThrowError(/The value "true" for parameter ".*lineMode" is not of required range type ".*string\[\]"/u);
+        .toThrow(/The value "true" for parameter ".*lineMode" is not of required range type ".*string\[\]"/u);
     });
 
     it('instantiated with a config with all parameters as singular value in list', async() => {
@@ -299,7 +299,7 @@ describe('construction with mapped component configs as Resource', () => {
         'http://example.org/n3#comments': [ '"C1"', '"C2"' ],
       });
       await expect(configConstructorPool.instantiate(config, settings)).rejects
-        .toThrowError(`Detected multiple values for parameter http://example.org/n3#lineMode in ex:config. RDF lists should be used for defining multiple values.`);
+        .toThrow(`Detected multiple values for parameter http://example.org/n3#lineMode in ex:config. RDF lists should be used for defining multiple values.`);
     });
 
     it('instantiated with a config with all parameters with multiple values as list', async() => {
@@ -363,7 +363,7 @@ describe('construction with mapped component configs as Resource', () => {
         'http://example.org/n3#lineMode': '"true"',
       });
       await expect(configConstructorPool.instantiate(config, settings)).rejects
-        .toThrowError(/The value "true" for parameter ".*lineMode" is not of required range type ".*string\[\]\[\]"/u);
+        .toThrow(/The value "true" for parameter ".*lineMode" is not of required range type ".*string\[\]\[\]"/u);
     });
 
     it('instantiated with a config with all parameters as list', async() => {
@@ -373,7 +373,7 @@ describe('construction with mapped component configs as Resource', () => {
       });
       await expect(configConstructorPool.instantiate(config, settings)).rejects
         // eslint-disable-next-line max-len
-        .toThrowError(/The value "\[true\]" for parameter ".*lineMode" is not of required range type ".*string\[\]\[\]"/u);
+        .toThrow(/The value "\[true\]" for parameter ".*lineMode" is not of required range type ".*string\[\]\[\]"/u);
     });
 
     it('instantiated with a config with all parameters as nested list', async() => {
@@ -453,7 +453,7 @@ describe('construction with mapped component configs as Resource', () => {
         'http://example.org/n3#comments': [ '"C1"', '"C2"' ],
       });
       await expect(configConstructorPool.instantiate(config, settings)).rejects
-        .toThrowError(`Detected multiple values for parameter http://example.org/n3#lineMode in ex:config. RDF lists should be used for defining multiple values.`);
+        .toThrow(`Detected multiple values for parameter http://example.org/n3#lineMode in ex:config. RDF lists should be used for defining multiple values.`);
     });
 
     it('instantiated with a config with all parameters with multiple values as list', async() => {
@@ -464,7 +464,7 @@ describe('construction with mapped component configs as Resource', () => {
         'http://example.org/n3#comments': { list: [ '"C1"', '"C2"' ]},
       });
       await expect(configConstructorPool.instantiate(config, settings)).rejects
-        .toThrowError(/The value ".*" for parameter ".*lineMode" is not of required range type ".*string"/u);
+        .toThrow(/The value ".*" for parameter ".*lineMode" is not of required range type ".*string"/u);
     });
 
     describe('instantiated with a config with variables', () => {
@@ -495,7 +495,7 @@ describe('construction with mapped component configs as Resource', () => {
 
       it('with undefined variables', async() => {
         await expect(configConstructorPool.instantiate(config, settings)).rejects
-          .toThrowError(/^Undefined variable: ex:var1/u);
+          .toThrow(/^Undefined variable: ex:var1/u);
       });
 
       it('with variables that are undefined', async() => {
@@ -504,7 +504,7 @@ describe('construction with mapped component configs as Resource', () => {
           'ex:var3': 'C',
         };
         await expect(configConstructorPool.instantiate(config, settings)).rejects
-          .toThrowError(/^Undefined variable: ex:var2/u);
+          .toThrow(/^Undefined variable: ex:var2/u);
       });
     });
   });
@@ -569,7 +569,7 @@ describe('construction with mapped component configs as Resource', () => {
         types: 'http://example.org/n3#Lexer',
       });
       await expect(configConstructorPool.instantiate(config, settings)).rejects
-        .toThrowError(/^The value "undefined" for parameter ".*lineMode" is not of required range type ".*string"/u);
+        .toThrow(/^The value "undefined" for parameter ".*lineMode" is not of required range type ".*string"/u);
     });
   });
 
@@ -1074,7 +1074,7 @@ describe('construction with mapped component configs as Resource', () => {
       });
       await expect(configConstructorPool.instantiate(config, settings)).rejects
         // eslint-disable-next-line max-len
-        .toThrowError(/The value "true" for parameter ".*comments" is not of required range type ".*string\[\] | undefined"/u);
+        .toThrow(/The value "true" for parameter ".*comments" is not of required range type ".*string\[\] | undefined"/u);
     });
 
     it('instantiated with a config with all parameters as multiple values in list', async() => {
@@ -1086,7 +1086,7 @@ describe('construction with mapped component configs as Resource', () => {
         'http://example.org/n3#comments': [ '"true"' ],
       });
       await expect(configConstructorPool.instantiate(config, settings)).rejects
-        .toThrowError(`Detected multiple values for parameter http://example.org/n3#lineMode in ex:config. RDF lists should be used for defining multiple values.`);
+        .toThrow(`Detected multiple values for parameter http://example.org/n3#lineMode in ex:config. RDF lists should be used for defining multiple values.`);
     });
 
     it('instantiated with a config with all parameters as singular value in RDF list', async() => {
@@ -1165,7 +1165,7 @@ describe('construction with mapped component configs as Resource', () => {
         'http://example.org/n3#comments': '"true"',
       });
       await expect(configConstructorPool.instantiate(config, settings)).rejects
-        .toThrowError(/The value ".*" for parameter ".*lineMode" is not of required range type ".*string"/u);
+        .toThrow(/The value ".*" for parameter ".*lineMode" is not of required range type ".*string"/u);
     });
 
     it('instantiated with a config without parameters', async() => {
@@ -1173,7 +1173,7 @@ describe('construction with mapped component configs as Resource', () => {
         types: 'http://example.org/n3#Lexer',
       });
       await expect(configConstructorPool.instantiate(config, settings)).rejects
-        .toThrowError(/The value ".*" for parameter ".*n3" is not of required range type ".*string"/u);
+        .toThrow(/The value ".*" for parameter ".*n3" is not of required range type ".*string"/u);
     });
   });
 
@@ -1224,7 +1224,7 @@ describe('construction with mapped component configs as Resource', () => {
         'http://example.org/n3#comments': '"true"',
       });
       await expect(configConstructorPool.instantiate(config, settings)).rejects
-        .toThrowError(/The value ".*" for parameter ".*lineMode" is not of required range type ".*string"/u);
+        .toThrow(/The value ".*" for parameter ".*lineMode" is not of required range type ".*string"/u);
     });
 
     it('instantiated with a config without parameters', async() => {

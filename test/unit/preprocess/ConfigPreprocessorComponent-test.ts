@@ -113,7 +113,7 @@ describe('ConfigPreprocessorComponent', () => {
       });
       expect(() => preprocessor.canHandle(config))
         // eslint-disable-next-line max-len
-        .toThrowError(/^Detected more than one component types for config "ex:myComponentInstance"/u);
+        .toThrow(/^Detected more than one component types for config "ex:myComponentInstance"/u);
     });
 
     it('should handle for a config with two identical component types', () => {
@@ -131,7 +131,7 @@ describe('ConfigPreprocessorComponent', () => {
       });
       expect(() => preprocessor.canHandle(config))
         // eslint-disable-next-line max-len
-        .toThrowError(/^Could not find \(valid\) component types for config "ex:myComponentInstance" among its types, or a requireName/u);
+        .toThrow(/^Could not find \(valid\) component types for config "ex:myComponentInstance" among its types, or a requireName/u);
     });
 
     it('should throw for a config with unregistered component types', () => {
@@ -141,7 +141,7 @@ describe('ConfigPreprocessorComponent', () => {
       });
       expect(() => preprocessor.canHandle(config))
         // eslint-disable-next-line max-len
-        .toThrowError(/^Could not find \(valid\) component types for config "ex:myComponentInstance" among its types, or a requireName/u);
+        .toThrow(/^Could not find \(valid\) component types for config "ex:myComponentInstance" among its types, or a requireName/u);
     });
 
     it('should throw for a config with a component type without module', () => {
@@ -153,7 +153,7 @@ describe('ConfigPreprocessorComponent', () => {
         types: 'ex:ComponentNoModule',
       });
       expect(() => preprocessor.canHandle(config))
-        .toThrowError(/^No module was found for the component "ex:ComponentNoModule"/u);
+        .toThrow(/^No module was found for the component "ex:ComponentNoModule"/u);
     });
   });
 
@@ -268,7 +268,7 @@ describe('ConfigPreprocessorComponent', () => {
       });
       const expectedArgs = objectLoader.createCompactedResource({});
       expect(() => expectTransformOutput(config, expectedArgs))
-        .toThrowError(`Detected multiple values for parameter ex:myComponentInstance#param1 in ex:myComponentInstance. RDF lists should be used for defining multiple values.`);
+        .toThrow(`Detected multiple values for parameter ex:myComponentInstance#param1 in ex:myComponentInstance. RDF lists should be used for defining multiple values.`);
     });
 
     it('should handle one parameter with multiple values as list', () => {
@@ -434,7 +434,7 @@ describe('ConfigPreprocessorComponent', () => {
       });
       const expectedArgs = objectLoader.createCompactedResource({});
       expect(() => expectTransformOutput(config, expectedArgs))
-        .toThrowError(`Invalid generic type instantiation: a different amount of generic types are passed (2) than are defined on the component (1).`);
+        .toThrow(`Invalid generic type instantiation: a different amount of generic types are passed (2) than are defined on the component (1).`);
     });
   });
 
@@ -576,7 +576,7 @@ describe('ConfigPreprocessorComponent', () => {
       const hr = <IComponentConfigPreprocessorHandleResponse> preprocessor.canHandle(config);
       expect(() => preprocessor.transform(config, hr))
         // eslint-disable-next-line max-len
-        .toThrowError(/^Could not find a requireName in either the config's module or component/u);
+        .toThrow(/^Could not find a requireName in either the config's module or component/u);
     });
 
     it('should prefer requireElement in component', () => {
@@ -957,7 +957,7 @@ describe('ConfigPreprocessorComponent', () => {
         },
       });
       expect(() => preprocessor.inheritParameterValues(configIn, component))
-        .toThrowError(/^Missing from property on parameter value inheritance definition/u);
+        .toThrow(/^Missing from property on parameter value inheritance definition/u);
     });
 
     it('should throw when the restriction does not define onParameter', () => {
@@ -973,7 +973,7 @@ describe('ConfigPreprocessorComponent', () => {
         },
       });
       expect(() => preprocessor.inheritParameterValues(configIn, component))
-        .toThrowError(/^Missing onParameter property on parameter value inheritance definition/u);
+        .toThrow(/^Missing onParameter property on parameter value inheritance definition/u);
     });
 
     it('should throw when from refers to a literal', () => {
@@ -990,7 +990,7 @@ describe('ConfigPreprocessorComponent', () => {
         },
       });
       expect(() => preprocessor.inheritParameterValues(configIn, component))
-        .toThrowError(/^Detected invalid from term type "Literal" on parameter value inheritance definition/u);
+        .toThrow(/^Detected invalid from term type "Literal" on parameter value inheritance definition/u);
     });
 
     it('should throw when onParameter refers to a literal', () => {
@@ -1007,7 +1007,7 @@ describe('ConfigPreprocessorComponent', () => {
         },
       });
       expect(() => preprocessor.inheritParameterValues(configIn, component))
-        .toThrowError(/^Detected invalid onParameter term type "Literal" on parameter value inheritance definition/u);
+        .toThrow(/^Detected invalid onParameter term type "Literal" on parameter value inheritance definition/u);
     });
   });
 

@@ -354,7 +354,7 @@ describe('ComponentRegistryFinalizer', () => {
         constructorArguments: 'Not a list',
       });
       expect(() => finalizer.inheritConstructorArguments(component1))
-        .toThrowError(/^Invalid or undefined constructor arguments/u);
+        .toThrow(/^Invalid or undefined constructor arguments/u);
     });
 
     it('should handle an empty constructorArgs', async() => {
@@ -475,7 +475,7 @@ describe('ComponentRegistryFinalizer', () => {
         fields: [],
       });
       expect(() => finalizer.inheritConstructorArgumentsEntry(cargs, [ cargsSuper ]))
-        .toThrowError(/^Invalid or undefined constructor argument entry/u);
+        .toThrow(/^Invalid or undefined constructor argument entry/u);
     });
 
     it('should throw on extending args with non-list fields', async() => {
@@ -483,7 +483,7 @@ describe('ComponentRegistryFinalizer', () => {
         fields: [ 'A', 'B' ],
       });
       expect(() => finalizer.inheritConstructorArgumentsEntry(cargs, []))
-        .toThrowError(/^Invalid fields: Only one value can be defined, or an RDF list must be provided/u);
+        .toThrow(/^Invalid fields: Only one value can be defined, or an RDF list must be provided/u);
     });
 
     it('should handle extending args without fields with ObjectMapping type', async() => {
@@ -518,7 +518,7 @@ describe('ComponentRegistryFinalizer', () => {
         fields: [],
       });
       expect(() => finalizer.inheritConstructorArgumentsEntry(cargs, [ cargsSuper ]))
-        .toThrowError(/^Invalid or undefined constructor argument entry/u);
+        .toThrow(/^Invalid or undefined constructor argument entry/u);
     });
 
     it('should handle extending args with one field', async() => {

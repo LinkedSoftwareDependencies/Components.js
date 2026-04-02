@@ -197,7 +197,7 @@ describe('ConfigPreprocessorComponentMapped', () => {
       const expected = objectLoader.createCompactedResource({});
       expect(() => expectOutputProperties(preprocessor
         .applyConstructorArgumentsParameters(configRoot, constructorArgs, configElement, genericsContext), expected))
-        .toThrowError(`Detected multiple values for parameter ex:param1 in ex:config. RDF lists should be used for defining multiple values.`);
+        .toThrow(`Detected multiple values for parameter ex:param1 in ex:config. RDF lists should be used for defining multiple values.`);
     });
 
     it('should pass args with literal key and multiple values as list', () => {
@@ -303,7 +303,7 @@ describe('ConfigPreprocessorComponentMapped', () => {
       });
       expect(() => preprocessor
         .applyConstructorArgumentsParameters(configRoot, constructorArgs, configElement, genericsContext))
-        .toThrowError(/^Detected illegal IRI object key, which is only allowed with collectEntries/u);
+        .toThrow(/^Detected illegal IRI object key, which is only allowed with collectEntries/u);
     });
 
     it('should pass args with collectEntries', () => {
@@ -350,7 +350,7 @@ describe('ConfigPreprocessorComponentMapped', () => {
       });
       expect(() => preprocessor
         .applyConstructorArgumentsParameters(configRoot, constructorArgs, configElement, genericsContext))
-        .toThrowError(/^Detected illegal collectEntries value "Literal", must be an IRI/u);
+        .toThrow(/^Detected illegal collectEntries value "Literal", must be an IRI/u);
     });
 
     it('should pass args with collectEntries with multiple values as non-list', () => {
@@ -379,7 +379,7 @@ describe('ConfigPreprocessorComponentMapped', () => {
       });
       expect(() => preprocessor
         .applyConstructorArgumentsParameters(configRoot, constructorArgs, configElement, genericsContext))
-        .toThrowError('Invalid collectEntries: Only one value can be defined, or an RDF list must be provided');
+        .toThrow('Invalid collectEntries: Only one value can be defined, or an RDF list must be provided');
     });
 
     it('should pass args with collectEntries with multiple values as list', () => {
@@ -488,7 +488,7 @@ describe('ConfigPreprocessorComponentMapped', () => {
       });
       expect(() => preprocessor
         .applyConstructorArgumentsParameters(configRoot, constructorArgs, configElement, genericsContext))
-        .toThrowError(/^Detected more than one key value in collectEntries/u);
+        .toThrow(/^Detected more than one key value in collectEntries/u);
     });
 
     it('should pass args with collectEntries without key mapping', () => {
@@ -773,7 +773,7 @@ describe('ConfigPreprocessorComponentMapped', () => {
       });
       expect(() => preprocessor
         .applyConstructorArgumentsParameters(configRoot, constructorArgs, configElement, genericsContext))
-        .toThrowError(/^Detected more than one value value in collectEntries/u);
+        .toThrow(/^Detected more than one value value in collectEntries/u);
     });
 
     it('should throw on collectEntries with multiple key definitions', () => {
@@ -793,7 +793,7 @@ describe('ConfigPreprocessorComponentMapped', () => {
       });
       expect(() => preprocessor
         .applyConstructorArgumentsParameters(configRoot, constructorArgs, configElement, genericsContext))
-        .toThrowError(/^Detected more than one key definition in collectEntries/u);
+        .toThrow(/^Detected more than one key definition in collectEntries/u);
     });
 
     it('should throw on collectEntries with multiple value definitions', () => {
@@ -813,7 +813,7 @@ describe('ConfigPreprocessorComponentMapped', () => {
       });
       expect(() => preprocessor
         .applyConstructorArgumentsParameters(configRoot, constructorArgs, configElement, genericsContext))
-        .toThrowError(/^Detected more than one value definition in collectEntries/u);
+        .toThrow(/^Detected more than one value definition in collectEntries/u);
     });
 
     it('should pass args with empty fields', () => {
@@ -835,7 +835,7 @@ describe('ConfigPreprocessorComponentMapped', () => {
       const configElement = objectLoader.createCompactedResource({});
       expect(() => preprocessor
         .applyConstructorArgumentsParameters(configRoot, constructorArgs, configElement, genericsContext))
-        .toThrowError('Invalid fields: Only one value can be defined, or an RDF list must be provided');
+        .toThrow('Invalid fields: Only one value can be defined, or an RDF list must be provided');
     });
 
     it('should pass args with one static field', () => {
@@ -910,7 +910,7 @@ describe('ConfigPreprocessorComponentMapped', () => {
       });
       expect(() => preprocessor
         .applyConstructorArgumentsParameters(configRoot, constructorArgs, configElement, genericsContext))
-        .toThrowError(`Detected multiple values for parameter ex:param1 in ex:config. RDF lists should be used for defining multiple values.`);
+        .toThrow(`Detected multiple values for parameter ex:param1 in ex:config. RDF lists should be used for defining multiple values.`);
     });
 
     it('should pass args with one dynamic field with multiple values as list', () => {
@@ -1206,7 +1206,7 @@ describe('ConfigPreprocessorComponentMapped', () => {
       const configElement = objectLoader.createCompactedResource({});
       expect(() => preprocessor
         .applyConstructorArgumentsParameters(configRoot, constructorArgs, configElement, genericsContext))
-        .toThrowError(/^Illegal non-RDF-list elements/u);
+        .toThrow(/^Illegal non-RDF-list elements/u);
     });
 
     it('should throw on elements with literal values', () => {
@@ -1221,7 +1221,7 @@ describe('ConfigPreprocessorComponentMapped', () => {
       const configElement = objectLoader.createCompactedResource({});
       expect(() => preprocessor
         .applyConstructorArgumentsParameters(configRoot, constructorArgs, configElement, genericsContext))
-        .toThrowError(/^Illegal elements value, must be an IRI or resource with value\/valueRawReference/u);
+        .toThrow(/^Illegal elements value, must be an IRI or resource with value\/valueRawReference/u);
     });
 
     it('should throw on blank node elements without value', () => {
@@ -1238,7 +1238,7 @@ describe('ConfigPreprocessorComponentMapped', () => {
       const configElement = objectLoader.createCompactedResource({});
       expect(() => preprocessor
         .applyConstructorArgumentsParameters(configRoot, constructorArgs, configElement, genericsContext))
-        .toThrowError(/^Illegal elements value, must be an IRI or resource with value\/valueRawReference/u);
+        .toThrow(/^Illegal elements value, must be an IRI or resource with value\/valueRawReference/u);
     });
 
     it('should pass args with an empty list', () => {

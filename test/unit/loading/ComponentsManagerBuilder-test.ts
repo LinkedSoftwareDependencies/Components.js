@@ -273,7 +273,7 @@ describe('ComponentsManagerBuilder', () => {
     expect((<any> mgr.configConstructorPool).configPreprocessors[1]).toBeInstanceOf(ConfigPreprocessorComponentMapped);
     expect((<any> mgr.configConstructorPool).configPreprocessors[2]).toBeInstanceOf(ConfigPreprocessorComponent);
     expect(mgr.logger).toBeTruthy();
-    expect(createLogger).toBeCalledTimes(1);
+    expect(createLogger).toHaveBeenCalledTimes(1);
     expect(createLogger).toHaveBeenCalledWith({
       level: 'info',
       transports: expect.anything(),
@@ -309,7 +309,7 @@ describe('ComponentsManagerBuilder', () => {
     expect((<any> mgr.configConstructorPool).configPreprocessors[1]).toBeInstanceOf(ConfigPreprocessorComponentMapped);
     expect((<any> mgr.configConstructorPool).configPreprocessors[2]).toBeInstanceOf(ConfigPreprocessorComponent);
     expect(mgr.logger).toBeTruthy();
-    expect(createLogger).toBeCalledTimes(1);
+    expect(createLogger).toHaveBeenCalledTimes(1);
     expect(createLogger).toHaveBeenCalledWith({
       level: 'warn',
       transports: expect.anything(),
@@ -336,7 +336,7 @@ describe('ComponentsManagerBuilder', () => {
     expect((<any> mgr.configConstructorPool).configPreprocessors[1]).toBeInstanceOf(ConfigPreprocessorComponentMapped);
     expect((<any> mgr.configConstructorPool).configPreprocessors[2]).toBeInstanceOf(ConfigPreprocessorComponent);
     expect(mgr.logger).toBeTruthy();
-    expect(createLogger).toBeCalledTimes(1);
+    expect(createLogger).toHaveBeenCalledTimes(1);
     expect(createLogger).toHaveBeenCalledWith({
       level: 'warn',
       transports: expect.anything(),
@@ -363,7 +363,7 @@ describe('ComponentsManagerBuilder', () => {
     expect((<any> mgr.configConstructorPool).configPreprocessors[1]).toBeInstanceOf(ConfigPreprocessorComponentMapped);
     expect((<any> mgr.configConstructorPool).configPreprocessors[2]).toBeInstanceOf(ConfigPreprocessorComponent);
     expect(mgr.logger).toBeTruthy();
-    expect(createLogger).toBeCalledTimes(1);
+    expect(createLogger).toHaveBeenCalledTimes(1);
     expect(createLogger).toHaveBeenCalledWith({
       level: 'warn',
       transports: expect.anything(),

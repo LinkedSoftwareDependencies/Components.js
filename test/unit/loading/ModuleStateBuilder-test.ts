@@ -1064,6 +1064,32 @@ describe('ModuleStateBuilder', () => {
     });
 
     it('should warn on packages with the same context IRI ' +
+      'with different major versions without a logger', async() => {
+      fileContents = {
+        'a/components/context.jsonld': `{ "name1": "a" }`,
+        'b/components/context.jsonld': `{ "name2": "a" }`,
+      };
+      expect(await builder.buildComponentContexts({
+        a: {
+          version: '1.0.0',
+          'lsd:contexts': {
+            'http://example.org/context.jsonld': 'components/context.jsonld',
+          },
+        },
+        b: {
+          version: '2.0.0',
+          'lsd:contexts': {
+            'http://example.org/context.jsonld': 'components/context.jsonld',
+          },
+        },
+      })).toEqual({
+        'http://example.org/context.jsonld': {
+          name2: 'a',
+        },
+      });
+    });
+
+    it('should warn on packages with the same context IRI ' +
       'with different major versions with a logger', async() => {
       const logger = <any> {
         warn: jest.fn(),
