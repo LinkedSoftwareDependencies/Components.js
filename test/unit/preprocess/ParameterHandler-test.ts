@@ -669,6 +669,85 @@ describe('ParameterHandler', () => {
         });
       });
 
+      describe('with three applicable default scopes', () => {
+        beforeEach(() => {
+          param = objectLoader.createCompactedResource({
+            '@id': 'ex:myParam',
+            defaultScoped: [
+              {
+                defaultScope: [
+                  'ex:Component1',
+                ],
+                defaultScopedValue: '"DEFAULT1"',
+              },
+              {
+                defaultScope: [
+                  'ex:Component1',
+                ],
+                defaultScopedValue: '"DEFAULT2"',
+              },
+              {
+                defaultScope: [
+                  'ex:Component1',
+                ],
+                defaultScopedValue: '"DEFAULT3"',
+              },
+            ],
+          });
+        });
+
+        it('should set all default values', () => {
+          const expected: Resource = objectLoader.createCompactedResource({
+            list: [
+              '"DEFAULT1"',
+              '"DEFAULT2"',
+              '"DEFAULT3"',
+            ],
+          });
+          expectOutputProperties(handler
+            .applyParameterValues(configRoot, param, configElement, genericsContext), expected);
+        });
+      });
+
+      describe('with multiple applicable default scopes where the second value is a list', () => {
+        beforeEach(() => {
+          param = objectLoader.createCompactedResource({
+            '@id': 'ex:myParam',
+            defaultScoped: [
+              {
+                defaultScope: [
+                  'ex:Component1',
+                ],
+                defaultScopedValue: '"DEFAULT1"',
+              },
+              {
+                defaultScope: [
+                  'ex:Component1',
+                ],
+                defaultScopedValue: {
+                  list: [
+                    '"DEFAULT2"',
+                    '"DEFAULT3"',
+                  ],
+                },
+              },
+            ],
+          });
+        });
+
+        it('should set all default values', () => {
+          const expected: Resource = objectLoader.createCompactedResource({
+            list: [
+              '"DEFAULT1"',
+              '"DEFAULT2"',
+              '"DEFAULT3"',
+            ],
+          });
+          expectOutputProperties(handler
+            .applyParameterValues(configRoot, param, configElement, genericsContext), expected);
+        });
+      });
+
       describe('with invalid default scopes', () => {
         it('should throw for a missing defaultScope', () => {
           param = objectLoader.createCompactedResource({
