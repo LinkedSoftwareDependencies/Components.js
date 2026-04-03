@@ -1,4 +1,5 @@
 import * as fs from 'node:fs';
+import * as Path from 'node:path';
 import type { Resource } from 'rdf-object';
 import { RdfObjectLoader } from 'rdf-object';
 import type { Logger } from 'winston';
@@ -20,7 +21,7 @@ describe('ComponentRegistryFinalizer', () => {
     };
     objectLoader = new RdfObjectLoader({
       uniqueLiterals: true,
-      context: JSON.parse(fs.readFileSync(`${__dirname}/../../../components/context.jsonld`, 'utf8')),
+      context: JSON.parse(fs.readFileSync(Path.join(__dirname, '../../../components/context.jsonld'), 'utf8')),
     });
     logger = <any> {
       warn: jest.fn(),
@@ -51,7 +52,7 @@ describe('ComponentRegistryFinalizer', () => {
     });
 
     it('should handle registered modules', async() => {
-      await componentRegistry.registerModule(`${__dirname}/../../assets/module.jsonld`);
+      await componentRegistry.registerModule(Path.join(__dirname, '../../assets/module.jsonld'));
       finalizer.finalize();
       expect(Object.keys(componentResources)
         .includes('http://example.org/HelloWorldModule#SayHelloComponent')).toBeTruthy();

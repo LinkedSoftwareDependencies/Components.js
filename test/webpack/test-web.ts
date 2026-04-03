@@ -1,4 +1,4 @@
-/* eslint-disable no-console, unicorn/no-process-exit, @typescript-eslint/no-implicit-any-catch */
+/* eslint-disable no-console, unicorn/no-process-exit */
 
 // Monkey patch in the window object so we can test the script in Node
 // @ts-expect-error
@@ -31,4 +31,4 @@ try {
   console.error(error);
   process.exit(1);
 }
-/* eslint-enable no-console, unicorn/no-process-exit, @typescript-eslint/no-implicit-any-catch */
+/* eslint-enable no-console, unicorn/no-process-exit */

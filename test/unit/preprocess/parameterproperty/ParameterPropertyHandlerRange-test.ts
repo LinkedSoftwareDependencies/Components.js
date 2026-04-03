@@ -1,4 +1,5 @@
 import * as fs from 'node:fs';
+import * as Path from 'node:path';
 import type { NamedNode } from '@rdfjs/types';
 import { DataFactory } from 'rdf-data-factory';
 import { RdfObjectLoader } from 'rdf-object/lib/RdfObjectLoader';
@@ -38,12 +39,11 @@ describe('ParameterPropertyHandlerRange', () => {
   beforeEach(async() => {
     objectLoader = new RdfObjectLoader({
       uniqueLiterals: true,
-      context: JSON.parse(fs.readFileSync(`${__dirname}/../../../../components/context.jsonld`, 'utf8')),
+      context: JSON.parse(fs.readFileSync(Path.join(__dirname, '../../../../components/context.jsonld'), 'utf8')),
     });
     await objectLoader.context;
     genericsContext = new GenericsContext(objectLoader, []);
     handler = new ParameterPropertyHandlerRange(objectLoader, true);
-    // eslint-disable-next-line @typescript-eslint/dot-notation
     interpretValueAsType = handler.interpretValueAsType;
   });
 
@@ -2553,26 +2553,51 @@ describe('ParameterPropertyHandlerRange', () => {
 
     it('should capture strings', () => {
       const value1 = objectLoader.createCompactedResource('"aaa"');
-      expect(interpretValueAsType(value1, objectLoader.createCompactedResource(IRIS_XSD.string), errorContext, genericsContext)).toEqual(successResult);
+      expect(interpretValueAsType(
+        value1,
+        objectLoader.createCompactedResource(IRIS_XSD.string),
+        errorContext,
+        genericsContext,
+      )).toEqual(successResult);
       expect((<any> value1.term).valueRaw).toBeUndefined();
 
       const value2 = objectLoader.createCompactedResource('"qqseqfqefefù$^"');
-      expect(interpretValueAsType(value2, objectLoader.createCompactedResource(IRIS_XSD.string), errorContext, genericsContext)).toEqual(successResult);
+      expect(interpretValueAsType(
+        value2,
+        objectLoader.createCompactedResource(IRIS_XSD.string),
+        errorContext,
+        genericsContext,
+      )).toEqual(successResult);
       expect((<any> value2.term).valueRaw).toBeUndefined();
     });
 
     it('should capture booleans', () => {
       const value1 = objectLoader.createCompactedResource('"true"');
-      expect(interpretValueAsType(value1, objectLoader.createCompactedResource(IRIS_XSD.boolean), errorContext, genericsContext)).toEqual(successResult);
+      expect(interpretValueAsType(
+        value1,
+        objectLoader.createCompactedResource(IRIS_XSD.boolean),
+        errorContext,
+        genericsContext,
+      )).toEqual(successResult);
       expect((<any> value1.term).valueRaw).toBe(true);
 
       const value2 = objectLoader.createCompactedResource('"false"');
-      expect(interpretValueAsType(value2, objectLoader.createCompactedResource(IRIS_XSD.boolean), errorContext, genericsContext)).toEqual(successResult);
+      expect(interpretValueAsType(
+        value2,
+        objectLoader.createCompactedResource(IRIS_XSD.boolean),
+        errorContext,
+        genericsContext,
+      )).toEqual(successResult);
       expect((<any> value2.term).valueRaw).toBe(false);
     });
 
     it('should error on invalid booleans', () => {
-      expect(interpretValueAsType(objectLoader.createCompactedResource('"1"'), objectLoader.createCompactedResource(IRIS_XSD.boolean), errorContext, genericsContext))
+      expect(interpretValueAsType(
+        objectLoader.createCompactedResource('"1"'),
+        objectLoader.createCompactedResource(IRIS_XSD.boolean),
+        errorContext,
+        genericsContext,
+      ))
         .toEqual({
           match: true,
           value: {
@@ -2584,16 +2609,31 @@ describe('ParameterPropertyHandlerRange', () => {
 
     it('should capture integers', () => {
       const value1 = objectLoader.createCompactedResource('"1"');
-      expect(interpretValueAsType(value1, objectLoader.createCompactedResource(IRIS_XSD.integer), errorContext, genericsContext)).toEqual(successResult);
+      expect(interpretValueAsType(
+        value1,
+        objectLoader.createCompactedResource(IRIS_XSD.integer),
+        errorContext,
+        genericsContext,
+      )).toEqual(successResult);
       expect((<any> value1.term).valueRaw).toBe(1);
 
       const value2 = objectLoader.createCompactedResource('"1456789876"');
-      expect(interpretValueAsType(value2, objectLoader.createCompactedResource(IRIS_XSD.integer), errorContext, genericsContext)).toEqual(successResult);
+      expect(interpretValueAsType(
+        value2,
+        objectLoader.createCompactedResource(IRIS_XSD.integer),
+        errorContext,
+        genericsContext,
+      )).toEqual(successResult);
       expect((<any> value2.term).valueRaw).toBe(1_456_789_876);
     });
 
     it('should error on invalid integers', () => {
-      expect(interpretValueAsType(objectLoader.createCompactedResource('"a"'), objectLoader.createCompactedResource(IRIS_XSD.integer), errorContext, genericsContext))
+      expect(interpretValueAsType(
+        objectLoader.createCompactedResource('"a"'),
+        objectLoader.createCompactedResource(IRIS_XSD.integer),
+        errorContext,
+        genericsContext,
+      ))
         .toEqual({
           match: true,
           value: {
@@ -2604,7 +2644,12 @@ describe('ParameterPropertyHandlerRange', () => {
     });
 
     it('should error on invalid integers that are numbers', () => {
-      expect(interpretValueAsType(objectLoader.createCompactedResource('"1.12"'), objectLoader.createCompactedResource(IRIS_XSD.integer), errorContext, genericsContext))
+      expect(interpretValueAsType(
+        objectLoader.createCompactedResource('"1.12"'),
+        objectLoader.createCompactedResource(IRIS_XSD.integer),
+        errorContext,
+        genericsContext,
+      ))
         .toEqual({
           match: true,
           value: {
@@ -2615,53 +2660,108 @@ describe('ParameterPropertyHandlerRange', () => {
     });
     it('should capture numbers', () => {
       const value1 = objectLoader.createCompactedResource('"1"');
-      expect(interpretValueAsType(value1, objectLoader.createCompactedResource(IRIS_XSD.number), errorContext, genericsContext)).toEqual(successResult);
+      expect(interpretValueAsType(
+        value1,
+        objectLoader.createCompactedResource(IRIS_XSD.number),
+        errorContext,
+        genericsContext,
+      )).toEqual(successResult);
       expect((<any> value1.term).valueRaw).toBe(1);
 
       const value2 = objectLoader.createCompactedResource('"1456789876"');
-      expect(interpretValueAsType(value2, objectLoader.createCompactedResource(IRIS_XSD.number), errorContext, genericsContext)).toEqual(successResult);
+      expect(interpretValueAsType(
+        value2,
+        objectLoader.createCompactedResource(IRIS_XSD.number),
+        errorContext,
+        genericsContext,
+      )).toEqual(successResult);
       expect((<any> value2.term).valueRaw).toBe(1_456_789_876);
     });
     it('should capture ints', () => {
       const value1 = objectLoader.createCompactedResource('"1"');
-      expect(interpretValueAsType(value1, objectLoader.createCompactedResource(IRIS_XSD.int), errorContext, genericsContext)).toEqual(successResult);
+      expect(interpretValueAsType(
+        value1,
+        objectLoader.createCompactedResource(IRIS_XSD.int),
+        errorContext,
+        genericsContext,
+      )).toEqual(successResult);
       expect((<any> value1.term).valueRaw).toBe(1);
 
       const value2 = objectLoader.createCompactedResource('"1456789876"');
-      expect(interpretValueAsType(value2, objectLoader.createCompactedResource(IRIS_XSD.int), errorContext, genericsContext)).toEqual(successResult);
+      expect(interpretValueAsType(
+        value2,
+        objectLoader.createCompactedResource(IRIS_XSD.int),
+        errorContext,
+        genericsContext,
+      )).toEqual(successResult);
       expect((<any> value2.term).valueRaw).toBe(1_456_789_876);
     });
     it('should capture bytes', () => {
       const value1 = objectLoader.createCompactedResource('"1"');
-      expect(interpretValueAsType(value1, objectLoader.createCompactedResource(IRIS_XSD.byte), errorContext, genericsContext)).toEqual(successResult);
+      expect(interpretValueAsType(
+        value1,
+        objectLoader.createCompactedResource(IRIS_XSD.byte),
+        errorContext,
+        genericsContext,
+      )).toEqual(successResult);
       expect((<any> value1.term).valueRaw).toBe(1);
 
       const value2 = objectLoader.createCompactedResource('"1456789876"');
-      expect(interpretValueAsType(value2, objectLoader.createCompactedResource(IRIS_XSD.byte), errorContext, genericsContext)).toEqual(successResult);
+      expect(interpretValueAsType(
+        value2,
+        objectLoader.createCompactedResource(IRIS_XSD.byte),
+        errorContext,
+        genericsContext,
+      )).toEqual(successResult);
       expect((<any> value2.term).valueRaw).toBe(1_456_789_876);
     });
     it('should capture longs', () => {
       const value1 = objectLoader.createCompactedResource('"1"');
-      expect(interpretValueAsType(value1, objectLoader.createCompactedResource(IRIS_XSD.long), errorContext, genericsContext)).toEqual(successResult);
+      expect(interpretValueAsType(
+        value1,
+        objectLoader.createCompactedResource(IRIS_XSD.long),
+        errorContext,
+        genericsContext,
+      )).toEqual(successResult);
       expect((<any> value1.term).valueRaw).toBe(1);
 
       const value2 = objectLoader.createCompactedResource('"1456789876"');
-      expect(interpretValueAsType(value2, objectLoader.createCompactedResource(IRIS_XSD.long), errorContext, genericsContext)).toEqual(successResult);
+      expect(interpretValueAsType(
+        value2,
+        objectLoader.createCompactedResource(IRIS_XSD.long),
+        errorContext,
+        genericsContext,
+      )).toEqual(successResult);
       expect((<any> value2.term).valueRaw).toBe(1_456_789_876);
     });
 
     it('should capture floats', () => {
       const value1 = objectLoader.createCompactedResource('"1"');
-      expect(interpretValueAsType(value1, objectLoader.createCompactedResource(IRIS_XSD.float), errorContext, genericsContext)).toEqual(successResult);
+      expect(interpretValueAsType(
+        value1,
+        objectLoader.createCompactedResource(IRIS_XSD.float),
+        errorContext,
+        genericsContext,
+      )).toEqual(successResult);
       expect((<any> value1.term).valueRaw).toBe(1);
 
       const value2 = objectLoader.createCompactedResource('"256.36"');
-      expect(interpretValueAsType(value2, objectLoader.createCompactedResource(IRIS_XSD.float), errorContext, genericsContext)).toEqual(successResult);
+      expect(interpretValueAsType(
+        value2,
+        objectLoader.createCompactedResource(IRIS_XSD.float),
+        errorContext,
+        genericsContext,
+      )).toEqual(successResult);
       expect((<any> value2.term).valueRaw).toBe(256.36);
     });
 
     it('should error on invalid floats', () => {
-      expect(interpretValueAsType(objectLoader.createCompactedResource('"a"'), objectLoader.createCompactedResource(IRIS_XSD.float), errorContext, genericsContext))
+      expect(interpretValueAsType(
+        objectLoader.createCompactedResource('"a"'),
+        objectLoader.createCompactedResource(IRIS_XSD.float),
+        errorContext,
+        genericsContext,
+      ))
         .toEqual({
           match: true,
           value: {
@@ -2672,35 +2772,70 @@ describe('ParameterPropertyHandlerRange', () => {
     });
     it('should capture decimals', () => {
       const value1 = objectLoader.createCompactedResource('"1"');
-      expect(interpretValueAsType(value1, objectLoader.createCompactedResource(IRIS_XSD.decimal), errorContext, genericsContext)).toEqual(successResult);
+      expect(interpretValueAsType(
+        value1,
+        objectLoader.createCompactedResource(IRIS_XSD.decimal),
+        errorContext,
+        genericsContext,
+      )).toEqual(successResult);
       expect((<any> value1.term).valueRaw).toBe(1);
 
       const value2 = objectLoader.createCompactedResource('"256.36"');
-      expect(interpretValueAsType(value2, objectLoader.createCompactedResource(IRIS_XSD.decimal), errorContext, genericsContext)).toEqual(successResult);
+      expect(interpretValueAsType(
+        value2,
+        objectLoader.createCompactedResource(IRIS_XSD.decimal),
+        errorContext,
+        genericsContext,
+      )).toEqual(successResult);
       expect((<any> value2.term).valueRaw).toBe(256.36);
     });
     it('should capture doubles', () => {
       const value1 = objectLoader.createCompactedResource('"1"');
-      expect(interpretValueAsType(value1, objectLoader.createCompactedResource(IRIS_XSD.double), errorContext, genericsContext)).toEqual(successResult);
+      expect(interpretValueAsType(
+        value1,
+        objectLoader.createCompactedResource(IRIS_XSD.double),
+        errorContext,
+        genericsContext,
+      )).toEqual(successResult);
       expect((<any> value1.term).valueRaw).toBe(1);
 
       const value2 = objectLoader.createCompactedResource('"256.36"');
-      expect(interpretValueAsType(value2, objectLoader.createCompactedResource(IRIS_XSD.double), errorContext, genericsContext)).toEqual(successResult);
+      expect(interpretValueAsType(
+        value2,
+        objectLoader.createCompactedResource(IRIS_XSD.double),
+        errorContext,
+        genericsContext,
+      )).toEqual(successResult);
       expect((<any> value2.term).valueRaw).toBe(256.36);
     });
 
     it('should capture JSON', () => {
       const value1 = objectLoader.createCompactedResource('"1"');
-      expect(interpretValueAsType(value1, objectLoader.createCompactedResource(IRIS_RDF.JSON), errorContext, genericsContext)).toEqual(successResult);
+      expect(interpretValueAsType(
+        value1,
+        objectLoader.createCompactedResource(IRIS_RDF.JSON),
+        errorContext,
+        genericsContext,
+      )).toEqual(successResult);
       expect((<any> value1.term).valueRaw).toBe(1);
 
       const value2 = objectLoader.createCompactedResource('"{"a":"b"}"');
-      expect(interpretValueAsType(value2, objectLoader.createCompactedResource(IRIS_RDF.JSON), errorContext, genericsContext)).toEqual(successResult);
+      expect(interpretValueAsType(
+        value2,
+        objectLoader.createCompactedResource(IRIS_RDF.JSON),
+        errorContext,
+        genericsContext,
+      )).toEqual(successResult);
       expect((<any> value2.term).valueRaw).toEqual({ a: 'b' });
     });
 
     it('should error on invalid JSON', () => {
-      expect(interpretValueAsType(objectLoader.createCompactedResource('"{a:\\"b\\"}"'), objectLoader.createCompactedResource(IRIS_RDF.JSON), errorContext, genericsContext))
+      expect(interpretValueAsType(
+        objectLoader.createCompactedResource('"{a:\\"b\\"}"'),
+        objectLoader.createCompactedResource(IRIS_RDF.JSON),
+        errorContext,
+        genericsContext,
+      ))
         .toEqual({
           match: true,
           value: {
@@ -2796,6 +2931,7 @@ describe('ParameterPropertyHandlerRange', () => {
     it('handles generics', () => {
       genericsContext.bindings['ex:T'] = objectLoader.createCompactedResource('ex:A');
       genericsContext.bindings['ex:U'] = objectLoader.createCompactedResource('ex:B');
+      let caughtError: unknown;
       try {
         ParameterPropertyHandlerRange.throwIncorrectTypeError(
           objectLoader.createCompactedResource('ex:value'),
@@ -2803,14 +2939,14 @@ describe('ParameterPropertyHandlerRange', () => {
           genericsContext,
           conflict,
         );
-        expect(false).toBeTruthy(); // This can't occur
       } catch (error: unknown) {
-        const context = (<ErrorResourcesContext> error).exportContext();
-        expect(context.generics).toBe(`[
+        caughtError = error;
+      }
+      const context = (<ErrorResourcesContext> caughtError).exportContext();
+      expect(context.generics).toBe(`[
   <ex:T> => ex:A,
   <ex:U> => ex:B
 ]`);
-      }
     });
   });
 

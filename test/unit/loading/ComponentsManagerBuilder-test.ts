@@ -1,3 +1,4 @@
+import * as Path from 'node:path';
 import { RdfObjectLoader } from 'rdf-object';
 import { createLogger } from 'winston';
 import { ConfigConstructorPool } from '../../../lib/construction/ConfigConstructorPool';
@@ -35,7 +36,7 @@ const dummyModuleState = {
   mainModulePath,
   componentModules: {
     A: {
-      1: `${__dirname}/../../assets/module.jsonld`,
+      1: Path.join(__dirname, '../../assets/module.jsonld'),
     },
   },
   nodeModulePaths: [],
@@ -112,7 +113,7 @@ describe('ComponentsManagerBuilder', () => {
 
   it('should build with custom non-empty moduleLoader', async() => {
     const moduleLoader = jest.fn(async(registry) => {
-      await registry.registerModule(`${__dirname}/../../assets/module.jsonld`);
+      await registry.registerModule(Path.join(__dirname, '../../assets/module.jsonld'));
     });
     const componentsManagerBuilder = new ComponentsManagerBuilder({
       mainModulePath,
@@ -145,7 +146,7 @@ describe('ComponentsManagerBuilder', () => {
 
   it('should build with custom configLoader', async() => {
     const configLoader = jest.fn(async(configRegistry) => {
-      await configRegistry.register(`${__dirname}/../../assets/config.jsonld`);
+      await configRegistry.register(Path.join(__dirname, '../../assets/config.jsonld'));
     });
     const componentsManagerBuilder = new ComponentsManagerBuilder({
       mainModulePath,
@@ -285,7 +286,7 @@ describe('ComponentsManagerBuilder', () => {
       mainModulePath,
       componentModules: {
         B: {
-          1: `${__dirname}/../../assets/module.jsonld`,
+          1: Path.join(__dirname, '../../assets/module.jsonld'),
         },
       },
       nodeModulePaths: [],

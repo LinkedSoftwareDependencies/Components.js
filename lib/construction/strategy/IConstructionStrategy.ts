@@ -108,6 +108,7 @@ export interface ICreationStrategySupplierOptions<TInstance> {
   supplier: () => Promise<TInstance>;
 }
 
+// eslint-disable-next-line unused-imports/no-unused-vars
 export interface ICreationStrategyPrimitiveOptions<TInstance> {
   /**
    * Creation settings.
@@ -119,6 +120,7 @@ export interface ICreationStrategyPrimitiveOptions<TInstance> {
   value: string | number | any;
 }
 
+// eslint-disable-next-line unused-imports/no-unused-vars
 export interface ICreationStrategyVariableOptions<TInstance> {
   /**
    * Creation settings.

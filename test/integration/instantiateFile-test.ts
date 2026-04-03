@@ -7,6 +7,7 @@ import { IRIS_DOAP, IRIS_OO, IRIS_RDF } from '../../lib/rdf/Iris';
 
 const quad = require('rdf-quad');
 
+// eslint-disable-next-line jest/no-mocks-import
 const Hello = require('../../__mocks__/helloworld').Hello;
 
 jest.mock<typeof import('winston')>('winston', () => ({
@@ -31,10 +32,10 @@ describe('construction with component configs as files', () => {
   let manager: ComponentsManager<any>;
   beforeEach(async() => {
     moduleState = <any> {
-      mainModulePath: `${__dirname}/../../__mocks__`,
+      mainModulePath: Path.join(__dirname, '../../__mocks__'),
       importPaths: {
-        'http://example.org/': `${__dirname}/../`,
-        'https://linkedsoftwaredependencies.org/bundles/npm/example/^1.0.0/config/': `${__dirname}/../assets/`,
+        'http://example.org/': `${Path.join(__dirname, '..')}/`,
+        'https://linkedsoftwaredependencies.org/bundles/npm/example/^1.0.0/config/': `${Path.join(__dirname, '../assets')}/`,
       },
       packageJsons: {},
     };
@@ -403,7 +404,9 @@ describe('construction with component configs as files', () => {
         mainModulePath: __dirname,
         moduleState,
         async moduleLoader(registry) {
-          await registry.registerModule(Path.join(__dirname, '../assets/module-inheritableparams-subclassmapping.jsonld'));
+          await registry.registerModule(
+            Path.join(__dirname, '../assets/module-inheritableparams-subclassmapping.jsonld'),
+          );
         },
       });
     });
@@ -510,7 +513,9 @@ describe('construction with component configs as files', () => {
         mainModulePath: __dirname,
         moduleState,
         async moduleLoader(registry) {
-          await registry.registerModule(Path.join(__dirname, '../assets/module-inheritableparams-subclassmapping-dynamicentries.jsonld'));
+          await registry.registerModule(
+            Path.join(__dirname, '../assets/module-inheritableparams-subclassmapping-dynamicentries.jsonld'),
+          );
         },
       });
     });
@@ -567,7 +572,9 @@ describe('construction with component configs as files', () => {
         mainModulePath: __dirname,
         moduleState,
         async moduleLoader(registry) {
-          await registry.registerModule(Path.join(__dirname, '../assets/module-inheritableparams-dynamicentries.jsonld'));
+          await registry.registerModule(
+            Path.join(__dirname, '../assets/module-inheritableparams-dynamicentries.jsonld'),
+          );
         },
       });
     });

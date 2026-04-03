@@ -247,7 +247,7 @@ describe('ConfigPreprocessorOverride', () => {
       '@id': 'ex:myComponentInstance',
       types: 'ex:Component',
     });
-    const overrideInstance1 = objectLoader.createCompactedResource({
+    objectLoader.createCompactedResource({
       '@id': 'ex:myOverride1',
       types: 'oo:Override',
       overrideInstance: 'ex:myComponentInstance',

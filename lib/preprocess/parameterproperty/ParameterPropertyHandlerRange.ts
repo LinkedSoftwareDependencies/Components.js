@@ -62,8 +62,8 @@ export class ParameterPropertyHandlerRange implements IParameterPropertyHandler 
    *
    * @param value The value.
    * @param type The parameter's range.
-   * @param genericsContext Context for generic types.
    * @param errorContext The context for error reporting.
+   * @param genericsContext Context for generic types.
    * @return IParamValueConflict A conflict value if there was an error, or undefined if there was no error
    */
   public hasValueType(

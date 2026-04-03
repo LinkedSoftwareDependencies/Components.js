@@ -1,4 +1,5 @@
 import * as fs from 'node:fs';
+import * as Path from 'node:path';
 import { RdfObjectLoader } from 'rdf-object';
 import { stringToTerm } from 'rdf-string';
 import type { Logger } from 'winston';
@@ -17,7 +18,7 @@ describe('ConfigRegistry', () => {
     };
     objectLoader = new RdfObjectLoader({
       uniqueLiterals: true,
-      context: JSON.parse(fs.readFileSync(`${__dirname}/../../../components/context.jsonld`, 'utf8')),
+      context: JSON.parse(fs.readFileSync(Path.join(__dirname, '../../../components/context.jsonld'), 'utf8')),
     });
     logger = <any>{
       warn: jest.fn(),
@@ -33,13 +34,13 @@ describe('ConfigRegistry', () => {
 
   describe('register', () => {
     it('should handle a valid module file', async() => {
-      await configRegistry.register(`${__dirname}/../../assets/config.jsonld`);
+      await configRegistry.register(Path.join(__dirname, '../../assets/config.jsonld'));
       expect(Object.keys(objectLoader.resources)
         .includes('http://example.org/myconfig')).toBeTruthy();
     });
 
     it('should throw on an invalid module file', async() => {
-      await expect(configRegistry.register(`not-exists.jsonld`)).rejects.toThrow();
+      await expect(configRegistry.register(`not-exists.jsonld`)).rejects.toThrow(/ENOENT/u);
     });
   });
 
@@ -68,7 +69,7 @@ describe('ConfigRegistry', () => {
 
   describe('getInstantiatedResource', () => {
     it('can return an instantiated Resource', async() => {
-      await configRegistry.register(`${__dirname}/../../assets/config.jsonld`);
+      await configRegistry.register(Path.join(__dirname, '../../assets/config.jsonld'));
       expect(configRegistry.getInstantiatedResource(stringToTerm('http://example.org/myconfig')).property.type.value)
         .toBe('http://example.org/HelloWorldModule#SayHelloComponent');
     });

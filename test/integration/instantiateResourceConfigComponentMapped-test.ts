@@ -1,3 +1,4 @@
+import * as Path from 'node:path';
 import { mocked } from 'jest-mock';
 import type { Resource, RdfObjectLoader } from 'rdf-object';
 import { ComponentsManager } from '../../lib/ComponentsManager';
@@ -13,6 +14,7 @@ jest.mock<typeof import('n3')>('n3', () => ({
   Util: { type: 'UTIL' },
 }));
 
+// eslint-disable-next-line jest/no-mocks-import
 const Hello = require('../../__mocks__/helloworld').Hello;
 
 describe('construction with mapped component configs as Resource', () => {
@@ -22,9 +24,9 @@ describe('construction with mapped component configs as Resource', () => {
   let settings: IConstructionSettings;
   beforeEach(async() => {
     manager = await ComponentsManager.build({
-      mainModulePath: `${__dirname}/../../__mocks__`,
+      mainModulePath: Path.join(__dirname, '../../__mocks__'),
       moduleState: <any> {
-        mainModulePath: `${__dirname}/../../__mocks__`,
+        mainModulePath: Path.join(__dirname, '../../__mocks__'),
         packageJsons: {},
       },
       async moduleLoader() {

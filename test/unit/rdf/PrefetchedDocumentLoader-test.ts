@@ -1,4 +1,5 @@
 import * as fs from 'node:fs';
+import * as Path from 'node:path';
 import { PrefetchedDocumentLoader } from '../../../lib/rdf/PrefetchedDocumentLoader';
 
 globalThis.fetch = <any>jest.fn(async() => ({
@@ -27,12 +28,12 @@ describe('PrefetchedDocumentLoader', () => {
 
     it('for the built-in prefetched context', async() => {
       await expect(loader.load(`https://linkedsoftwaredependencies.org/bundles/npm/componentsjs/^4.0.0/components/context.jsonld`)).resolves
-        .toEqual(JSON.parse(fs.readFileSync(`${__dirname}/../../../components/context.jsonld`, 'utf8')));
+        .toEqual(JSON.parse(fs.readFileSync(Path.join(__dirname, '../../../components/context.jsonld'), 'utf8')));
     });
 
     it('for the built-in prefetched context that is deprecated', async() => {
       await expect(loader.load(`https://linkedsoftwaredependencies.org/bundles/npm/componentsjs/^3.0.0/components/context.jsonld`)).resolves
-        .toEqual(JSON.parse(fs.readFileSync(`${__dirname}/../../../components/context.jsonld`, 'utf8')));
+        .toEqual(JSON.parse(fs.readFileSync(Path.join(__dirname, '../../../components/context.jsonld'), 'utf8')));
     });
 
     it('for the built-in prefetched 3.0.0 context that is deprecated with a logger', async() => {
@@ -45,7 +46,7 @@ describe('PrefetchedDocumentLoader', () => {
         path: 'PATH',
       });
       await expect(loader.load(`https://linkedsoftwaredependencies.org/bundles/npm/componentsjs/^3.0.0/components/context.jsonld`)).resolves
-        .toEqual(JSON.parse(fs.readFileSync(`${__dirname}/../../../components/context.jsonld`, 'utf8')));
+        .toEqual(JSON.parse(fs.readFileSync(Path.join(__dirname, '../../../components/context.jsonld'), 'utf8')));
       expect(logger.warn).not.toHaveBeenCalled();
     });
 
@@ -59,7 +60,7 @@ describe('PrefetchedDocumentLoader', () => {
         path: 'PATH',
       });
       await expect(loader.load(`https://linkedsoftwaredependencies.org/bundles/npm/componentsjs/^4.0.0/components/context.jsonld`)).resolves
-        .toEqual(JSON.parse(fs.readFileSync(`${__dirname}/../../../components/context.jsonld`, 'utf8')));
+        .toEqual(JSON.parse(fs.readFileSync(Path.join(__dirname, '../../../components/context.jsonld'), 'utf8')));
       expect(logger.warn).not.toHaveBeenCalled();
     });
 
@@ -73,7 +74,7 @@ describe('PrefetchedDocumentLoader', () => {
         path: 'PATH',
       });
       await expect(loader.load(`https://linkedsoftwaredependencies.org/bundles/npm/componentsjs/^${PrefetchedDocumentLoader.cjsMajorVersion}.0.0/components/context.jsonld`)).resolves
-        .toEqual(JSON.parse(fs.readFileSync(`${__dirname}/../../../components/context.jsonld`, 'utf8')));
+        .toEqual(JSON.parse(fs.readFileSync(Path.join(__dirname, '../../../components/context.jsonld'), 'utf8')));
       expect(logger.warn).not.toHaveBeenCalled();
     });
 
@@ -86,7 +87,7 @@ describe('PrefetchedDocumentLoader', () => {
         logger,
       });
       await expect(loader.load(`https://linkedsoftwaredependencies.org/bundles/npm/componentsjs/^3.0.0/components/context.jsonld`)).resolves
-        .toEqual(JSON.parse(fs.readFileSync(`${__dirname}/../../../components/context.jsonld`, 'utf8')));
+        .toEqual(JSON.parse(fs.readFileSync(Path.join(__dirname, '../../../components/context.jsonld'), 'utf8')));
       expect(logger.warn).not.toHaveBeenCalled();
     });
 

@@ -1,4 +1,5 @@
 import * as fs from 'node:fs';
+import * as Path from 'node:path';
 import type { Resource } from 'rdf-object';
 import { RdfObjectLoader } from 'rdf-object';
 import type { Logger } from 'winston';
@@ -18,7 +19,7 @@ describe('ComponentRegistry', () => {
     };
     objectLoader = new RdfObjectLoader({
       uniqueLiterals: true,
-      context: JSON.parse(fs.readFileSync(`${__dirname}/../../../components/context.jsonld`, 'utf8')),
+      context: JSON.parse(fs.readFileSync(Path.join(__dirname, '../../../components/context.jsonld'), 'utf8')),
     });
     logger = <any> {
       warn: jest.fn(),
@@ -44,7 +45,7 @@ describe('ComponentRegistry', () => {
     it('should handle discovered modules', async() => {
       moduleState.componentModules = {
         A: {
-          1: `${__dirname}/../../assets/module.jsonld`,
+          1: Path.join(__dirname, '../../assets/module.jsonld'),
         },
       };
       await componentRegistry.registerAvailableModules();
@@ -57,7 +58,7 @@ describe('ComponentRegistry', () => {
 
   describe('registerModule', () => {
     it('should handle a valid module file', async() => {
-      await componentRegistry.registerModule(`${__dirname}/../../assets/module.jsonld`);
+      await componentRegistry.registerModule(Path.join(__dirname, '../../assets/module.jsonld'));
       expect(Object.keys(objectLoader.resources)
         .includes('http://example.org/HelloWorldModule#SayHelloComponent')).toBeTruthy();
       expect(Object.keys(objectLoader.resources)
@@ -65,7 +66,7 @@ describe('ComponentRegistry', () => {
     });
 
     it('should throw on an invalid module file', async() => {
-      await expect(componentRegistry.registerModule(`not-exists.jsonld`)).rejects.toThrow();
+      await expect(componentRegistry.registerModule(`not-exists.jsonld`)).rejects.toThrow(/ENOENT/u);
     });
   });
 

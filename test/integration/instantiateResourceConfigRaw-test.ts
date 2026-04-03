@@ -1,3 +1,4 @@
+import * as Path from 'node:path';
 import type { RdfObjectLoader } from 'rdf-object';
 import { ComponentsManager } from '../../lib/ComponentsManager';
 import type { IConfigConstructorPool } from '../../lib/construction/IConfigConstructorPool';
@@ -11,6 +12,7 @@ jest.mock<typeof import('n3')>('n3', () => ({
   Util: { type: 'UTIL' },
 }));
 
+// eslint-disable-next-line jest/no-mocks-import
 const Hello = require('../../__mocks__/helloworld').Hello;
 
 describe('construction with component configs as Resource', () => {
@@ -20,9 +22,9 @@ describe('construction with component configs as Resource', () => {
   let settings: IConstructionSettings;
   beforeEach(async() => {
     manager = await ComponentsManager.build({
-      mainModulePath: `${__dirname}/../../__mocks__`,
+      mainModulePath: Path.join(__dirname, '../../__mocks__'),
       moduleState: <any> {
-        mainModulePath: `${__dirname}/../../__mocks__`,
+        mainModulePath: Path.join(__dirname, '../../__mocks__'),
         packageJsons: {},
       },
       async moduleLoader() {

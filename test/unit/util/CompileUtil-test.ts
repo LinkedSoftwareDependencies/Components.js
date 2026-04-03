@@ -5,7 +5,6 @@ describe('CompileUtil', () => {
   beforeEach(() => {
     // Mock manager
     jest.spyOn((<any> ComponentsManagerBuilder).prototype, 'build').mockImplementation(function() {
-      // eslint-disable-next-line @typescript-eslint/prefer-ts-expect-error
       // @ts-expect-error
       this.configLoader({ register: jest.fn() });
       return {

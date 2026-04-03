@@ -71,6 +71,8 @@ export class OverrideMapEntry implements IOverrideStep {
    * @param entries - List of key/value map entries.
    * @param key - Key of the entry to find.
    * @param properties - URIs used to link the key and value of a map entry.
+   * @param properties.key - URI used to link the key of a map entry.
+   * @param properties.value - URI used to link the value of a map entry.
    */
   protected findEntryIndex(entries: Resource[], key: Resource, properties: { key: Resource; value: Resource }): number {
     for (const [ i, entry ] of entries.entries()) {

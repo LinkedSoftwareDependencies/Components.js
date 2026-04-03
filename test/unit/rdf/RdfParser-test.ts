@@ -444,7 +444,8 @@ describe('RdfParser', () => {
     });
 
     it('for a file without protocol', async() => {
-      await expect(stringifyStream(await RdfParser.fetchFileOrUrl(Path.join(__dirname, '../assets/rdf/a/myfile1.ttl')))).resolves
+      const filePath = Path.join(__dirname, '../assets/rdf/a/myfile1.ttl');
+      await expect(stringifyStream(await RdfParser.fetchFileOrUrl(filePath))).resolves
         .toBe(`<ex:sl1> <ex:pl1> <ex:ol1>.
 `);
     });

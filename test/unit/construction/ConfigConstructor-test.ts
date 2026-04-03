@@ -1,4 +1,5 @@
 import * as fs from 'node:fs';
+import * as Path from 'node:path';
 import { DataFactory } from 'rdf-data-factory';
 import { Resource, RdfObjectLoader } from 'rdf-object';
 import { ConfigConstructor } from '../../../lib/construction/ConfigConstructor';
@@ -11,7 +12,6 @@ const DF = new DataFactory();
 
 describe('ConfigConstructor', () => {
   let objectLoader: RdfObjectLoader;
-  let componentResources: Record<string, Resource>;
   let configConstructorPool: jest.Mocked<ConfigConstructorPool<any>>;
   let constructor: ConfigConstructor<any>;
   let constructionStrategy: IConstructionStrategy<any>;
@@ -21,10 +21,9 @@ describe('ConfigConstructor', () => {
   beforeEach(async() => {
     objectLoader = new RdfObjectLoader({
       uniqueLiterals: true,
-      context: JSON.parse(fs.readFileSync(`${__dirname}/../../../components/context.jsonld`, 'utf8')),
+      context: JSON.parse(fs.readFileSync(Path.join(__dirname, '../../../components/context.jsonld'), 'utf8')),
     });
     await objectLoader.context;
-    componentResources = {};
     configConstructorPool = <any> {
       instantiate: jest.fn(() => 'INSTANCE'),
     };
@@ -40,7 +39,7 @@ describe('ConfigConstructor', () => {
     moduleState = <any> {
       mainModulePath: __dirname,
       importPaths: {
-        'http://example.org/': `${__dirname}/`,
+        'http://example.org/': `${Path.resolve(__dirname)}/`,
       },
     };
     constructor = new ConfigConstructor({
@@ -105,7 +104,7 @@ describe('ConfigConstructor', () => {
           undefined: '"true"',
         });
         await expect(constructor.getArgumentValue(resource, settings)).resolves.toBeUndefined();
-        expect(constructionStrategy.createUndefined).toHaveBeenCalled();
+        expect(constructionStrategy.createUndefined).toHaveBeenCalledWith(expect.anything());
       });
     });
 

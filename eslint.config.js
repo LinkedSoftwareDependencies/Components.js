@@ -38,6 +38,15 @@ module.exports = config([
     },
   },
   {
+    // PrefetchedDocumentLoader imports JSON files which need import/extensions disabled;
+    // the disable comments between imports break the newline-after-import chain detection
+    files: [ 'lib/rdf/PrefetchedDocumentLoader.ts' ],
+    rules: {
+      'import/extensions': 'off',
+      'import/newline-after-import': 'off',
+    },
+  },
+  {
     // Specific rules for test files
     files: [ '**/test/**/*.ts' ],
     rules: {
