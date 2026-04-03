@@ -16,14 +16,14 @@ import type { IConstructionStrategy } from './strategy/IConstructionStrategy';
  * This will make sure that configs with the same id will only be instantiated once,
  * and multiple references to configs will always reuse the same instance.
  */
-export class ConfigConstructorPool<Instance> implements IConfigConstructorPool<Instance> {
+export class ConfigConstructorPool<TInstance> implements IConfigConstructorPool<TInstance> {
   private readonly configPreprocessors: IConfigPreprocessor<any>[];
-  private readonly configConstructor: ConfigConstructor<Instance>;
-  private readonly constructionStrategy: IConstructionStrategy<Instance>;
+  private readonly configConstructor: ConfigConstructor<TInstance>;
+  private readonly constructionStrategy: IConstructionStrategy<TInstance>;
 
   private instances: Record<string, Promise<any>> = {};
 
-  public constructor(options: IInstancePoolOptions<Instance>) {
+  public constructor(options: IInstancePoolOptions<TInstance>) {
     this.configPreprocessors = options.configPreprocessors;
     this.configConstructor = new ConfigConstructor({
       objectLoader: options.objectLoader,
@@ -37,10 +37,10 @@ export class ConfigConstructorPool<Instance> implements IConfigConstructorPool<I
   public instantiate(
     configResource: Resource,
     settings: IConstructionSettings,
-  ): Promise<Instance> {
+  ): Promise<TInstance> {
     // Check if this resource is required as argument in its own chain,
     // if so, return a dummy value, to avoid infinite recursion.
-    const resourceBlacklist = settings.resourceBlacklist || {};
+    const resourceBlacklist = settings.resourceBlacklist ?? {};
     const configResourceId = termToString(configResource.term);
     if (resourceBlacklist[configResourceId]) {
       return Promise.reject(new ErrorResourcesContext(`Circular dependency was detected on ${configResource.value}`, { config: configResource }));
@@ -123,11 +123,10 @@ export class ConfigConstructorPool<Instance> implements IConfigConstructorPool<I
    */
   public validateParam(config: Resource, field: string, type: string, optional?: boolean): void {
     if (!config.property[field]) {
-      if (!optional) {
-        throw new ErrorResourcesContext(`Invalid config: Missing ${field}`, { config });
-      } else {
+      if (optional) {
         return;
       }
+      throw new ErrorResourcesContext(`Invalid config: Missing ${field}`, { config });
     }
     if (config.property[field].type !== type) {
       throw new ErrorResourcesContext(`Invalid config: ${field} "${config.property[field].value}" must be a ${type}, but got ${config.property[field].type}`, { config });
@@ -152,7 +151,7 @@ export class ConfigConstructorPool<Instance> implements IConfigConstructorPool<I
   }
 }
 
-export interface IInstancePoolOptions<Instance> {
+export interface IInstancePoolOptions<TInstance> {
   /**
    * The RDF object loader.
    */
@@ -164,7 +163,7 @@ export interface IInstancePoolOptions<Instance> {
   /**
    * The strategy for construction.
    */
-  constructionStrategy: IConstructionStrategy<Instance>;
+  constructionStrategy: IConstructionStrategy<TInstance>;
   /**
    * The module state.
    */

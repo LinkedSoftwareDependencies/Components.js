@@ -1,4 +1,4 @@
-import * as fs from 'fs';
+import * as fs from 'node:fs';
 import type { Resource } from 'rdf-object';
 import { RdfObjectLoader } from 'rdf-object';
 import { ConfigConstructorPool } from '../../../lib/construction/ConfigConstructorPool';
@@ -255,7 +255,7 @@ describe('ConfigConstructorPool', () => {
         creationSettings.variables = {
           'ex:myComponentInstance': 'abc',
         };
-        expect(await pool.instantiate(config, creationSettings)).toEqual('abc');
+        await expect(pool.instantiate(config, creationSettings)).resolves.toBe('abc');
       });
 
       it('should create an instance', async() => {
@@ -264,7 +264,7 @@ describe('ConfigConstructorPool', () => {
           '@id': 'ex:myComponentInstance',
           types: 'ex:Component',
         });
-        expect(await pool.instantiate(configIn, creationSettings)).toEqual('INSTANCE0');
+        await expect(pool.instantiate(configIn, creationSettings)).resolves.toBe('INSTANCE0');
         expect(pool.getRawConfig).toHaveBeenCalledTimes(1);
         expect(pool.getRawConfig).toHaveBeenNthCalledWith(1, configIn);
         expect(createInstance).toHaveBeenCalledTimes(1);

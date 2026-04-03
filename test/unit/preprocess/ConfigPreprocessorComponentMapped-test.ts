@@ -1,4 +1,4 @@
-import * as fs from 'fs';
+import * as fs from 'node:fs';
 import { RdfObjectLoader } from 'rdf-object/lib/RdfObjectLoader';
 import type { Resource } from 'rdf-object/lib/Resource';
 import { ConfigPreprocessorComponentMapped } from '../../../lib/preprocess/ConfigPreprocessorComponentMapped';

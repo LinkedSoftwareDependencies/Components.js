@@ -7,10 +7,10 @@ import type { IConstructionStrategy } from '../strategy/IConstructionStrategy';
  * Instances of this interfaces can instantiate argument values.
  * This is mainly used by {@link IArgumentConstructorHandler}.
  */
-export interface IArgumentsConstructor<Instance> {
+export interface IArgumentsConstructor<TInstance> {
   readonly objectLoader: RdfObjectLoader;
-  readonly configConstructorPool: IConfigConstructorPool<Instance>;
-  readonly constructionStrategy: IConstructionStrategy<Instance>;
+  readonly configConstructorPool: IConfigConstructorPool<TInstance>;
+  readonly constructionStrategy: IConstructionStrategy<TInstance>;
 
   /**
    * Convert the given argument values resource into a JavaScript object or primitive.
@@ -20,7 +20,7 @@ export interface IArgumentsConstructor<Instance> {
   getArgumentValues: (
     values: Resource[],
     settings: IConstructionSettings,
-  ) => Promise<Instance>;
+  ) => Promise<TInstance>;
 
   /**
    * Convert the given argument value resource into a JavaScript object or primitive.
@@ -30,5 +30,5 @@ export interface IArgumentsConstructor<Instance> {
   getArgumentValue: (
     value: Resource,
     settings: IConstructionSettings,
-  ) => Promise<Instance>;
+  ) => Promise<TInstance>;
 }

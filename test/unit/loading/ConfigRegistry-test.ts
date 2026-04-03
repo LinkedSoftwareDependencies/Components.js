@@ -1,4 +1,4 @@
-import * as fs from 'fs';
+import * as fs from 'node:fs';
 import { RdfObjectLoader } from 'rdf-object';
 import { stringToTerm } from 'rdf-string';
 import type { Logger } from 'winston';

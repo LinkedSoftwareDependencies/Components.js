@@ -1,4 +1,4 @@
-import * as fs from 'fs';
+import * as fs from 'node:fs';
 import type { NamedNode } from '@rdfjs/types';
 import { DataFactory } from 'rdf-data-factory';
 import { RdfObjectLoader } from 'rdf-object/lib/RdfObjectLoader';
@@ -44,7 +44,7 @@ describe('ParameterPropertyHandlerRange', () => {
     genericsContext = new GenericsContext(objectLoader, []);
     handler = new ParameterPropertyHandlerRange(objectLoader, true);
     // eslint-disable-next-line @typescript-eslint/dot-notation
-    interpretValueAsType = handler['interpretValueAsType'];
+    interpretValueAsType = handler.interpretValueAsType;
   });
 
   describe('canHandle', () => {
@@ -2553,41 +2553,26 @@ describe('ParameterPropertyHandlerRange', () => {
 
     it('should capture strings', () => {
       const value1 = objectLoader.createCompactedResource('"aaa"');
-      expect(interpretValueAsType(value1,
-        objectLoader.createCompactedResource(IRIS_XSD.string),
-        errorContext,
-        genericsContext)).toEqual(successResult);
+      expect(interpretValueAsType(value1, objectLoader.createCompactedResource(IRIS_XSD.string), errorContext, genericsContext)).toEqual(successResult);
       expect((<any> value1.term).valueRaw).toBeUndefined();
 
       const value2 = objectLoader.createCompactedResource('"qqseqfqefefù$^"');
-      expect(interpretValueAsType(value2,
-        objectLoader.createCompactedResource(IRIS_XSD.string),
-        errorContext,
-        genericsContext)).toEqual(successResult);
+      expect(interpretValueAsType(value2, objectLoader.createCompactedResource(IRIS_XSD.string), errorContext, genericsContext)).toEqual(successResult);
       expect((<any> value2.term).valueRaw).toBeUndefined();
     });
 
     it('should capture booleans', () => {
       const value1 = objectLoader.createCompactedResource('"true"');
-      expect(interpretValueAsType(value1,
-        objectLoader.createCompactedResource(IRIS_XSD.boolean),
-        errorContext,
-        genericsContext)).toEqual(successResult);
-      expect((<any> value1.term).valueRaw).toEqual(true);
+      expect(interpretValueAsType(value1, objectLoader.createCompactedResource(IRIS_XSD.boolean), errorContext, genericsContext)).toEqual(successResult);
+      expect((<any> value1.term).valueRaw).toBe(true);
 
       const value2 = objectLoader.createCompactedResource('"false"');
-      expect(interpretValueAsType(value2,
-        objectLoader.createCompactedResource(IRIS_XSD.boolean),
-        errorContext,
-        genericsContext)).toEqual(successResult);
-      expect((<any> value2.term).valueRaw).toEqual(false);
+      expect(interpretValueAsType(value2, objectLoader.createCompactedResource(IRIS_XSD.boolean), errorContext, genericsContext)).toEqual(successResult);
+      expect((<any> value2.term).valueRaw).toBe(false);
     });
 
     it('should error on invalid booleans', () => {
-      expect(interpretValueAsType(objectLoader.createCompactedResource('"1"'),
-        objectLoader.createCompactedResource(IRIS_XSD.boolean),
-        errorContext,
-        genericsContext))
+      expect(interpretValueAsType(objectLoader.createCompactedResource('"1"'), objectLoader.createCompactedResource(IRIS_XSD.boolean), errorContext, genericsContext))
         .toEqual({
           match: true,
           value: {
@@ -2599,25 +2584,16 @@ describe('ParameterPropertyHandlerRange', () => {
 
     it('should capture integers', () => {
       const value1 = objectLoader.createCompactedResource('"1"');
-      expect(interpretValueAsType(value1,
-        objectLoader.createCompactedResource(IRIS_XSD.integer),
-        errorContext,
-        genericsContext)).toEqual(successResult);
-      expect((<any> value1.term).valueRaw).toEqual(1);
+      expect(interpretValueAsType(value1, objectLoader.createCompactedResource(IRIS_XSD.integer), errorContext, genericsContext)).toEqual(successResult);
+      expect((<any> value1.term).valueRaw).toBe(1);
 
       const value2 = objectLoader.createCompactedResource('"1456789876"');
-      expect(interpretValueAsType(value2,
-        objectLoader.createCompactedResource(IRIS_XSD.integer),
-        errorContext,
-        genericsContext)).toEqual(successResult);
-      expect((<any> value2.term).valueRaw).toEqual(1_456_789_876);
+      expect(interpretValueAsType(value2, objectLoader.createCompactedResource(IRIS_XSD.integer), errorContext, genericsContext)).toEqual(successResult);
+      expect((<any> value2.term).valueRaw).toBe(1_456_789_876);
     });
 
     it('should error on invalid integers', () => {
-      expect(interpretValueAsType(objectLoader.createCompactedResource('"a"'),
-        objectLoader.createCompactedResource(IRIS_XSD.integer),
-        errorContext,
-        genericsContext))
+      expect(interpretValueAsType(objectLoader.createCompactedResource('"a"'), objectLoader.createCompactedResource(IRIS_XSD.integer), errorContext, genericsContext))
         .toEqual({
           match: true,
           value: {
@@ -2628,10 +2604,7 @@ describe('ParameterPropertyHandlerRange', () => {
     });
 
     it('should error on invalid integers that are numbers', () => {
-      expect(interpretValueAsType(objectLoader.createCompactedResource('"1.12"'),
-        objectLoader.createCompactedResource(IRIS_XSD.integer),
-        errorContext,
-        genericsContext))
+      expect(interpretValueAsType(objectLoader.createCompactedResource('"1.12"'), objectLoader.createCompactedResource(IRIS_XSD.integer), errorContext, genericsContext))
         .toEqual({
           match: true,
           value: {
@@ -2642,86 +2615,53 @@ describe('ParameterPropertyHandlerRange', () => {
     });
     it('should capture numbers', () => {
       const value1 = objectLoader.createCompactedResource('"1"');
-      expect(interpretValueAsType(value1,
-        objectLoader.createCompactedResource(IRIS_XSD.number),
-        errorContext,
-        genericsContext)).toEqual(successResult);
-      expect((<any> value1.term).valueRaw).toEqual(1);
+      expect(interpretValueAsType(value1, objectLoader.createCompactedResource(IRIS_XSD.number), errorContext, genericsContext)).toEqual(successResult);
+      expect((<any> value1.term).valueRaw).toBe(1);
 
       const value2 = objectLoader.createCompactedResource('"1456789876"');
-      expect(interpretValueAsType(value2,
-        objectLoader.createCompactedResource(IRIS_XSD.number),
-        errorContext,
-        genericsContext)).toEqual(successResult);
-      expect((<any> value2.term).valueRaw).toEqual(1_456_789_876);
+      expect(interpretValueAsType(value2, objectLoader.createCompactedResource(IRIS_XSD.number), errorContext, genericsContext)).toEqual(successResult);
+      expect((<any> value2.term).valueRaw).toBe(1_456_789_876);
     });
     it('should capture ints', () => {
       const value1 = objectLoader.createCompactedResource('"1"');
-      expect(interpretValueAsType(value1,
-        objectLoader.createCompactedResource(IRIS_XSD.int),
-        errorContext,
-        genericsContext)).toEqual(successResult);
-      expect((<any> value1.term).valueRaw).toEqual(1);
+      expect(interpretValueAsType(value1, objectLoader.createCompactedResource(IRIS_XSD.int), errorContext, genericsContext)).toEqual(successResult);
+      expect((<any> value1.term).valueRaw).toBe(1);
 
       const value2 = objectLoader.createCompactedResource('"1456789876"');
-      expect(interpretValueAsType(value2,
-        objectLoader.createCompactedResource(IRIS_XSD.int),
-        errorContext,
-        genericsContext)).toEqual(successResult);
-      expect((<any> value2.term).valueRaw).toEqual(1_456_789_876);
+      expect(interpretValueAsType(value2, objectLoader.createCompactedResource(IRIS_XSD.int), errorContext, genericsContext)).toEqual(successResult);
+      expect((<any> value2.term).valueRaw).toBe(1_456_789_876);
     });
     it('should capture bytes', () => {
       const value1 = objectLoader.createCompactedResource('"1"');
-      expect(interpretValueAsType(value1,
-        objectLoader.createCompactedResource(IRIS_XSD.byte),
-        errorContext,
-        genericsContext)).toEqual(successResult);
-      expect((<any> value1.term).valueRaw).toEqual(1);
+      expect(interpretValueAsType(value1, objectLoader.createCompactedResource(IRIS_XSD.byte), errorContext, genericsContext)).toEqual(successResult);
+      expect((<any> value1.term).valueRaw).toBe(1);
 
       const value2 = objectLoader.createCompactedResource('"1456789876"');
-      expect(interpretValueAsType(value2,
-        objectLoader.createCompactedResource(IRIS_XSD.byte),
-        errorContext,
-        genericsContext)).toEqual(successResult);
-      expect((<any> value2.term).valueRaw).toEqual(1_456_789_876);
+      expect(interpretValueAsType(value2, objectLoader.createCompactedResource(IRIS_XSD.byte), errorContext, genericsContext)).toEqual(successResult);
+      expect((<any> value2.term).valueRaw).toBe(1_456_789_876);
     });
     it('should capture longs', () => {
       const value1 = objectLoader.createCompactedResource('"1"');
-      expect(interpretValueAsType(value1,
-        objectLoader.createCompactedResource(IRIS_XSD.long),
-        errorContext,
-        genericsContext)).toEqual(successResult);
-      expect((<any> value1.term).valueRaw).toEqual(1);
+      expect(interpretValueAsType(value1, objectLoader.createCompactedResource(IRIS_XSD.long), errorContext, genericsContext)).toEqual(successResult);
+      expect((<any> value1.term).valueRaw).toBe(1);
 
       const value2 = objectLoader.createCompactedResource('"1456789876"');
-      expect(interpretValueAsType(value2,
-        objectLoader.createCompactedResource(IRIS_XSD.long),
-        errorContext,
-        genericsContext)).toEqual(successResult);
-      expect((<any> value2.term).valueRaw).toEqual(1_456_789_876);
+      expect(interpretValueAsType(value2, objectLoader.createCompactedResource(IRIS_XSD.long), errorContext, genericsContext)).toEqual(successResult);
+      expect((<any> value2.term).valueRaw).toBe(1_456_789_876);
     });
 
     it('should capture floats', () => {
       const value1 = objectLoader.createCompactedResource('"1"');
-      expect(interpretValueAsType(value1,
-        objectLoader.createCompactedResource(IRIS_XSD.float),
-        errorContext,
-        genericsContext)).toEqual(successResult);
-      expect((<any> value1.term).valueRaw).toEqual(1);
+      expect(interpretValueAsType(value1, objectLoader.createCompactedResource(IRIS_XSD.float), errorContext, genericsContext)).toEqual(successResult);
+      expect((<any> value1.term).valueRaw).toBe(1);
 
       const value2 = objectLoader.createCompactedResource('"256.36"');
-      expect(interpretValueAsType(value2,
-        objectLoader.createCompactedResource(IRIS_XSD.float),
-        errorContext,
-        genericsContext)).toEqual(successResult);
-      expect((<any> value2.term).valueRaw).toEqual(256.36);
+      expect(interpretValueAsType(value2, objectLoader.createCompactedResource(IRIS_XSD.float), errorContext, genericsContext)).toEqual(successResult);
+      expect((<any> value2.term).valueRaw).toBe(256.36);
     });
 
     it('should error on invalid floats', () => {
-      expect(interpretValueAsType(objectLoader.createCompactedResource('"a"'),
-        objectLoader.createCompactedResource(IRIS_XSD.float),
-        errorContext,
-        genericsContext))
+      expect(interpretValueAsType(objectLoader.createCompactedResource('"a"'), objectLoader.createCompactedResource(IRIS_XSD.float), errorContext, genericsContext))
         .toEqual({
           match: true,
           value: {
@@ -2732,56 +2672,35 @@ describe('ParameterPropertyHandlerRange', () => {
     });
     it('should capture decimals', () => {
       const value1 = objectLoader.createCompactedResource('"1"');
-      expect(interpretValueAsType(value1,
-        objectLoader.createCompactedResource(IRIS_XSD.decimal),
-        errorContext,
-        genericsContext)).toEqual(successResult);
-      expect((<any> value1.term).valueRaw).toEqual(1);
+      expect(interpretValueAsType(value1, objectLoader.createCompactedResource(IRIS_XSD.decimal), errorContext, genericsContext)).toEqual(successResult);
+      expect((<any> value1.term).valueRaw).toBe(1);
 
       const value2 = objectLoader.createCompactedResource('"256.36"');
-      expect(interpretValueAsType(value2,
-        objectLoader.createCompactedResource(IRIS_XSD.decimal),
-        errorContext,
-        genericsContext)).toEqual(successResult);
-      expect((<any> value2.term).valueRaw).toEqual(256.36);
+      expect(interpretValueAsType(value2, objectLoader.createCompactedResource(IRIS_XSD.decimal), errorContext, genericsContext)).toEqual(successResult);
+      expect((<any> value2.term).valueRaw).toBe(256.36);
     });
     it('should capture doubles', () => {
       const value1 = objectLoader.createCompactedResource('"1"');
-      expect(interpretValueAsType(value1,
-        objectLoader.createCompactedResource(IRIS_XSD.double),
-        errorContext,
-        genericsContext)).toEqual(successResult);
-      expect((<any> value1.term).valueRaw).toEqual(1);
+      expect(interpretValueAsType(value1, objectLoader.createCompactedResource(IRIS_XSD.double), errorContext, genericsContext)).toEqual(successResult);
+      expect((<any> value1.term).valueRaw).toBe(1);
 
       const value2 = objectLoader.createCompactedResource('"256.36"');
-      expect(interpretValueAsType(value2,
-        objectLoader.createCompactedResource(IRIS_XSD.double),
-        errorContext,
-        genericsContext)).toEqual(successResult);
-      expect((<any> value2.term).valueRaw).toEqual(256.36);
+      expect(interpretValueAsType(value2, objectLoader.createCompactedResource(IRIS_XSD.double), errorContext, genericsContext)).toEqual(successResult);
+      expect((<any> value2.term).valueRaw).toBe(256.36);
     });
 
     it('should capture JSON', () => {
       const value1 = objectLoader.createCompactedResource('"1"');
-      expect(interpretValueAsType(value1,
-        objectLoader.createCompactedResource(IRIS_RDF.JSON),
-        errorContext,
-        genericsContext)).toEqual(successResult);
-      expect((<any> value1.term).valueRaw).toEqual(1);
+      expect(interpretValueAsType(value1, objectLoader.createCompactedResource(IRIS_RDF.JSON), errorContext, genericsContext)).toEqual(successResult);
+      expect((<any> value1.term).valueRaw).toBe(1);
 
       const value2 = objectLoader.createCompactedResource('"{"a":"b"}"');
-      expect(interpretValueAsType(value2,
-        objectLoader.createCompactedResource(IRIS_RDF.JSON),
-        errorContext,
-        genericsContext)).toEqual(successResult);
+      expect(interpretValueAsType(value2, objectLoader.createCompactedResource(IRIS_RDF.JSON), errorContext, genericsContext)).toEqual(successResult);
       expect((<any> value2.term).valueRaw).toEqual({ a: 'b' });
     });
 
     it('should error on invalid JSON', () => {
-      expect(interpretValueAsType(objectLoader.createCompactedResource('"{a:\\"b\\"}"'),
-        objectLoader.createCompactedResource(IRIS_RDF.JSON),
-        errorContext,
-        genericsContext))
+      expect(interpretValueAsType(objectLoader.createCompactedResource('"{a:\\"b\\"}"'), objectLoader.createCompactedResource(IRIS_RDF.JSON), errorContext, genericsContext))
         .toEqual({
           match: true,
           value: {
@@ -2887,7 +2806,7 @@ describe('ParameterPropertyHandlerRange', () => {
         expect(false).toBeTruthy(); // This can't occur
       } catch (error: unknown) {
         const context = (<ErrorResourcesContext> error).exportContext();
-        expect(context.generics).toEqual(`[
+        expect(context.generics).toBe(`[
   <ex:T> => ex:A,
   <ex:U> => ex:B
 ]`);
@@ -2897,40 +2816,40 @@ describe('ParameterPropertyHandlerRange', () => {
 
   describe('rangeToDisplayString', () => {
     it('handles undefined range', () => {
-      expect(ParameterPropertyHandlerRange.rangeToDisplayString(undefined, genericsContext)).toEqual('any');
+      expect(ParameterPropertyHandlerRange.rangeToDisplayString(undefined, genericsContext)).toBe('any');
     });
 
     it('handles wildcard range', () => {
       expect(ParameterPropertyHandlerRange.rangeToDisplayString(objectLoader.createCompactedResource({
         '@type': 'ParameterRangeWildcard',
-      }), genericsContext)).toEqual('any');
+      }), genericsContext)).toBe('any');
     });
 
     it('handles ParameterRangeUndefined range', () => {
       expect(ParameterPropertyHandlerRange.rangeToDisplayString(objectLoader.createCompactedResource({
         '@type': 'ParameterRangeUndefined',
-      }), genericsContext)).toEqual('undefined');
+      }), genericsContext)).toBe('undefined');
     });
 
     it('handles ParameterRangeArray range', () => {
       expect(ParameterPropertyHandlerRange.rangeToDisplayString(objectLoader.createCompactedResource({
         '@type': 'ParameterRangeArray',
         parameterRangeValue: 'ex:Type',
-      }), genericsContext)).toEqual('ex:Type[]');
+      }), genericsContext)).toBe('ex:Type[]');
     });
 
     it('handles ParameterRangeRest range', () => {
       expect(ParameterPropertyHandlerRange.rangeToDisplayString(objectLoader.createCompactedResource({
         '@type': 'ParameterRangeRest',
         parameterRangeValue: 'ex:Type',
-      }), genericsContext)).toEqual('...ex:Type');
+      }), genericsContext)).toBe('...ex:Type');
     });
 
     it('handles ParameterRangeKeyof range', () => {
       expect(ParameterPropertyHandlerRange.rangeToDisplayString(objectLoader.createCompactedResource({
         '@type': 'ParameterRangeKeyof',
         parameterRangeValue: 'ex:Type',
-      }), genericsContext)).toEqual('keyof ex:Type');
+      }), genericsContext)).toBe('keyof ex:Type');
     });
 
     it('handles ParameterRangeUnion range', () => {
@@ -2940,7 +2859,7 @@ describe('ParameterPropertyHandlerRange', () => {
           'ex:Type1',
           'ex:Type2',
         ],
-      }), genericsContext)).toEqual('ex:Type1 | ex:Type2');
+      }), genericsContext)).toBe('ex:Type1 | ex:Type2');
     });
 
     it('handles ParameterRangeIntersection range', () => {
@@ -2950,7 +2869,7 @@ describe('ParameterPropertyHandlerRange', () => {
           'ex:Type1',
           'ex:Type2',
         ],
-      }), genericsContext)).toEqual('ex:Type1 & ex:Type2');
+      }), genericsContext)).toBe('ex:Type1 & ex:Type2');
     });
 
     it('handles ParameterRangeTuple range', () => {
@@ -2960,21 +2879,21 @@ describe('ParameterPropertyHandlerRange', () => {
           'ex:Type1',
           'ex:Type2',
         ],
-      }), genericsContext)).toEqual('[ex:Type1, ex:Type2]');
+      }), genericsContext)).toBe('[ex:Type1, ex:Type2]');
     });
 
     it('handles ParameterRangeLiteral range', () => {
       expect(ParameterPropertyHandlerRange.rangeToDisplayString(objectLoader.createCompactedResource({
         '@type': 'ParameterRangeLiteral',
         parameterRangeValue: '"abc"',
-      }), genericsContext)).toEqual('abc');
+      }), genericsContext)).toBe('abc');
     });
 
     it('handles ParameterRangeGenericTypeReference range with an unknown generic', () => {
       expect(ParameterPropertyHandlerRange.rangeToDisplayString(objectLoader.createCompactedResource({
         '@type': 'ParameterRangeGenericTypeReference',
         parameterRangeGenericType: 'ex:GEN_T',
-      }), genericsContext)).toEqual('UNKNOWN GENERIC: ex:GEN_T');
+      }), genericsContext)).toBe('UNKNOWN GENERIC: ex:GEN_T');
     });
 
     it('handles ParameterRangeGenericTypeReference range with a known generic', () => {
@@ -2982,7 +2901,7 @@ describe('ParameterPropertyHandlerRange', () => {
       expect(ParameterPropertyHandlerRange.rangeToDisplayString(objectLoader.createCompactedResource({
         '@type': 'ParameterRangeGenericTypeReference',
         parameterRangeGenericType: 'ex:GEN_T',
-      }), genericsContext)).toEqual('GENERIC: ex:GEN_T');
+      }), genericsContext)).toBe('GENERIC: ex:GEN_T');
     });
 
     it('handles ParameterRangeGenericComponent range', () => {
@@ -2993,7 +2912,7 @@ describe('ParameterPropertyHandlerRange', () => {
           '"A"',
           '"B"',
         ],
-      }), genericsContext)).toEqual('(ex:Component)<A, B>');
+      }), genericsContext)).toBe('(ex:Component)<A, B>');
     });
 
     it('handles ParameterRangeIndexed range', () => {
@@ -3004,7 +2923,7 @@ describe('ParameterPropertyHandlerRange', () => {
           '@type': 'ParameterRangeLiteral',
           parameterRangeValue: '"abc"',
         },
-      }), genericsContext)).toEqual('ex:Component[abc]');
+      }), genericsContext)).toBe('ex:Component[abc]');
     });
   });
 });

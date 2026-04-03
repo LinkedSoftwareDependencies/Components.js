@@ -1,4 +1,4 @@
-import * as fs from 'fs';
+import * as fs from 'node:fs';
 import type { Resource, RdfObjectLoader } from 'rdf-object';
 import { stringToTerm } from 'rdf-string';
 import type { Logger } from 'winston';
@@ -14,16 +14,16 @@ import { ErrorResourcesContext } from './util/ErrorResourcesContext';
  * A components manager can instantiate components.
  * This manager should be created using {@link ComponentsManager.build}.
  */
-export class ComponentsManager<Instance> {
+export class ComponentsManager<TInstance> {
   public readonly moduleState: IModuleState;
   public readonly objectLoader: RdfObjectLoader;
   public readonly componentResources: Record<string, Resource>;
   public readonly configRegistry: ConfigRegistry;
   public readonly dumpErrorState: boolean;
-  public readonly configConstructorPool: IConfigConstructorPool<Instance>;
+  public readonly configConstructorPool: IConfigConstructorPool<TInstance>;
   public readonly logger: Logger;
 
-  public constructor(options: IComponentsManagerOptions<Instance>) {
+  public constructor(options: IComponentsManagerOptions<TInstance>) {
     this.moduleState = options.moduleState;
     this.objectLoader = options.objectLoader;
     this.componentResources = options.componentResources;
@@ -38,7 +38,7 @@ export class ComponentsManager<Instance> {
    * @see IComponentsManagerBuilderOptions
    * @param options Settings of the new manager.
    */
-  public static build<I>(options: IComponentsManagerBuilderOptions<I>): Promise<ComponentsManager<I>> {
+  public static build<TI>(options: IComponentsManagerBuilderOptions<TI>): Promise<ComponentsManager<TI>> {
     return new ComponentsManagerBuilder(options).build();
   }
 
@@ -50,7 +50,7 @@ export class ComponentsManager<Instance> {
    * @param instanceIri The IRI of an instance inside a config.
    * @param settings Optional settings that may influence instantiation.
    */
-  public async instantiate<T = Instance>(instanceIri: string, settings: IConstructionSettings = {}): Promise<T> {
+  public async instantiate<T = TInstance>(instanceIri: string, settings: IConstructionSettings = {}): Promise<T> {
     try {
       const instanceResource: Resource = this.objectLoader.resources[instanceIri];
       if (!instanceResource) {
@@ -97,12 +97,12 @@ export class ComponentsManager<Instance> {
   }
 }
 
-export interface IComponentsManagerOptions<Instance> {
+export interface IComponentsManagerOptions<TInstance> {
   moduleState: IModuleState;
   objectLoader: RdfObjectLoader;
   componentResources: Record<string, Resource>;
   configRegistry: ConfigRegistry;
   dumpErrorState: boolean;
-  configConstructorPool: IConfigConstructorPool<Instance>;
+  configConstructorPool: IConfigConstructorPool<TInstance>;
   logger: Logger;
 }

@@ -7,19 +7,19 @@ import type { IArgumentsConstructor } from './IArgumentsConstructor';
  * Handles IRI and blank node arguments as reference to another argument or instance.
  */
 export class ArgumentConstructorHandlerReference implements IArgumentConstructorHandler {
-  public canHandle<Instance>(
+  public canHandle<TInstance>(
     value: Resource,
-    settings: IConstructionSettings,
-    argsCreator: IArgumentsConstructor<Instance>,
+    _settings: IConstructionSettings,
+    _argsCreator: IArgumentsConstructor<TInstance>,
   ): boolean {
     return Boolean(value.type === 'NamedNode' || value.type === 'BlankNode');
   }
 
-  public async handle<Instance>(
+  public async handle<TInstance>(
     value: Resource,
     settings: IConstructionSettings,
-    argsCreator: IArgumentsConstructor<Instance>,
-  ): Promise<Instance> {
+    argsCreator: IArgumentsConstructor<TInstance>,
+  ): Promise<TInstance> {
     // Don't instantiate if we ask for shallow construction
     if (settings.shallow) {
       return argsCreator.constructionStrategy.createHash({ settings, entries: []});
@@ -27,7 +27,7 @@ export class ArgumentConstructorHandlerReference implements IArgumentConstructor
 
     // Apply lazy construction if needed
     if (value.property.lazy && value.property.lazy.value === 'true') {
-      const supplier = (): Promise<Instance> => argsCreator.configConstructorPool.instantiate(value, settings);
+      const supplier = (): Promise<TInstance> => argsCreator.configConstructorPool.instantiate(value, settings);
       return await argsCreator.constructionStrategy.createLazySupplier({ settings, supplier });
     }
 

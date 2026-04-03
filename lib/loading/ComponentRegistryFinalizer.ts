@@ -108,7 +108,7 @@ export class ComponentRegistryFinalizer {
     for (const extendingConstructorArg of extendingConstructorArgs) {
       if (extendingConstructorArg.property.fields) {
         // Inherit fields
-        for (const field of extendingConstructorArg.property.fields.list || extendingConstructorArg.properties.fields) {
+        for (const field of extendingConstructorArg.property.fields.list ?? extendingConstructorArg.properties.fields) {
           if (!constructorArg.property.fields) {
             constructorArg.property.fields = this.objectLoader.createCompactedResource({ list: []});
           }

@@ -1,4 +1,4 @@
-import * as fs from 'fs';
+import * as fs from 'node:fs';
 import { PrefetchedDocumentLoader } from '../../../lib/rdf/PrefetchedDocumentLoader';
 
 globalThis.fetch = <any>jest.fn(async() => ({
@@ -21,17 +21,17 @@ describe('PrefetchedDocumentLoader', () => {
 
   describe('load', () => {
     it('for a prefetched context', async() => {
-      expect(await loader.load('http://example.org/context'))
+      await expect(loader.load('http://example.org/context')).resolves
         .toEqual({ a: 'b' });
     });
 
     it('for the built-in prefetched context', async() => {
-      expect(await loader.load(`https://linkedsoftwaredependencies.org/bundles/npm/componentsjs/^4.0.0/components/context.jsonld`))
+      await expect(loader.load(`https://linkedsoftwaredependencies.org/bundles/npm/componentsjs/^4.0.0/components/context.jsonld`)).resolves
         .toEqual(JSON.parse(fs.readFileSync(`${__dirname}/../../../components/context.jsonld`, 'utf8')));
     });
 
     it('for the built-in prefetched context that is deprecated', async() => {
-      expect(await loader.load(`https://linkedsoftwaredependencies.org/bundles/npm/componentsjs/^3.0.0/components/context.jsonld`))
+      await expect(loader.load(`https://linkedsoftwaredependencies.org/bundles/npm/componentsjs/^3.0.0/components/context.jsonld`)).resolves
         .toEqual(JSON.parse(fs.readFileSync(`${__dirname}/../../../components/context.jsonld`, 'utf8')));
     });
 
@@ -44,7 +44,7 @@ describe('PrefetchedDocumentLoader', () => {
         logger,
         path: 'PATH',
       });
-      expect(await loader.load(`https://linkedsoftwaredependencies.org/bundles/npm/componentsjs/^3.0.0/components/context.jsonld`))
+      await expect(loader.load(`https://linkedsoftwaredependencies.org/bundles/npm/componentsjs/^3.0.0/components/context.jsonld`)).resolves
         .toEqual(JSON.parse(fs.readFileSync(`${__dirname}/../../../components/context.jsonld`, 'utf8')));
       expect(logger.warn).not.toHaveBeenCalled();
     });
@@ -58,7 +58,7 @@ describe('PrefetchedDocumentLoader', () => {
         logger,
         path: 'PATH',
       });
-      expect(await loader.load(`https://linkedsoftwaredependencies.org/bundles/npm/componentsjs/^4.0.0/components/context.jsonld`))
+      await expect(loader.load(`https://linkedsoftwaredependencies.org/bundles/npm/componentsjs/^4.0.0/components/context.jsonld`)).resolves
         .toEqual(JSON.parse(fs.readFileSync(`${__dirname}/../../../components/context.jsonld`, 'utf8')));
       expect(logger.warn).not.toHaveBeenCalled();
     });
@@ -72,7 +72,7 @@ describe('PrefetchedDocumentLoader', () => {
         logger,
         path: 'PATH',
       });
-      expect(await loader.load(`https://linkedsoftwaredependencies.org/bundles/npm/componentsjs/^${PrefetchedDocumentLoader.CJS_MAJOR_VERSION}.0.0/components/context.jsonld`))
+      await expect(loader.load(`https://linkedsoftwaredependencies.org/bundles/npm/componentsjs/^${PrefetchedDocumentLoader.cjsMajorVersion}.0.0/components/context.jsonld`)).resolves
         .toEqual(JSON.parse(fs.readFileSync(`${__dirname}/../../../components/context.jsonld`, 'utf8')));
       expect(logger.warn).not.toHaveBeenCalled();
     });
@@ -85,7 +85,7 @@ describe('PrefetchedDocumentLoader', () => {
         contexts: {},
         logger,
       });
-      expect(await loader.load(`https://linkedsoftwaredependencies.org/bundles/npm/componentsjs/^3.0.0/components/context.jsonld`))
+      await expect(loader.load(`https://linkedsoftwaredependencies.org/bundles/npm/componentsjs/^3.0.0/components/context.jsonld`)).resolves
         .toEqual(JSON.parse(fs.readFileSync(`${__dirname}/../../../components/context.jsonld`, 'utf8')));
       expect(logger.warn).not.toHaveBeenCalled();
     });
@@ -128,7 +128,7 @@ describe('PrefetchedDocumentLoader', () => {
         path: 'PATH',
         remoteContextLookups: true,
       });
-      expect(await loader.load('http://remote.org/context'))
+      await expect(loader.load('http://remote.org/context')).resolves
         .toEqual({ x: 'y' });
     });
 
@@ -142,7 +142,7 @@ describe('PrefetchedDocumentLoader', () => {
         path: 'PATH',
         remoteContextLookups: true,
       });
-      expect(await loader.load('http://remote.org/context'))
+      await expect(loader.load('http://remote.org/context')).resolves
         .toEqual({ x: 'y' });
       expect(logger.warn).toHaveBeenCalledWith(`Detected remote context lookup for 'http://remote.org/context' in PATH. This may indicate a missing or invalid dependency, incorrect version number, or an invalid context URL.`);
     });
@@ -156,7 +156,7 @@ describe('PrefetchedDocumentLoader', () => {
         logger,
         remoteContextLookups: true,
       });
-      expect(await loader.load('http://remote.org/context'))
+      await expect(loader.load('http://remote.org/context')).resolves
         .toEqual({ x: 'y' });
       expect(logger.warn).toHaveBeenCalledWith(`Detected remote context lookup for 'http://remote.org/context'. This may indicate a missing or invalid dependency, incorrect version number, or an invalid context URL.`);
     });

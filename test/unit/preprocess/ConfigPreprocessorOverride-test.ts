@@ -222,7 +222,7 @@ describe('ConfigPreprocessorOverride', () => {
     });
     const override1Properties = overrideInstance1.property[IRIS_OO.overrideParameters].property;
     let override = preprocessor.canHandle(config);
-    expect(override).not.toBeUndefined();
+    expect(override).toBeDefined();
     expect(override).toHaveLength(1);
 
     objectLoader.createCompactedResource({
@@ -235,7 +235,7 @@ describe('ConfigPreprocessorOverride', () => {
     });
     // `ex:myOverride2` will not be applied due to cache
     override = preprocessor.canHandle(config);
-    expect(override).not.toBeUndefined();
+    expect(override).toBeDefined();
     expect(override).toHaveLength(1);
     preprocessor.transform(config, override!);
     expect(config.property['ex:param1']).toBe(override1Properties['ex:param1']);
@@ -257,7 +257,7 @@ describe('ConfigPreprocessorOverride', () => {
     });
 
     let override = preprocessor.canHandle(config);
-    expect(override).not.toBeUndefined();
+    expect(override).toBeDefined();
     expect(override).toHaveLength(1);
 
     const overrideInstance2 = objectLoader.createCompactedResource({
@@ -272,7 +272,7 @@ describe('ConfigPreprocessorOverride', () => {
     // `ex:myOverride2` is applied if we reset
     preprocessor.reset();
     override = preprocessor.canHandle(config);
-    expect(override).not.toBeUndefined();
+    expect(override).toBeDefined();
     expect(override).toHaveLength(2);
     preprocessor.transform(config, override!);
     expect(config.property['ex:param1']).toBe(override2Properties['ex:param1']);
@@ -412,7 +412,7 @@ describe('ConfigPreprocessorOverride', () => {
     });
     const overrideProperties = overrideInstance.property[IRIS_OO.overrideParameters].property;
     const override = preprocessor.canHandle(config);
-    expect(override).not.toBeUndefined();
+    expect(override).toBeDefined();
     expect(override).toHaveLength(1);
     expect(() => preprocessor.transform(config, override!)).not.toThrow();
     expect(config.property['ex:param1']).toBe(overrideProperties['ex:param1']);

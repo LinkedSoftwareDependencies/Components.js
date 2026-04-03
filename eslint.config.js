@@ -27,6 +27,12 @@ module.exports = config([
     rules: {
       'no-implicit-coercion': 'off',
       'no-sync': 'off',
+      // This is a Node.js library, it must import Node.js builtins
+      'import/no-nodejs-modules': 'off',
+      // The DI framework necessarily works with unknown types at runtime
+      'ts/no-unsafe-assignment': 'off',
+      'ts/no-unsafe-argument': 'off',
+      'ts/no-unsafe-return': 'off',
     },
   },
   {

@@ -2,7 +2,8 @@ import 'jest-rdf';
 import { DataFactory } from 'rdf-data-factory';
 import type { RdfObjectLoader, Resource } from 'rdf-object';
 import {
-  extractOverrideStepFields, findResourceIndex,
+  extractOverrideStepFields,
+  findResourceIndex,
   getPropertyResourceList,
 } from '../../../../lib/preprocess/overridesteps/OverrideUtil';
 import { setupObjectLoader } from './OverrideTestUtil';
@@ -72,7 +73,9 @@ describe('OverrideUtil', (): void => {
       const list = getPropertyResourceList(config, parameter);
       expect(list).toHaveLength(3);
       expect(list.map(entry => entry.term)).toEqualRdfTermArray([
-        DF.literal('value1'), DF.literal('value2'), DF.literal('value3'),
+        DF.literal('value1'),
+        DF.literal('value2'),
+        DF.literal('value3'),
       ]);
     });
 
@@ -108,13 +111,16 @@ describe('OverrideUtil', (): void => {
       expect(list).toBeDefined();
       expect(list).toHaveLength(3);
       expect(list!.map(entry => entry.term)).toEqualRdfTermArray([
-        DF.literal('value1'), DF.literal('value2'), DF.literal('value3'),
+        DF.literal('value1'),
+        DF.literal('value2'),
+        DF.literal('value3'),
       ]);
 
       list!.splice(1, 1);
       expect(list).toHaveLength(2);
       expect(list!.map(entry => entry.term)).toEqualRdfTermArray([
-        DF.literal('value1'), DF.literal('value3'),
+        DF.literal('value1'),
+        DF.literal('value3'),
       ]);
     });
   });

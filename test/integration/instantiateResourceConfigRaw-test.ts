@@ -4,7 +4,8 @@ import type { IConfigConstructorPool } from '../../lib/construction/IConfigConst
 import type { IConstructionSettings } from '../../lib/construction/IConstructionSettings';
 
 const N3 = require('n3');
-jest.mock('n3', () => ({
+
+jest.mock<typeof import('n3')>('n3', () => ({
   Lexer: jest.fn((args: any) => ({ type: 'LEXER', args })),
   Parser: jest.fn((args: any) => ({ type: 'PARSER', args })),
   Util: { type: 'UTIL' },
@@ -49,7 +50,7 @@ describe('construction with component configs as Resource', () => {
       },
     });
     const instance = await configConstructorPool.instantiate(config, settings);
-    expect(instance.type).toEqual('LEXER');
+    expect(instance.type).toBe('LEXER');
     expect(N3.Lexer).toHaveBeenCalledWith({ comments: 'true' });
   });
 
@@ -68,7 +69,7 @@ describe('construction with component configs as Resource', () => {
       },
     });
     const instance = await configConstructorPool.instantiate(config, settings);
-    expect(instance.type).toEqual('LEXER');
+    expect(instance.type).toBe('LEXER');
     expect(N3.Lexer).toHaveBeenCalledWith({ comments: [ 'true' ]});
   });
 
@@ -85,7 +86,7 @@ describe('construction with component configs as Resource', () => {
       },
     });
     const instance = await configConstructorPool.instantiate(config, settings);
-    expect(instance.type).toEqual('LEXER');
+    expect(instance.type).toBe('LEXER');
     expect(N3.Lexer).toHaveBeenCalledWith([ 'A', 'B', 'C' ]);
   });
 
@@ -121,7 +122,7 @@ describe('construction with component configs as Resource', () => {
       },
     });
     const instance = await configConstructorPool.instantiate(config, settings);
-    expect(instance.type).toEqual('PARSER');
+    expect(instance.type).toBe('PARSER');
     expect(N3.Parser).toHaveBeenCalledWith({
       format: 'application/trig',
       lexer: {
@@ -150,7 +151,7 @@ describe('construction with component configs as Resource', () => {
       requireNoConstructor: '"true"',
     });
     const instance = await configConstructorPool.instantiate(config, settings);
-    expect(instance.type).toEqual('UTIL');
+    expect(instance.type).toBe('UTIL');
     expect(instance).toBe(N3.Util);
   });
 });

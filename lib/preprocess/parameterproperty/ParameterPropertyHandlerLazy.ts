@@ -14,7 +14,7 @@ export class ParameterPropertyHandlerLazy implements IParameterPropertyHandler {
     value: Resource | undefined,
     configRoot: Resource,
     parameter: Resource,
-    configElement: Resource,
+    _configElement: Resource,
   ): Resource | undefined {
     if (value) {
       if (value.list) {

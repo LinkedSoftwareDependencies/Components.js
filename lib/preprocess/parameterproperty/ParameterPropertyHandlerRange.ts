@@ -160,11 +160,11 @@ export class ParameterPropertyHandlerRange implements IParameterPropertyHandler 
         .filter(subConflict => subConflict !== undefined);
       return subConflicts.length === 0 ?
         undefined :
-        {
-          description: `one or more array values are invalid`,
-          context: errorContext,
-          causes: subConflicts,
-        };
+          {
+            description: `one or more array values are invalid`,
+            context: errorContext,
+            causes: subConflicts,
+          };
     }
 
     // Check if the param type is a composed type
@@ -272,8 +272,10 @@ export class ParameterPropertyHandlerRange implements IParameterPropertyHandler 
       const component = type.property.parameterRangeValue;
       // Simulate a union of the member keys as literal parameter ranges
       const simulatedUnionRange = this.objectLoader.createCompactedResource({
+        // eslint-disable-next-line ts/naming-convention
         '@type': 'ParameterRangeUnion',
         parameterRangeElements: component.properties.memberFields.map(memberField => ({
+          // eslint-disable-next-line ts/naming-convention
           '@type': 'ParameterRangeLiteral',
           parameterRangeValue: memberField.property.memberFieldName,
         })),
@@ -297,7 +299,10 @@ export class ParameterPropertyHandlerRange implements IParameterPropertyHandler 
       // Collect field ranges
       const fieldRanges: Record<string, Resource> = Object.fromEntries(object.properties.memberFields
         .map(memberField => [ memberField.property.memberFieldName.value, memberField.property.range ||
-        this.objectLoader.createCompactedResource({ '@type': 'ParameterRangeWildcard' }) ]));
+        this.objectLoader.createCompactedResource({
+          // eslint-disable-next-line ts/naming-convention
+          '@type': 'ParameterRangeWildcard',
+        }) ]));
 
       // Handle literal indexes
       if (index.isA('ParameterRangeLiteral')) {
@@ -346,12 +351,15 @@ export class ParameterPropertyHandlerRange implements IParameterPropertyHandler 
     // Check if the range refers to a component with a generic type
     if (type.isA('ParameterRangeGenericComponent')) {
       if (value) {
-        if (!value.property.genericTypeInstances) {
+        if (value.property.genericTypeInstances) {
+          // TODO: Once we support manual generics setting, we'll need to check here if we can merge with it.
+          // (sometimes, it can also be identical)
+        } else {
           // For the defined generic type instances, apply them into the instance so they can be checked later during a
           // call to GenericsContext#bindComponentGenericTypes.
           value.property.genericTypeInstancesComponentScope = type.property.component;
           value.properties.genericTypeInstances = type.properties.genericTypeInstances
-            .map(genericTypeInstance => {
+            .map((genericTypeInstance) => {
               // If we have a generic param type reference, instantiate them based on the current generics context
               if (genericTypeInstance.isA('ParameterRangeGenericTypeReference')) {
                 if (!genericTypeInstance.property.parameterRangeGenericType) {
@@ -362,6 +370,7 @@ export class ParameterPropertyHandlerRange implements IParameterPropertyHandler 
                 }
 
                 return this.objectLoader.createCompactedResource({
+                  // eslint-disable-next-line ts/naming-convention
                   '@type': 'ParameterRangeGenericTypeReference',
                   parameterRangeGenericType: genericTypeInstance.property.parameterRangeGenericType.value,
                   parameterRangeGenericBindings: genericsContext
@@ -372,9 +381,6 @@ export class ParameterPropertyHandlerRange implements IParameterPropertyHandler 
               // For all other param types, return the as-is
               return genericTypeInstance;
             });
-        } else {
-          // TODO: Once we support manual generics setting, we'll need to check here if we can merge with it.
-          // (sometimes, it can also be identical)
         }
       }
 
@@ -395,7 +401,7 @@ export class ParameterPropertyHandlerRange implements IParameterPropertyHandler 
       return;
     }
 
-    return hasTypeConflict || { description: 'unknown parameter type', context: errorContext };
+    return hasTypeConflict ?? { description: 'unknown parameter type', context: errorContext };
   }
 
   /**
@@ -406,7 +412,7 @@ export class ParameterPropertyHandlerRange implements IParameterPropertyHandler 
     value: Resource,
     type: Resource | NamedNode,
     errorContext: IErrorContext,
-    genericsContext: GenericsContext,
+    _genericsContext: GenericsContext,
   ): ILiteralAsTypeInterpretationResult {
     let parsed;
     switch (type.value) {
@@ -494,18 +500,17 @@ export class ParameterPropertyHandlerRange implements IParameterPropertyHandler 
     genericsContext: GenericsContext,
     conflict: IParamValueConflict,
   ): never {
-    const withTypes = value && value.properties.types.length > 0 ? ` with types "${value.properties.types.map(resource => resource.value)}"` : '';
-    // eslint-disable-next-line @typescript-eslint/no-extra-parens
+    const withTypes = value && value.properties.types.length > 0 ? ` with types "${value.properties.types.map(resource => resource.value).join(', ')}"` : '';
     const valueString = value ? (value.list ? `[${value.list.map(subValue => subValue.value).join(', ')}]` : value.value) : 'undefined';
     const undefinedComponent = value && value.term.termType === 'NamedNode' && value.properties.types.length === 0 ? `. "${valueString}" seems to refer to a component instance that is not defined yet. Did you forget an import?` : '';
     throw new ErrorResourcesContext(`The value "${valueString}"${withTypes} for parameter "${parameter.value}" is not of required range type "${ParameterPropertyHandlerRange.rangeToDisplayString(parameter.property.range, genericsContext)}"${undefinedComponent}`, {
       cause: conflict,
-      value: value || 'undefined',
+      value: value ?? 'undefined',
       ...Object.keys(genericsContext.bindings).length > 0 ?
-        { generics: `[\n  ${Object.entries(genericsContext.bindings)
+          { generics: `[\n  ${Object.entries(genericsContext.bindings)
           .map(([ id, subValue ]) => `<${id}> => ${ParameterPropertyHandlerRange.rangeToDisplayString(subValue, genericsContext)}`)
           .join(',\n  ')}\n]` } :
-        {},
+          {},
       parameter,
     });
   }

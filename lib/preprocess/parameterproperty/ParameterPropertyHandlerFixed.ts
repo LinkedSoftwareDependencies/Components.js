@@ -20,14 +20,14 @@ export class ParameterPropertyHandlerFixed implements IParameterPropertyHandler 
     value: Resource | undefined,
     configRoot: Resource,
     parameter: Resource,
-    configElement: Resource,
+    _configElement: Resource,
   ): Resource | undefined {
     if (parameter.properties.fixed.length > 1) {
       throw new ErrorResourcesContext(`Invalid fixed value for parameter "${parameter.value}": Only one value can be defined, or an RDF list must be provided`, { parameter });
     }
 
     if (value) {
-      const fixedValues: Resource[] = parameter.property.fixed.list || [ parameter.property.fixed ];
+      const fixedValues: Resource[] = parameter.property.fixed.list ?? [ parameter.property.fixed ];
       if (value.list) {
         value.list.unshift(...fixedValues);
       } else {

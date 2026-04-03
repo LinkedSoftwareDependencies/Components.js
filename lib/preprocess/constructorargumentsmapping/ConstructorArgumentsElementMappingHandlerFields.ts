@@ -11,8 +11,8 @@ export class ConstructorArgumentsElementMappingHandlerFields implements IConstru
   public canHandle(
     configRoot: Resource,
     constructorArgs: Resource,
-    configElement: Resource,
-    mapper: IConstructorArgumentsMapper,
+    _configElement: Resource,
+    _mapper: IConstructorArgumentsMapper,
   ): boolean {
     return Boolean(constructorArgs.property.fields);
   }
@@ -34,10 +34,10 @@ export class ConstructorArgumentsElementMappingHandlerFields implements IConstru
 
     // Recursively handle all field values.
     const entries: Resource[] = [];
-    for (const field of fields.list || [ fields ]) {
+    for (const field of fields.list ?? [ fields ]) {
       const mapped = mapper
         .applyConstructorArgumentsParameters(configRoot, field, configElement, genericsContext);
-      for (const entry of mapped.list || [ mapped ]) {
+      for (const entry of mapped.list ?? [ mapped ]) {
         entries.push(entry);
       }
     }

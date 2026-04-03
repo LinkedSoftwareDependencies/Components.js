@@ -1,0 +1,362 @@
+
+/home/runner/work/Components.js/Components.js/bin/compile-config.ts
+  7:19  error  A `require()` style import is forbidden  ts/no-require-imports
+
+/home/runner/work/Components.js/Components.js/lib/ComponentsManager.ts
+   17:32  error  Type Parameter name `Instance` must have one of the following prefixes: T  ts/naming-convention
+   41:23  error  Type Parameter name `I` must have one of the following prefixes: T         ts/naming-convention
+  100:44  error  Type Parameter name `Instance` must have one of the following prefixes: T  ts/naming-convention
+
+/home/runner/work/Components.js/Components.js/lib/construction/ConfigConstructor.ts
+   31:32  error  Type Parameter name `Instance` must have one of the following prefixes: T               ts/naming-convention
+   32:27  error  Class Property name `ARGS_HANDLERS` must match one of the following formats: camelCase  ts/naming-convention
+  131:44  error  Type Parameter name `Instance` must have one of the following prefixes: T               ts/naming-convention
+
+/home/runner/work/Components.js/Components.js/lib/construction/ConfigConstructorPool.ts
+   19:36  error  Type Parameter name `Instance` must have one of the following prefixes: T                                  ts/naming-convention
+   43:58  error  Prefer using nullish coalescing operator (`??`) instead of a logical or (`||`), as it is a safer operator  ts/prefer-nullish-coalescing
+  154:39  error  Type Parameter name `Instance` must have one of the following prefixes: T                                  ts/naming-convention
+
+/home/runner/work/Components.js/Components.js/lib/construction/IConfigConstructorPool.ts
+  7:41  error  Type Parameter name `Instance` must have one of the following prefixes: T  ts/naming-convention
+
+/home/runner/work/Components.js/Components.js/lib/construction/argument/ArgumentConstructorHandlerArray.ts
+  11:20  error  Type Parameter name `Instance` must have one of the following prefixes: T      ts/naming-convention
+  13:5   error  'settings' is defined but never used. Allowed unused args must match /^_/u     unused-imports/no-unused-vars
+  14:5   error  'argsCreator' is defined but never used. Allowed unused args must match /^_/u  unused-imports/no-unused-vars
+  19:23  error  Type Parameter name `Instance` must have one of the following prefixes: T      ts/naming-convention
+
+/home/runner/work/Components.js/Components.js/lib/construction/argument/ArgumentConstructorHandlerHash.ts
+  11:20  error  Type Parameter name `Instance` must have one of the following prefixes: T                                  ts/naming-convention
+  13:5   error  'settings' is defined but never used. Allowed unused args must match /^_/u                                 unused-imports/no-unused-vars
+  14:5   error  'argsCreator' is defined but never used. Allowed unused args must match /^_/u                              unused-imports/no-unused-vars
+  19:23  error  Type Parameter name `Instance` must have one of the following prefixes: T                                  ts/naming-convention
+  24:50  error  Prefer using nullish coalescing operator (`??`) instead of a logical or (`||`), as it is a safer operator  ts/prefer-nullish-coalescing
+
+/home/runner/work/Components.js/Components.js/lib/construction/argument/ArgumentConstructorHandlerList.ts
+  10:20  error  Type Parameter name `Instance` must have one of the following prefixes: T      ts/naming-convention
+  12:5   error  'settings' is defined but never used. Allowed unused args must match /^_/u     unused-imports/no-unused-vars
+  13:5   error  'argsCreator' is defined but never used. Allowed unused args must match /^_/u  unused-imports/no-unused-vars
+  18:23  error  Type Parameter name `Instance` must have one of the following prefixes: T      ts/naming-convention
+
+/home/runner/work/Components.js/Components.js/lib/construction/argument/ArgumentConstructorHandlerPrimitive.ts
+  10:20  error  Type Parameter name `Instance` must have one of the following prefixes: T      ts/naming-convention
+  12:5   error  'settings' is defined but never used. Allowed unused args must match /^_/u     unused-imports/no-unused-vars
+  13:5   error  'argsCreator' is defined but never used. Allowed unused args must match /^_/u  unused-imports/no-unused-vars
+  18:23  error  Type Parameter name `Instance` must have one of the following prefixes: T      ts/naming-convention
+
+/home/runner/work/Components.js/Components.js/lib/construction/argument/ArgumentConstructorHandlerReference.ts
+  10:20  error  Type Parameter name `Instance` must have one of the following prefixes: T      ts/naming-convention
+  12:5   error  'settings' is defined but never used. Allowed unused args must match /^_/u     unused-imports/no-unused-vars
+  13:5   error  'argsCreator' is defined but never used. Allowed unused args must match /^_/u  unused-imports/no-unused-vars
+  18:23  error  Type Parameter name `Instance` must have one of the following prefixes: T      ts/naming-convention
+
+/home/runner/work/Components.js/Components.js/lib/construction/argument/ArgumentConstructorHandlerUndefined.ts
+  10:20  error  Type Parameter name `Instance` must have one of the following prefixes: T      ts/naming-convention
+  12:5   error  'settings' is defined but never used. Allowed unused args must match /^_/u     unused-imports/no-unused-vars
+  13:5   error  'argsCreator' is defined but never used. Allowed unused args must match /^_/u  unused-imports/no-unused-vars
+  18:23  error  Type Parameter name `Instance` must have one of the following prefixes: T      ts/naming-convention
+
+/home/runner/work/Components.js/Components.js/lib/construction/argument/ArgumentConstructorHandlerValue.ts
+  10:20  error  Type Parameter name `Instance` must have one of the following prefixes: T      ts/naming-convention
+  12:5   error  'settings' is defined but never used. Allowed unused args must match /^_/u     unused-imports/no-unused-vars
+  13:5   error  'argsCreator' is defined but never used. Allowed unused args must match /^_/u  unused-imports/no-unused-vars
+  18:23  error  Type Parameter name `Instance` must have one of the following prefixes: T      ts/naming-convention
+
+/home/runner/work/Components.js/Components.js/lib/construction/argument/IArgumentConstructorHandler.ts
+  15:15  error  Type Parameter name `Instance` must have one of the following prefixes: T  ts/naming-convention
+  27:12  error  Type Parameter name `Instance` must have one of the following prefixes: T  ts/naming-convention
+
+/home/runner/work/Components.js/Components.js/lib/construction/argument/IArgumentsConstructor.ts
+  10:40  error  Type Parameter name `Instance` must have one of the following prefixes: T  ts/naming-convention
+
+/home/runner/work/Components.js/Components.js/lib/construction/strategy/ConstructionStrategyCommonJs.ts
+  22:62  error  Prefer using nullish coalescing operator (`??`) instead of a logical or (`||`), as it is a safer operator  ts/prefer-nullish-coalescing
+
+/home/runner/work/Components.js/Components.js/lib/construction/strategy/ConstructionStrategyCommonJsString.ts
+   39:62  error  Prefer using nullish coalescing operator (`??`) instead of a logical or (`||`), as it is a safer operator  ts/prefer-nullish-coalescing
+  170:27  error  Prefer using nullish coalescing operator (`??`) instead of a logical or (`||`), as it is a safer operator  ts/prefer-nullish-coalescing
+
+/home/runner/work/Components.js/Components.js/lib/construction/strategy/IConstructionStrategy.ts
+    7:40  error  Type Parameter name `Instance` must have one of the following prefixes: T   ts/naming-convention
+   44:51  error  Type Parameter name `Instance` must have one of the following prefixes: T   ts/naming-convention
+   78:47  error  Type Parameter name `Instance` must have one of the following prefixes: T   ts/naming-convention
+   89:48  error  Type Parameter name `Instance` must have one of the following prefixes: T   ts/naming-convention
+  100:51  error  Type Parameter name `Instance` must have one of the following prefixes: T   ts/naming-convention
+  111:52  error  Type Parameter name `Instance` must have one of the following prefixes: T   ts/naming-convention
+  111:52  error  'Instance' is defined but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+  122:51  error  Type Parameter name `Instance` must have one of the following prefixes: T   ts/naming-convention
+  122:51  error  'Instance' is defined but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+
+/home/runner/work/Components.js/Components.js/lib/loading/ComponentRegistryFinalizer.ts
+  111:74  error  Prefer using nullish coalescing operator (`??`) instead of a logical or (`||`), as it is a safer operator  ts/prefer-nullish-coalescing
+
+/home/runner/work/Components.js/Components.js/lib/loading/ComponentsManagerBuilder.ts
+   24:39  error  Type Parameter name `Instance` must have one of the following prefixes: T                                  ts/naming-convention
+   38:49  error  Prefer using nullish coalescing operator (`??`) instead of a logical or (`||`), as it is a safer operator  ts/prefer-nullish-coalescing
+   39:46  error  Prefer using nullish coalescing operator (`??`) instead of a logical or (`||`), as it is a safer operator  ts/prefer-nullish-coalescing
+   42:62  error  Prefer using nullish coalescing operator (`??`) instead of a logical or (`||`), as it is a safer operator  ts/prefer-nullish-coalescing
+   76:16  error  A `require()` style import is forbidden                                                                    ts/no-require-imports
+   76:24  error  Unexpected use of file extension "json" for "../../components/context.json"                                import/extensions
+  171:51  error  Type Parameter name `Instance` must have one of the following prefixes: T                                  ts/naming-convention
+
+/home/runner/work/Components.js/Components.js/lib/loading/ConfigRegistry.ts
+  65:7  error  Object Literal Property name `@id` must match one of the following formats: camelCase  ts/naming-convention
+
+/home/runner/work/Components.js/Components.js/lib/loading/ModuleStateBuilder.ts
+   2:19  error  A `require()` style import is forbidden                                                                    ts/no-require-imports
+   3:22  error  A `require()` style import is forbidden                                                                    ts/no-require-imports
+   4:22  error  A `require()` style import is forbidden                                                                    ts/no-require-imports
+   8:12  error  Require statement not part of import statement                                                             ts/no-var-requires
+   8:12  error  A `require()` style import is forbidden                                                                    ts/no-require-imports
+  26:63  error  Prefer using nullish coalescing operator (`??`) instead of a logical or (`||`), as it is a safer operator  ts/prefer-nullish-coalescing
+
+/home/runner/work/Components.js/Components.js/lib/preprocess/ConfigPreprocessorComponent.ts
+  37:31  error  Invalid type "string[]" of template literal expression  ts/restrict-template-expressions
+  43:27  error  Invalid type "string[]" of template literal expression  ts/restrict-template-expressions
+
+/home/runner/work/Components.js/Components.js/lib/preprocess/GenericsContext.ts
+   10:27  error  Class Property name `XSD_INHERITANCE_TABLE` must match one of the following formats: camelCase                             ts/naming-convention
+   11:5   error  Object Literal Property name `http://www.w3.org/2001/XMLSchema#number` must match one of the following formats: camelCase  ts/naming-convention
+   29:5   error  Object Literal Property name `http://www.w3.org/2001/XMLSchema#string` must match one of the following formats: camelCase  ts/naming-convention
+  159:58  error  Object Literal Property name `@type` must match one of the following formats: camelCase                                    ts/naming-convention
+  171:9   error  Object Literal Property name `@type` must match one of the following formats: camelCase                                    ts/naming-convention
+  238:11  error  Object Literal Property name `@type` must match one of the following formats: camelCase                                    ts/naming-convention
+  257:11  error  Object Literal Property name `@type` must match one of the following formats: camelCase                                    ts/naming-convention
+  282:11  error  Object Literal Property name `@type` must match one of the following formats: camelCase                                    ts/naming-convention
+  325:7   error  Object Literal Property name `@type` must match one of the following formats: camelCase                                    ts/naming-convention
+
+/home/runner/work/Components.js/Components.js/lib/preprocess/IConfigPreprocessor.ts
+  18:38  error  Type Parameter name `HR` must have one of the following prefixes: T  ts/naming-convention
+
+/home/runner/work/Components.js/Components.js/lib/preprocess/constructorargumentsmapping/ConstructorArgumentsElementMappingHandlerCollectEntries.ts
+  23:5   error  'configElement' is defined but never used. Allowed unused args must match /^_/u                            unused-imports/no-unused-vars
+  24:5   error  'mapper' is defined but never used. Allowed unused args must match /^_/u                                   unused-imports/no-unused-vars
+  47:45  error  Prefer using nullish coalescing operator (`??`) instead of a logical or (`||`), as it is a safer operator  ts/prefer-nullish-coalescing
+  56:43  error  Prefer using nullish coalescing operator (`??`) instead of a logical or (`||`), as it is a safer operator  ts/prefer-nullish-coalescing
+
+/home/runner/work/Components.js/Components.js/lib/preprocess/constructorargumentsmapping/ConstructorArgumentsElementMappingHandlerElements.ts
+  14:5   error  'configElement' is defined but never used. Allowed unused args must match /^_/u                            unused-imports/no-unused-vars
+  15:5   error  'mapper' is defined but never used. Allowed unused args must match /^_/u                                   unused-imports/no-unused-vars
+  55:40  error  Prefer using nullish coalescing operator (`??`) instead of a logical or (`||`), as it is a safer operator  ts/prefer-nullish-coalescing
+
+/home/runner/work/Components.js/Components.js/lib/preprocess/constructorargumentsmapping/ConstructorArgumentsElementMappingHandlerFields.ts
+  14:5   error  'configElement' is defined but never used. Allowed unused args must match /^_/u                            unused-imports/no-unused-vars
+  15:5   error  'mapper' is defined but never used. Allowed unused args must match /^_/u                                   unused-imports/no-unused-vars
+  37:37  error  Prefer using nullish coalescing operator (`??`) instead of a logical or (`||`), as it is a safer operator  ts/prefer-nullish-coalescing
+  40:39  error  Prefer using nullish coalescing operator (`??`) instead of a logical or (`||`), as it is a safer operator  ts/prefer-nullish-coalescing
+
+/home/runner/work/Components.js/Components.js/lib/preprocess/constructorargumentsmapping/ConstructorArgumentsElementMappingHandlerKeyValue.ts
+  14:5  error  'configElement' is defined but never used. Allowed unused args must match /^_/u  unused-imports/no-unused-vars
+  15:5  error  'mapper' is defined but never used. Allowed unused args must match /^_/u         unused-imports/no-unused-vars
+
+/home/runner/work/Components.js/Components.js/lib/preprocess/constructorargumentsmapping/ConstructorArgumentsElementMappingHandlerList.ts
+  13:5  error  'configElement' is defined but never used. Allowed unused args must match /^_/u  unused-imports/no-unused-vars
+  14:5  error  'mapper' is defined but never used. Allowed unused args must match /^_/u         unused-imports/no-unused-vars
+
+/home/runner/work/Components.js/Components.js/lib/preprocess/overridesteps/OverrideListRemove.ts
+  19:34  error  'values' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+
+/home/runner/work/Components.js/Components.js/lib/preprocess/overridesteps/OverrideMapEntry.ts
+  72:1  warning  Missing @param "properties.key"    jsdoc/check-param-names
+  72:1  warning  Missing @param "properties.value"  jsdoc/check-param-names
+
+/home/runner/work/Components.js/Components.js/lib/preprocess/parameterproperty/ParameterPropertyHandlerDefaultScoped.ts
+  23:5   error  'configElement' is defined but never used. Allowed unused args must match /^_/u                            unused-imports/no-unused-vars
+  49:39  error  Prefer using nullish coalescing operator (`??`) instead of a logical or (`||`), as it is a safer operator  ts/prefer-nullish-coalescing
+  50:60  error  Prefer using nullish coalescing operator (`??`) instead of a logical or (`||`), as it is a safer operator  ts/prefer-nullish-coalescing
+
+/home/runner/work/Components.js/Components.js/lib/preprocess/parameterproperty/ParameterPropertyHandlerFixed.ts
+  23:5   error  'configElement' is defined but never used. Allowed unused args must match /^_/u                            unused-imports/no-unused-vars
+  30:69  error  Prefer using nullish coalescing operator (`??`) instead of a logical or (`||`), as it is a safer operator  ts/prefer-nullish-coalescing
+
+/home/runner/work/Components.js/Components.js/lib/preprocess/parameterproperty/ParameterPropertyHandlerLazy.ts
+  17:5  error  'configElement' is defined but never used. Allowed unused args must match /^_/u  unused-imports/no-unused-vars
+
+/home/runner/work/Components.js/Components.js/lib/preprocess/parameterproperty/ParameterPropertyHandlerRange.ts
+   65:1   warning  Expected @param names to be "value, type, errorContext, genericsContext". Got "value, type, genericsContext, errorContext"  jsdoc/check-param-names
+  275:9   error    Object Literal Property name `@type` must match one of the following formats: camelCase                                     ts/naming-convention
+  277:11  error    Object Literal Property name `@type` must match one of the following formats: camelCase                                     ts/naming-convention
+  300:53  error    Object Literal Property name `@type` must match one of the following formats: camelCase                                     ts/naming-convention
+  368:19  error    Object Literal Property name `@type` must match one of the following formats: camelCase                                     ts/naming-convention
+  398:28  error    Prefer using nullish coalescing operator (`??`) instead of a logical or (`||`), as it is a safer operator                   ts/prefer-nullish-coalescing
+  409:5   error    'genericsContext' is defined but never used. Allowed unused args must match /^_/u                                           unused-imports/no-unused-vars
+  497:84  error    Invalid type "string[]" of template literal expression                                                                      ts/restrict-template-expressions
+  498:5   error    Definition for rule '@typescript-eslint/no-extra-parens' was not found                                                      @typescript-eslint/no-extra-parens
+  503:20  error    Prefer using nullish coalescing operator (`??`) instead of a logical or (`||`), as it is a safer operator                   ts/prefer-nullish-coalescing
+
+/home/runner/work/Components.js/Components.js/lib/rdf/Iris.ts
+   5:3  error  Object Literal Property name `Module` must match one of the following formats: camelCase             ts/naming-convention
+   6:3  error  Object Literal Property name `Class` must match one of the following formats: camelCase              ts/naming-convention
+   7:3  error  Object Literal Property name `AbstractClass` must match one of the following formats: camelCase      ts/naming-convention
+   8:3  error  Object Literal Property name `ComponentInstance` must match one of the following formats: camelCase  ts/naming-convention
+  11:3  error  Object Literal Property name `Override` must match one of the following formats: camelCase           ts/naming-convention
+  25:3  error  Object Literal Property name `JSON` must match one of the following formats: camelCase               ts/naming-convention
+  54:3  error  Object Literal Property name `Restriction` must match one of the following formats: camelCase        ts/naming-convention
+
+/home/runner/work/Components.js/Components.js/lib/rdf/PrefetchedDocumentLoader.ts
+   3:22  error  A `require()` style import is forbidden                                                     ts/no-require-imports
+  11:26  error  Class Property name `CJS_MAJOR_VERSION` must match one of the following formats: camelCase  ts/naming-convention
+  11:66  error  Require statement not part of import statement                                              ts/no-var-requires
+  11:66  error  A `require()` style import is forbidden                                                     ts/no-require-imports
+  11:74  error  Unexpected use of file extension "json" for "../../package.json"                            import/extensions
+  12:26  error  Class Property name `CONTEXT_URL` must match one of the following formats: camelCase        ts/naming-convention
+  15:26  error  Class Property name `CONTEXT_PATTERN` must match one of the following formats: camelCase    ts/naming-convention
+  18:27  error  Class Property name `DEFAULT_CONTEXT` must match one of the following formats: camelCase    ts/naming-convention
+  18:50  error  A `require()` style import is forbidden                                                     ts/no-require-imports
+  18:58  error  Unexpected use of file extension "json" for "../../components/context.json"                 import/extensions
+  20:27  error  Class Property name `DEFAULT_CONTEXTS` must match one of the following formats: camelCase   ts/naming-convention
+
+/home/runner/work/Components.js/Components.js/lib/rdf/RdfParser.ts
+  11:12  error  Require statement not part of import statement                                                             ts/no-var-requires
+  11:12  error  A `require()` style import is forbidden                                                                    ts/no-require-imports
+  51:36  error  Prefer using nullish coalescing operator (`??`) instead of a logical or (`||`), as it is a safer operator  ts/prefer-nullish-coalescing
+
+/home/runner/work/Components.js/Components.js/lib/rdf/RdfStreamIncluder.ts
+   3:15  error  A `require()` style import is forbidden                            ts/no-require-imports
+  24:10  error  Class Method name `_transform` must not have a leading underscore  ts/naming-convention
+  31:10  error  Class Method name `_flush` must not have a leading underscore      ts/naming-convention
+
+/home/runner/work/Components.js/Components.js/test/integration/instantiateFile-test.ts
+   10:23  error  Mocks should not be manually imported from a __mocks__ directory. Instead use `jest.mock` and import from the original module path  jest/no-mocks-import
+   34:23  error  Use path.join() or path.resolve() instead of string concatenation                                                                   node/no-path-concat
+   36:32  error  Use path.join() or path.resolve() instead of string concatenation                                                                   node/no-path-concat
+   37:86  error  Use path.join() or path.resolve() instead of string concatenation                                                                   node/no-path-concat
+  406:1   error  This line has a length of 123. Maximum allowed is 120                                                                               max-len
+  513:1   error  This line has a length of 138. Maximum allowed is 120                                                                               max-len
+  570:1   error  This line has a length of 122. Maximum allowed is 120                                                                               max-len
+
+/home/runner/work/Components.js/Components.js/test/integration/instantiateResourceConfigComponent-test.ts
+  23:23  error  Use path.join() or path.resolve() instead of string concatenation  node/no-path-concat
+  25:25  error  Use path.join() or path.resolve() instead of string concatenation  node/no-path-concat
+
+/home/runner/work/Components.js/Components.js/test/integration/instantiateResourceConfigComponentMapped-test.ts
+  16:23  error  Mocks should not be manually imported from a __mocks__ directory. Instead use `jest.mock` and import from the original module path  jest/no-mocks-import
+  25:23  error  Use path.join() or path.resolve() instead of string concatenation                                                                   node/no-path-concat
+  27:25  error  Use path.join() or path.resolve() instead of string concatenation                                                                   node/no-path-concat
+
+/home/runner/work/Components.js/Components.js/test/integration/instantiateResourceConfigRaw-test.ts
+  14:23  error  Mocks should not be manually imported from a __mocks__ directory. Instead use `jest.mock` and import from the original module path  jest/no-mocks-import
+  23:23  error  Use path.join() or path.resolve() instead of string concatenation                                                                   node/no-path-concat
+  25:25  error  Use path.join() or path.resolve() instead of string concatenation                                                                   node/no-path-concat
+
+/home/runner/work/Components.js/Components.js/test/unit/construction/ConfigConstructor-test.ts
+   14:7   error  'componentResources' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+   24:43  error  Use path.join() or path.resolve() instead of string concatenation                              node/no-path-concat
+   43:32  error  Use path.join() or path.resolve() instead of string concatenation                              node/no-path-concat
+  108:54  error  Prefer toHaveBeenCalledWith(/* expected args */)                                               jest/prefer-called-with
+
+/home/runner/work/Components.js/Components.js/test/unit/construction/ConfigConstructorPool-test.ts
+  26:43  error  Use path.join() or path.resolve() instead of string concatenation  node/no-path-concat
+  38:32  error  Use path.join() or path.resolve() instead of string concatenation  node/no-path-concat
+
+/home/runner/work/Components.js/Components.js/test/unit/loading/ComponentRegistry-test.ts
+  21:43  error  Use path.join() or path.resolve() instead of string concatenation  node/no-path-concat
+  47:14  error  Use path.join() or path.resolve() instead of string concatenation  node/no-path-concat
+  60:46  error  Use path.join() or path.resolve() instead of string concatenation  node/no-path-concat
+  68:83  error  Add an error message to toThrow()                                  jest/require-to-throw-message
+
+/home/runner/work/Components.js/Components.js/test/unit/loading/ComponentRegistryFinalizer-test.ts
+  23:43  error  Use path.join() or path.resolve() instead of string concatenation  node/no-path-concat
+  54:46  error  Use path.join() or path.resolve() instead of string concatenation  node/no-path-concat
+
+/home/runner/work/Components.js/Components.js/test/unit/loading/ComponentsManager-test.ts
+   15:1   error  This line has a length of 131. Maximum allowed is 120              max-len
+   42:12  error  Use path.join() or path.resolve() instead of string concatenation  node/no-path-concat
+   48:43  error  Use path.join() or path.resolve() instead of string concatenation  node/no-path-concat
+  123:55  error  Use path.join() or path.resolve() instead of string concatenation  node/no-path-concat
+  132:55  error  Use path.join() or path.resolve() instead of string concatenation  node/no-path-concat
+  144:55  error  Use path.join() or path.resolve() instead of string concatenation  node/no-path-concat
+
+/home/runner/work/Components.js/Components.js/test/unit/loading/ComponentsManagerBuilder-test.ts
+   38:10  error  Use path.join() or path.resolve() instead of string concatenation  node/no-path-concat
+  115:37  error  Use path.join() or path.resolve() instead of string concatenation  node/no-path-concat
+  148:37  error  Use path.join() or path.resolve() instead of string concatenation  node/no-path-concat
+  288:14  error  Use path.join() or path.resolve() instead of string concatenation  node/no-path-concat
+
+/home/runner/work/Components.js/Components.js/test/unit/loading/ConfigRegistry-test.ts
+  20:43  error  Use path.join() or path.resolve() instead of string concatenation  node/no-path-concat
+  36:37  error  Use path.join() or path.resolve() instead of string concatenation  node/no-path-concat
+  42:74  error  Add an error message to toThrow()                                  jest/require-to-throw-message
+  71:37  error  Use path.join() or path.resolve() instead of string concatenation  node/no-path-concat
+
+/home/runner/work/Components.js/Components.js/test/unit/preprocess/ConfigPreprocessorComponent-test.ts
+  21:43  error  Use path.join() or path.resolve() instead of string concatenation  node/no-path-concat
+
+/home/runner/work/Components.js/Components.js/test/unit/preprocess/ConfigPreprocessorComponentMapped-test.ts
+  18:43  error  Use path.join() or path.resolve() instead of string concatenation  node/no-path-concat
+
+/home/runner/work/Components.js/Components.js/test/unit/preprocess/ConfigPreprocessorOverride-test.ts
+  250:11  error  'overrideInstance1' is assigned a value but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+
+/home/runner/work/Components.js/Components.js/test/unit/preprocess/GenericsContexts-test.ts
+  28:43  error  Use path.join() or path.resolve() instead of string concatenation  node/no-path-concat
+
+/home/runner/work/Components.js/Components.js/test/unit/preprocess/ParameterHandler-test.ts
+  18:43  error  Use path.join() or path.resolve() instead of string concatenation  node/no-path-concat
+
+/home/runner/work/Components.js/Components.js/test/unit/preprocess/overrideSteps/OverrideTestUtil.ts
+  10:41  error  Use path.join() or path.resolve() instead of string concatenation  node/no-path-concat
+
+/home/runner/work/Components.js/Components.js/test/unit/preprocess/parameterproperty/ParameterPropertyHandlerRange-test.ts
+    41:43  error  Use path.join() or path.resolve() instead of string concatenation    node/no-path-concat
+    46:5   error  Definition for rule '@typescript-eslint/dot-notation' was not found  @typescript-eslint/dot-notation
+  2556:1   error  This line has a length of 152. Maximum allowed is 120                max-len
+  2560:1   error  This line has a length of 152. Maximum allowed is 120                max-len
+  2566:1   error  This line has a length of 153. Maximum allowed is 120                max-len
+  2570:1   error  This line has a length of 153. Maximum allowed is 120                max-len
+  2575:1   error  This line has a length of 166. Maximum allowed is 120                max-len
+  2587:1   error  This line has a length of 153. Maximum allowed is 120                max-len
+  2591:1   error  This line has a length of 153. Maximum allowed is 120                max-len
+  2596:1   error  This line has a length of 166. Maximum allowed is 120                max-len
+  2607:1   error  This line has a length of 169. Maximum allowed is 120                max-len
+  2618:1   error  This line has a length of 152. Maximum allowed is 120                max-len
+  2622:1   error  This line has a length of 152. Maximum allowed is 120                max-len
+  2627:1   error  This line has a length of 149. Maximum allowed is 120                max-len
+  2631:1   error  This line has a length of 149. Maximum allowed is 120                max-len
+  2636:1   error  This line has a length of 150. Maximum allowed is 120                max-len
+  2640:1   error  This line has a length of 150. Maximum allowed is 120                max-len
+  2645:1   error  This line has a length of 150. Maximum allowed is 120                max-len
+  2649:1   error  This line has a length of 150. Maximum allowed is 120                max-len
+  2655:1   error  This line has a length of 151. Maximum allowed is 120                max-len
+  2659:1   error  This line has a length of 151. Maximum allowed is 120                max-len
+  2664:1   error  This line has a length of 164. Maximum allowed is 120                max-len
+  2675:1   error  This line has a length of 153. Maximum allowed is 120                max-len
+  2679:1   error  This line has a length of 153. Maximum allowed is 120                max-len
+  2684:1   error  This line has a length of 152. Maximum allowed is 120                max-len
+  2688:1   error  This line has a length of 152. Maximum allowed is 120                max-len
+  2694:1   error  This line has a length of 150. Maximum allowed is 120                max-len
+  2698:1   error  This line has a length of 150. Maximum allowed is 120                max-len
+  2703:1   error  This line has a length of 173. Maximum allowed is 120                max-len
+  2809:9   error  Avoid calling `expect` conditionally`                                jest/no-conditional-expect
+
+/home/runner/work/Components.js/Components.js/test/unit/rdf/PrefetchedDocumentLoader-test.ts
+  30:45  error  Use path.join() or path.resolve() instead of string concatenation  node/no-path-concat
+  35:45  error  Use path.join() or path.resolve() instead of string concatenation  node/no-path-concat
+  48:45  error  Use path.join() or path.resolve() instead of string concatenation  node/no-path-concat
+  62:45  error  Use path.join() or path.resolve() instead of string concatenation  node/no-path-concat
+  76:45  error  Use path.join() or path.resolve() instead of string concatenation  node/no-path-concat
+  89:45  error  Use path.join() or path.resolve() instead of string concatenation  node/no-path-concat
+
+/home/runner/work/Components.js/Components.js/test/unit/rdf/RdfParser-test.ts
+  447:1  error  This line has a length of 129. Maximum allowed is 120  max-len
+
+/home/runner/work/Components.js/Components.js/test/unit/rdf/ResourceUtil-test.ts
+  14:45  error  Use path.join() or path.resolve() instead of string concatenation  node/no-path-concat
+
+/home/runner/work/Components.js/Components.js/test/unit/util/CompileUtil-test.ts
+  8:7  error  Definition for rule '@typescript-eslint/prefer-ts-expect-error' was not found  @typescript-eslint/prefer-ts-expect-error
+
+/home/runner/work/Components.js/Components.js/test/unit/util/ErrorResourcesContext-test.ts
+  11:43  error  Use path.join() or path.resolve() instead of string concatenation  node/no-path-concat
+
+/home/runner/work/Components.js/Components.js/test/webpack/test-web.ts
+   1:1  error  Definition for rule '@typescript-eslint/no-implicit-any-catch' was not found  @typescript-eslint/no-implicit-any-catch
+  34:1  error  Definition for rule '@typescript-eslint/no-implicit-any-catch' was not found  @typescript-eslint/no-implicit-any-catch
+
+/home/runner/work/Components.js/Components.js/test/webpack/test.ts
+   1:1  error  Definition for rule '@typescript-eslint/no-implicit-any-catch' was not found  @typescript-eslint/no-implicit-any-catch
+  30:1  error  Definition for rule '@typescript-eslint/no-implicit-any-catch' was not found  @typescript-eslint/no-implicit-any-catch
+
+✖ 231 problems (228 errors, 3 warnings)
+

@@ -1,4 +1,4 @@
-import * as fs from 'fs';
+import * as fs from 'node:fs';
 import type { Resource } from 'rdf-object';
 import { RdfObjectLoader } from 'rdf-object';
 import type { Logger } from 'winston';
@@ -38,7 +38,7 @@ describe('ComponentRegistry', () => {
   describe('registerAvailableModules', () => {
     it('should handle no discovered modules', async() => {
       await componentRegistry.registerAvailableModules();
-      expect(Object.keys(objectLoader.resources).length).toBe(0);
+      expect(Object.keys(objectLoader.resources)).toHaveLength(0);
     });
 
     it('should handle discovered modules', async() => {

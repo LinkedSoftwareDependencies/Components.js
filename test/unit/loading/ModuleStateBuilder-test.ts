@@ -2,9 +2,9 @@ import { mocked } from 'jest-mock';
 import { ModuleStateBuilder } from '../../../lib/loading/ModuleStateBuilder';
 
 // Import syntax only works in Node > 12
-const fs = require('fs').promises;
+const fs = require('node:fs').promises;
 
-jest.mock('fs', () => ({
+jest.mock<typeof import('fs')>('fs', () => ({
   promises: {
     realpath: jest.fn(),
     stat: jest.fn(),
@@ -70,7 +70,7 @@ describe('ModuleStateBuilder', () => {
 
   describe('buildModuleState', () => {
     it('should handle an undefined mainModulePathIn', async() => {
-      expect(await builder.buildModuleState(req)).toEqual({
+      await expect(builder.buildModuleState(req)).resolves.toEqual({
         componentModules: {},
         contexts: {},
         importPaths: {},
@@ -87,7 +87,7 @@ describe('ModuleStateBuilder', () => {
     });
 
     it('should handle an defined mainModulePathIn', async() => {
-      expect(await builder.buildModuleState(req, '/a/b')).toEqual({
+      await expect(builder.buildModuleState(req, '/a/b')).resolves.toEqual({
         componentModules: {},
         contexts: {},
         importPaths: {},
@@ -151,7 +151,7 @@ describe('ModuleStateBuilder', () => {
   "version": "1.0.0"
 }`,
       };
-      expect(await builder.buildModuleState(req, '/a/b')).toEqual({
+      await expect(builder.buildModuleState(req, '/a/b')).resolves.toEqual({
         componentModules: {
           'https://linkedsoftwaredependencies.org/bundles/npm/a': {
             1: '/a/components/components.jsonld',
@@ -236,7 +236,7 @@ describe('ModuleStateBuilder', () => {
     });
 
     it('should return the first valid main path', () => {
-      expect(builder.buildDefaultMainModulePath(req)).toEqual('/a/b/c/');
+      expect(builder.buildDefaultMainModulePath(req)).toBe('/a/b/c/');
     });
 
     it('should return the second valid main path', () => {
@@ -248,7 +248,7 @@ describe('ModuleStateBuilder', () => {
           '/node_modules',
         ],
       };
-      expect(builder.buildDefaultMainModulePath(req)).toEqual('/a/b/');
+      expect(builder.buildDefaultMainModulePath(req)).toBe('/a/b/');
     });
 
     it('should error on all invalid paths', () => {
@@ -278,14 +278,14 @@ describe('ModuleStateBuilder', () => {
 
   describe('buildNodeModulePaths', () => {
     it('should handle empty import paths', async() => {
-      expect(await builder.buildNodeModulePaths([])).toEqual([]);
+      await expect(builder.buildNodeModulePaths([])).resolves.toEqual([]);
     });
 
     it('should handle import paths without package.json\'s', async() => {
-      expect(await builder.buildNodeModulePaths([
+      await expect(builder.buildNodeModulePaths([
         '/a',
         '/',
-      ])).toEqual([]);
+      ])).resolves.toEqual([]);
     });
 
     it('should handle import paths with direct package.json\'s', async() => {
@@ -293,10 +293,10 @@ describe('ModuleStateBuilder', () => {
         '/a/package.json',
         '/package.json',
       ];
-      expect(await builder.buildNodeModulePaths([
+      await expect(builder.buildNodeModulePaths([
         '/a',
         '/',
-      ])).toEqual([
+      ])).resolves.toEqual([
         '/a',
         '/',
       ]);
@@ -460,11 +460,11 @@ describe('ModuleStateBuilder', () => {
           isFile: () => path !== '/dir/package.json',
         };
       }));
-      expect(await builder.buildNodeModulePaths([
+      await expect(builder.buildNodeModulePaths([
         '/a',
         '/dir',
         '/',
-      ])).toEqual([
+      ])).resolves.toEqual([
         '/a',
         '/',
       ]);
@@ -510,7 +510,7 @@ describe('ModuleStateBuilder', () => {
 
   describe('buildPackageJsons', () => {
     it('should handle an empty array', async() => {
-      expect(await builder.buildPackageJsons([])).toEqual({});
+      await expect(builder.buildPackageJsons([])).resolves.toEqual({});
     });
 
     it('should handle a non-empty array', async() => {
@@ -522,10 +522,10 @@ describe('ModuleStateBuilder', () => {
         '/a/package.json': `{ "name": "a" }`,
         '/package.json': `{ "name": "" }`,
       };
-      expect(await builder.buildPackageJsons([
+      await expect(builder.buildPackageJsons([
         '/a',
         '/',
-      ])).toEqual({
+      ])).resolves.toEqual({
         '/a': { name: 'a' },
         '/': { name: '' },
       });
@@ -538,10 +538,10 @@ describe('ModuleStateBuilder', () => {
       fileContents = {
         '/a/package.json': `{ "name": "a" }`,
       };
-      expect(await builder.buildPackageJsons([
+      await expect(builder.buildPackageJsons([
         '/a',
         '/',
-      ])).toEqual({
+      ])).resolves.toEqual({
         '/a': { name: 'a' },
       });
     });
@@ -742,42 +742,42 @@ describe('ModuleStateBuilder', () => {
 
   describe('buildComponentModules', () => {
     it('should handle an empty hash', async() => {
-      expect(await builder.buildComponentModules({})).toEqual({});
+      await expect(builder.buildComponentModules({})).resolves.toEqual({});
     });
 
     it('should handle packages without expected entries', async() => {
-      expect(await builder.buildComponentModules({
+      await expect(builder.buildComponentModules({
         a: {},
         b: {},
-      })).toEqual({});
+      })).resolves.toEqual({});
     });
 
     it('should not handle a package with only lsd:module', async() => {
-      expect(await builder.buildComponentModules({
+      await expect(builder.buildComponentModules({
         a: {
           version: '1.0.0',
           'lsd:module': 'ex:module',
         },
-      })).toEqual({});
+      })).resolves.toEqual({});
     });
 
     it('should not handle a package with only lsd:components', async() => {
-      expect(await builder.buildComponentModules({
+      await expect(builder.buildComponentModules({
         a: {
           version: '1.0.0',
           'lsd:components': 'components/components.jsonld',
         },
-      })).toEqual({});
+      })).resolves.toEqual({});
     });
 
     it('should handle a package with lsd:module and lsd:components', async() => {
-      expect(await builder.buildComponentModules({
+      await expect(builder.buildComponentModules({
         a: {
           version: '1.0.0',
           'lsd:module': 'ex:module',
           'lsd:components': 'components/components.jsonld',
         },
-      })).toEqual({
+      })).resolves.toEqual({
         'ex:module': {
           1: 'a/components/components.jsonld',
         },
@@ -785,7 +785,7 @@ describe('ModuleStateBuilder', () => {
     });
 
     it('should handle packages with lsd:module and lsd:components', async() => {
-      expect(await builder.buildComponentModules({
+      await expect(builder.buildComponentModules({
         a: {
           version: '1.0.0',
           'lsd:module': 'ex:module1',
@@ -796,7 +796,7 @@ describe('ModuleStateBuilder', () => {
           'lsd:module': 'ex:module2',
           'lsd:components': 'components/components2.jsonld',
         },
-      })).toEqual({
+      })).resolves.toEqual({
         'ex:module1': {
           1: 'a/components/components1.jsonld',
         },
@@ -807,7 +807,7 @@ describe('ModuleStateBuilder', () => {
     });
 
     it('should resolve packages with the same lsd:module to the max version', async() => {
-      expect(await builder.buildComponentModules({
+      await expect(builder.buildComponentModules({
         a: {
           version: '1.1.0',
           'lsd:module': 'ex:module',
@@ -818,12 +818,12 @@ describe('ModuleStateBuilder', () => {
           'lsd:module': 'ex:module',
           'lsd:components': 'components/components.jsonld',
         },
-      })).toEqual({
+      })).resolves.toEqual({
         'ex:module': {
           1: 'a/components/components.jsonld',
         },
       });
-      expect(await builder.buildComponentModules({
+      await expect(builder.buildComponentModules({
         a: {
           version: '1.0.0',
           'lsd:module': 'ex:module',
@@ -834,7 +834,7 @@ describe('ModuleStateBuilder', () => {
           'lsd:module': 'ex:module',
           'lsd:components': 'components/components.jsonld',
         },
-      })).toEqual({
+      })).resolves.toEqual({
         'ex:module': {
           1: 'b/components/components.jsonld',
         },
@@ -842,7 +842,7 @@ describe('ModuleStateBuilder', () => {
     });
 
     it('should resolve packages with the same lsd:module to the max prerelease version', async() => {
-      expect(await builder.buildComponentModules({
+      await expect(builder.buildComponentModules({
         a: {
           version: '1.1.0-alpha.1',
           'lsd:module': 'ex:module',
@@ -853,12 +853,12 @@ describe('ModuleStateBuilder', () => {
           'lsd:module': 'ex:module',
           'lsd:components': 'components/components.jsonld',
         },
-      })).toEqual({
+      })).resolves.toEqual({
         'ex:module': {
           1: 'a/components/components.jsonld',
         },
       });
-      expect(await builder.buildComponentModules({
+      await expect(builder.buildComponentModules({
         a: {
           version: '1.0.0-alpha.1',
           'lsd:module': 'ex:module',
@@ -869,7 +869,7 @@ describe('ModuleStateBuilder', () => {
           'lsd:module': 'ex:module',
           'lsd:components': 'components/components.jsonld',
         },
-      })).toEqual({
+      })).resolves.toEqual({
         'ex:module': {
           1: 'b/components/components.jsonld',
         },
@@ -877,7 +877,7 @@ describe('ModuleStateBuilder', () => {
     });
 
     it('should resolve packages with the same lsd:module and one invalid version to the valid version', async() => {
-      expect(await builder.buildComponentModules({
+      await expect(builder.buildComponentModules({
         a: {
           version: '1.1.0',
           'lsd:module': 'ex:module',
@@ -888,12 +888,12 @@ describe('ModuleStateBuilder', () => {
           'lsd:module': 'ex:module',
           'lsd:components': 'components/components.jsonld',
         },
-      })).toEqual({
+      })).resolves.toEqual({
         'ex:module': {
           1: 'a/components/components.jsonld',
         },
       });
-      expect(await builder.buildComponentModules({
+      await expect(builder.buildComponentModules({
         a: {
           version: 'invalid',
           'lsd:module': 'ex:module',
@@ -904,7 +904,7 @@ describe('ModuleStateBuilder', () => {
           'lsd:module': 'ex:module',
           'lsd:components': 'components/components.jsonld',
         },
-      })).toEqual({
+      })).resolves.toEqual({
         'ex:module': {
           1: 'b/components/components.jsonld',
         },
@@ -913,7 +913,7 @@ describe('ModuleStateBuilder', () => {
 
     it('should not warn on packages with the same lsd:module ' +
       'with different major versions without a logger', async() => {
-      expect(await builder.buildComponentModules({
+      await expect(builder.buildComponentModules({
         a: {
           version: '2.0.0',
           'lsd:module': 'ex:module',
@@ -924,7 +924,7 @@ describe('ModuleStateBuilder', () => {
           'lsd:module': 'ex:module',
           'lsd:components': 'components/components.jsonld',
         },
-      })).toEqual({
+      })).resolves.toEqual({
         'ex:module': {
           1: 'b/components/components.jsonld',
           2: 'a/components/components.jsonld',
@@ -938,7 +938,7 @@ describe('ModuleStateBuilder', () => {
         warn: jest.fn(),
       };
       builder = new ModuleStateBuilder(logger);
-      expect(await builder.buildComponentModules({
+      await expect(builder.buildComponentModules({
         a: {
           version: '2.0.0',
           'lsd:module': 'ex:module',
@@ -949,7 +949,7 @@ describe('ModuleStateBuilder', () => {
           'lsd:module': 'ex:module',
           'lsd:components': 'components/components.jsonld',
         },
-      })).toEqual({
+      })).resolves.toEqual({
         'ex:module': {
           1: 'b/components/components.jsonld',
           2: 'a/components/components.jsonld',
@@ -961,21 +961,21 @@ describe('ModuleStateBuilder', () => {
 
   describe('buildComponentContexts', () => {
     it('should handle an empty hash', async() => {
-      expect(await builder.buildComponentContexts({})).toEqual({});
+      await expect(builder.buildComponentContexts({})).resolves.toEqual({});
     });
 
     it('should handle one package with one context', async() => {
       fileContents = {
         'a/components/context.jsonld': `{ "name": "a" }`,
       };
-      expect(await builder.buildComponentContexts({
+      await expect(builder.buildComponentContexts({
         a: {
           version: '1.0.0',
           'lsd:contexts': {
             'http://example.org/context.jsonld': 'components/context.jsonld',
           },
         },
-      })).toEqual({
+      })).resolves.toEqual({
         'http://example.org/context.jsonld': {
           name: 'a',
         },
@@ -989,7 +989,7 @@ describe('ModuleStateBuilder', () => {
         'b/components/context1.jsonld': `{ "name1": "b" }`,
         'b/components/context2.jsonld': `{ "name2": "b" }`,
       };
-      expect(await builder.buildComponentContexts({
+      await expect(builder.buildComponentContexts({
         a: {
           version: '1.0.0',
           'lsd:contexts': {
@@ -1004,7 +1004,7 @@ describe('ModuleStateBuilder', () => {
             'http://example2.org/context2.jsonld': 'components/context2.jsonld',
           },
         },
-      })).toEqual({
+      })).resolves.toEqual({
         'http://example.org/context1.jsonld': {
           name1: 'a',
         },
@@ -1025,7 +1025,7 @@ describe('ModuleStateBuilder', () => {
         'a/components/context.jsonld': `{ "name1": "a" }`,
         'b/components/context.jsonld': `{ "name2": "a" }`,
       };
-      expect(await builder.buildComponentContexts({
+      await expect(builder.buildComponentContexts({
         a: {
           version: '1.0.1',
           'lsd:contexts': {
@@ -1038,12 +1038,12 @@ describe('ModuleStateBuilder', () => {
             'http://example.org/context.jsonld': 'components/context.jsonld',
           },
         },
-      })).toEqual({
+      })).resolves.toEqual({
         'http://example.org/context.jsonld': {
           name1: 'a',
         },
       });
-      expect(await builder.buildComponentContexts({
+      await expect(builder.buildComponentContexts({
         a: {
           version: '1.0.0',
           'lsd:contexts': {
@@ -1056,7 +1056,7 @@ describe('ModuleStateBuilder', () => {
             'http://example.org/context.jsonld': 'components/context.jsonld',
           },
         },
-      })).toEqual({
+      })).resolves.toEqual({
         'http://example.org/context.jsonld': {
           name2: 'a',
         },
@@ -1069,7 +1069,7 @@ describe('ModuleStateBuilder', () => {
         'a/components/context.jsonld': `{ "name1": "a" }`,
         'b/components/context.jsonld': `{ "name2": "a" }`,
       };
-      expect(await builder.buildComponentContexts({
+      await expect(builder.buildComponentContexts({
         a: {
           version: '1.0.0',
           'lsd:contexts': {
@@ -1082,7 +1082,7 @@ describe('ModuleStateBuilder', () => {
             'http://example.org/context.jsonld': 'components/context.jsonld',
           },
         },
-      })).toEqual({
+      })).resolves.toEqual({
         'http://example.org/context.jsonld': {
           name2: 'a',
         },
@@ -1099,7 +1099,7 @@ describe('ModuleStateBuilder', () => {
         'a/components/context.jsonld': `{ "name1": "a" }`,
         'b/components/context.jsonld': `{ "name2": "a" }`,
       };
-      expect(await builder.buildComponentContexts({
+      await expect(builder.buildComponentContexts({
         a: {
           version: '1.0.0',
           'lsd:contexts': {
@@ -1112,7 +1112,7 @@ describe('ModuleStateBuilder', () => {
             'http://example.org/context.jsonld': 'components/context.jsonld',
           },
         },
-      })).toEqual({
+      })).resolves.toEqual({
         'http://example.org/context.jsonld': {
           name2: 'a',
         },
@@ -1123,19 +1123,19 @@ describe('ModuleStateBuilder', () => {
 
   describe('buildComponentImportPaths', () => {
     it('should handle an empty hash', async() => {
-      expect(await builder.buildComponentImportPaths({})).toEqual({});
+      await expect(builder.buildComponentImportPaths({})).resolves.toEqual({});
     });
 
     it('should handle one package with one import path', async() => {
       files = [ 'a/components/' ];
-      expect(await builder.buildComponentImportPaths({
+      await expect(builder.buildComponentImportPaths({
         a: {
           version: '1.0.0',
           'lsd:importPaths': {
             'http://example.org/components/': 'components/',
           },
         },
-      })).toEqual({
+      })).resolves.toEqual({
         'http://example.org/components/': 'a/components/',
       });
     });
@@ -1147,7 +1147,7 @@ describe('ModuleStateBuilder', () => {
         'b/components/',
         'b/config/',
       ];
-      expect(await builder.buildComponentImportPaths({
+      await expect(builder.buildComponentImportPaths({
         a: {
           version: '1.0.0',
           'lsd:importPaths': {
@@ -1162,7 +1162,7 @@ describe('ModuleStateBuilder', () => {
             'http://example2.org/config/': 'config/',
           },
         },
-      })).toEqual({
+      })).resolves.toEqual({
         'http://example.org/components/': 'a/components/',
         'http://example.org/config/': 'a/config/',
         'http://example2.org/components/': 'b/components/',
@@ -1200,7 +1200,7 @@ describe('ModuleStateBuilder', () => {
         'a/components/',
         'b/components/',
       ];
-      expect(await builder.buildComponentImportPaths({
+      await expect(builder.buildComponentImportPaths({
         a: {
           version: '1.0.1',
           'lsd:importPaths': {
@@ -1213,10 +1213,10 @@ describe('ModuleStateBuilder', () => {
             'http://example.org/components/': 'components/',
           },
         },
-      })).toEqual({
+      })).resolves.toEqual({
         'http://example.org/components/': 'a/components/',
       });
-      expect(await builder.buildComponentImportPaths({
+      await expect(builder.buildComponentImportPaths({
         a: {
           version: '1.0.0',
           'lsd:importPaths': {
@@ -1229,7 +1229,7 @@ describe('ModuleStateBuilder', () => {
             'http://example.org/components/': 'components/',
           },
         },
-      })).toEqual({
+      })).resolves.toEqual({
         'http://example.org/components/': 'b/components/',
       });
     });
@@ -1244,7 +1244,7 @@ describe('ModuleStateBuilder', () => {
         'a/components/',
         'b/components/',
       ];
-      expect(await builder.buildComponentImportPaths({
+      await expect(builder.buildComponentImportPaths({
         a: {
           version: '1.0.0',
           'lsd:importPaths': {
@@ -1257,7 +1257,7 @@ describe('ModuleStateBuilder', () => {
             'http://example.org/components/': 'components/',
           },
         },
-      })).toEqual({
+      })).resolves.toEqual({
         'http://example.org/components/': 'b/components/',
       });
       expect(logger.warn).toHaveBeenNthCalledWith(1, `Detected multiple incompatible occurrences of 'http://example.org/components/' for version 1.0.0 and 'b/components/'@2.0.0`);

@@ -16,7 +16,7 @@ export class OverrideListRemove implements IOverrideStep {
   }
 
   public handle(config: Resource, step: Resource): Resource {
-    const { parameters, targets, values } = extractOverrideStepFields(step, { parameters: 1, values: 0 });
+    const { parameters, targets, values: _values } = extractOverrideStepFields(step, { parameters: 1, values: 0 });
 
     const list = getPropertyResourceList(config, parameters[0]);
 

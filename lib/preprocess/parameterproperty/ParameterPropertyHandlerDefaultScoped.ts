@@ -20,7 +20,7 @@ export class ParameterPropertyHandlerDefaultScoped implements IParameterProperty
     value: Resource | undefined,
     configRoot: Resource,
     parameter: Resource,
-    configElement: Resource,
+    _configElement: Resource,
   ): Resource | undefined {
     let applyingValue: Resource | undefined;
     for (const scoped of parameter.properties.defaultScoped) {
@@ -43,14 +43,14 @@ export class ParameterPropertyHandlerDefaultScoped implements IParameterProperty
 
         // Apply the scope if the config is of the required type (also considering sub-types)
         if (configRoot.isA(scopeType.term)) {
-          applyingValue = !applyingValue ?
-            scoped.property.defaultScopedValue :
+          applyingValue = applyingValue ?
             this.objectLoader.createCompactedResource({
               list: [
-                ...applyingValue.list || [ applyingValue ],
-                ...scoped.property.defaultScopedValue.list || [ scoped.property.defaultScopedValue ],
+                ...applyingValue.list ?? [ applyingValue ],
+                ...scoped.property.defaultScopedValue.list ?? [ scoped.property.defaultScopedValue ],
               ],
-            });
+            }) :
+            scoped.property.defaultScopedValue;
         }
       }
     }

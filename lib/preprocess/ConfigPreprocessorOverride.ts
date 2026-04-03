@@ -109,7 +109,7 @@ export class ConfigPreprocessorOverride implements IConfigPreprocessor<Resource[
   /**
    * Finds all Override resources in the object loader and links them to their target resource.
    */
-  protected * findOverrideTargets(): Iterable<{ override: Resource; target: Resource }> {
+  protected* findOverrideTargets(): Iterable<{ override: Resource; target: Resource }> {
     for (const [ id, resource ] of Object.entries(this.objectLoader.resources)) {
       if (resource.isA(IRIS_OO.Override) && resource.value !== IRIS_OO.Override) {
         const targets = resource.properties[IRIS_OO.overrideInstance];
@@ -179,9 +179,9 @@ export class ConfigPreprocessorOverride implements IConfigPreprocessor<Resource[
     for (let i = 0; i < targets.length; ++i) {
       const duplicateIdx = targets.findIndex((target, idx): boolean => idx > i && target === targets[i]);
       if (duplicateIdx > 0) {
-        const target = chains[i][chains[i].length - 1];
-        const duplicate1 = chains[i][chains[i].length - 2];
-        const duplicate2 = chains[duplicateIdx][chains[duplicateIdx].length - 2];
+        const target = chains[i].at(-1);
+        const duplicate1 = chains[i].at(-2);
+        const duplicate2 = chains[duplicateIdx].at(-2);
         throw new ErrorResourcesContext(`Found multiple Overrides targeting ${targets[i]}`, {
           target,
           overrides: [ duplicate1, duplicate2 ],

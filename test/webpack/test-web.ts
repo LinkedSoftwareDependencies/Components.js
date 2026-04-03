@@ -2,16 +2,16 @@
 
 // Monkey patch in the window object so we can test the script in Node
 // @ts-expect-error
-globalThis.window = globalThis;
-
 import { RdfObjectLoader } from 'rdf-object';
 import { RdfParser, ComponentsManagerBuilder } from '../..';
+
+globalThis.window = globalThis;
 const arrayifyStream = require('stream-to-array');
 const streamifyString = require('streamify-string');
 
 try {
   if (!(ComponentsManagerBuilder.createObjectLoader() instanceof RdfObjectLoader)) {
-    throw new Error('Object Loader is not an instance of RdfObjectLoader');
+    throw new TypeError('Object Loader is not an instance of RdfObjectLoader');
   }
 
   const parse = new RdfParser();

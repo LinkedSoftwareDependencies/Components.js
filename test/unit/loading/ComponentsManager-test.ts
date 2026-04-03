@@ -1,4 +1,4 @@
-import * as fs from 'fs';
+import * as fs from 'node:fs';
 import type { Resource } from 'rdf-object';
 import { RdfObjectLoader } from 'rdf-object';
 import type { Logger } from 'winston';
@@ -8,11 +8,11 @@ import { ConfigRegistry } from '../../../lib/loading/ConfigRegistry';
 import type { IModuleState } from '../../../lib/loading/ModuleStateBuilder';
 import { ErrorResourcesContext } from '../../../lib/util/ErrorResourcesContext';
 
-jest.mock('fs', () => ({
+jest.mock<typeof import('fs')>('fs', () => ({
   ...jest.requireActual<typeof fs>('fs'),
   writeFileSync: jest.fn(),
 }));
-jest.mock('../../../lib/loading/ComponentsManagerBuilder', () => ({
+jest.mock<typeof import('../../../lib/loading/ComponentsManagerBuilder')>('../../../lib/loading/ComponentsManagerBuilder', () => ({
   // eslint-disable-next-line object-shorthand
   ComponentsManagerBuilder: function(args: any) {
     return {
@@ -79,7 +79,7 @@ describe('ComponentsManager', () => {
 
   describe('build', () => {
     it('should pass options to the builder', async() => {
-      expect(await ComponentsManager.build({ mainModulePath: 'MMP' }))
+      await expect(ComponentsManager.build({ mainModulePath: 'MMP' })).resolves
         .toEqual({
           type: 'INSTANCE',
           args: { mainModulePath: 'MMP' },
@@ -121,7 +121,7 @@ describe('ComponentsManager', () => {
 
     it('should instantiate an existing config without options', async() => {
       await componentsManager.configRegistry.register(`${__dirname}/../../assets/config.jsonld`);
-      expect(await componentsManager.instantiate('http://example.org/myconfig')).toEqual('INSTANCE');
+      await expect(componentsManager.instantiate('http://example.org/myconfig')).resolves.toBe('INSTANCE');
       expect(configConstructorPool.instantiate).toHaveBeenCalledWith(
         componentsManager.objectLoader.resources['http://example.org/myconfig'],
         {},
@@ -130,8 +130,8 @@ describe('ComponentsManager', () => {
 
     it('should instantiate an existing config with options', async() => {
       await componentsManager.configRegistry.register(`${__dirname}/../../assets/config.jsonld`);
-      expect(await componentsManager.instantiate('http://example.org/myconfig', { variables: { a: 1 }}))
-        .toEqual('INSTANCE');
+      await expect(componentsManager.instantiate('http://example.org/myconfig', { variables: { a: 1 }})).resolves
+        .toBe('INSTANCE');
       expect(configConstructorPool.instantiate).toHaveBeenCalledWith(
         componentsManager.objectLoader.resources['http://example.org/myconfig'],
         { variables: { a: 1 }},

@@ -2,9 +2,9 @@
 // Compiles a configuration to a module (single file) that exports the instantiated instance,
 // where all dependencies are injected.
 
-import * as Path from 'path';
+import * as Path from 'node:path';
 import type { ParsedArgs } from 'minimist';
-import minimist = require('minimist');
+import minimist from 'minimist';
 import { compileConfig } from '..';
 
 const args: ParsedArgs = minimist(process.argv.slice(2));
@@ -41,7 +41,7 @@ compileConfig(
   asFunction,
 )
   .then((output: string) => process.stdout.write(`${output}\n`))
-  .catch(error => {
+  .catch((error) => {
     process.stderr.write(`${error.stack}\n`);
     process.exit(1);
   });

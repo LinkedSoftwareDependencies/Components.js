@@ -11,8 +11,8 @@ export class ConstructorArgumentsElementMappingHandlerElements implements IConst
   public canHandle(
     configRoot: Resource,
     constructorArgs: Resource,
-    configElement: Resource,
-    mapper: IConstructorArgumentsMapper,
+    _configElement: Resource,
+    _mapper: IConstructorArgumentsMapper,
   ): boolean {
     return Boolean(constructorArgs.property.elements);
   }
@@ -52,7 +52,7 @@ export class ConstructorArgumentsElementMappingHandlerElements implements IConst
         genericsContext,
       );
       if (value) {
-        for (const entry of value.list || [ value ]) {
+        for (const entry of value.list ?? [ value ]) {
           entries.push(entry);
         }
       }

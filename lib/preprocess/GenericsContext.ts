@@ -7,7 +7,8 @@ import { ParameterPropertyHandlerRange } from './parameterproperty/ParameterProp
  * Context for binding generic types to a concrete range value.
  */
 export class GenericsContext {
-  private static readonly XSD_INHERITANCE_TABLE: Record<string, Set<string>> = {
+  private static readonly xsdInheritanceTable: Record<string, Set<string>> = {
+    // eslint-disable-next-line ts/naming-convention
     'http://www.w3.org/2001/XMLSchema#number': new Set<string>([
       'http://www.w3.org/2001/XMLSchema#integer',
       'http://www.w3.org/2001/XMLSchema#long',
@@ -26,6 +27,7 @@ export class GenericsContext {
       'http://www.w3.org/2001/XMLSchema#decimal',
       'http://www.w3.org/2001/XMLSchema#float',
     ]),
+    // eslint-disable-next-line ts/naming-convention
     'http://www.w3.org/2001/XMLSchema#string': new Set<string>([
       'http://www.w3.org/2001/XMLSchema#normalizedString',
       'http://www.w3.org/2001/XMLSchema#anyURI',
@@ -156,7 +158,10 @@ export class GenericsContext {
   public inferValueRange(value: Resource | undefined): Resource | undefined {
     // Value is undefined
     if (!value) {
-      return this.objectLoader.createCompactedResource({ '@type': 'ParameterRangeUndefined' });
+      return this.objectLoader.createCompactedResource({
+        // eslint-disable-next-line ts/naming-convention
+        '@type': 'ParameterRangeUndefined',
+      });
     }
 
     // Value is a literal
@@ -168,6 +173,7 @@ export class GenericsContext {
     const types = value.properties.type;
     if (types.length > 1) {
       return this.objectLoader.createCompactedResource({
+        // eslint-disable-next-line ts/naming-convention
         '@type': 'ParameterRangeUnion',
         parameterRangeElements: types,
       });
@@ -235,6 +241,7 @@ export class GenericsContext {
           return;
         }
         return this.objectLoader.createCompactedResource({
+          // eslint-disable-next-line ts/naming-convention
           '@type': rangeA.property.type,
           parameterRangeValue: merged,
         });
@@ -254,6 +261,7 @@ export class GenericsContext {
           return;
         }
         return this.objectLoader.createCompactedResource({
+          // eslint-disable-next-line ts/naming-convention
           '@type': rangeA.property.type,
           parameterRangeElements: merged,
         });
@@ -279,6 +287,7 @@ export class GenericsContext {
           return;
         }
         return this.objectLoader.createCompactedResource({
+          // eslint-disable-next-line ts/naming-convention
           '@type': 'ParameterRangeGenericComponent',
           component: mergedComponent,
           genericTypeInstances: merged,
@@ -322,6 +331,7 @@ export class GenericsContext {
       return mergedValues[0];
     }
     return this.objectLoader.createCompactedResource({
+      // eslint-disable-next-line ts/naming-convention
       '@type': 'ParameterRangeUnion',
       parameterRangeElements: mergedValues,
     });
@@ -333,7 +343,7 @@ export class GenericsContext {
    * @param potentialSuperType A potential super type node.
    */
   public isXsdSubType(type: RDF.Term, potentialSuperType: RDF.Term): boolean {
-    const values = GenericsContext.XSD_INHERITANCE_TABLE[potentialSuperType.value];
+    const values = GenericsContext.xsdInheritanceTable[potentialSuperType.value];
     return values && values.has(type.value);
   }
 

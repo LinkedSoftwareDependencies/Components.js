@@ -1,4 +1,4 @@
-import * as fs from 'fs';
+import * as fs from 'node:fs';
 import { RdfObjectLoader } from 'rdf-object/lib/RdfObjectLoader';
 import { ErrorResourcesContext } from '../../../lib/util/ErrorResourcesContext';
 
@@ -15,8 +15,8 @@ describe('ErrorResourcesContext', () => {
 
   it('with empty context', async() => {
     const error = new ErrorResourcesContext('message', {});
-    expect(error.name).toEqual('ErrorResourcesContext');
-    expect(error.message).toEqual(`message`);
+    expect(error.name).toBe('ErrorResourcesContext');
+    expect(error.message).toBe(`message`);
     expect(error.exportContext()).toEqual({});
   });
 
@@ -40,7 +40,7 @@ describe('ErrorResourcesContext', () => {
       f: undefined,
     };
     const error = new ErrorResourcesContext('message', ctx);
-    expect(error.name).toEqual('ErrorResourcesContext');
+    expect(error.name).toBe('ErrorResourcesContext');
     expect(error.message).toBeTruthy();
     expect(error.context).toBe(ctx);
   });
@@ -67,8 +67,7 @@ describe('ErrorResourcesContext', () => {
 
   describe('resourceToJson', () => {
     it('for an undefined resource', () => {
-      // eslint-disable-next-line unicorn/no-useless-undefined
-      expect(ErrorResourcesContext.resourceToJson(undefined)).toEqual(undefined);
+      expect(ErrorResourcesContext.resourceToJson(undefined)).toBeUndefined();
     });
 
     it('for a defined resource', () => {

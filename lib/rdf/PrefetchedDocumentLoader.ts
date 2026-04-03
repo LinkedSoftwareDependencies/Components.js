@@ -1,33 +1,37 @@
 import type { IJsonLdContext } from 'jsonld-context-parser';
 import { FetchDocumentLoader } from 'jsonld-context-parser';
-import semverMajor = require('semver/functions/major');
+import semverMajor from 'semver/functions/major';
 import type { Logger } from 'winston';
+// eslint-disable-next-line import/extensions
+import contextJson from '../../components/context.json';
+// eslint-disable-next-line import/extensions
+import packageJson from '../../package.json';
 
 /**
  * A document loader that first loads from a precomputed set of contexts,
  * and only then does an HTTP(S) lookup for the context.
  */
 export class PrefetchedDocumentLoader extends FetchDocumentLoader {
-  public static readonly CJS_MAJOR_VERSION: number = semverMajor(require('../../package.json').version);
-  public static readonly CONTEXT_URL: string =
-  `https://linkedsoftwaredependencies.org/bundles/npm/componentsjs/^${PrefetchedDocumentLoader.CJS_MAJOR_VERSION}.0.0/components/context.jsonld`;
+  public static readonly cjsMajorVersion: number = semverMajor(packageJson.version);
+  public static readonly contextUrl: string =
+  `https://linkedsoftwaredependencies.org/bundles/npm/componentsjs/^${PrefetchedDocumentLoader.cjsMajorVersion}.0.0/components/context.jsonld`;
 
-  public static readonly CONTEXT_PATTERN: RegExp =
-  /https:\/\/linkedsoftwaredependencies.org\/bundles\/npm\/componentsjs\/\^([0-9]+).0.0\/components\/context.jsonld/u;
+  public static readonly contextPattern: RegExp =
+    /https:\/\/linkedsoftwaredependencies.org\/bundles\/npm\/componentsjs\/\^([0-9]+).0.0\/components\/context.jsonld/u;
 
-  private static readonly DEFAULT_CONTEXT: any = require('../../components/context.json');
+  private static readonly defaultContext: any = contextJson;
 
-  private static readonly DEFAULT_CONTEXTS: Record<string, any> = {
-    [PrefetchedDocumentLoader.CONTEXT_URL]:
-    PrefetchedDocumentLoader.DEFAULT_CONTEXT,
+  private static readonly defaultContexts: Record<string, any> = {
+    [PrefetchedDocumentLoader.contextUrl]:
+    PrefetchedDocumentLoader.defaultContext,
   };
 
   static {
     // TODO: temporarily also set old context versions for backwards-compatible.
-    for (let i = 3; i < PrefetchedDocumentLoader.CJS_MAJOR_VERSION; i++) {
-      PrefetchedDocumentLoader.DEFAULT_CONTEXTS[
+    for (let i = 3; i < PrefetchedDocumentLoader.cjsMajorVersion; i++) {
+      PrefetchedDocumentLoader.defaultContexts[
         `https://linkedsoftwaredependencies.org/bundles/npm/componentsjs/^${i}.0.0/components/context.jsonld`
-      ] = PrefetchedDocumentLoader.DEFAULT_CONTEXT;
+      ] = PrefetchedDocumentLoader.defaultContext;
     }
   }
 
@@ -38,7 +42,7 @@ export class PrefetchedDocumentLoader extends FetchDocumentLoader {
 
   public constructor(options: IPrefetchedDocumentLoaderOptions) {
     super();
-    this.contexts = { ...options.contexts, ...PrefetchedDocumentLoader.DEFAULT_CONTEXTS };
+    this.contexts = { ...options.contexts, ...PrefetchedDocumentLoader.defaultContexts };
     this.logger = options.logger;
     this.path = options.path;
     this.remoteContextLookups = options.remoteContextLookups;

@@ -7,19 +7,19 @@ import type { IArgumentsConstructor } from './IArgumentsConstructor';
  * Handles value references, by recursively calling the args creator with the referred value.
  */
 export class ArgumentConstructorHandlerValue implements IArgumentConstructorHandler {
-  public canHandle<Instance>(
+  public canHandle<TInstance>(
     value: Resource,
-    settings: IConstructionSettings,
-    argsCreator: IArgumentsConstructor<Instance>,
+    _settings: IConstructionSettings,
+    _argsCreator: IArgumentsConstructor<TInstance>,
   ): boolean {
     return Boolean(value.property.value);
   }
 
-  public async handle<Instance>(
+  public async handle<TInstance>(
     value: Resource,
     settings: IConstructionSettings,
-    argsCreator: IArgumentsConstructor<Instance>,
-  ): Promise<Instance> {
+    argsCreator: IArgumentsConstructor<TInstance>,
+  ): Promise<TInstance> {
     return await argsCreator.getArgumentValues(value.properties.value, settings);
   }
 }

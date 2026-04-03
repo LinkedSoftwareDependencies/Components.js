@@ -1,4 +1,4 @@
-import * as Path from 'path';
+import * as Path from 'node:path';
 import type { IModuleState } from '../../loading/ModuleStateBuilder';
 import type { ICreationStrategyCommonJsOptions } from './ConstructionStrategyCommonJs';
 import { ConstructionStrategyCommonJs } from './ConstructionStrategyCommonJs';
@@ -36,7 +36,7 @@ export class ConstructionStrategyCommonJsString implements IConstructionStrategy
 
   // eslint-disable-next-line unicorn/no-object-as-default-parameter
   public constructor(options: ICreationStrategyCommonJsStringOptions = { req: require }) {
-    this.overrideRequireNames = options.overrideRequireNames || {};
+    this.overrideRequireNames = options.overrideRequireNames ?? {};
     this.asFunction = Boolean(options.asFunction);
     this.strategyCommonJs = new ConstructionStrategyCommonJs(options);
   }
@@ -48,12 +48,12 @@ export class ConstructionStrategyCommonJsString implements IConstructionStrategy
     // First try requiring current module, and fallback to a plain require
     const currentResult = this.strategyCommonJs
       .requireCurrentRunningModuleIfCurrent(options.moduleState, options.requireName);
-    const resultingRequirePath = currentResult !== false ?
+    const resultingRequirePath = currentResult === false ?
+      options.requireName :
       `.${Path.sep}${Path.relative(
         options.moduleState.mainModulePath,
         this.getCurrentRunningModuleMain(options.moduleState),
-      )}` :
-      options.requireName;
+      )}`;
     let serialization = `require('${resultingRequirePath.replaceAll('\\', '/')}')`;
 
     // Determine the child of the require'd element
@@ -151,7 +151,7 @@ export class ConstructionStrategyCommonJsString implements IConstructionStrategy
    * @return {string} A variable name.
    */
   public static uriToVariableName(uri: string): string {
-    return uri.replace(/[#./:@\\^-]/gu, '_');
+    return uri.replaceAll(/[#./:@\\^-]/gu, '_');
   }
 
   /**
@@ -167,7 +167,7 @@ export class ConstructionStrategyCommonJsString implements IConstructionStrategy
     // Override main variable name if needed
     exportVariableName = (exportVariableName ?
       ConstructionStrategyCommonJsString.uriToVariableName(exportVariableName) :
-      exportVariableName) || serializationVariableName;
+      exportVariableName) ?? serializationVariableName;
 
     // Export as variable-based function
     if (this.asFunction) {

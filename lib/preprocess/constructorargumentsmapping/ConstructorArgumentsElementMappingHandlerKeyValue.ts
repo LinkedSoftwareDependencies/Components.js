@@ -11,8 +11,8 @@ export class ConstructorArgumentsElementMappingHandlerKeyValue implements IConst
   public canHandle(
     configRoot: Resource,
     constructorArgs: Resource,
-    configElement: Resource,
-    mapper: IConstructorArgumentsMapper,
+    _configElement: Resource,
+    _mapper: IConstructorArgumentsMapper,
   ): boolean {
     return Boolean((constructorArgs.property.value || constructorArgs.property.valueRawReference) &&
       !constructorArgs.property.collectEntries);
