@@ -13,12 +13,12 @@ jest.mock<typeof import('fs')>('fs', () => ({
   ...jest.requireActual<typeof fs>('fs'),
   writeFileSync: jest.fn(),
 }));
-// eslint-disable-next-line max-len
+// eslint-disable-next-line jest/no-untyped-mock-factory
 jest.mock('../../../lib/loading/ComponentsManagerBuilder', () => ({
   // eslint-disable-next-line object-shorthand
   ComponentsManagerBuilder: function(args: any) {
     return {
-      build: jest.fn(() => ({
+      build: jest.fn(async() => ({
         type: 'INSTANCE',
         args,
       })),
@@ -113,7 +113,7 @@ describe('ComponentsManager', () => {
         moduleState: {
           mainModulePath,
           componentModules: {
-            A: `${mainModulePath}/../../assets/module.jsonld`,
+            A: Path.join(mainModulePath, '../../assets/module.jsonld'),
           },
           nodeModulePaths: [],
         },
@@ -166,7 +166,7 @@ describe('ComponentsManager', () => {
         moduleState: {
           mainModulePath,
           componentModules: {
-            A: `${mainModulePath}/../../assets/module.jsonld`,
+            A: Path.join(mainModulePath, '../../assets/module.jsonld'),
           },
           nodeModulePaths: [],
         },

@@ -2911,7 +2911,7 @@ describe('ParameterPropertyHandlerRange', () => {
         objectLoader.createCompactedResource('ex:param'),
         genericsContext,
         conflict,
-      )).toThrow(`The value "ex:value" with types "ex:Type1,ex:Type2" for parameter "ex:param" is not of required range type "any"`);
+      )).toThrow(`The value "ex:value" with types "ex:Type1, ex:Type2" for parameter "ex:param" is not of required range type "any"`);
     });
 
     it('handles a defined list value', () => {

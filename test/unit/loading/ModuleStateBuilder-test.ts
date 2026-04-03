@@ -4,6 +4,7 @@ import { ModuleStateBuilder } from '../../../lib/loading/ModuleStateBuilder';
 // Import syntax only works in Node > 12
 const fs = require('node:fs').promises;
 
+// eslint-disable-next-line jest/no-untyped-mock-factory
 jest.mock('fs', () => ({
   promises: {
     realpath: jest.fn(),

@@ -8,6 +8,7 @@ import { IRIS_OO } from '../../lib/rdf/Iris';
 
 const N3 = require('n3');
 
+// eslint-disable-next-line jest/no-untyped-mock-factory
 jest.mock('n3', () => ({
   Lexer: jest.fn((args: any) => ({ type: 'LEXER', args })),
   Parser: jest.fn((args: any) => ({ type: 'PARSER', args })),

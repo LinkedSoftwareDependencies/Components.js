@@ -10,6 +10,7 @@ const quad = require('rdf-quad');
 // eslint-disable-next-line jest/no-mocks-import
 const Hello = require('../../__mocks__/helloworld').Hello;
 
+// eslint-disable-next-line jest/no-untyped-mock-factory
 jest.mock('winston', () => ({
   format: {
     colorize: jest.fn(),
@@ -21,6 +22,7 @@ jest.mock('winston', () => ({
   createLogger: jest.fn().mockReturnValue({
     warn: jest.fn(),
     info: jest.fn(),
+    error: jest.fn(),
   }),
   transports: {
     Console: jest.fn(),

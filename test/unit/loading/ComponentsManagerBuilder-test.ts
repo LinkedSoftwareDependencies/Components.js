@@ -13,6 +13,7 @@ import { ConfigPreprocessorComponentMapped } from '../../../lib/preprocess/Confi
 import { ConfigPreprocessorOverride } from '../../../lib/preprocess/ConfigPreprocessorOverride';
 
 const mainModulePath = __dirname;
+// eslint-disable-next-line jest/no-untyped-mock-factory
 jest.mock('winston', () => ({
   createLogger: jest.fn(() => ({
     info: jest.fn(),
@@ -41,7 +42,8 @@ const dummyModuleState = {
   },
   nodeModulePaths: [],
 };
-jest.mock<typeof import('../../../lib/loading/ModuleStateBuilder')>('../../../lib/loading/ModuleStateBuilder', () => ({
+// eslint-disable-next-line jest/no-untyped-mock-factory
+jest.mock('../../../lib/loading/ModuleStateBuilder', () => ({
   // eslint-disable-next-line object-shorthand
   ModuleStateBuilder: function() {
     return {

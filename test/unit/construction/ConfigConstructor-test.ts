@@ -104,7 +104,7 @@ describe('ConfigConstructor', () => {
           undefined: '"true"',
         });
         await expect(constructor.getArgumentValue(resource, settings)).resolves.toBeUndefined();
-        expect(constructionStrategy.createUndefined).toHaveBeenCalled();
+        expect(constructionStrategy.createUndefined).toHaveBeenCalledWith();
       });
     });
 
