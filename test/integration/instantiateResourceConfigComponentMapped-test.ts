@@ -1,3 +1,4 @@
+import * as Path from 'node:path';
 import { mocked } from 'jest-mock';
 import type { Resource, RdfObjectLoader } from 'rdf-object';
 import { ComponentsManager } from '../../lib/ComponentsManager';
@@ -6,12 +7,15 @@ import type { IConstructionSettings } from '../../lib/construction/IConstruction
 import { IRIS_OO } from '../../lib/rdf/Iris';
 
 const N3 = require('n3');
+
+// eslint-disable-next-line jest/no-untyped-mock-factory
 jest.mock('n3', () => ({
   Lexer: jest.fn((args: any) => ({ type: 'LEXER', args })),
   Parser: jest.fn((args: any) => ({ type: 'PARSER', args })),
   Util: { type: 'UTIL' },
 }));
 
+// eslint-disable-next-line jest/no-mocks-import
 const Hello = require('../../__mocks__/helloworld').Hello;
 
 describe('construction with mapped component configs as Resource', () => {
@@ -21,9 +25,9 @@ describe('construction with mapped component configs as Resource', () => {
   let settings: IConstructionSettings;
   beforeEach(async() => {
     manager = await ComponentsManager.build({
-      mainModulePath: `${__dirname}/../../__mocks__`,
+      mainModulePath: Path.join(__dirname, '../../__mocks__'),
       moduleState: <any> {
-        mainModulePath: `${__dirname}/../../__mocks__`,
+        mainModulePath: Path.join(__dirname, '../../__mocks__'),
         packageJsons: {},
       },
       async moduleLoader() {
@@ -57,7 +61,7 @@ describe('construction with mapped component configs as Resource', () => {
         types: 'http://example.org/n3#Util',
       });
       const instance = await configConstructorPool.instantiate(config, settings);
-      expect(instance.type).toEqual('UTIL');
+      expect(instance.type).toBe('UTIL');
       expect(instance).toBe(N3.Util);
     });
   });
@@ -82,7 +86,7 @@ describe('construction with mapped component configs as Resource', () => {
         types: 'http://example.org/n3#Lexer',
       });
       const instance = await configConstructorPool.instantiate(config, settings);
-      expect(instance.type).toEqual('LEXER');
+      expect(instance.type).toBe('LEXER');
       expect(N3.Lexer).toHaveBeenCalledWith();
     });
   });
@@ -137,7 +141,7 @@ describe('construction with mapped component configs as Resource', () => {
         types: 'http://example.org/n3#Lexer',
       });
       const instance = await configConstructorPool.instantiate(config, settings);
-      expect(instance.type).toEqual('LEXER');
+      expect(instance.type).toBe('LEXER');
       expect(N3.Lexer).toHaveBeenCalledWith({
         lineMode: undefined,
         n3: undefined,
@@ -153,7 +157,7 @@ describe('construction with mapped component configs as Resource', () => {
         'http://example.org/n3#comments': '"true"',
       });
       const instance = await configConstructorPool.instantiate(config, settings);
-      expect(instance.type).toEqual('LEXER');
+      expect(instance.type).toBe('LEXER');
       expect(N3.Lexer).toHaveBeenCalledWith({
         lineMode: 'true',
         n3: 'true',
@@ -169,7 +173,7 @@ describe('construction with mapped component configs as Resource', () => {
         'http://example.org/n3#comments': { list: [ '"true"' ]},
       });
       const instance = await configConstructorPool.instantiate(config, settings);
-      expect(instance.type).toEqual('LEXER');
+      expect(instance.type).toBe('LEXER');
       expect(N3.Lexer).toHaveBeenCalledWith({
         lineMode: [ 'true' ],
         n3: [ 'true' ],
@@ -197,7 +201,7 @@ describe('construction with mapped component configs as Resource', () => {
         'http://example.org/n3#comments': { list: [ '"C1"', '"C2"' ]},
       });
       const instance = await configConstructorPool.instantiate(config, settings);
-      expect(instance.type).toEqual('LEXER');
+      expect(instance.type).toBe('LEXER');
       expect(N3.Lexer).toHaveBeenCalledWith({
         lineMode: [ 'A1', 'A2' ],
         n3: [ 'B1', 'B2' ],
@@ -282,7 +286,7 @@ describe('construction with mapped component configs as Resource', () => {
         'http://example.org/n3#comments': { list: [ '"true"' ]},
       });
       const instance = await configConstructorPool.instantiate(config, settings);
-      expect(instance.type).toEqual('LEXER');
+      expect(instance.type).toBe('LEXER');
       expect(N3.Lexer).toHaveBeenCalledWith({
         lineMode: [ 'true' ],
         n3: [ 'true' ],
@@ -310,7 +314,7 @@ describe('construction with mapped component configs as Resource', () => {
         'http://example.org/n3#comments': { list: [ '"C1"', '"C2"' ]},
       });
       const instance = await configConstructorPool.instantiate(config, settings);
-      expect(instance.type).toEqual('LEXER');
+      expect(instance.type).toBe('LEXER');
       expect(N3.Lexer).toHaveBeenCalledWith({
         lineMode: [ 'A1', 'A2' ],
         n3: [ 'B1', 'B2' ],
@@ -381,7 +385,7 @@ describe('construction with mapped component configs as Resource', () => {
         'http://example.org/n3#lineMode': { list: [{ list: [ '"true"' ]}]},
       });
       const instance = await configConstructorPool.instantiate(config, settings);
-      expect(instance.type).toEqual('LEXER');
+      expect(instance.type).toBe('LEXER');
       expect(N3.Lexer).toHaveBeenCalledWith({
         lineMode: [[ 'true' ]],
       });
@@ -435,7 +439,7 @@ describe('construction with mapped component configs as Resource', () => {
         'http://example.org/n3#comments': '"true"',
       });
       const instance = await configConstructorPool.instantiate(config, settings);
-      expect(instance.type).toEqual('LEXER');
+      expect(instance.type).toBe('LEXER');
       expect(N3.Lexer).toHaveBeenCalledWith({
         lineMode: 'true',
         n3: 'true',
@@ -484,7 +488,7 @@ describe('construction with mapped component configs as Resource', () => {
           'ex:var3': 'C',
         };
         const instance = await configConstructorPool.instantiate(config, settings);
-        expect(instance.type).toEqual('LEXER');
+        expect(instance.type).toBe('LEXER');
         expect(N3.Lexer).toHaveBeenCalledWith({
           lineMode: 'A',
           n3: 'B',
@@ -555,7 +559,7 @@ describe('construction with mapped component configs as Resource', () => {
         'http://example.org/n3#comments': '"true"',
       });
       const instance = await configConstructorPool.instantiate(config, settings);
-      expect(instance.type).toEqual('LEXER');
+      expect(instance.type).toBe('LEXER');
       expect(N3.Lexer).toHaveBeenCalledWith({
         lineMode: 'true',
         n3: 'true',
@@ -646,7 +650,7 @@ describe('construction with mapped component configs as Resource', () => {
         'http://example.org/n3#comments': '"true"',
       });
       const instance = await configConstructorPool.instantiate(config, settings);
-      expect(instance.type).toEqual('LEXER');
+      expect(instance.type).toBe('LEXER');
       expect(N3.Lexer).toHaveBeenCalledWith({
         lineMode: 'true',
         n3: 'true',
@@ -659,7 +663,7 @@ describe('construction with mapped component configs as Resource', () => {
         types: 'http://example.org/n3#Lexer',
       });
       const instance = await configConstructorPool.instantiate(config, settings);
-      expect(instance.type).toEqual('LEXER');
+      expect(instance.type).toBe('LEXER');
       expect(N3.Lexer).toHaveBeenCalledWith({});
     });
   });
@@ -755,7 +759,7 @@ describe('construction with mapped component configs as Resource', () => {
         },
       });
       const instance = await configConstructorPool.instantiate(config, settings);
-      expect(instance.type).toEqual('PARSER');
+      expect(instance.type).toBe('PARSER');
       expect(N3.Parser).toHaveBeenCalledWith({
         format: 'application/trig',
         lexer: {
@@ -817,7 +821,7 @@ describe('construction with mapped component configs as Resource', () => {
         'http://example.org/n3#comments': '"true"',
       });
       const instance = await configConstructorPool.instantiate(config, settings);
-      expect(instance.type).toEqual('LEXER');
+      expect(instance.type).toBe('LEXER');
       expect(N3.Lexer).toHaveBeenCalledWith({
         lineMode: 'true',
         n3: 'true',
@@ -830,7 +834,7 @@ describe('construction with mapped component configs as Resource', () => {
         types: 'http://example.org/n3#Lexer',
       });
       const instance = await configConstructorPool.instantiate(config, settings);
-      expect(instance.type).toEqual('LEXER');
+      expect(instance.type).toBe('LEXER');
       expect(N3.Lexer).toHaveBeenCalledWith({
         lineMode: 'A',
         n3: [ 'B', 'C' ],
@@ -910,7 +914,7 @@ describe('construction with mapped component configs as Resource', () => {
         'http://example.org/n3#comments': '"true"',
       });
       const instance = await configConstructorPool.instantiate(config, settings);
-      expect(instance.type).toEqual('LEXER');
+      expect(instance.type).toBe('LEXER');
       expect(N3.Lexer).toHaveBeenCalledWith({
         lineMode: 'true',
         n3: 'true',
@@ -923,7 +927,7 @@ describe('construction with mapped component configs as Resource', () => {
         types: 'http://example.org/n3#Lexer',
       });
       const instance = await configConstructorPool.instantiate(config, settings);
-      expect(instance.type).toEqual('LEXER');
+      expect(instance.type).toBe('LEXER');
       expect(N3.Lexer).toHaveBeenCalledWith({
         lineMode: 'A',
         n3: [ 'B', 'C' ],
@@ -978,7 +982,7 @@ describe('construction with mapped component configs as Resource', () => {
         'http://example.org/n3#comments': '"true"',
       });
       const instance = await configConstructorPool.instantiate(config, settings);
-      expect(instance.type).toEqual('LEXER');
+      expect(instance.type).toBe('LEXER');
       expect(N3.Lexer).toHaveBeenCalledWith({
         lineMode: [ 'A', 'true' ],
         n3: [ 'B', 'C', 'true' ],
@@ -991,7 +995,7 @@ describe('construction with mapped component configs as Resource', () => {
         types: 'http://example.org/n3#Lexer',
       });
       const instance = await configConstructorPool.instantiate(config, settings);
-      expect(instance.type).toEqual('LEXER');
+      expect(instance.type).toBe('LEXER');
       expect(N3.Lexer).toHaveBeenCalledWith({
         lineMode: 'A',
         n3: [ 'B', 'C' ],
@@ -1096,7 +1100,7 @@ describe('construction with mapped component configs as Resource', () => {
         'http://example.org/n3#comments': { list: [ '"true"' ]},
       });
       const instance = await configConstructorPool.instantiate(config, settings);
-      expect(instance.type).toEqual('LEXER');
+      expect(instance.type).toBe('LEXER');
       expect(N3.Lexer).toHaveBeenCalledWith({
         lineMode: [ 'A', 'true' ],
         n3: [ 'B', 'C', 'true' ],
@@ -1109,7 +1113,7 @@ describe('construction with mapped component configs as Resource', () => {
         types: 'http://example.org/n3#Lexer',
       });
       const instance = await configConstructorPool.instantiate(config, settings);
-      expect(instance.type).toEqual('LEXER');
+      expect(instance.type).toBe('LEXER');
       expect(N3.Lexer).toHaveBeenCalledWith({
         lineMode: [ 'A' ],
         n3: [ 'B', 'C' ],
@@ -1231,7 +1235,7 @@ describe('construction with mapped component configs as Resource', () => {
         types: 'http://example.org/n3#Lexer',
       });
       const instance = await configConstructorPool.instantiate(config, settings);
-      expect(instance.type).toEqual('LEXER');
+      expect(instance.type).toBe('LEXER');
       expect(N3.Lexer).toHaveBeenCalledWith({
         lineMode: 'A',
         n3: 'B',
@@ -1285,9 +1289,9 @@ describe('construction with mapped component configs as Resource', () => {
         'http://example.org/n3#n3': { list: [ '"true"' ]},
       });
       const instance = await configConstructorPool.instantiate(config, settings);
-      expect(instance.type).toEqual('LEXER');
-      expect(await mocked(N3.Lexer).mock.calls[0][0].lineMode()).toEqual('true');
-      expect(await mocked(N3.Lexer).mock.calls[0][0].n3[0]()).toEqual('true');
+      expect(instance.type).toBe('LEXER');
+      await expect(mocked(N3.Lexer).mock.calls[0][0].lineMode()).resolves.toBe('true');
+      await expect(mocked(N3.Lexer).mock.calls[0][0].n3[0]()).resolves.toBe('true');
     });
 
     it('instantiated with a config with all parameters with multiple values', async() => {
@@ -1297,11 +1301,11 @@ describe('construction with mapped component configs as Resource', () => {
         'http://example.org/n3#n3': { list: [ '"B1"', '"B2"' ]},
       });
       const instance = await configConstructorPool.instantiate(config, settings);
-      expect(instance.type).toEqual('LEXER');
-      expect(await mocked(N3.Lexer).mock.calls[0][0].lineMode[0]()).toEqual('A1');
-      expect(await mocked(N3.Lexer).mock.calls[0][0].lineMode[1]()).toEqual('A2');
-      expect(await mocked(N3.Lexer).mock.calls[0][0].n3[0]()).toEqual('B1');
-      expect(await mocked(N3.Lexer).mock.calls[0][0].n3[1]()).toEqual('B2');
+      expect(instance.type).toBe('LEXER');
+      await expect(mocked(N3.Lexer).mock.calls[0][0].lineMode[0]()).resolves.toBe('A1');
+      await expect(mocked(N3.Lexer).mock.calls[0][0].lineMode[1]()).resolves.toBe('A2');
+      await expect(mocked(N3.Lexer).mock.calls[0][0].n3[0]()).resolves.toBe('B1');
+      await expect(mocked(N3.Lexer).mock.calls[0][0].n3[1]()).resolves.toBe('B2');
     });
   });
 

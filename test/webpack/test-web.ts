@@ -1,17 +1,17 @@
-/* eslint-disable no-console, unicorn/no-process-exit, @typescript-eslint/no-implicit-any-catch */
+/* eslint-disable no-console, unicorn/no-process-exit */
+
+import { RdfObjectLoader } from 'rdf-object';
+import { RdfParser, ComponentsManagerBuilder } from '../..';
 
 // Monkey patch in the window object so we can test the script in Node
 // @ts-expect-error
 globalThis.window = globalThis;
-
-import { RdfObjectLoader } from 'rdf-object';
-import { RdfParser, ComponentsManagerBuilder } from '../..';
 const arrayifyStream = require('stream-to-array');
 const streamifyString = require('streamify-string');
 
 try {
   if (!(ComponentsManagerBuilder.createObjectLoader() instanceof RdfObjectLoader)) {
-    throw new Error('Object Loader is not an instance of RdfObjectLoader');
+    throw new TypeError('Object Loader is not an instance of RdfObjectLoader');
   }
 
   const parse = new RdfParser();
@@ -31,4 +31,4 @@ try {
   console.error(error);
   process.exit(1);
 }
-/* eslint-enable no-console, unicorn/no-process-exit, @typescript-eslint/no-implicit-any-catch */
+/* eslint-enable no-console, unicorn/no-process-exit */

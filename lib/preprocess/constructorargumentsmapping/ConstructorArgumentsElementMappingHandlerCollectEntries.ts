@@ -44,7 +44,7 @@ implements IConstructorArgumentsElementMappingHandler {
 
     // Obtain all entry values
     const entryResources: Resource[] = [];
-    for (const entry of collectEntries.list || [ collectEntries ]) {
+    for (const entry of collectEntries.list ?? [ collectEntries ]) {
       if (entry.type !== 'NamedNode') {
         throw new ErrorResourcesContext(`Detected illegal collectEntries value "${entry.type}", must be an IRI`, {
           constructorArgs,
@@ -53,7 +53,7 @@ implements IConstructorArgumentsElementMappingHandler {
       }
       const value = this.parameterHandler.applyParameterValues(configRoot, entry, configElement, genericsContext);
       if (value) {
-        for (const subValue of value.list || [ value ]) {
+        for (const subValue of value.list ?? [ value ]) {
           entryResources.push(subValue);
         }
       }
@@ -90,7 +90,10 @@ implements IConstructorArgumentsElementMappingHandler {
         constructorArgs.property.key.value === IRIS_RDF.subject) {
         // Key is the entry id as string
         key = mapper.objectLoader.createCompactedResource(`"${entryResource.value}"`);
-      } else if (entryResource.properties[constructorArgs.property.key.value].length !== 1) {
+      } else if (entryResource.properties[constructorArgs.property.key.value].length === 1) {
+        // Key is the first entry key value
+        key = entryResource.properties[constructorArgs.property.key.value][0];
+      } else {
         // Error if we find more than one entry key value
         throw new ErrorResourcesContext(`Detected more than one key value in collectEntries`, {
           key: constructorArgs.property.key.value,
@@ -99,9 +102,6 @@ implements IConstructorArgumentsElementMappingHandler {
           constructorArgs,
           config: configRoot,
         });
-      } else {
-        // Key is the first entry key value
-        key = entryResource.properties[constructorArgs.property.key.value][0];
       }
     }
 
@@ -131,7 +131,9 @@ implements IConstructorArgumentsElementMappingHandler {
       // ! at the end of the line, because will always be truthy
       value = mapper
         .getParameterValue(configRoot, constructorArgs.property.value, entryResource, false, genericsContext)!;
-    } else if (entryResource.properties[constructorArgs.property.value.value].length !== 1) {
+    } else if (entryResource.properties[constructorArgs.property.value.value].length === 1) {
+      value = entryResource.properties[constructorArgs.property.value.value][0];
+    } else {
       throw new ErrorResourcesContext(`Detected more than one value value in collectEntries`, {
         value: constructorArgs.property.value,
         valueValues: entryResource.properties[constructorArgs.property.value.value]
@@ -140,8 +142,6 @@ implements IConstructorArgumentsElementMappingHandler {
         constructorArgs,
         config: configRoot,
       });
-    } else {
-      value = entryResource.properties[constructorArgs.property.value.value][0];
     }
 
     // If we have a key, create a key-value mapping

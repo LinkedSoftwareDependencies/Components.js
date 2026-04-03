@@ -1,10 +1,9 @@
-import * as Path from 'path';
-import semverGt = require('semver/functions/gt');
-import semverMajor = require('semver/functions/major');
-import semverValid = require('semver/functions/valid');
+import { promises as fs } from 'node:fs';
+import * as Path from 'node:path';
+import semverGt from 'semver/functions/gt';
+import semverMajor from 'semver/functions/major';
+import semverValid from 'semver/functions/valid';
 import type { Logger } from 'winston';
-// Import syntax only works in Node > 12
-const fs = require('fs').promises;
 
 /**
  * Collects the paths to all available modules and components.
@@ -22,7 +21,7 @@ export class ModuleStateBuilder {
    * @param mainModulePathIn An optional path to the main module from which the search should start.
    */
   public async buildModuleState(req: NodeJS.Require, mainModulePathIn?: string): Promise<IModuleState> {
-    const mainModulePath = await fs.realpath(mainModulePathIn || this.buildDefaultMainModulePath(req));
+    const mainModulePath = await fs.realpath(mainModulePathIn ?? this.buildDefaultMainModulePath(req));
     const nodeModuleImportPaths = this.buildNodeModuleImportPaths(mainModulePath);
     const nodeModulePaths = await this.buildNodeModulePaths(nodeModuleImportPaths);
     const packageJsons = await this.buildPackageJsons(nodeModulePaths);
@@ -154,7 +153,7 @@ export class ModuleStateBuilder {
    */
   public async buildPackageJsons(nodeModulePaths: string[]): Promise<Record<string, any>> {
     const packageJsons: Record<string, any> = {};
-    await Promise.all(nodeModulePaths.map(async modulePath => {
+    await Promise.all(nodeModulePaths.map(async(modulePath) => {
       const path = Path.posix.join(modulePath, 'package.json');
       if (await this.fileExists(path)) {
         packageJsons[modulePath] = JSON.parse(await fs.readFile(path, 'utf8'));

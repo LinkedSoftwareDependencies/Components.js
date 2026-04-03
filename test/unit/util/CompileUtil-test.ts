@@ -4,9 +4,8 @@ import { compileConfig } from '../../../lib/util/CompileUtil';
 describe('CompileUtil', () => {
   beforeEach(() => {
     // Mock manager
-    (<any> ComponentsManagerBuilder).prototype.build = jest.fn(function() {
-      // eslint-disable-next-line @typescript-eslint/prefer-ts-expect-error
-      // @ts-ignore
+    jest.spyOn((<any> ComponentsManagerBuilder).prototype, 'build').mockImplementation(function() {
+      // @ts-expect-error
       this.configLoader({ register: jest.fn() });
       return {
         instantiate: async() => 'INSTANCE',
@@ -19,22 +18,22 @@ describe('CompileUtil', () => {
 
   describe('compileConfig', () => {
     it('for direct compilation', async() => {
-      expect(await compileConfig('MAINMODULEPATH', 'CONFIGPATH', 'CONFIGIRI'))
-        .toEqual(`
+      await expect(compileConfig('MAINMODULEPATH', 'CONFIGPATH', 'CONFIGIRI')).resolves
+        .toBe(`
 module.exports = INSTANCE;
 `);
     });
 
     it('for compilation with exportVariableName', async() => {
-      expect(await compileConfig('MAINMODULEPATH', 'CONFIGPATH', 'CONFIGIRI', 'a:b'))
-        .toEqual(`
+      await expect(compileConfig('MAINMODULEPATH', 'CONFIGPATH', 'CONFIGIRI', 'a:b')).resolves
+        .toBe(`
 module.exports = a_b;
 `);
     });
 
     it('for compilation as function', async() => {
-      expect(await compileConfig('MAINMODULEPATH', 'CONFIGPATH', 'CONFIGIRI', undefined, true))
-        .toEqual(`module.exports = function(variables) {
+      await expect(compileConfig('MAINMODULEPATH', 'CONFIGPATH', 'CONFIGIRI', undefined, true)).resolves
+        .toBe(`module.exports = function(variables) {
 function getVariableValue(name) {
   if (!variables || !(name in variables)) {
     throw new Error('Undefined variable: ' + name);

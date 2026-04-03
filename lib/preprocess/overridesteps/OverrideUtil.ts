@@ -57,7 +57,7 @@ export function getPropertyResourceList(config: Resource, parameter: Resource): 
 
   // Having multiple lists can happen if multiple config files add elements to the same list
   const list = properties.flatMap(prop => prop.list);
-  // eslint-disable-next-line unicorn/no-useless-undefined
+
   if (list.includes(undefined)) {
     throw new ErrorResourcesContext(`Invalid target in Override step targeting ${config.value}: ${parameter.value} does not reference a list`, {
       config,

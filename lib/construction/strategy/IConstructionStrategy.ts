@@ -4,44 +4,44 @@ import type { IConstructionSettings } from '../IConstructionSettings';
 /**
  * Implementations of this interface represent a certain strategy for creating instances.
  */
-export interface IConstructionStrategy<Instance> {
+export interface IConstructionStrategy<TInstance> {
   /**
    * Create a new instance of the given referenced element.
    * @param options Options
    */
-  createInstance: (options: ICreationStrategyInstanceOptions<Instance>) => Instance;
+  createInstance: (options: ICreationStrategyInstanceOptions<TInstance>) => TInstance;
   /**
    * Create a hash object.
    * @param options Options
    */
-  createHash: (options: ICreationStrategyHashOptions<Instance>) => Instance;
+  createHash: (options: ICreationStrategyHashOptions<TInstance>) => TInstance;
   /**
    * Create an array.
    * @param options Options
    */
-  createArray: (options: ICreationStrategyArrayOptions<Instance>) => Instance;
+  createArray: (options: ICreationStrategyArrayOptions<TInstance>) => TInstance;
   /**
    * Create a lazy supplier, i.e., a zero-args lambda that returns a promise.
    * @param options Options
    */
-  createLazySupplier: (options: ICreationStrategySupplierOptions<Instance>) => Promise<Instance>;
+  createLazySupplier: (options: ICreationStrategySupplierOptions<TInstance>) => Promise<TInstance>;
   /**
    * Create a primitive string or number value.
    * @param options Options
    */
-  createPrimitive: (options: ICreationStrategyPrimitiveOptions<Instance>) => Instance;
+  createPrimitive: (options: ICreationStrategyPrimitiveOptions<TInstance>) => TInstance;
   /**
    * Create a representation for something undefined.
    */
-  createUndefined: () => Instance;
+  createUndefined: () => TInstance;
   /**
    * Get the value of a variable.
    * @param options Options
    */
-  getVariableValue: (options: ICreationStrategyVariableOptions<Instance>) => Instance;
+  getVariableValue: (options: ICreationStrategyVariableOptions<TInstance>) => TInstance;
 }
 
-export interface ICreationStrategyInstanceOptions<Instance> {
+export interface ICreationStrategyInstanceOptions<TInstance> {
   /**
    * Creation settings.
    */
@@ -67,7 +67,7 @@ export interface ICreationStrategyInstanceOptions<Instance> {
   /**
    * The arguments to pass to the constructor.
    */
-  args: Instance[];
+  args: TInstance[];
   /**
    * An identifier for the instance.
    * This may for example be used for determining variable names.
@@ -75,7 +75,7 @@ export interface ICreationStrategyInstanceOptions<Instance> {
   instanceId: string;
 }
 
-export interface ICreationStrategyHashOptions<Instance> {
+export interface ICreationStrategyHashOptions<TInstance> {
   /**
    * Creation settings.
    */
@@ -83,10 +83,10 @@ export interface ICreationStrategyHashOptions<Instance> {
   /**
    * An array of key-value entries for the hash.
    */
-  entries: ({ key: string; value: Instance } | undefined)[];
+  entries: ({ key: string; value: TInstance } | undefined)[];
 }
 
-export interface ICreationStrategyArrayOptions<Instance> {
+export interface ICreationStrategyArrayOptions<TInstance> {
   /**
    * Creation settings.
    */
@@ -94,10 +94,10 @@ export interface ICreationStrategyArrayOptions<Instance> {
   /**
    * An array of elements.
    */
-  elements: Instance[];
+  elements: TInstance[];
 }
 
-export interface ICreationStrategySupplierOptions<Instance> {
+export interface ICreationStrategySupplierOptions<TInstance> {
   /**
    * Creation settings.
    */
@@ -105,10 +105,11 @@ export interface ICreationStrategySupplierOptions<Instance> {
   /**
    * A lazy instance supplier.
    */
-  supplier: () => Promise<Instance>;
+  supplier: () => Promise<TInstance>;
 }
 
-export interface ICreationStrategyPrimitiveOptions<Instance> {
+// eslint-disable-next-line unused-imports/no-unused-vars
+export interface ICreationStrategyPrimitiveOptions<TInstance> {
   /**
    * Creation settings.
    */
@@ -119,7 +120,8 @@ export interface ICreationStrategyPrimitiveOptions<Instance> {
   value: string | number | any;
 }
 
-export interface ICreationStrategyVariableOptions<Instance> {
+// eslint-disable-next-line unused-imports/no-unused-vars
+export interface ICreationStrategyVariableOptions<TInstance> {
   /**
    * Creation settings.
    */

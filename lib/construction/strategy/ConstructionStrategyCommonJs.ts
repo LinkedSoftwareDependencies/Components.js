@@ -1,4 +1,4 @@
-import * as Path from 'path';
+import * as Path from 'node:path';
 import type { IModuleState } from '../../loading/ModuleStateBuilder';
 import type {
   ICreationStrategyInstanceOptions,
@@ -6,7 +6,8 @@ import type {
   ICreationStrategyHashOptions,
   ICreationStrategyArrayOptions,
   ICreationStrategySupplierOptions,
-  ICreationStrategyPrimitiveOptions, ICreationStrategyVariableOptions,
+  ICreationStrategyPrimitiveOptions,
+  ICreationStrategyVariableOptions,
 } from './IConstructionStrategy';
 
 /**
@@ -18,7 +19,7 @@ export class ConstructionStrategyCommonJs implements IConstructionStrategy<any> 
 
   // eslint-disable-next-line unicorn/no-object-as-default-parameter
   public constructor(options: ICreationStrategyCommonJsOptions = { req: require }) {
-    this.overrideRequireNames = options.overrideRequireNames || {};
+    this.overrideRequireNames = options.overrideRequireNames ?? {};
     this.req = options.req;
   }
 
@@ -29,11 +30,11 @@ export class ConstructionStrategyCommonJs implements IConstructionStrategy<any> 
     // First try requiring current module, and fallback to a plain require
     let object: any;
     const currentResult = this.requireCurrentRunningModuleIfCurrent(options.moduleState, options.requireName);
-    object = currentResult !== false ?
-      currentResult.value :
+    object = currentResult === false ?
       this.req(options.requireName.startsWith('.') ?
         Path.join(process.cwd(), options.requireName) :
-        this.req.resolve(options.requireName, { paths: [ options.moduleState.mainModulePath ]}));
+        this.req.resolve(options.requireName, { paths: [ options.moduleState.mainModulePath ]})) :
+      currentResult.value;
 
     // Determine the child of the require'd element
     let subObject;
@@ -55,7 +56,7 @@ export class ConstructionStrategyCommonJs implements IConstructionStrategy<any> 
     object = subObject;
     if (options.callConstructor) {
       if (typeof object !== 'function') {
-        throw new Error(`Attempted to construct ${options.requireElement} from module ${options.requireName} that does not have a constructor`);
+        throw new TypeError(`Attempted to construct ${options.requireElement} from module ${options.requireName} that does not have a constructor`);
       }
       object = new (Function.prototype.bind.apply(object, <[any, ...any]>[{}, ...options.args ]))();
     }

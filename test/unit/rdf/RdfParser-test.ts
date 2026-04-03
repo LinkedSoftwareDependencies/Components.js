@@ -1,7 +1,8 @@
-import * as Path from 'path';
+import * as Path from 'node:path';
 import type { RdfParserOptions } from '../../../lib/rdf/RdfParser';
 import { RdfParser } from '../../../lib/rdf/RdfParser';
 import 'jest-rdf';
+
 // Import syntax only works in Node > 12
 const arrayifyStream = require('arrayify-stream');
 const quad = require('rdf-quad');
@@ -71,7 +72,7 @@ describe('RdfParser', () => {
       const options: RdfParserOptions = {
         path: 'path/to/file.ttl',
       };
-      expect(await arrayifyStream(parser.parse(streamifyString(``), options)))
+      await expect(arrayifyStream(parser.parse(streamifyString(``), options))).resolves
         .toEqual([]);
     });
 
@@ -79,7 +80,7 @@ describe('RdfParser', () => {
       const options: RdfParserOptions = {
         path: 'path/to/file.ttl',
       };
-      expect(await arrayifyStream(parser.parse(streamifyString(`<ex:s> <ex:p> <ex:o>.`), options)))
+      await expect(arrayifyStream(parser.parse(streamifyString(`<ex:s> <ex:p> <ex:o>.`), options))).resolves
         .toBeRdfIsomorphic([
           quad('ex:s', 'ex:p', 'ex:o'),
         ]);
@@ -89,7 +90,7 @@ describe('RdfParser', () => {
       const options: RdfParserOptions = {
         path: 'path/to/file.ttl',
       };
-      expect(await arrayifyStream(parser.parse(streamifyString(`<s> <ex:p> <ex:o>.`), options)))
+      await expect(arrayifyStream(parser.parse(streamifyString(`<s> <ex:p> <ex:o>.`), options))).resolves
         .toBeRdfIsomorphic([
           quad('file://path/to/s', 'ex:p', 'ex:o'),
         ]);
@@ -99,7 +100,7 @@ describe('RdfParser', () => {
       const options: RdfParserOptions = {
         path: 'path/./to/file.ttl',
       };
-      expect(await arrayifyStream(parser.parse(streamifyString(`<s> <ex:p> <ex:o>.`), options)))
+      await expect(arrayifyStream(parser.parse(streamifyString(`<s> <ex:p> <ex:o>.`), options))).resolves
         .toBeRdfIsomorphic([
           quad('file://path/to/s', 'ex:p', 'ex:o'),
         ]);
@@ -109,7 +110,7 @@ describe('RdfParser', () => {
       const options: RdfParserOptions = {
         path: '/path/to/file.ttl',
       };
-      expect(await arrayifyStream(parser.parse(streamifyString(`<s> <ex:p> <ex:o>.`), options)))
+      await expect(arrayifyStream(parser.parse(streamifyString(`<s> <ex:p> <ex:o>.`), options))).resolves
         .toBeRdfIsomorphic([
           quad('file:///path/to/s', 'ex:p', 'ex:o'),
         ]);
@@ -119,7 +120,7 @@ describe('RdfParser', () => {
       const options: RdfParserOptions = {
         path: 'C:/path/to/file.ttl',
       };
-      expect(await arrayifyStream(parser.parse(streamifyString(`<s> <ex:p> <ex:o>.`), options)))
+      await expect(arrayifyStream(parser.parse(streamifyString(`<s> <ex:p> <ex:o>.`), options))).resolves
         .toBeRdfIsomorphic([
           quad('file://C:/path/to/s', 'ex:p', 'ex:o'),
         ]);
@@ -129,7 +130,7 @@ describe('RdfParser', () => {
       const options: RdfParserOptions = {
         path: 'http://example.org/file.ttl',
       };
-      expect(await arrayifyStream(parser.parse(streamifyString(`<s> <ex:p> <ex:o>.`), options)))
+      await expect(arrayifyStream(parser.parse(streamifyString(`<s> <ex:p> <ex:o>.`), options))).resolves
         .toBeRdfIsomorphic([
           quad('http://example.org/s', 'ex:p', 'ex:o'),
         ]);
@@ -140,7 +141,7 @@ describe('RdfParser', () => {
         path: 'path/to/file.ttl',
         baseIRI: 'http://base.org/',
       };
-      expect(await arrayifyStream(parser.parse(streamifyString(`<s> <ex:p> <ex:o>.`), options)))
+      await expect(arrayifyStream(parser.parse(streamifyString(`<s> <ex:p> <ex:o>.`), options))).resolves
         .toBeRdfIsomorphic([
           quad('http://base.org/s', 'ex:p', 'ex:o'),
         ]);
@@ -154,7 +155,7 @@ describe('RdfParser', () => {
   "@id": "ex:s",
   "ex:p": { "@id": "ex:o" }
 }`;
-      expect(await arrayifyStream(parser.parse(streamifyString(doc), options)))
+      await expect(arrayifyStream(parser.parse(streamifyString(doc), options))).resolves
         .toBeRdfIsomorphic([
           quad('ex:s', 'ex:p', 'ex:o'),
         ]);
@@ -176,7 +177,7 @@ describe('RdfParser', () => {
   "@id": "ex:s",
   "p": { "@id": "ex:o" }
 }`;
-      expect(await arrayifyStream(parser.parse(streamifyString(doc), options)))
+      await expect(arrayifyStream(parser.parse(streamifyString(doc), options))).resolves
         .toBeRdfIsomorphic([
           quad('ex:s', 'http://vocab.org/p', 'ex:o'),
         ]);
@@ -202,7 +203,7 @@ describe('RdfParser', () => {
 <ex:s> <ex:p> <ex:o>.
 <ex:s> <http://www.w3.org/2000/01/rdf-schema#seeAlso> <http://example.org/myfile1.ttl>, <http://example.org/myfile2.ttl>.
 `;
-      expect(await arrayifyStream(parser.parse(streamifyString(doc), options)))
+      await expect(arrayifyStream(parser.parse(streamifyString(doc), options))).resolves
         .toBeRdfIsomorphic([
           quad('ex:s', 'ex:p', 'ex:o'),
           quad('ex:s', 'http://www.w3.org/2000/01/rdf-schema#seeAlso', 'http://example.org/myfile1.ttl'),
@@ -220,7 +221,7 @@ describe('RdfParser', () => {
 <ex:s> <ex:p> <ex:o>.
 <ex:s> <http://www.w3.org/2000/01/rdf-schema#seeAlso> <http://example.org/myfile1%2Ettl>, <http://example.org/myfile2%2Ettl>.
 `;
-      expect(await arrayifyStream(parser.parse(streamifyString(doc), options)))
+      await expect(arrayifyStream(parser.parse(streamifyString(doc), options))).resolves
         .toBeRdfIsomorphic([
           quad('ex:s', 'ex:p', 'ex:o'),
           quad('ex:s', 'http://www.w3.org/2000/01/rdf-schema#seeAlso', 'http://example.org/myfile1%2Ettl'),
@@ -286,7 +287,7 @@ describe('RdfParser', () => {
 <ex:s> <ex:p> <ex:o>.
 <ex:s> <http://www.w3.org/2000/01/rdf-schema#seeAlso> <http://example.org/myfilenest.ttl>.
 `;
-      expect(await arrayifyStream(parser.parse(streamifyString(doc), options)))
+      await expect(arrayifyStream(parser.parse(streamifyString(doc), options))).resolves
         .toBeRdfIsomorphic([
           quad('ex:s', 'ex:p', 'ex:o'),
           quad('ex:s', 'http://www.w3.org/2000/01/rdf-schema#seeAlso', 'http://example.org/myfilenest.ttl'),
@@ -304,7 +305,7 @@ describe('RdfParser', () => {
 <ex:s> <ex:p> <ex:o>.
 <ex:s> <http://www.w3.org/2000/01/rdf-schema#seeAlso> <http://example.org/myfile1.ttl>, <http://example.org/myfile2.ttl>.
 `;
-      expect(await arrayifyStream(parser.parse(streamifyString(doc), options)))
+      await expect(arrayifyStream(parser.parse(streamifyString(doc), options))).resolves
         .toBeRdfIsomorphic([
           quad('ex:s', 'ex:p', 'ex:o'),
           quad('ex:s', 'http://www.w3.org/2000/01/rdf-schema#seeAlso', 'http://example.org/myfile1.ttl'),
@@ -323,7 +324,7 @@ describe('RdfParser', () => {
 <ex:s> <ex:p> <ex:o>.
 <ex:s> <http://www.w3.org/2000/01/rdf-schema#seeAlso> <http://example.org/myfile1.ttl>, <http://example.org/myfile2.ttl>.
 `;
-      expect(await arrayifyStream(parser.parse(streamifyString(doc), options)))
+      await expect(arrayifyStream(parser.parse(streamifyString(doc), options))).resolves
         .toBeRdfIsomorphic([
           quad('ex:s', 'ex:p', 'ex:o'),
           quad('ex:s', 'http://www.w3.org/2000/01/rdf-schema#seeAlso', 'http://example.org/myfile1.ttl'),
@@ -344,7 +345,7 @@ describe('RdfParser', () => {
 <ex:s> <ex:p> <ex:o>.
 <ex:s> <http://www.w3.org/2000/01/rdf-schema#seeAlso> <http://example.org/a/myfile1.ttl>, <http://example.org/b/myfile2.ttl>.
 `;
-      expect(await arrayifyStream(parser.parse(streamifyString(doc), options)))
+      await expect(arrayifyStream(parser.parse(streamifyString(doc), options))).resolves
         .toBeRdfIsomorphic([
           quad('ex:s', 'ex:p', 'ex:o'),
           quad('ex:s', 'http://www.w3.org/2000/01/rdf-schema#seeAlso', 'http://example.org/a/myfile1.ttl'),
@@ -392,7 +393,7 @@ describe('RdfParser', () => {
         path: 'path/to/file.ttl',
         logger,
       };
-      expect(await arrayifyStream(parser.parse(streamifyString(`<ex:s> <ex:p> <ex:o>.`), options)))
+      await expect(arrayifyStream(parser.parse(streamifyString(`<ex:s> <ex:p> <ex:o>.`), options))).resolves
         .toBeRdfIsomorphic([
           quad('ex:s', 'ex:p', 'ex:o'),
         ]);
@@ -410,7 +411,7 @@ describe('RdfParser', () => {
         path: 'path/to/file.ttl',
         logger,
       };
-      expect(await arrayifyStream(parser.parse(streamifyString(`<s> <p> <o>.`), options)))
+      await expect(arrayifyStream(parser.parse(streamifyString(`<s> <p> <o>.`), options))).resolves
         .toBeRdfIsomorphic([
           quad('file://path/to/s', 'file://path/to/p', 'file://path/to/o'),
         ]);
@@ -428,7 +429,7 @@ describe('RdfParser', () => {
         },
         logger,
       };
-      expect(await arrayifyStream(parser.parse(streamifyString(`<s> <p> <o>.`), options)))
+      await expect(arrayifyStream(parser.parse(streamifyString(`<s> <p> <o>.`), options))).resolves
         .toBeRdfIsomorphic([
           quad('http://example.org/s', 'http://example.org/p', 'http://example.org/o'),
         ]);
@@ -438,19 +439,20 @@ describe('RdfParser', () => {
 
   describe('fetchFileOrUrl', () => {
     it('for a URL', async() => {
-      expect(await stringifyStream(await RdfParser.fetchFileOrUrl('http://example.org/myfile1.ttl')))
-        .toEqual(`<ex:s1> <ex:p1> <ex:o1>.`);
+      await expect(stringifyStream(await RdfParser.fetchFileOrUrl('http://example.org/myfile1.ttl'))).resolves
+        .toBe(`<ex:s1> <ex:p1> <ex:o1>.`);
     });
 
     it('for a file without protocol', async() => {
-      expect(await stringifyStream(await RdfParser.fetchFileOrUrl(Path.join(__dirname, '../assets/rdf/a/myfile1.ttl'))))
-        .toEqual(`<ex:sl1> <ex:pl1> <ex:ol1>.
+      const filePath = Path.join(__dirname, '../assets/rdf/a/myfile1.ttl');
+      await expect(stringifyStream(await RdfParser.fetchFileOrUrl(filePath))).resolves
+        .toBe(`<ex:sl1> <ex:pl1> <ex:ol1>.
 `);
     });
 
     it('for a file with protocol', async() => {
-      expect(await stringifyStream(await RdfParser.fetchFileOrUrl(`file://${Path.join(__dirname, '../assets/rdf/a/myfile1.ttl')}`)))
-        .toEqual(`<ex:sl1> <ex:pl1> <ex:ol1>.
+      await expect(stringifyStream(await RdfParser.fetchFileOrUrl(`file://${Path.join(__dirname, '../assets/rdf/a/myfile1.ttl')}`))).resolves
+        .toBe(`<ex:sl1> <ex:pl1> <ex:ol1>.
 `);
     });
 

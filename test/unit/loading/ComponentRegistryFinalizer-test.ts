@@ -1,4 +1,5 @@
-import * as fs from 'fs';
+import * as fs from 'node:fs';
+import * as Path from 'node:path';
 import type { Resource } from 'rdf-object';
 import { RdfObjectLoader } from 'rdf-object';
 import type { Logger } from 'winston';
@@ -20,7 +21,7 @@ describe('ComponentRegistryFinalizer', () => {
     };
     objectLoader = new RdfObjectLoader({
       uniqueLiterals: true,
-      context: JSON.parse(fs.readFileSync(`${__dirname}/../../../components/context.jsonld`, 'utf8')),
+      context: JSON.parse(fs.readFileSync(Path.join(__dirname, '../../../components/context.jsonld'), 'utf8')),
     });
     logger = <any> {
       warn: jest.fn(),
@@ -51,7 +52,7 @@ describe('ComponentRegistryFinalizer', () => {
     });
 
     it('should handle registered modules', async() => {
-      await componentRegistry.registerModule(`${__dirname}/../../assets/module.jsonld`);
+      await componentRegistry.registerModule(Path.join(__dirname, '../../assets/module.jsonld'));
       finalizer.finalize();
       expect(Object.keys(componentResources)
         .includes('http://example.org/HelloWorldModule#SayHelloComponent')).toBeTruthy();
@@ -108,8 +109,8 @@ describe('ComponentRegistryFinalizer', () => {
       componentRegistry.registerComponent(component1);
       componentRegistry.registerComponent(component2);
       finalizer.finalize();
-      expect(component1.properties.parameters.length).toBe(2);
-      expect(component1.properties.constructorArguments[0].list![0].property.fields.list!.length).toBe(2);
+      expect(component1.properties.parameters).toHaveLength(2);
+      expect(component1.properties.constructorArguments[0].list![0].property.fields.list!).toHaveLength(2);
     });
   });
 
@@ -125,7 +126,7 @@ describe('ComponentRegistryFinalizer', () => {
         ],
       });
       finalizer.inheritParameters(component1, []);
-      expect(component1.properties.parameters.length).toBe(1);
+      expect(component1.properties.parameters).toHaveLength(1);
       expect(component1.properties.parameters[0]).toBe(component1.properties.parameters[0]);
     });
 
@@ -149,7 +150,7 @@ describe('ComponentRegistryFinalizer', () => {
         ],
       });
       finalizer.inheritParameters(component1, [ component2 ]);
-      expect(component1.properties.parameters.length).toBe(2);
+      expect(component1.properties.parameters).toHaveLength(2);
       expect(component1.properties.parameters[0]).toBe(component1.properties.parameters[0]);
       expect(component1.properties.parameters[1]).toBe(component2.properties.parameters[0]);
     });
@@ -183,7 +184,7 @@ describe('ComponentRegistryFinalizer', () => {
         ],
       });
       finalizer.inheritParameters(component1, [ component2, component3 ]);
-      expect(component1.properties.parameters.length).toBe(3);
+      expect(component1.properties.parameters).toHaveLength(3);
       expect(component1.properties.parameters[0]).toBe(component1.properties.parameters[0]);
       expect(component1.properties.parameters[1]).toBe(component2.properties.parameters[0]);
       expect(component1.properties.parameters[2]).toBe(component3.properties.parameters[0]);
@@ -212,7 +213,7 @@ describe('ComponentRegistryFinalizer', () => {
         ],
       });
       finalizer.inheritParameters(component1, [ component2 ]);
-      expect(component1.properties.parameters.length).toBe(3);
+      expect(component1.properties.parameters).toHaveLength(3);
       expect(component1.properties.parameters[0]).toBe(component1.properties.parameters[0]);
       expect(component1.properties.parameters[1]).toBe(component2.properties.parameters[0]);
       expect(component1.properties.parameters[2]).toBe(component2.properties.parameters[1]);
@@ -248,7 +249,7 @@ describe('ComponentRegistryFinalizer', () => {
         ],
       });
       finalizer.inheritParameters(component1, [ component2 ]);
-      expect(component1.properties.parameters.length).toBe(3);
+      expect(component1.properties.parameters).toHaveLength(3);
       expect(component1.properties.parameters[0]).toBe(component1.properties.parameters[0]);
       expect(component1.properties.parameters[1]).toBe(component2.properties.parameters[0]);
       expect(component1.properties.parameters[2]).toBe(component3.properties.parameters[0]);
@@ -277,7 +278,7 @@ describe('ComponentRegistryFinalizer', () => {
         ],
       });
       finalizer.inheritParameters(component1, [ component2 ]);
-      expect(component1.properties.parameters.length).toBe(2);
+      expect(component1.properties.parameters).toHaveLength(2);
       expect(component1.properties.parameters[0]).toBe(component2.properties.parameters[0]);
       expect(component1.properties.parameters[1]).toBe(component2.properties.parameters[1]);
     });
@@ -305,7 +306,7 @@ describe('ComponentRegistryFinalizer', () => {
         },
       });
       finalizer.inheritParameters(component1, [ component2 ]);
-      expect(component1.properties.parameters.length).toBe(2);
+      expect(component1.properties.parameters).toHaveLength(2);
       expect(component1.properties.parameters[0]).toBe(component1.properties.parameters[0]);
       expect(component1.properties.parameters[1]).toBe(component2.property.component.properties.parameters[0]);
     });
@@ -366,7 +367,7 @@ describe('ComponentRegistryFinalizer', () => {
         },
       });
       finalizer.inheritConstructorArguments(component1);
-      expect(component1.property.constructorArguments.list!.length).toBe(0);
+      expect(component1.property.constructorArguments.list!).toHaveLength(0);
     });
 
     it('should handle a constructorArgs without extends', async() => {
@@ -385,7 +386,7 @@ describe('ComponentRegistryFinalizer', () => {
         },
       });
       finalizer.inheritConstructorArguments(component1);
-      expect(component1.property.constructorArguments.list!.length).toBe(2);
+      expect(component1.property.constructorArguments.list!).toHaveLength(2);
     });
 
     it('should handle a constructorArgs with extends', async() => {
@@ -448,13 +449,13 @@ describe('ComponentRegistryFinalizer', () => {
         },
       });
       finalizer.inheritConstructorArguments(component1);
-      expect(component1.property.constructorArguments.list!.length).toBe(2);
-      expect(component1.property.constructorArguments.list![0].property.fields.list!.length).toBe(2);
+      expect(component1.property.constructorArguments.list!).toHaveLength(2);
+      expect(component1.property.constructorArguments.list![0].property.fields.list!).toHaveLength(2);
       expect(component1.property.constructorArguments.list![0].property.fields.list![0])
         .toBe(component2.property.constructorArguments.list![0].property.fields.list![0]);
       expect(component1.property.constructorArguments.list![0].property.fields.list![1])
         .toBe(component2.property.constructorArguments.list![0].property.fields.list![1]);
-      expect(component1.property.constructorArguments.list![1].property.fields.list!.length).toBe(2);
+      expect(component1.property.constructorArguments.list![1].property.fields.list!).toHaveLength(2);
       expect(component1.property.constructorArguments.list![1].property.fields.list![0])
         .toBe(component3.property.constructorArguments.list![0].property.fields.list![0]);
       expect(component1.property.constructorArguments.list![1].property.fields.list![1])
@@ -533,8 +534,8 @@ describe('ComponentRegistryFinalizer', () => {
         },
       });
       finalizer.inheritConstructorArgumentsEntry(cargs, [ cargsSuper ]);
-      expect(cargs.property.fields.list!.length).toBe(1);
-      expect(cargs.property.fields.list![0].value).toEqual('ex:field1');
+      expect(cargs.property.fields.list!).toHaveLength(1);
+      expect(cargs.property.fields.list![0].value).toBe('ex:field1');
     });
 
     it('should handle extending args with multiple fields', async() => {
@@ -553,10 +554,10 @@ describe('ComponentRegistryFinalizer', () => {
         ],
       });
       finalizer.inheritConstructorArgumentsEntry(cargs, [ cargsSuper ]);
-      expect(cargs.property.fields.list!.length).toBe(3);
-      expect(cargs.property.fields.list![0].value).toEqual('ex:field1');
-      expect(cargs.property.fields.list![1].value).toEqual('ex:field2');
-      expect(cargs.property.fields.list![2].value).toEqual('ex:field3');
+      expect(cargs.property.fields.list!).toHaveLength(3);
+      expect(cargs.property.fields.list![0].value).toBe('ex:field1');
+      expect(cargs.property.fields.list![1].value).toBe('ex:field2');
+      expect(cargs.property.fields.list![2].value).toBe('ex:field3');
     });
 
     it('should handle nested extending args with one field', async() => {
@@ -576,9 +577,9 @@ describe('ComponentRegistryFinalizer', () => {
         ],
       });
       finalizer.inheritConstructorArgumentsEntry(cargs, [ cargsSuper ]);
-      expect(cargs.property.fields.list!.length).toBe(2);
-      expect(cargs.property.fields.list![0].value).toEqual('ex:field1');
-      expect(cargs.property.fields.list![1].value).toEqual('ex:field1.1');
+      expect(cargs.property.fields.list!).toHaveLength(2);
+      expect(cargs.property.fields.list![0].value).toBe('ex:field1');
+      expect(cargs.property.fields.list![1].value).toBe('ex:field1.1');
     });
 
     it('should not add already present fields', async() => {
@@ -600,9 +601,9 @@ describe('ComponentRegistryFinalizer', () => {
         ],
       });
       finalizer.inheritConstructorArgumentsEntry(cargs, [ cargsSuper ]);
-      expect(cargs.property.fields.list!.length).toBe(2);
-      expect(cargs.property.fields.list![0].value).toEqual('ex:field1');
-      expect(cargs.property.fields.list![1].value).toEqual('ex:field2');
+      expect(cargs.property.fields.list!).toHaveLength(2);
+      expect(cargs.property.fields.list![0].value).toBe('ex:field1');
+      expect(cargs.property.fields.list![1].value).toBe('ex:field2');
     });
   });
 });

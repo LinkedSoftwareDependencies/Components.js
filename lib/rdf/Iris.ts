@@ -2,12 +2,17 @@ const definePrefix = (prefix: string) => (suffix: string) => `${prefix}${suffix}
 
 export const PREFIX_OO = definePrefix('https://linkedsoftwaredependencies.org/vocabularies/object-oriented#');
 export const IRIS_OO = {
+  // eslint-disable-next-line ts/naming-convention
   Module: PREFIX_OO('Module'),
+  // eslint-disable-next-line ts/naming-convention
   Class: PREFIX_OO('Class'),
+  // eslint-disable-next-line ts/naming-convention
   AbstractClass: PREFIX_OO('AbstractClass'),
+  // eslint-disable-next-line ts/naming-convention
   ComponentInstance: PREFIX_OO('ComponentInstance'),
   component: PREFIX_OO('component'),
   componentPath: PREFIX_OO('componentPath'),
+  // eslint-disable-next-line ts/naming-convention
   Override: PREFIX_OO('Override'),
   overrideInstance: PREFIX_OO('overrideInstance'),
   overrideParameters: PREFIX_OO('overrideParameters'),
@@ -22,6 +27,7 @@ export const IRIS_RDF = {
   subject: PREFIX_RDF('subject'),
   object: PREFIX_RDF('object'),
   type: PREFIX_RDF('type'),
+  // eslint-disable-next-line ts/naming-convention
   JSON: PREFIX_RDF('JSON'),
 };
 
@@ -51,5 +57,6 @@ export const IRIS_DOAP = {
 
 export const PREFIX_OWL = definePrefix('http://www.w3.org/2002/07/owl#');
 export const IRIS_OWL = {
+  // eslint-disable-next-line ts/naming-convention
   Restriction: PREFIX_OWL('Restriction'),
 };

@@ -34,13 +34,13 @@ export class ConfigPreprocessorComponent implements IConfigPreprocessor<ICompone
       // Require either exactly one component type, or a requireName
       if (componentTypes.length > 1) {
         throw new ErrorResourcesContext(`Detected more than one component types for config "${config.value}"`, {
-          componentTypes: `[${componentTypes.map(resource => resource.value)}]`,
+          componentTypes: `[${componentTypes.map(resource => resource.value).join(', ')}]`,
           config,
         });
       }
       if (componentTypes.length === 0) {
         throw new ErrorResourcesContext(`Could not find (valid) component types for config "${config.value}" among its types, or a requireName`, {
-          configTypes: `${config.properties.types.map(resource => resource.value)}`,
+          configTypes: `${config.properties.types.map(resource => resource.value).join(', ')}`,
           config,
         });
       }

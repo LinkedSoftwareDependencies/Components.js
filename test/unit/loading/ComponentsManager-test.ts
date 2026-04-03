@@ -1,4 +1,5 @@
-import * as fs from 'fs';
+import * as fs from 'node:fs';
+import * as Path from 'node:path';
 import type { Resource } from 'rdf-object';
 import { RdfObjectLoader } from 'rdf-object';
 import type { Logger } from 'winston';
@@ -8,15 +9,16 @@ import { ConfigRegistry } from '../../../lib/loading/ConfigRegistry';
 import type { IModuleState } from '../../../lib/loading/ModuleStateBuilder';
 import { ErrorResourcesContext } from '../../../lib/util/ErrorResourcesContext';
 
-jest.mock('fs', () => ({
+jest.mock<typeof import('fs')>('fs', () => ({
   ...jest.requireActual<typeof fs>('fs'),
   writeFileSync: jest.fn(),
 }));
+// eslint-disable-next-line jest/no-untyped-mock-factory
 jest.mock('../../../lib/loading/ComponentsManagerBuilder', () => ({
   // eslint-disable-next-line object-shorthand
   ComponentsManagerBuilder: function(args: any) {
     return {
-      build: jest.fn(() => ({
+      build: jest.fn(async() => ({
         type: 'INSTANCE',
         args,
       })),
@@ -39,13 +41,13 @@ describe('ComponentsManager', () => {
     moduleState = <any> {
       mainModulePath,
       componentModules: {
-        A: `${__dirname}/../../assets/module.jsonld`,
+        A: Path.join(__dirname, '../../assets/module.jsonld'),
       },
       nodeModulePaths: [],
     };
     objectLoader = new RdfObjectLoader({
       uniqueLiterals: true,
-      context: JSON.parse(fs.readFileSync(`${__dirname}/../../../components/context.jsonld`, 'utf8')),
+      context: JSON.parse(fs.readFileSync(Path.join(__dirname, '../../../components/context.jsonld'), 'utf8')),
     });
     componentResources = {};
     logger = <any> {
@@ -79,7 +81,7 @@ describe('ComponentsManager', () => {
 
   describe('build', () => {
     it('should pass options to the builder', async() => {
-      expect(await ComponentsManager.build({ mainModulePath: 'MMP' }))
+      await expect(ComponentsManager.build({ mainModulePath: 'MMP' })).resolves
         .toEqual({
           type: 'INSTANCE',
           args: { mainModulePath: 'MMP' },
@@ -111,7 +113,7 @@ describe('ComponentsManager', () => {
         moduleState: {
           mainModulePath,
           componentModules: {
-            A: `${mainModulePath}/../../assets/module.jsonld`,
+            A: Path.join(mainModulePath, '../../assets/module.jsonld'),
           },
           nodeModulePaths: [],
         },
@@ -120,8 +122,8 @@ describe('ComponentsManager', () => {
     });
 
     it('should instantiate an existing config without options', async() => {
-      await componentsManager.configRegistry.register(`${__dirname}/../../assets/config.jsonld`);
-      expect(await componentsManager.instantiate('http://example.org/myconfig')).toEqual('INSTANCE');
+      await componentsManager.configRegistry.register(Path.join(__dirname, '../../assets/config.jsonld'));
+      await expect(componentsManager.instantiate('http://example.org/myconfig')).resolves.toBe('INSTANCE');
       expect(configConstructorPool.instantiate).toHaveBeenCalledWith(
         componentsManager.objectLoader.resources['http://example.org/myconfig'],
         {},
@@ -129,9 +131,9 @@ describe('ComponentsManager', () => {
     });
 
     it('should instantiate an existing config with options', async() => {
-      await componentsManager.configRegistry.register(`${__dirname}/../../assets/config.jsonld`);
-      expect(await componentsManager.instantiate('http://example.org/myconfig', { variables: { a: 1 }}))
-        .toEqual('INSTANCE');
+      await componentsManager.configRegistry.register(Path.join(__dirname, '../../assets/config.jsonld'));
+      await expect(componentsManager.instantiate('http://example.org/myconfig', { variables: { a: 1 }})).resolves
+        .toBe('INSTANCE');
       expect(configConstructorPool.instantiate).toHaveBeenCalledWith(
         componentsManager.objectLoader.resources['http://example.org/myconfig'],
         { variables: { a: 1 }},
@@ -141,7 +143,7 @@ describe('ComponentsManager', () => {
 
   describe('getInstantiatedResources', () => {
     it('should return an array of instantiated Resources', async() => {
-      await componentsManager.configRegistry.register(`${__dirname}/../../assets/config.jsonld`);
+      await componentsManager.configRegistry.register(Path.join(__dirname, '../../assets/config.jsonld'));
       expect(componentsManager.getInstantiatedResources()).toHaveLength(1);
     });
   });
@@ -164,7 +166,7 @@ describe('ComponentsManager', () => {
         moduleState: {
           mainModulePath,
           componentModules: {
-            A: `${mainModulePath}/../../assets/module.jsonld`,
+            A: Path.join(mainModulePath, '../../assets/module.jsonld'),
           },
           nodeModulePaths: [],
         },

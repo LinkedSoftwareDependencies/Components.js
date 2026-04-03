@@ -1,4 +1,4 @@
-import type { Readable } from 'stream';
+import type { Readable } from 'node:stream';
 import type * as RDF from '@rdfjs/types';
 import type { RdfObjectLoader, Resource } from 'rdf-object';
 import { termToString } from 'rdf-string';
@@ -62,6 +62,7 @@ export class ConfigRegistry {
   ): Promise<void> {
     // Create ad-hoc resource
     const configResource = this.objectLoader.createCompactedResource({
+      // eslint-disable-next-line ts/naming-convention
       '@id': configId,
       types: componentTypeIri,
     });

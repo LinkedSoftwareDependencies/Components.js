@@ -52,7 +52,7 @@ export class ConstructorArgumentsElementMappingHandlerElements implements IConst
         genericsContext,
       );
       if (value) {
-        for (const entry of value.list || [ value ]) {
+        for (const entry of value.list ?? [ value ]) {
           entries.push(entry);
         }
       }

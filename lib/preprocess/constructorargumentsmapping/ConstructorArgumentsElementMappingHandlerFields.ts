@@ -34,10 +34,10 @@ export class ConstructorArgumentsElementMappingHandlerFields implements IConstru
 
     // Recursively handle all field values.
     const entries: Resource[] = [];
-    for (const field of fields.list || [ fields ]) {
+    for (const field of fields.list ?? [ fields ]) {
       const mapped = mapper
         .applyConstructorArgumentsParameters(configRoot, field, configElement, genericsContext);
-      for (const entry of mapped.list || [ mapped ]) {
+      for (const entry of mapped.list ?? [ mapped ]) {
         entries.push(entry);
       }
     }

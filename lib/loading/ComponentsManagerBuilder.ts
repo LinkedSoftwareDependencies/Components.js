@@ -2,6 +2,9 @@ import type { Resource } from 'rdf-object';
 import { RdfObjectLoader } from 'rdf-object';
 import type { Logger } from 'winston';
 import { createLogger, format, transports } from 'winston';
+
+// eslint-disable-next-line import/extensions
+import contextJson from '../../components/context.json';
 import { ComponentsManager } from '../ComponentsManager';
 import { ConfigConstructorPool } from '../construction/ConfigConstructorPool';
 import type { IConfigConstructorPool } from '../construction/IConfigConstructorPool';
@@ -21,11 +24,11 @@ import type { IModuleState } from './ModuleStateBuilder';
 /**
  * Builds {@link ComponentsManager}'s based on given options.
  */
-export class ComponentsManagerBuilder<Instance = any> {
+export class ComponentsManagerBuilder<TInstance = any> {
   private readonly mainModulePath: string;
   private readonly componentLoader: (registry: ComponentRegistry) => Promise<void>;
   private readonly configLoader: (registry: ConfigRegistry) => Promise<void>;
-  private readonly constructionStrategy: IConstructionStrategy<Instance>;
+  private readonly constructionStrategy: IConstructionStrategy<TInstance>;
   private readonly dumpErrorState: boolean;
   private readonly logger: Logger;
   private readonly moduleState?: IModuleState;
@@ -33,13 +36,13 @@ export class ComponentsManagerBuilder<Instance = any> {
   private readonly typeChecking: boolean;
   private readonly remoteContextLookups: boolean;
 
-  public constructor(options: IComponentsManagerBuilderOptions<Instance>) {
+  public constructor(options: IComponentsManagerBuilderOptions<TInstance>) {
     this.mainModulePath = options.mainModulePath;
-    this.componentLoader = options.moduleLoader || (async registry => registry.registerAvailableModules());
-    this.configLoader = options.configLoader || (async() => {
+    this.componentLoader = options.moduleLoader ?? (async registry => registry.registerAvailableModules());
+    this.configLoader = options.configLoader ?? (async() => {
       // Do nothing
     });
-    this.constructionStrategy = options.constructionStrategy || new ConstructionStrategyCommonJs({ req: require });
+    this.constructionStrategy = options.constructionStrategy ?? new ConstructionStrategyCommonJs({ req: require });
     this.dumpErrorState = options.dumpErrorState === undefined ? true : Boolean(options.dumpErrorState);
     this.logger = ComponentsManagerBuilder.createLogger(options.logLevel);
     this.moduleState = options.moduleState;
@@ -73,14 +76,14 @@ export class ComponentsManagerBuilder<Instance = any> {
   public static createObjectLoader(): RdfObjectLoader {
     return new RdfObjectLoader({
       uniqueLiterals: true,
-      context: require('../../components/context.json'),
+      context: contextJson,
     });
   }
 
   /**
    * @return A new instance of {@link ComponentsManager}.
    */
-  public async build(): Promise<ComponentsManager<Instance>> {
+  public async build(): Promise<ComponentsManager<TInstance>> {
     // Initialize module state
     let moduleState: IModuleState;
     if (this.moduleState) {
@@ -129,7 +132,7 @@ export class ComponentsManagerBuilder<Instance = any> {
     // Build constructor pool
     const runTypeConfigs = {};
     const parameterHandler = new ParameterHandler({ objectLoader, typeChecking: this.typeChecking });
-    const configConstructorPool: IConfigConstructorPool<Instance> = new ConfigConstructorPool({
+    const configConstructorPool: IConfigConstructorPool<TInstance> = new ConfigConstructorPool({
       objectLoader,
       configPreprocessors: [
         new ConfigPreprocessorOverride({
@@ -156,7 +159,7 @@ export class ComponentsManagerBuilder<Instance = any> {
       moduleState,
     });
 
-    return new ComponentsManager<Instance>({
+    return new ComponentsManager<TInstance>({
       moduleState,
       objectLoader,
       componentResources,
@@ -168,7 +171,7 @@ export class ComponentsManagerBuilder<Instance = any> {
   }
 }
 
-export interface IComponentsManagerBuilderOptions<Instance> {
+export interface IComponentsManagerBuilderOptions<TInstance> {
   /* ----- REQUIRED FIELDS ----- */
   /**
    * Absolute path to the package root from which module resolution should start.
@@ -192,7 +195,7 @@ export interface IComponentsManagerBuilderOptions<Instance> {
    * A strategy for constructing instances.
    * Defaults to {@link ConstructionStrategyCommonJs}.
    */
-  constructionStrategy?: IConstructionStrategy<Instance>;
+  constructionStrategy?: IConstructionStrategy<TInstance>;
   /**
    * If the error state should be dumped into `componentsjs-error-state.json`
    * after failed instantiations.

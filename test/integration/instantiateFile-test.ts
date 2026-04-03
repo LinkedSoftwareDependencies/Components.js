@@ -1,14 +1,16 @@
-import * as fs from 'fs';
-import * as Path from 'path';
-import { Readable } from 'stream';
+import * as fs from 'node:fs';
+import * as Path from 'node:path';
+import { Readable } from 'node:stream';
 import { ComponentsManager } from '../../lib/ComponentsManager';
 import type { IModuleState } from '../../lib/loading/ModuleStateBuilder';
 import { IRIS_DOAP, IRIS_OO, IRIS_RDF } from '../../lib/rdf/Iris';
 
 const quad = require('rdf-quad');
 
+// eslint-disable-next-line jest/no-mocks-import
 const Hello = require('../../__mocks__/helloworld').Hello;
 
+// eslint-disable-next-line jest/no-untyped-mock-factory
 jest.mock('winston', () => ({
   format: {
     colorize: jest.fn(),
@@ -20,6 +22,7 @@ jest.mock('winston', () => ({
   createLogger: jest.fn().mockReturnValue({
     warn: jest.fn(),
     info: jest.fn(),
+    error: jest.fn(),
   }),
   transports: {
     Console: jest.fn(),
@@ -31,10 +34,10 @@ describe('construction with component configs as files', () => {
   let manager: ComponentsManager<any>;
   beforeEach(async() => {
     moduleState = <any> {
-      mainModulePath: `${__dirname}/../../__mocks__`,
+      mainModulePath: Path.join(__dirname, '../../__mocks__'),
       importPaths: {
-        'http://example.org/': `${__dirname}/../`,
-        'https://linkedsoftwaredependencies.org/bundles/npm/example/^1.0.0/config/': `${__dirname}/../assets/`,
+        'http://example.org/': `${Path.join(__dirname, '..')}/`,
+        'https://linkedsoftwaredependencies.org/bundles/npm/example/^1.0.0/config/': `${Path.join(__dirname, '../assets')}/`,
       },
       packageJsons: {},
     };
@@ -72,7 +75,7 @@ describe('construction with component configs as files', () => {
           await registry.registerModuleStream(moduleStream);
         },
       });
-      manager.logger.error = jest.fn();
+      jest.spyOn(manager.logger, 'error').mockImplementation();
     });
 
     it('instantiated with a resource-based config', async() => {
@@ -403,8 +406,9 @@ describe('construction with component configs as files', () => {
         mainModulePath: __dirname,
         moduleState,
         async moduleLoader(registry) {
-          await registry.registerModule(Path.join(__dirname,
-            '../assets/module-inheritableparams-subclassmapping.jsonld'));
+          await registry.registerModule(
+            Path.join(__dirname, '../assets/module-inheritableparams-subclassmapping.jsonld'),
+          );
         },
       });
     });
@@ -469,8 +473,7 @@ describe('construction with component configs as files', () => {
         mainModulePath: __dirname,
         moduleState,
         async moduleLoader(registry) {
-          await registry.registerModule(Path.join(__dirname,
-            '../assets/module-subclassmapping-dynamicentries.jsonld'));
+          await registry.registerModule(Path.join(__dirname, '../assets/module-subclassmapping-dynamicentries.jsonld'));
         },
       });
     });
@@ -512,8 +515,9 @@ describe('construction with component configs as files', () => {
         mainModulePath: __dirname,
         moduleState,
         async moduleLoader(registry) {
-          await registry.registerModule(Path.join(__dirname,
-            '../assets/module-inheritableparams-subclassmapping-dynamicentries.jsonld'));
+          await registry.registerModule(
+            Path.join(__dirname, '../assets/module-inheritableparams-subclassmapping-dynamicentries.jsonld'),
+          );
         },
       });
     });
@@ -570,8 +574,9 @@ describe('construction with component configs as files', () => {
         mainModulePath: __dirname,
         moduleState,
         async moduleLoader(registry) {
-          await registry.registerModule(Path.join(__dirname,
-            '../assets/module-inheritableparams-dynamicentries.jsonld'));
+          await registry.registerModule(
+            Path.join(__dirname, '../assets/module-inheritableparams-dynamicentries.jsonld'),
+          );
         },
       });
     });
@@ -610,7 +615,7 @@ describe('construction with component configs as files', () => {
     it('should throw on invalid param values', async() => {
       await manager.configRegistry
         .register(Path.join(__dirname, '../assets/config.jsonld'));
-      manager.logger.error = jest.fn();
+      jest.spyOn(manager.logger, 'error').mockImplementation();
 
       await expect(manager.instantiate('http://example.org/myconfig')).rejects
         .toThrow(`The value "HI" for parameter "http://example.org/hello/say" is not of required range type "http://www.w3.org/2001/XMLSchema#boolean"`);
@@ -645,7 +650,7 @@ describe('construction with component configs as files', () => {
     it('should throw on invalid param values', async() => {
       await manager.configRegistry
         .register(Path.join(__dirname, '../assets/config-paramranges.jsonld'));
-      manager.logger.error = jest.fn();
+      jest.spyOn(manager.logger, 'error').mockImplementation();
 
       await expect(manager.instantiate('http://example.org/myconfig2')).rejects
         .toThrow(`The value "true" for parameter "http://example.org/hello/say" is not of required range type "GENERIC: http://example.org/HelloWorldModule#SayHelloComponent__generic_T"`);
@@ -680,7 +685,7 @@ describe('construction with component configs as files', () => {
     it('should throw on invalid param values', async() => {
       await manager.configRegistry
         .register(Path.join(__dirname, '../assets/config-paramranges-generics-nested-invalid.jsonld'));
-      manager.logger.error = jest.fn();
+      jest.spyOn(manager.logger, 'error').mockImplementation();
 
       await expect(manager.instantiate('http://example.org/myconfig1')).rejects
         .toThrow(`The value "abc" for parameter "http://example.org/hello/inner2" is not of required range type "GENERIC: http://example.org/HelloWorldModule#SayHelloComponentInner__generic_T"`);
@@ -726,7 +731,7 @@ describe('construction with component configs as files', () => {
     it('should throw on invalid param values', async() => {
       await manager.configRegistry
         .register(Path.join(__dirname, '../assets/config-paramranges-generics-nested-extends-invalid.jsonld'));
-      manager.logger.error = jest.fn();
+      jest.spyOn(manager.logger, 'error').mockImplementation();
 
       await expect(manager.instantiate('http://example.org/myconfig1')).rejects
         .toThrow(`The value "http://example.org/myconfig1-innervalue" with types "http://example.org/HelloWorldModule#SayHelloComponentInner" for parameter "http://example.org/hello/inner" is not of required range type "(http://example.org/HelloWorldModule#SayHelloComponentInnerAbstract)<GENERIC: http://example.org/HelloWorldModule#SayHelloComponent__generic_T>"`);
@@ -759,8 +764,7 @@ describe('construction with component configs as files', () => {
         mainModulePath: __dirname,
         moduleState,
         async moduleLoader(registry) {
-          await registry.registerModule(Path.join(__dirname,
-            '../assets/module-dynamicentries-nested.jsonld'));
+          await registry.registerModule(Path.join(__dirname, '../assets/module-dynamicentries-nested.jsonld'));
         },
       });
     });
@@ -845,7 +849,7 @@ describe('construction with component configs as files', () => {
       expect(run1).toBeInstanceOf(Hello);
       const val1 = await run1._params[0].somethingLazy();
       const val2 = await val1._params[0].somethingLazy();
-      expect(val2).toEqual('bla');
+      expect(val2).toBe('bla');
     });
   });
 
@@ -863,7 +867,7 @@ describe('construction with component configs as files', () => {
     it('should parse numerical instantations of the unknown parameter as number.', async() => {
       await manager.configRegistry
         .register(Path.join(__dirname, '../assets/config-paramranges-unknown-number.jsonld'));
-      manager.logger.error = jest.fn();
+      jest.spyOn(manager.logger, 'error').mockImplementation();
 
       const run1 = await manager.instantiate('http://example.org/myconfig4');
       expect(run1).toBeInstanceOf(Hello);
@@ -875,7 +879,7 @@ describe('construction with component configs as files', () => {
     it('should parse boolean instantations of the unknown parameter as boolean.', async() => {
       await manager.configRegistry
         .register(Path.join(__dirname, '../assets/config-paramranges-unknown-boolean.jsonld'));
-      manager.logger.error = jest.fn();
+      jest.spyOn(manager.logger, 'error').mockImplementation();
 
       const run1 = await manager.instantiate('http://example.org/myconfig4');
       expect(run1).toBeInstanceOf(Hello);
@@ -887,7 +891,7 @@ describe('construction with component configs as files', () => {
     it('should parse string instantations of the unknown parameter, containing a number, as string.', async() => {
       await manager.configRegistry
         .register(Path.join(__dirname, '../assets/config-paramranges-unknown-string.jsonld'));
-      manager.logger.error = jest.fn();
+      jest.spyOn(manager.logger, 'error').mockImplementation();
 
       const run1 = await manager.instantiate('http://example.org/myconfig4');
       expect(run1).toBeInstanceOf(Hello);

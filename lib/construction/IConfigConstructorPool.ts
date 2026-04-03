@@ -4,7 +4,7 @@ import type { IConstructionSettings } from './IConstructionSettings';
 /**
  * Manages and creates instances of components.
  */
-export interface IConfigConstructorPool<Instance> {
+export interface IConfigConstructorPool<TInstance> {
   /**
    * Instantiate a component based on a Resource.
    * @param configResource A config resource.
@@ -14,13 +14,13 @@ export interface IConfigConstructorPool<Instance> {
   instantiate: (
     configResource: Resource,
     settings: IConstructionSettings,
-  ) => Promise<Instance>;
+  ) => Promise<TInstance>;
 
   /**
    * Return the instance regsitry.
    * This is a hash from registered id to a Promise of the Instance.
    */
-  getInstanceRegistry: () => Record<string, Promise<Instance>>;
+  getInstanceRegistry: () => Record<string, Promise<TInstance>>;
 
   /**
    * Resets any internal state to what it originally was.

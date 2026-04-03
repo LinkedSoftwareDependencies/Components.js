@@ -8,20 +8,20 @@ import type { IArgumentsConstructor } from './IArgumentsConstructor';
  * Handles arguments with fields as hashes.
  */
 export class ArgumentConstructorHandlerHash implements IArgumentConstructorHandler {
-  public canHandle<Instance>(
+  public canHandle<TInstance>(
     value: Resource,
     settings: IConstructionSettings,
-    argsCreator: IArgumentsConstructor<Instance>,
+    argsCreator: IArgumentsConstructor<TInstance>,
   ): boolean {
     return Boolean(value.property.fields);
   }
 
-  public async handle<Instance>(
+  public async handle<TInstance>(
     argument: Resource,
     settings: IConstructionSettings,
-    argsCreator: IArgumentsConstructor<Instance>,
-  ): Promise<Instance> {
-    const fields = argument.property.fields.list || [];
+    argsCreator: IArgumentsConstructor<TInstance>,
+  ): Promise<TInstance> {
+    const fields = argument.property.fields.list ?? [];
 
     // Determine all key-value pairs
     const entries = await Promise.all(fields.map(async(entry: Resource) => {

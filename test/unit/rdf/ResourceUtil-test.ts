@@ -1,4 +1,5 @@
-import * as fs from 'fs';
+import * as fs from 'node:fs';
+import * as Path from 'node:path';
 import type { Resource } from 'rdf-object';
 import { RdfObjectLoader } from 'rdf-object';
 import { uniqueTypes } from '../../../lib/rdf/ResourceUtil';
@@ -11,7 +12,7 @@ describe('ResourceUtil', () => {
     beforeEach(async() => {
       objectLoader = new RdfObjectLoader({
         uniqueLiterals: true,
-        context: JSON.parse(fs.readFileSync(`${__dirname}/../../../components/context.jsonld`, 'utf8')),
+        context: JSON.parse(fs.readFileSync(Path.join(__dirname, '../../../components/context.jsonld'), 'utf8')),
       });
       await objectLoader.context;
 

@@ -1,3 +1,4 @@
+import * as Path from 'node:path';
 import { RdfObjectLoader } from 'rdf-object';
 import { createLogger } from 'winston';
 import { ConfigConstructorPool } from '../../../lib/construction/ConfigConstructorPool';
@@ -12,6 +13,7 @@ import { ConfigPreprocessorComponentMapped } from '../../../lib/preprocess/Confi
 import { ConfigPreprocessorOverride } from '../../../lib/preprocess/ConfigPreprocessorOverride';
 
 const mainModulePath = __dirname;
+// eslint-disable-next-line jest/no-untyped-mock-factory
 jest.mock('winston', () => ({
   createLogger: jest.fn(() => ({
     info: jest.fn(),
@@ -22,7 +24,7 @@ jest.mock('winston', () => ({
     label: jest.fn(),
     colorize: jest.fn(),
     timestamp: jest.fn(),
-    printf: jest.fn(cb => {
+    printf: jest.fn((cb) => {
       cb({ level: 'L', message: 'M', label: 'L', timestamp: 'T' });
     }),
     combine: jest.fn(),
@@ -35,11 +37,12 @@ const dummyModuleState = {
   mainModulePath,
   componentModules: {
     A: {
-      1: `${__dirname}/../../assets/module.jsonld`,
+      1: Path.join(__dirname, '../../assets/module.jsonld'),
     },
   },
   nodeModulePaths: [],
 };
+// eslint-disable-next-line jest/no-untyped-mock-factory
 jest.mock('../../../lib/loading/ModuleStateBuilder', () => ({
   // eslint-disable-next-line object-shorthand
   ModuleStateBuilder: function() {
@@ -63,7 +66,7 @@ describe('ComponentsManagerBuilder', () => {
     expect(mgr).toBeTruthy();
     expect(mgr.moduleState).toBe(dummyModuleState);
     expect(mgr.objectLoader).toBeInstanceOf(RdfObjectLoader);
-    expect(Object.keys(mgr.componentResources).length).toBe(2);
+    expect(Object.keys(mgr.componentResources)).toHaveLength(2);
     expect(Object.keys(mgr.componentResources)
       .includes('http://example.org/HelloWorldModule#SayHelloComponent')).toBeTruthy();
     expect(Object.keys(mgr.componentResources)
@@ -72,7 +75,7 @@ describe('ComponentsManagerBuilder', () => {
     expect(mgr.dumpErrorState).toBe(true);
     expect(mgr.configConstructorPool).toBeInstanceOf(ConfigConstructorPool);
     expect((<any> mgr.configConstructorPool).constructionStrategy).toBeInstanceOf(ConstructionStrategyCommonJs);
-    expect((<any> mgr.configConstructorPool).configPreprocessors.length).toBe(3);
+    expect((<any> mgr.configConstructorPool).configPreprocessors).toHaveLength(3);
     expect((<any> mgr.configConstructorPool).configPreprocessors[0]).toBeInstanceOf(ConfigPreprocessorOverride);
     expect((<any> mgr.configConstructorPool).configPreprocessors[1]).toBeInstanceOf(ConfigPreprocessorComponentMapped);
     expect((<any> mgr.configConstructorPool).configPreprocessors[2]).toBeInstanceOf(ConfigPreprocessorComponent);
@@ -94,12 +97,12 @@ describe('ComponentsManagerBuilder', () => {
     expect(mgr).toBeTruthy();
     expect(mgr.moduleState).toBe(dummyModuleState);
     expect(mgr.objectLoader).toBeInstanceOf(RdfObjectLoader);
-    expect(Object.keys(mgr.componentResources).length).toBe(0);
+    expect(Object.keys(mgr.componentResources)).toHaveLength(0);
     expect(mgr.configRegistry).toBeInstanceOf(ConfigRegistry);
     expect(mgr.dumpErrorState).toBe(true);
     expect(mgr.configConstructorPool).toBeInstanceOf(ConfigConstructorPool);
     expect((<any> mgr.configConstructorPool).constructionStrategy).toBeInstanceOf(ConstructionStrategyCommonJs);
-    expect((<any> mgr.configConstructorPool).configPreprocessors.length).toBe(3);
+    expect((<any> mgr.configConstructorPool).configPreprocessors).toHaveLength(3);
     expect((<any> mgr.configConstructorPool).configPreprocessors[0]).toBeInstanceOf(ConfigPreprocessorOverride);
     expect((<any> mgr.configConstructorPool).configPreprocessors[1]).toBeInstanceOf(ConfigPreprocessorComponentMapped);
     expect((<any> mgr.configConstructorPool).configPreprocessors[2]).toBeInstanceOf(ConfigPreprocessorComponent);
@@ -111,8 +114,8 @@ describe('ComponentsManagerBuilder', () => {
   });
 
   it('should build with custom non-empty moduleLoader', async() => {
-    const moduleLoader = jest.fn(async registry => {
-      await registry.registerModule(`${__dirname}/../../assets/module.jsonld`);
+    const moduleLoader = jest.fn(async(registry) => {
+      await registry.registerModule(Path.join(__dirname, '../../assets/module.jsonld'));
     });
     const componentsManagerBuilder = new ComponentsManagerBuilder({
       mainModulePath,
@@ -123,7 +126,7 @@ describe('ComponentsManagerBuilder', () => {
     expect(mgr).toBeTruthy();
     expect(mgr.moduleState).toBe(dummyModuleState);
     expect(mgr.objectLoader).toBeInstanceOf(RdfObjectLoader);
-    expect(Object.keys(mgr.componentResources).length).toBe(2);
+    expect(Object.keys(mgr.componentResources)).toHaveLength(2);
     expect(Object.keys(mgr.componentResources)
       .includes('http://example.org/HelloWorldModule#SayHelloComponent')).toBeTruthy();
     expect(Object.keys(mgr.componentResources)
@@ -132,7 +135,7 @@ describe('ComponentsManagerBuilder', () => {
     expect(mgr.dumpErrorState).toBe(true);
     expect(mgr.configConstructorPool).toBeInstanceOf(ConfigConstructorPool);
     expect((<any> mgr.configConstructorPool).constructionStrategy).toBeInstanceOf(ConstructionStrategyCommonJs);
-    expect((<any> mgr.configConstructorPool).configPreprocessors.length).toBe(3);
+    expect((<any> mgr.configConstructorPool).configPreprocessors).toHaveLength(3);
     expect((<any> mgr.configConstructorPool).configPreprocessors[0]).toBeInstanceOf(ConfigPreprocessorOverride);
     expect((<any> mgr.configConstructorPool).configPreprocessors[1]).toBeInstanceOf(ConfigPreprocessorComponentMapped);
     expect((<any> mgr.configConstructorPool).configPreprocessors[2]).toBeInstanceOf(ConfigPreprocessorComponent);
@@ -144,8 +147,8 @@ describe('ComponentsManagerBuilder', () => {
   });
 
   it('should build with custom configLoader', async() => {
-    const configLoader = jest.fn(async configRegistry => {
-      await configRegistry.register(`${__dirname}/../../assets/config.jsonld`);
+    const configLoader = jest.fn(async(configRegistry) => {
+      await configRegistry.register(Path.join(__dirname, '../../assets/config.jsonld'));
     });
     const componentsManagerBuilder = new ComponentsManagerBuilder({
       mainModulePath,
@@ -156,14 +159,14 @@ describe('ComponentsManagerBuilder', () => {
     expect(mgr).toBeTruthy();
     expect(mgr.moduleState).toBe(dummyModuleState);
     expect(mgr.objectLoader).toBeInstanceOf(RdfObjectLoader);
-    expect(Object.keys(mgr.componentResources).length).toBe(2);
+    expect(Object.keys(mgr.componentResources)).toHaveLength(2);
     expect(mgr.configRegistry).toBeInstanceOf(ConfigRegistry);
     expect(Object.keys(mgr.objectLoader.resources)
       .includes('http://example.org/myconfig')).toBeTruthy();
     expect(mgr.dumpErrorState).toBe(true);
     expect(mgr.configConstructorPool).toBeInstanceOf(ConfigConstructorPool);
     expect((<any> mgr.configConstructorPool).constructionStrategy).toBeInstanceOf(ConstructionStrategyCommonJs);
-    expect((<any> mgr.configConstructorPool).configPreprocessors.length).toBe(3);
+    expect((<any> mgr.configConstructorPool).configPreprocessors).toHaveLength(3);
     expect((<any> mgr.configConstructorPool).configPreprocessors[0]).toBeInstanceOf(ConfigPreprocessorOverride);
     expect((<any> mgr.configConstructorPool).configPreprocessors[1]).toBeInstanceOf(ConfigPreprocessorComponentMapped);
     expect((<any> mgr.configConstructorPool).configPreprocessors[2]).toBeInstanceOf(ConfigPreprocessorComponent);
@@ -185,12 +188,12 @@ describe('ComponentsManagerBuilder', () => {
     expect(mgr).toBeTruthy();
     expect(mgr.moduleState).toBe(dummyModuleState);
     expect(mgr.objectLoader).toBeInstanceOf(RdfObjectLoader);
-    expect(Object.keys(mgr.componentResources).length).toBe(2);
+    expect(Object.keys(mgr.componentResources)).toHaveLength(2);
     expect(mgr.configRegistry).toBeInstanceOf(ConfigRegistry);
     expect(mgr.dumpErrorState).toBe(true);
     expect(mgr.configConstructorPool).toBeInstanceOf(ConfigConstructorPool);
     expect((<any> mgr.configConstructorPool).constructionStrategy).toBe(constructionStrategy);
-    expect((<any> mgr.configConstructorPool).configPreprocessors.length).toBe(3);
+    expect((<any> mgr.configConstructorPool).configPreprocessors).toHaveLength(3);
     expect((<any> mgr.configConstructorPool).configPreprocessors[0]).toBeInstanceOf(ConfigPreprocessorOverride);
     expect((<any> mgr.configConstructorPool).configPreprocessors[1]).toBeInstanceOf(ConfigPreprocessorComponentMapped);
     expect((<any> mgr.configConstructorPool).configPreprocessors[2]).toBeInstanceOf(ConfigPreprocessorComponent);
@@ -211,12 +214,12 @@ describe('ComponentsManagerBuilder', () => {
     expect(mgr).toBeTruthy();
     expect(mgr.moduleState).toBe(dummyModuleState);
     expect(mgr.objectLoader).toBeInstanceOf(RdfObjectLoader);
-    expect(Object.keys(mgr.componentResources).length).toBe(2);
+    expect(Object.keys(mgr.componentResources)).toHaveLength(2);
     expect(mgr.configRegistry).toBeInstanceOf(ConfigRegistry);
     expect(mgr.dumpErrorState).toBe(true);
     expect(mgr.configConstructorPool).toBeInstanceOf(ConfigConstructorPool);
     expect((<any> mgr.configConstructorPool).constructionStrategy).toBeInstanceOf(ConstructionStrategyCommonJs);
-    expect((<any> mgr.configConstructorPool).configPreprocessors.length).toBe(3);
+    expect((<any> mgr.configConstructorPool).configPreprocessors).toHaveLength(3);
     expect((<any> mgr.configConstructorPool).configPreprocessors[0]).toBeInstanceOf(ConfigPreprocessorOverride);
     expect((<any> mgr.configConstructorPool).configPreprocessors[1]).toBeInstanceOf(ConfigPreprocessorComponentMapped);
     expect((<any> mgr.configConstructorPool).configPreprocessors[2]).toBeInstanceOf(ConfigPreprocessorComponent);
@@ -237,12 +240,12 @@ describe('ComponentsManagerBuilder', () => {
     expect(mgr).toBeTruthy();
     expect(mgr.moduleState).toBe(dummyModuleState);
     expect(mgr.objectLoader).toBeInstanceOf(RdfObjectLoader);
-    expect(Object.keys(mgr.componentResources).length).toBe(2);
+    expect(Object.keys(mgr.componentResources)).toHaveLength(2);
     expect(mgr.configRegistry).toBeInstanceOf(ConfigRegistry);
     expect(mgr.dumpErrorState).toBe(false);
     expect(mgr.configConstructorPool).toBeInstanceOf(ConfigConstructorPool);
     expect((<any> mgr.configConstructorPool).constructionStrategy).toBeInstanceOf(ConstructionStrategyCommonJs);
-    expect((<any> mgr.configConstructorPool).configPreprocessors.length).toBe(3);
+    expect((<any> mgr.configConstructorPool).configPreprocessors).toHaveLength(3);
     expect((<any> mgr.configConstructorPool).configPreprocessors[0]).toBeInstanceOf(ConfigPreprocessorOverride);
     expect((<any> mgr.configConstructorPool).configPreprocessors[1]).toBeInstanceOf(ConfigPreprocessorComponentMapped);
     expect((<any> mgr.configConstructorPool).configPreprocessors[2]).toBeInstanceOf(ConfigPreprocessorComponent);
@@ -263,12 +266,12 @@ describe('ComponentsManagerBuilder', () => {
     expect(mgr).toBeTruthy();
     expect(mgr.moduleState).toBe(dummyModuleState);
     expect(mgr.objectLoader).toBeInstanceOf(RdfObjectLoader);
-    expect(Object.keys(mgr.componentResources).length).toBe(2);
+    expect(Object.keys(mgr.componentResources)).toHaveLength(2);
     expect(mgr.configRegistry).toBeInstanceOf(ConfigRegistry);
     expect(mgr.dumpErrorState).toBe(true);
     expect(mgr.configConstructorPool).toBeInstanceOf(ConfigConstructorPool);
     expect((<any> mgr.configConstructorPool).constructionStrategy).toBeInstanceOf(ConstructionStrategyCommonJs);
-    expect((<any> mgr.configConstructorPool).configPreprocessors.length).toBe(3);
+    expect((<any> mgr.configConstructorPool).configPreprocessors).toHaveLength(3);
     expect((<any> mgr.configConstructorPool).configPreprocessors[0]).toBeInstanceOf(ConfigPreprocessorOverride);
     expect((<any> mgr.configConstructorPool).configPreprocessors[1]).toBeInstanceOf(ConfigPreprocessorComponentMapped);
     expect((<any> mgr.configConstructorPool).configPreprocessors[2]).toBeInstanceOf(ConfigPreprocessorComponent);
@@ -285,7 +288,7 @@ describe('ComponentsManagerBuilder', () => {
       mainModulePath,
       componentModules: {
         B: {
-          1: `${__dirname}/../../assets/module.jsonld`,
+          1: Path.join(__dirname, '../../assets/module.jsonld'),
         },
       },
       nodeModulePaths: [],
@@ -299,12 +302,12 @@ describe('ComponentsManagerBuilder', () => {
     expect(mgr).toBeTruthy();
     expect(mgr.moduleState).toBe(customModuleState);
     expect(mgr.objectLoader).toBeInstanceOf(RdfObjectLoader);
-    expect(Object.keys(mgr.componentResources).length).toBe(2);
+    expect(Object.keys(mgr.componentResources)).toHaveLength(2);
     expect(mgr.configRegistry).toBeInstanceOf(ConfigRegistry);
     expect(mgr.dumpErrorState).toBe(true);
     expect(mgr.configConstructorPool).toBeInstanceOf(ConfigConstructorPool);
     expect((<any> mgr.configConstructorPool).constructionStrategy).toBeInstanceOf(ConstructionStrategyCommonJs);
-    expect((<any> mgr.configConstructorPool).configPreprocessors.length).toBe(3);
+    expect((<any> mgr.configConstructorPool).configPreprocessors).toHaveLength(3);
     expect((<any> mgr.configConstructorPool).configPreprocessors[0]).toBeInstanceOf(ConfigPreprocessorOverride);
     expect((<any> mgr.configConstructorPool).configPreprocessors[1]).toBeInstanceOf(ConfigPreprocessorComponentMapped);
     expect((<any> mgr.configConstructorPool).configPreprocessors[2]).toBeInstanceOf(ConfigPreprocessorComponent);
@@ -326,12 +329,12 @@ describe('ComponentsManagerBuilder', () => {
     expect(mgr).toBeTruthy();
     expect(mgr.moduleState).toBe(dummyModuleState);
     expect(mgr.objectLoader).toBeInstanceOf(RdfObjectLoader);
-    expect(Object.keys(mgr.componentResources).length).toBe(2);
+    expect(Object.keys(mgr.componentResources)).toHaveLength(2);
     expect(mgr.configRegistry).toBeInstanceOf(ConfigRegistry);
     expect(mgr.dumpErrorState).toBe(true);
     expect(mgr.configConstructorPool).toBeInstanceOf(ConfigConstructorPool);
     expect((<any> mgr.configConstructorPool).constructionStrategy).toBeInstanceOf(ConstructionStrategyCommonJs);
-    expect((<any> mgr.configConstructorPool).configPreprocessors.length).toBe(3);
+    expect((<any> mgr.configConstructorPool).configPreprocessors).toHaveLength(3);
     expect((<any> mgr.configConstructorPool).configPreprocessors[0]).toBeInstanceOf(ConfigPreprocessorOverride);
     expect((<any> mgr.configConstructorPool).configPreprocessors[1]).toBeInstanceOf(ConfigPreprocessorComponentMapped);
     expect((<any> mgr.configConstructorPool).configPreprocessors[2]).toBeInstanceOf(ConfigPreprocessorComponent);
@@ -353,12 +356,12 @@ describe('ComponentsManagerBuilder', () => {
     expect(mgr).toBeTruthy();
     expect(mgr.moduleState).toBe(dummyModuleState);
     expect(mgr.objectLoader).toBeInstanceOf(RdfObjectLoader);
-    expect(Object.keys(mgr.componentResources).length).toBe(2);
+    expect(Object.keys(mgr.componentResources)).toHaveLength(2);
     expect(mgr.configRegistry).toBeInstanceOf(ConfigRegistry);
     expect(mgr.dumpErrorState).toBe(true);
     expect(mgr.configConstructorPool).toBeInstanceOf(ConfigConstructorPool);
     expect((<any> mgr.configConstructorPool).constructionStrategy).toBeInstanceOf(ConstructionStrategyCommonJs);
-    expect((<any> mgr.configConstructorPool).configPreprocessors.length).toBe(3);
+    expect((<any> mgr.configConstructorPool).configPreprocessors).toHaveLength(3);
     expect((<any> mgr.configConstructorPool).configPreprocessors[0]).toBeInstanceOf(ConfigPreprocessorOverride);
     expect((<any> mgr.configConstructorPool).configPreprocessors[1]).toBeInstanceOf(ConfigPreprocessorComponentMapped);
     expect((<any> mgr.configConstructorPool).configPreprocessors[2]).toBeInstanceOf(ConfigPreprocessorComponent);

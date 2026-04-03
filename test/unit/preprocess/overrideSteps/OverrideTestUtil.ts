@@ -1,4 +1,5 @@
-import * as fs from 'fs';
+import * as fs from 'node:fs';
+import * as Path from 'node:path';
 import { RdfObjectLoader } from 'rdf-object';
 
 /**
@@ -7,7 +8,7 @@ import { RdfObjectLoader } from 'rdf-object';
 export async function setupObjectLoader(): Promise<RdfObjectLoader> {
   const objectLoader = new RdfObjectLoader({
     uniqueLiterals: true,
-    context: JSON.parse(fs.readFileSync(`${__dirname}/../../../../components/context.jsonld`, 'utf8')),
+    context: JSON.parse(fs.readFileSync(Path.join(__dirname, '../../../../components/context.jsonld'), 'utf8')),
   });
   await objectLoader.context;
 

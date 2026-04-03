@@ -1,13 +1,11 @@
-import { createReadStream } from 'fs';
-import type { Readable } from 'stream';
+import { createReadStream, promises as fs } from 'node:fs';
+import type { Readable } from 'node:stream';
 import type * as RDF from '@rdfjs/types';
 import type { ParseOptions } from 'rdf-parse';
 import { rdfParser } from 'rdf-parse';
 import type { Logger } from 'winston';
 import { PrefetchedDocumentLoader } from './PrefetchedDocumentLoader';
 import { RdfStreamIncluder } from './RdfStreamIncluder';
-// Import syntax only works in Node > 12
-const fs = require('fs').promises;
 
 /**
  * Parses a data stream to a triple stream.
@@ -20,7 +18,7 @@ export class RdfParser {
    */
   public parse(textStream: NodeJS.ReadableStream, options: RdfParserOptions): RDF.Stream & Readable {
     // Parsing libraries don't work as expected if path contains backslashes
-    options.path = options.path.replace(/\\+/gu, '/');
+    options.path = options.path.replaceAll(/\\+/gu, '/');
 
     if (!options.baseIRI) {
       // Try converting path to URL using defined import paths
@@ -47,7 +45,7 @@ export class RdfParser {
     (<any> options)['@comunica/actor-rdf-parse-jsonld:parserOptions'] = {
       // Override the JSON-LD document loader
       documentLoader: new PrefetchedDocumentLoader({
-        contexts: options.contexts || {},
+        contexts: options.contexts ?? {},
         logger: options.logger,
         path: options.path,
         remoteContextLookups: options.remoteContextLookups,

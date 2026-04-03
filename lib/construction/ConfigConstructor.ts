@@ -28,8 +28,8 @@ import type { IConstructionStrategy } from './strategy/IConstructionStrategy';
  * If you want to make sure that instances are reused,
  * be sure to call {@link ConfigConstructorPool} instead.
  */
-export class ConfigConstructor<Instance> implements IArgumentsConstructor<Instance> {
-  private static readonly ARGS_HANDLERS: IArgumentConstructorHandler[] = [
+export class ConfigConstructor<TInstance> implements IArgumentsConstructor<TInstance> {
+  private static readonly argsHandlers: IArgumentConstructorHandler[] = [
     new ArgumentConstructorHandlerUndefined(),
     new ArgumentConstructorHandlerHash(),
     new ArgumentConstructorHandlerArray(),
@@ -40,11 +40,11 @@ export class ConfigConstructor<Instance> implements IArgumentsConstructor<Instan
   ];
 
   public readonly objectLoader: RdfObjectLoader;
-  public readonly configConstructorPool: IConfigConstructorPool<Instance>;
-  public readonly constructionStrategy: IConstructionStrategy<Instance>;
+  public readonly configConstructorPool: IConfigConstructorPool<TInstance>;
+  public readonly constructionStrategy: IConstructionStrategy<TInstance>;
   private readonly moduleState: IModuleState;
 
-  public constructor(options: IConfigConstructorOptions<Instance>) {
+  public constructor(options: IConfigConstructorOptions<TInstance>) {
     this.objectLoader = options.objectLoader;
     this.configConstructorPool = options.configConstructorPool;
     this.constructionStrategy = options.constructionStrategy;
@@ -54,7 +54,7 @@ export class ConfigConstructor<Instance> implements IArgumentsConstructor<Instan
   public async getArgumentValues(
     values: Resource[],
     settings: IConstructionSettings,
-  ): Promise<Instance> {
+  ): Promise<TInstance> {
     if (values.length === 0) {
       return this.constructionStrategy.createUndefined();
     }
@@ -69,9 +69,9 @@ export class ConfigConstructor<Instance> implements IArgumentsConstructor<Instan
   public async getArgumentValue(
     value: Resource,
     settings: IConstructionSettings,
-  ): Promise<Instance> {
+  ): Promise<TInstance> {
     // Check if this args resource can be handled by one of the built-in handlers.
-    for (const handler of ConfigConstructor.ARGS_HANDLERS) {
+    for (const handler of ConfigConstructor.argsHandlers) {
       if (handler.canHandle(value, settings, this)) {
         return handler.handle(value, settings, this);
       }
@@ -90,7 +90,7 @@ export class ConfigConstructor<Instance> implements IArgumentsConstructor<Instan
   public async createArguments(
     config: Resource,
     settings: IConstructionSettings,
-  ): Promise<Instance[]> {
+  ): Promise<TInstance[]> {
     if (config.property.arguments) {
       if (!config.property.arguments.list) {
         throw new ErrorResourcesContext('Detected non-RDF-list as value for config arguments', { config });
@@ -110,8 +110,8 @@ export class ConfigConstructor<Instance> implements IArgumentsConstructor<Instan
   public async createInstance(
     config: Resource,
     settings: IConstructionSettings,
-  ): Promise<Instance> {
-    const args: Instance[] = await this.createArguments(config, settings);
+  ): Promise<TInstance> {
+    const args: TInstance[] = await this.createArguments(config, settings);
     return this.constructionStrategy.createInstance({
       settings,
       moduleState: this.moduleState,
@@ -128,7 +128,7 @@ export class ConfigConstructor<Instance> implements IArgumentsConstructor<Instan
 /**
  * Options for a component factory.
  */
-export interface IConfigConstructorOptions<Instance> {
+export interface IConfigConstructorOptions<TInstance> {
   /**
    * The RDF object loader.
    */
@@ -136,11 +136,11 @@ export interface IConfigConstructorOptions<Instance> {
   /**
    * The instance pool.
    */
-  configConstructorPool: IConfigConstructorPool<Instance>;
+  configConstructorPool: IConfigConstructorPool<TInstance>;
   /**
    * The strategy for construction.
    */
-  constructionStrategy: IConstructionStrategy<Instance>;
+  constructionStrategy: IConstructionStrategy<TInstance>;
   /**
    * The module state.
    */

@@ -1,6 +1,6 @@
-import Path = require('path');
-import type { Readable, TransformCallback } from 'stream';
-import { Transform } from 'stream';
+import * as Path from 'node:path';
+import type { Readable, TransformCallback } from 'node:stream';
+import { Transform } from 'node:stream';
 import type * as RDF from '@rdfjs/types';
 import { getNamedNodes, getTerms } from 'rdf-terms';
 import { IRIS_RDFS } from './Iris';
@@ -21,6 +21,7 @@ export class RdfStreamIncluder extends Transform {
     this.parserOptions = parserOptions;
   }
 
+  // eslint-disable-next-line ts/naming-convention
   public _transform(quad: RDF.Quad, encoding: string, callback: TransformCallback): boolean {
     this.handleImports(quad);
     this.validateIris(quad);
@@ -28,9 +29,9 @@ export class RdfStreamIncluder extends Transform {
     return true;
   }
 
+  // eslint-disable-next-line ts/naming-convention
   public _flush(callback: TransformCallback): void {
     if (--this.runningImporters === 0) {
-      // eslint-disable-next-line callback-return
       callback();
     } else {
       this.flushCallback = callback;

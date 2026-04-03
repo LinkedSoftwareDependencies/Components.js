@@ -1,4 +1,4 @@
-import * as Path from 'path';
+import * as Path from 'node:path';
 import type { IConstructionSettings } from '../../../../lib/construction/IConstructionSettings';
 import { ConstructionStrategyCommonJs } from '../../../../lib/construction/strategy/ConstructionStrategyCommonJs';
 import type { IModuleState } from '../../../../lib/loading/ModuleStateBuilder';
@@ -222,9 +222,9 @@ describe('ConstructionStrategyCommonJs', () => {
         instanceId: 'myinstance',
       });
       expect(instance).toBeInstanceOf(MyClass);
-      expect(instance.arg1).toEqual('a');
-      expect(instance.arg2).toEqual('b');
-      expect(instance.arg3).toEqual('c');
+      expect(instance.arg1).toBe('a');
+      expect(instance.arg2).toBe('b');
+      expect(instance.arg3).toBe('c');
     });
 
     it('without requireElement and without constructor in another module', () => {
@@ -409,10 +409,10 @@ describe('ConstructionStrategyCommonJs', () => {
   describe('createLazySupplier', () => {
     it('for a lazy supplier', async() => {
       const supplier = () => Promise.resolve('a');
-      expect(await constructionStrategy.createLazySupplier({
+      await expect(constructionStrategy.createLazySupplier({
         settings,
         supplier,
-      })).toBe(supplier);
+      })).resolves.toBe(supplier);
     });
   });
 
@@ -421,14 +421,14 @@ describe('ConstructionStrategyCommonJs', () => {
       expect(constructionStrategy.createPrimitive({
         settings,
         value: 'abc',
-      })).toEqual('abc');
+      })).toBe('abc');
     });
 
     it('for a number', () => {
       expect(constructionStrategy.createPrimitive({
         settings,
         value: 123,
-      })).toEqual(123);
+      })).toBe(123);
     });
   });
 
@@ -457,7 +457,7 @@ describe('ConstructionStrategyCommonJs', () => {
       expect(constructionStrategy.getVariableValue({
         settings,
         variableName: 'varA',
-      })).toEqual(123);
+      })).toBe(123);
     });
   });
 

@@ -1,5 +1,6 @@
 import 'jest-rdf';
-import * as fs from 'fs';
+import * as fs from 'node:fs';
+import * as Path from 'node:path';
 import type { Resource } from 'rdf-object';
 import { RdfObjectLoader } from 'rdf-object';
 import type { Logger } from 'winston';
@@ -18,7 +19,7 @@ describe('ConfigPreprocessorComponent', () => {
   beforeEach(async() => {
     objectLoader = new RdfObjectLoader({
       uniqueLiterals: true,
-      context: JSON.parse(fs.readFileSync(`${__dirname}/../../../components/context.jsonld`, 'utf8')),
+      context: JSON.parse(fs.readFileSync(Path.join(__dirname, '../../../components/context.jsonld'), 'utf8')),
     });
     await objectLoader.context;
     componentResources = {
@@ -73,7 +74,7 @@ describe('ConfigPreprocessorComponent', () => {
       });
       preprocessor.canHandle(config1);
       preprocessor.canHandle(config2);
-      expect((<any> preprocessor).runTypeConfigs['ex:Component'].length).toEqual(2);
+      expect((<any> preprocessor).runTypeConfigs['ex:Component']).toHaveLength(2);
       expect((<any> preprocessor).runTypeConfigs['ex:Component'][0]).toBe(config1);
       expect((<any> preprocessor).runTypeConfigs['ex:Component'][1]).toBe(config2);
     });
@@ -85,7 +86,7 @@ describe('ConfigPreprocessorComponent', () => {
       });
       preprocessor.canHandle(config);
       preprocessor.canHandle(config);
-      expect((<any> preprocessor).runTypeConfigs['ex:Component'].length).toEqual(1);
+      expect((<any> preprocessor).runTypeConfigs['ex:Component']).toHaveLength(1);
       expect((<any> preprocessor).runTypeConfigs['ex:Component'][0]).toBe(config);
     });
 
@@ -748,7 +749,7 @@ describe('ConfigPreprocessorComponent', () => {
       });
       preprocessor.inheritParameterValues(configIn, componentIn);
       expect(configIn.toQuads()).toBeRdfIsomorphic(configOut.toQuads());
-      expect(configIn.toQuads().length).toBe(configOut.toQuads().length);
+      expect(configIn.toQuads()).toHaveLength(configOut.toQuads().length);
       expect(componentIn.toQuads()).toBeRdfIsomorphic(componentOut.toQuads());
     });
 
@@ -768,8 +769,7 @@ describe('ConfigPreprocessorComponent', () => {
         }),
       ];
 
-      const configIn = objectLoader.createCompactedResource({
-      });
+      const configIn = objectLoader.createCompactedResource({});
       const configOut = objectLoader.createCompactedResource({
         'ex:OtherComponent#param1': [
           '"ABC"',
@@ -825,7 +825,7 @@ describe('ConfigPreprocessorComponent', () => {
       preprocessor.inheritParameterValues(configIn, componentIn);
       preprocessor.inheritParameterValues(configIn, componentIn);
       expect(configIn.toQuads()).toBeRdfIsomorphic(configOut.toQuads());
-      expect(configIn.toQuads().length).toBe(configOut.toQuads().length);
+      expect(configIn.toQuads()).toHaveLength(configOut.toQuads().length);
       expect(componentIn.toQuads()).toBeRdfIsomorphic(componentOut.toQuads());
     });
 

@@ -29,6 +29,9 @@ module.exports = [
       new webpack.DefinePlugin({
         'process.platform': JSON.stringify('browser'),
       }),
+      new webpack.NormalModuleReplacementPlugin(/^node:/, (resource) => {
+        resource.request = resource.request.replace(/^node:/, '');
+      }),
     ],
     resolve: {
       fallback: {

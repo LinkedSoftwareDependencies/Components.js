@@ -1,15 +1,19 @@
+import * as Path from 'node:path';
 import type { RdfObjectLoader } from 'rdf-object';
 import { ComponentsManager } from '../../lib/ComponentsManager';
 import type { IConfigConstructorPool } from '../../lib/construction/IConfigConstructorPool';
 import type { IConstructionSettings } from '../../lib/construction/IConstructionSettings';
 
 const N3 = require('n3');
+
+// eslint-disable-next-line jest/no-untyped-mock-factory
 jest.mock('n3', () => ({
   Lexer: jest.fn((args: any) => ({ type: 'LEXER', args })),
   Parser: jest.fn((args: any) => ({ type: 'PARSER', args })),
   Util: { type: 'UTIL' },
 }));
 
+// eslint-disable-next-line jest/no-mocks-import
 const Hello = require('../../__mocks__/helloworld').Hello;
 
 describe('construction with component configs as Resource', () => {
@@ -19,9 +23,9 @@ describe('construction with component configs as Resource', () => {
   let settings: IConstructionSettings;
   beforeEach(async() => {
     manager = await ComponentsManager.build({
-      mainModulePath: `${__dirname}/../../__mocks__`,
+      mainModulePath: Path.join(__dirname, '../../__mocks__'),
       moduleState: <any> {
-        mainModulePath: `${__dirname}/../../__mocks__`,
+        mainModulePath: Path.join(__dirname, '../../__mocks__'),
         packageJsons: {},
       },
       async moduleLoader() {
@@ -49,7 +53,7 @@ describe('construction with component configs as Resource', () => {
       },
     });
     const instance = await configConstructorPool.instantiate(config, settings);
-    expect(instance.type).toEqual('LEXER');
+    expect(instance.type).toBe('LEXER');
     expect(N3.Lexer).toHaveBeenCalledWith({ comments: 'true' });
   });
 
@@ -68,7 +72,7 @@ describe('construction with component configs as Resource', () => {
       },
     });
     const instance = await configConstructorPool.instantiate(config, settings);
-    expect(instance.type).toEqual('LEXER');
+    expect(instance.type).toBe('LEXER');
     expect(N3.Lexer).toHaveBeenCalledWith({ comments: [ 'true' ]});
   });
 
@@ -85,7 +89,7 @@ describe('construction with component configs as Resource', () => {
       },
     });
     const instance = await configConstructorPool.instantiate(config, settings);
-    expect(instance.type).toEqual('LEXER');
+    expect(instance.type).toBe('LEXER');
     expect(N3.Lexer).toHaveBeenCalledWith([ 'A', 'B', 'C' ]);
   });
 
@@ -121,7 +125,7 @@ describe('construction with component configs as Resource', () => {
       },
     });
     const instance = await configConstructorPool.instantiate(config, settings);
-    expect(instance.type).toEqual('PARSER');
+    expect(instance.type).toBe('PARSER');
     expect(N3.Parser).toHaveBeenCalledWith({
       format: 'application/trig',
       lexer: {
@@ -150,7 +154,7 @@ describe('construction with component configs as Resource', () => {
       requireNoConstructor: '"true"',
     });
     const instance = await configConstructorPool.instantiate(config, settings);
-    expect(instance.type).toEqual('UTIL');
+    expect(instance.type).toBe('UTIL');
     expect(instance).toBe(N3.Util);
   });
 });

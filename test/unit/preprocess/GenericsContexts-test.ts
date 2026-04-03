@@ -1,4 +1,5 @@
-import * as fs from 'fs';
+import * as fs from 'node:fs';
+import * as Path from 'node:path';
 import 'jest-rdf';
 import { DataFactory } from 'rdf-data-factory';
 import type { Resource } from 'rdf-object';
@@ -25,7 +26,7 @@ describe('GenericsContext', () => {
   beforeEach(async() => {
     objectLoader = new RdfObjectLoader({
       uniqueLiterals: true,
-      context: JSON.parse(fs.readFileSync(`${__dirname}/../../../components/context.jsonld`, 'utf8')),
+      context: JSON.parse(fs.readFileSync(Path.join(__dirname, '../../../components/context.jsonld'), 'utf8')),
     });
     await objectLoader.context;
     typeTypeValidatorAlwaysFalse = jest.fn(() => (<any> {}));
@@ -997,7 +998,7 @@ describe('GenericsContext', () => {
             objectLoader.createCompactedResource('xsd:integer'),
             typeTypeValidatorOnlyIdentical,
           )!.term,
-        ).toEqualRdfTerm(objectLoader.createCompactedResource('xsd:integer')!.term);
+        ).toEqualRdfTerm(objectLoader.createCompactedResource('xsd:integer').term);
       });
 
       it('should not merge if union of matches of left does not match right', () => {
@@ -1053,7 +1054,7 @@ describe('GenericsContext', () => {
             }),
             typeTypeValidatorOnlyIdentical,
           )!.term,
-        ).toEqualRdfTerm(objectLoader.createCompactedResource('xsd:integer')!.term);
+        ).toEqualRdfTerm(objectLoader.createCompactedResource('xsd:integer').term);
       });
 
       it('should not merge if union of matches of right does not match left', () => {
@@ -1081,7 +1082,7 @@ describe('GenericsContext', () => {
             objectLoader.createCompactedResource('ex:TYPE1'),
             typeTypeValidatorOnlyIdentical,
           )!.term,
-        ).toEqualRdfTerm(objectLoader.createCompactedResource('ex:TYPE1')!.term);
+        ).toEqualRdfTerm(objectLoader.createCompactedResource('ex:TYPE1').term);
       });
 
       it('should not merge with left a non-matching generic component', () => {
@@ -1107,7 +1108,7 @@ describe('GenericsContext', () => {
             }),
             typeTypeValidatorOnlyIdentical,
           )!.term,
-        ).toEqualRdfTerm(objectLoader.createCompactedResource('ex:TYPE1')!.term);
+        ).toEqualRdfTerm(objectLoader.createCompactedResource('ex:TYPE1').term);
       });
 
       it('should not merge with right a non-matching generic component', () => {

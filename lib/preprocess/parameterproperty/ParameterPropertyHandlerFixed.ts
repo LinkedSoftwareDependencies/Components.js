@@ -27,7 +27,7 @@ export class ParameterPropertyHandlerFixed implements IParameterPropertyHandler 
     }
 
     if (value) {
-      const fixedValues: Resource[] = parameter.property.fixed.list || [ parameter.property.fixed ];
+      const fixedValues: Resource[] = parameter.property.fixed.list ?? [ parameter.property.fixed ];
       if (value.list) {
         value.list.unshift(...fixedValues);
       } else {

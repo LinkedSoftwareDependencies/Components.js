@@ -65,8 +65,8 @@ describe('ConstructionStrategyCommonJsString', () => {
         args: [],
         instanceId: 'myinstance',
       });
-      expect(instance).toEqual(`myinstance`);
-      expect(constructionStrategy.serializeDocument(instance)).toEqual(`const myinstance = require('./main.js');
+      expect(instance).toBe(`myinstance`);
+      expect(constructionStrategy.serializeDocument(instance)).toBe(`const myinstance = require('./main.js');
 module.exports = myinstance;
 `);
     });
@@ -82,8 +82,8 @@ module.exports = myinstance;
         args: [],
         instanceId: 'myinstance',
       });
-      expect(instance).toEqual(`myinstance`);
-      expect(constructionStrategy.serializeDocument(instance)).toEqual(`const myinstance = require('./main.js');
+      expect(instance).toBe(`myinstance`);
+      expect(constructionStrategy.serializeDocument(instance)).toBe(`const myinstance = require('./main.js');
 module.exports = myinstance;
 `);
     });
@@ -102,8 +102,8 @@ module.exports = myinstance;
         args: [],
         instanceId: 'myinstance',
       });
-      expect(instance).toEqual(`myinstance`);
-      expect(constructionStrategy.serializeDocument(instance)).toEqual(`const myinstance = require('./main.js');
+      expect(instance).toBe(`myinstance`);
+      expect(constructionStrategy.serializeDocument(instance)).toBe(`const myinstance = require('./main.js');
 module.exports = myinstance;
 `);
     });
@@ -118,8 +118,8 @@ module.exports = myinstance;
         args: [],
         instanceId: 'myinstance',
       });
-      expect(instance).toEqual(`myinstance`);
-      expect(constructionStrategy.serializeDocument(instance)).toEqual(`const myinstance = require('./main.js').a;
+      expect(instance).toBe(`myinstance`);
+      expect(constructionStrategy.serializeDocument(instance)).toBe(`const myinstance = require('./main.js').a;
 module.exports = myinstance;
 `);
     });
@@ -134,8 +134,8 @@ module.exports = myinstance;
         args: [],
         instanceId: 'myinstance',
       });
-      expect(instance).toEqual(`myinstance`);
-      expect(constructionStrategy.serializeDocument(instance)).toEqual(`const myinstance = require('./main.js').a.b;
+      expect(instance).toBe(`myinstance`);
+      expect(constructionStrategy.serializeDocument(instance)).toBe(`const myinstance = require('./main.js').a.b;
 module.exports = myinstance;
 `);
     });
@@ -150,8 +150,8 @@ module.exports = myinstance;
         args: [],
         instanceId: 'myinstance',
       });
-      expect(instance).toEqual(`myinstance`);
-      expect(constructionStrategy.serializeDocument(instance)).toEqual(`const myinstance = require('./main.js').MyClass;
+      expect(instance).toBe(`myinstance`);
+      expect(constructionStrategy.serializeDocument(instance)).toBe(`const myinstance = require('./main.js').MyClass;
 module.exports = myinstance;
 `);
     });
@@ -166,8 +166,8 @@ module.exports = myinstance;
         args: [],
         instanceId: 'myinstance',
       });
-      expect(instance).toEqual(`myinstance`);
-      expect(constructionStrategy.serializeDocument(instance)).toEqual(`const myinstance = new (require('./main.js').MyClass)();
+      expect(instance).toBe(`myinstance`);
+      expect(constructionStrategy.serializeDocument(instance)).toBe(`const myinstance = new (require('./main.js').MyClass)();
 module.exports = myinstance;
 `);
     });
@@ -182,8 +182,8 @@ module.exports = myinstance;
         args: [ 'a', 'b', 'c' ],
         instanceId: 'myinstance',
       });
-      expect(instance).toEqual(`myinstance`);
-      expect(constructionStrategy.serializeDocument(instance)).toEqual(`const myinstance = new (require('./main.js').MyClass)(a, b, c);
+      expect(instance).toBe(`myinstance`);
+      expect(constructionStrategy.serializeDocument(instance)).toBe(`const myinstance = new (require('./main.js').MyClass)(a, b, c);
 module.exports = myinstance;
 `);
     });
@@ -198,8 +198,8 @@ module.exports = myinstance;
         args: [],
         instanceId: 'myinstance',
       });
-      expect(instance).toEqual(`myinstance`);
-      expect(constructionStrategy.serializeDocument(instance)).toEqual(`const myinstance = require('othermodule');
+      expect(instance).toBe(`myinstance`);
+      expect(constructionStrategy.serializeDocument(instance)).toBe(`const myinstance = require('othermodule');
 module.exports = myinstance;
 `);
     });
@@ -214,8 +214,8 @@ module.exports = myinstance;
         args: [],
         instanceId: 'myinstance',
       });
-      expect(instance).toEqual(`myinstance`);
-      expect(constructionStrategy.serializeDocument(instance)).toEqual(`const myinstance = require('othermodule').c.d;
+      expect(instance).toBe(`myinstance`);
+      expect(constructionStrategy.serializeDocument(instance)).toBe(`const myinstance = require('othermodule').c.d;
 module.exports = myinstance;
 `);
     });
@@ -230,8 +230,8 @@ module.exports = myinstance;
         args: [],
         instanceId: 'myinstance',
       });
-      expect(instance).toEqual(`myinstance`);
-      expect(constructionStrategy.serializeDocument(instance)).toEqual(`const myinstance = require('./myfile.js');
+      expect(instance).toBe(`myinstance`);
+      expect(constructionStrategy.serializeDocument(instance)).toBe(`const myinstance = require('./myfile.js');
 module.exports = myinstance;
 `);
     });
@@ -247,8 +247,8 @@ module.exports = myinstance;
         args: [],
         instanceId: 'myinstance',
       });
-      expect(instance).toEqual(`myinstance`);
-      expect(constructionStrategy.serializeDocument(instance)).toEqual(`module.exports = function(variables) {
+      expect(instance).toBe(`myinstance`);
+      expect(constructionStrategy.serializeDocument(instance)).toBe(`module.exports = function(variables) {
 function getVariableValue(name) {
   if (!variables || !(name in variables)) {
     throw new Error('Undefined variable: ' + name);
@@ -271,8 +271,8 @@ return myinstance;
         args: [],
         instanceId: 'myinstance',
       });
-      expect(instance).toEqual(`myinstance`);
-      expect(constructionStrategy.serializeDocument(instance, 'urn:comunica:sparqlinit')).toEqual(`const myinstance = require('./main.js');
+      expect(instance).toBe(`myinstance`);
+      expect(constructionStrategy.serializeDocument(instance, 'urn:comunica:sparqlinit')).toBe(`const myinstance = require('./main.js');
 module.exports = urn_comunica_sparqlinit;
 `);
     });
@@ -283,7 +283,7 @@ module.exports = urn_comunica_sparqlinit;
       expect(constructionStrategy.createHash({
         settings,
         entries: [],
-      })).toEqual(`{}`);
+      })).toBe(`{}`);
     });
 
     it('for defined entries', () => {
@@ -294,7 +294,7 @@ module.exports = urn_comunica_sparqlinit;
           { key: '"b"', value: '2' },
           { key: '"c"', value: '3' },
         ],
-      })).toEqual(`{
+      })).toBe(`{
   "a": 1,
   "b": 2,
   "c": 3
@@ -309,7 +309,7 @@ module.exports = urn_comunica_sparqlinit;
           undefined,
           { key: '"c"', value: '3' },
         ],
-      })).toEqual(`{
+      })).toBe(`{
   "a": 1,
   "c": 3
 }`);
@@ -321,7 +321,7 @@ module.exports = urn_comunica_sparqlinit;
         entries: [
           { key: '"a"', value: '[\n  a,\n  b\n]' },
         ],
-      })).toEqual(`{
+      })).toBe(`{
   "a": [
   a,
   b
@@ -335,14 +335,14 @@ module.exports = urn_comunica_sparqlinit;
       expect(constructionStrategy.createArray({
         settings,
         elements: [],
-      })).toEqual(`[]`);
+      })).toBe(`[]`);
     });
 
     it('for elements', () => {
       expect(constructionStrategy.createArray({
         settings,
         elements: [ 'a', 'b' ],
-      })).toEqual(`[
+      })).toBe(`[
   a,
   b
 ]`);
@@ -352,7 +352,7 @@ module.exports = urn_comunica_sparqlinit;
       expect(constructionStrategy.createArray({
         settings,
         elements: [ '"a"', '"b"' ],
-      })).toEqual(`[
+      })).toBe(`[
   "a",
   "b"
 ]`);
@@ -362,10 +362,10 @@ module.exports = urn_comunica_sparqlinit;
   describe('createLazySupplier', () => {
     it('for a lazy supplier', async() => {
       const supplier = () => Promise.resolve('a');
-      expect(await constructionStrategy.createLazySupplier({
+      await expect(constructionStrategy.createLazySupplier({
         settings,
         supplier,
-      })).toEqual('new function() { return Promise.resolve(a); }');
+      })).resolves.toBe('new function() { return Promise.resolve(a); }');
     });
   });
 
@@ -374,21 +374,21 @@ module.exports = urn_comunica_sparqlinit;
       expect(constructionStrategy.createPrimitive({
         settings,
         value: 'abc',
-      })).toEqual(`'abc'`);
+      })).toBe(`'abc'`);
     });
 
     it('for a number', () => {
       expect(constructionStrategy.createPrimitive({
         settings,
         value: 123,
-      })).toEqual(`123`);
+      })).toBe(`123`);
     });
 
     it('for an object', () => {
       expect(constructionStrategy.createPrimitive({
         settings,
         value: { a: 'true' },
-      })).toEqual(`{"a":"true"}`);
+      })).toBe(`{"a":"true"}`);
     });
   });
 
@@ -405,52 +405,52 @@ module.exports = urn_comunica_sparqlinit;
       expect(constructionStrategy.getVariableValue({
         settings,
         variableName: 'varA',
-      })).toEqual(`getVariableValue('varA')`);
+      })).toBe(`getVariableValue('varA')`);
     });
   });
 
   describe('createUndefined', () => {
     it('returns undefined', () => {
-      expect(constructionStrategy.createUndefined()).toEqual('undefined');
+      expect(constructionStrategy.createUndefined()).toBe('undefined');
     });
   });
 
   describe('uriToVariableName', () => {
     it('should replace #', () => {
-      expect(ConstructionStrategyCommonJsString.uriToVariableName('abc#xyz')).toEqual('abc_xyz');
+      expect(ConstructionStrategyCommonJsString.uriToVariableName('abc#xyz')).toBe('abc_xyz');
     });
 
     it('should replace .', () => {
-      expect(ConstructionStrategyCommonJsString.uriToVariableName('abc.xyz')).toEqual('abc_xyz');
+      expect(ConstructionStrategyCommonJsString.uriToVariableName('abc.xyz')).toBe('abc_xyz');
     });
 
     it('should replace /', () => {
-      expect(ConstructionStrategyCommonJsString.uriToVariableName('abc/xyz')).toEqual('abc_xyz');
+      expect(ConstructionStrategyCommonJsString.uriToVariableName('abc/xyz')).toBe('abc_xyz');
     });
 
     it('should replace :', () => {
-      expect(ConstructionStrategyCommonJsString.uriToVariableName('abc:xyz')).toEqual('abc_xyz');
+      expect(ConstructionStrategyCommonJsString.uriToVariableName('abc:xyz')).toBe('abc_xyz');
     });
 
     it('should replace @', () => {
-      expect(ConstructionStrategyCommonJsString.uriToVariableName('abc@xyz')).toEqual('abc_xyz');
+      expect(ConstructionStrategyCommonJsString.uriToVariableName('abc@xyz')).toBe('abc_xyz');
     });
 
     it('should replace \\', () => {
-      expect(ConstructionStrategyCommonJsString.uriToVariableName('abc\\xyz')).toEqual('abc_xyz');
+      expect(ConstructionStrategyCommonJsString.uriToVariableName('abc\\xyz')).toBe('abc_xyz');
     });
 
     it('should replace ^', () => {
-      expect(ConstructionStrategyCommonJsString.uriToVariableName('abc^xyz')).toEqual('abc_xyz');
+      expect(ConstructionStrategyCommonJsString.uriToVariableName('abc^xyz')).toBe('abc_xyz');
     });
 
     it('should replace -', () => {
-      expect(ConstructionStrategyCommonJsString.uriToVariableName('abc-xyz')).toEqual('abc_xyz');
+      expect(ConstructionStrategyCommonJsString.uriToVariableName('abc-xyz')).toBe('abc_xyz');
     });
 
     it('should handle a complex IRI', () => {
       expect(ConstructionStrategyCommonJsString.uriToVariableName(`https://linkedsoftwaredependencies.org/bundles/npm/%40comunica%2Factor-init-sparql/%5E1.0.0/config/config-default.json#thing`))
-        .toEqual(`https___linkedsoftwaredependencies_org_bundles_npm_%40comunica%2Factor_init_sparql_%5E1_0_0_config_config_default_json_thing`);
+        .toBe(`https___linkedsoftwaredependencies_org_bundles_npm_%40comunica%2Factor_init_sparql_%5E1_0_0_config_config_default_json_thing`);
     });
   });
 });
