@@ -1,10 +1,10 @@
 /* eslint-disable no-console, unicorn/no-process-exit */
 
-// Monkey patch in the window object so we can test the script in Node
-// @ts-expect-error
 import { RdfObjectLoader } from 'rdf-object';
 import { RdfParser, ComponentsManagerBuilder } from '../..';
 
+// Monkey patch in the window object so we can test the script in Node
+// @ts-expect-error
 globalThis.window = globalThis;
 const arrayifyStream = require('stream-to-array');
 const streamifyString = require('streamify-string');
