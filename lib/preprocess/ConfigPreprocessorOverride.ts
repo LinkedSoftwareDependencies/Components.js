@@ -184,7 +184,7 @@ export class ConfigPreprocessorOverride implements IConfigPreprocessor<Resource[
         const duplicate2 = chains[duplicateIdx].at(-2);
         throw new ErrorResourcesContext(`Found multiple Overrides targeting ${targets[i]}`, {
           target,
-          overrides: [ duplicate1, duplicate2 ],
+          overrides: [ duplicate1, duplicate2 ].filter((r): r is Resource => r !== undefined),
         });
       }
     }
