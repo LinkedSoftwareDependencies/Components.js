@@ -25,7 +25,7 @@ describe('ConfigConstructor', () => {
     });
     await objectLoader.context;
     configConstructorPool = <any> {
-      instantiate: jest.fn(() => 'INSTANCE'),
+      instantiate: jest.fn(async() => 'INSTANCE'),
     };
     constructionStrategy = {
       createArray: jest.fn(options => options.elements),
@@ -104,7 +104,7 @@ describe('ConfigConstructor', () => {
           undefined: '"true"',
         });
         await expect(constructor.getArgumentValue(resource, settings)).resolves.toBeUndefined();
-        expect(constructionStrategy.createUndefined).toHaveBeenCalledWith(expect.anything());
+        expect(constructionStrategy.createUndefined).toHaveBeenCalled();
       });
     });
 

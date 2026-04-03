@@ -14,7 +14,7 @@ jest.mock<typeof import('fs')>('fs', () => ({
   writeFileSync: jest.fn(),
 }));
 // eslint-disable-next-line max-len
-jest.mock<typeof import('../../../lib/loading/ComponentsManagerBuilder')>('../../../lib/loading/ComponentsManagerBuilder', () => ({
+jest.mock('../../../lib/loading/ComponentsManagerBuilder', () => ({
   // eslint-disable-next-line object-shorthand
   ComponentsManagerBuilder: function(args: any) {
     return {

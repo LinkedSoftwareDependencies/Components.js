@@ -10,7 +10,7 @@ const quad = require('rdf-quad');
 // eslint-disable-next-line jest/no-mocks-import
 const Hello = require('../../__mocks__/helloworld').Hello;
 
-jest.mock<typeof import('winston')>('winston', () => ({
+jest.mock('winston', () => ({
   format: {
     colorize: jest.fn(),
     combine: jest.fn(),

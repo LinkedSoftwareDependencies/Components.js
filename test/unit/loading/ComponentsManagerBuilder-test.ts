@@ -13,7 +13,7 @@ import { ConfigPreprocessorComponentMapped } from '../../../lib/preprocess/Confi
 import { ConfigPreprocessorOverride } from '../../../lib/preprocess/ConfigPreprocessorOverride';
 
 const mainModulePath = __dirname;
-jest.mock<typeof import('winston')>('winston', () => ({
+jest.mock('winston', () => ({
   createLogger: jest.fn(() => ({
     info: jest.fn(),
     warn: jest.fn(),

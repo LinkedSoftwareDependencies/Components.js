@@ -6,7 +6,7 @@ import type { IConstructionSettings } from '../../lib/construction/IConstruction
 
 const N3 = require('n3');
 
-jest.mock<typeof import('n3')>('n3', () => ({
+jest.mock('n3', () => ({
   Lexer: jest.fn((args: any) => ({ type: 'LEXER', args })),
   Parser: jest.fn((args: any) => ({ type: 'PARSER', args })),
   Util: { type: 'UTIL' },

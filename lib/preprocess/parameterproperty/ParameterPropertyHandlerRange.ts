@@ -408,7 +408,7 @@ export class ParameterPropertyHandlerRange implements IParameterPropertyHandler 
    * Utility function for handling Literals.
    * If the provided value represents a valid Literal, the `valueRaw` field will be set.
    */
-  private interpretValueAsType(
+  public interpretValueAsType(
     value: Resource,
     type: Resource | NamedNode,
     errorContext: IErrorContext,

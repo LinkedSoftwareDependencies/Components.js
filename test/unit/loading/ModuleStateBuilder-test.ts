@@ -4,7 +4,7 @@ import { ModuleStateBuilder } from '../../../lib/loading/ModuleStateBuilder';
 // Import syntax only works in Node > 12
 const fs = require('node:fs').promises;
 
-jest.mock<typeof import('fs')>('fs', () => ({
+jest.mock('fs', () => ({
   promises: {
     realpath: jest.fn(),
     stat: jest.fn(),
