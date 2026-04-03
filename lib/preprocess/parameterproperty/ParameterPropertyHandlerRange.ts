@@ -412,7 +412,7 @@ export class ParameterPropertyHandlerRange implements IParameterPropertyHandler 
     value: Resource,
     type: Resource | NamedNode,
     errorContext: IErrorContext,
-    _genericsContext: GenericsContext,
+    genericsContext: GenericsContext,
   ): ILiteralAsTypeInterpretationResult {
     let parsed;
     switch (type.value) {

@@ -33,6 +33,8 @@ module.exports = config([
       'ts/no-unsafe-assignment': 'off',
       'ts/no-unsafe-argument': 'off',
       'ts/no-unsafe-return': 'off',
+      // Don't flag unused function parameters (common in interface implementations)
+      'unused-imports/no-unused-vars': [ 'error', { args: 'none' }],
     },
   },
   {

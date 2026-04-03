@@ -108,7 +108,7 @@ export interface ICreationStrategySupplierOptions<TInstance> {
   supplier: () => Promise<TInstance>;
 }
 
-export interface ICreationStrategyPrimitiveOptions<_T> {
+export interface ICreationStrategyPrimitiveOptions<TInstance> {
   /**
    * Creation settings.
    */
@@ -119,7 +119,7 @@ export interface ICreationStrategyPrimitiveOptions<_T> {
   value: string | number | any;
 }
 
-export interface ICreationStrategyVariableOptions<_T> {
+export interface ICreationStrategyVariableOptions<TInstance> {
   /**
    * Creation settings.
    */

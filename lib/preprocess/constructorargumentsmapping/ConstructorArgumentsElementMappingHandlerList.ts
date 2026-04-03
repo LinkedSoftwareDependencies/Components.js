@@ -10,8 +10,8 @@ export class ConstructorArgumentsElementMappingHandlerList implements IConstruct
   public canHandle(
     configRoot: Resource,
     constructorArgs: Resource,
-    _configElement: Resource,
-    _mapper: IConstructorArgumentsMapper,
+    configElement: Resource,
+    mapper: IConstructorArgumentsMapper,
   ): boolean {
     return Boolean(constructorArgs.list);
   }

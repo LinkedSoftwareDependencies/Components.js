@@ -2,10 +2,8 @@ import type { IJsonLdContext } from 'jsonld-context-parser';
 import { FetchDocumentLoader } from 'jsonld-context-parser';
 import semverMajor from 'semver/functions/major';
 import type { Logger } from 'winston';
-// eslint-disable-next-line import/extensions
-import contextJson from '../../components/context.json';
-// eslint-disable-next-line import/extensions
-import packageJson from '../../package.json';
+import contextJson from '../../components/context.json'; // eslint-disable-line import/extensions
+import packageJson from '../../package.json'; // eslint-disable-line import/extensions
 
 /**
  * A document loader that first loads from a precomputed set of contexts,

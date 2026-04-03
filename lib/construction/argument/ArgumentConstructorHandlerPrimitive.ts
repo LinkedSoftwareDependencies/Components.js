@@ -9,8 +9,8 @@ import type { IArgumentsConstructor } from './IArgumentsConstructor';
 export class ArgumentConstructorHandlerPrimitive implements IArgumentConstructorHandler {
   public canHandle<TInstance>(
     value: Resource,
-    _settings: IConstructionSettings,
-    _argsCreator: IArgumentsConstructor<TInstance>,
+    settings: IConstructionSettings,
+    argsCreator: IArgumentsConstructor<TInstance>,
   ): boolean {
     return Boolean(value.type === 'Literal');
   }

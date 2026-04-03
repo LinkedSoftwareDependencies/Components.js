@@ -20,7 +20,7 @@ export class ParameterPropertyHandlerDefaultScoped implements IParameterProperty
     value: Resource | undefined,
     configRoot: Resource,
     parameter: Resource,
-    _configElement: Resource,
+    configElement: Resource,
   ): Resource | undefined {
     let applyingValue: Resource | undefined;
     for (const scoped of parameter.properties.defaultScoped) {
