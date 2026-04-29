@@ -63,7 +63,7 @@
     "manual-git-changelog": "^1.0.1",
     "n3": "^2.0.0",
     "node-polyfill-webpack-plugin": "^4.0.0",
-    "pre-commit": "^1.2.2",
+    "pre-commit": "^2.0.0",
     "simple-copy": "^2.2.1",
     "stream-to-array": "^2.3.0",
     "streamify-string": "^1.0.1",
