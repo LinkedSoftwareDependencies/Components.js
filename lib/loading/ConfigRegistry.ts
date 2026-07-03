@@ -1,5 +1,6 @@
-import type { Readable } from 'stream';
+import type { Readable } from 'node:stream';
 import type * as RDF from '@rdfjs/types';
+import type { ContextParser } from 'jsonld-context-parser';
 import type { RdfObjectLoader, Resource } from 'rdf-object';
 import { termToString } from 'rdf-string';
 import type { Logger } from 'winston';
@@ -15,6 +16,7 @@ export class ConfigRegistry {
   private readonly logger: Logger;
   private readonly skipContextValidation: boolean;
   private readonly remoteContextLookups: boolean;
+  private readonly contextParser?: ContextParser;
 
   public constructor(options: IConfigLoaderRegistryOptions) {
     this.moduleState = options.moduleState;
@@ -22,6 +24,7 @@ export class ConfigRegistry {
     this.logger = options.logger;
     this.skipContextValidation = options.skipContextValidation;
     this.remoteContextLookups = options.remoteContextLookups;
+    this.contextParser = options.contextParser;
   }
 
   /**
@@ -38,6 +41,7 @@ export class ConfigRegistry {
       logger: this.logger,
       skipContextValidation: this.skipContextValidation,
       remoteContextLookups: this.remoteContextLookups,
+      contextParser: this.contextParser,
     }));
   }
 
@@ -62,6 +66,7 @@ export class ConfigRegistry {
   ): Promise<void> {
     // Create ad-hoc resource
     const configResource = this.objectLoader.createCompactedResource({
+      // eslint-disable-next-line ts/naming-convention
       '@id': configId,
       types: componentTypeIri,
     });
@@ -85,4 +90,8 @@ export interface IConfigLoaderRegistryOptions {
   logger: Logger;
   skipContextValidation: boolean;
   remoteContextLookups: boolean;
+  /**
+   * An optional shared, cache-bearing JSON-LD context parser reused across all config files.
+   */
+  contextParser?: ContextParser;
 }
