@@ -195,6 +195,29 @@ describe('RdfParser', () => {
         .toThrow(new Error(`Error while parsing file "path/to/file.jsonld": Invalid predicate IRI: p`));
     });
 
+    it('for JSON-LD streams reusing a shared context parser', async() => {
+      const contexts = {
+        'http://example.org/context.jsonld': {
+          '@context': {
+            '@vocab': 'http://vocab.org/',
+          },
+        },
+      };
+      const contextParser = RdfParser.createSharedContextParser({ contexts, skipContextValidation: true });
+      const doc = `{
+  "@context": "http://example.org/context.jsonld",
+  "@id": "ex:s",
+  "p": { "@id": "ex:o" }
+}`;
+      // Parse two separate files reusing the same context parser (as the loaders do per-boot).
+      for (const path of [ 'path/to/file1.jsonld', 'path/to/file2.jsonld' ]) {
+        await expect(arrayifyStream(new RdfParser().parse(streamifyString(doc), { path, contexts, contextParser })))
+          .resolves.toBeRdfIsomorphic([
+            quad('ex:s', 'http://vocab.org/p', 'ex:o'),
+          ]);
+      }
+    });
+
     it('for a Turtle stream with imports', async() => {
       const options: RdfParserOptions = {
         path: 'path/to/file.ttl',

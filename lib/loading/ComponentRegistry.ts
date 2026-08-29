@@ -1,5 +1,6 @@
 import type { Readable } from 'node:stream';
 import type * as RDF from '@rdfjs/types';
+import type { ContextParser } from 'jsonld-context-parser';
 import type { Resource, RdfObjectLoader } from 'rdf-object';
 import type { Logger } from 'winston';
 import { RdfParser } from '../rdf/RdfParser';
@@ -20,6 +21,7 @@ export class ComponentRegistry {
   private readonly componentResources: Record<string, Resource>;
   private readonly skipContextValidation: boolean;
   private readonly remoteContextLookups: boolean;
+  private readonly contextParser?: ContextParser;
 
   public constructor(options: IComponentLoaderRegistryOptions) {
     this.moduleState = options.moduleState;
@@ -28,6 +30,7 @@ export class ComponentRegistry {
     this.componentResources = options.componentResources;
     this.skipContextValidation = options.skipContextValidation;
     this.remoteContextLookups = options.remoteContextLookups;
+    this.contextParser = options.contextParser;
   }
 
   /**
@@ -54,6 +57,7 @@ export class ComponentRegistry {
       logger: this.logger,
       skipContextValidation: this.skipContextValidation,
       remoteContextLookups: this.remoteContextLookups,
+      contextParser: this.contextParser,
     }));
   }
 
@@ -123,4 +127,8 @@ export interface IComponentLoaderRegistryOptions {
   componentResources: Record<string, Resource>;
   skipContextValidation: boolean;
   remoteContextLookups: boolean;
+  /**
+   * An optional shared, cache-bearing JSON-LD context parser reused across all module files.
+   */
+  contextParser?: ContextParser;
 }

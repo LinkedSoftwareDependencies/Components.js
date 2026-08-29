@@ -1,6 +1,8 @@
 import { createReadStream, promises as fs } from 'node:fs';
 import type { Readable } from 'node:stream';
 import type * as RDF from '@rdfjs/types';
+import * as JsonLdContextParser from 'jsonld-context-parser';
+import { ContextParser } from 'jsonld-context-parser';
 import type { ParseOptions } from 'rdf-parse';
 import { rdfParser } from 'rdf-parse';
 import type { Logger } from 'winston';
@@ -11,6 +13,41 @@ import { RdfStreamIncluder } from './RdfStreamIncluder';
  * Parses a data stream to a triple stream.
  */
 export class RdfParser {
+  /**
+   * Create a single, cache-bearing JSON-LD context parser that can be reused across all files
+   * that are parsed during a component/config load.
+   *
+   * By default, Components.js constructs a fresh {@link PrefetchedDocumentLoader} and (indirectly,
+   * via jsonld-streaming-parser) a fresh `ContextParser` for every `.jsonld` file. As a result the
+   * well-known `@context`s (e.g. the shared `componentsjs` and `@solid/community-server` contexts)
+   * are re-loaded and re-normalized once per file - during a Community Solid Server boot the
+   * `componentsjs` context alone is normalized ~979 times.
+   *
+   * Passing the returned parser to every parse (see {@link RdfParserOptions#contextParser}) shares a
+   * single {@link PrefetchedDocumentLoader}, a single raw-document cache, and a single normalized
+   * {@link ContextCache} across all files, so the well-known contexts are loaded once and (once the
+   * shared cache can be hit) normalized once instead of once per file.
+   *
+   * @param options Options describing the prefetched contexts and validation behaviour.
+   */
+  public static createSharedContextParser(options: ISharedContextParserOptions): ContextParser {
+    const documentLoader = new PrefetchedDocumentLoader({
+      contexts: options.contexts ?? {},
+      logger: options.logger,
+      remoteContextLookups: options.remoteContextLookups,
+    });
+    const parserOptions: Record<string, any> = {
+      documentLoader,
+      skipValidation: options.skipContextValidation,
+    };
+    // Attach a shared normalized-context cache when the installed jsonld-context-parser exposes one
+    // (feature-detected so this remains compatible with versions that predate the cache).
+    if ((<any> JsonLdContextParser).ContextCache) {
+      parserOptions.contextCache = new (<any> JsonLdContextParser).ContextCache();
+    }
+    return new ContextParser(parserOptions);
+  }
+
   /**
    * Parses the given stream into RDF quads.
    * @param textStream A text stream.
@@ -42,8 +79,10 @@ export class RdfParser {
     }
 
     // Set JSON-LD parser options
-    (<any> options)['@comunica/actor-rdf-parse-jsonld:parserOptions'] = {
-      // Override the JSON-LD document loader
+    const jsonLdParserOptions: Record<string, any> = {
+      // Override the JSON-LD document loader.
+      // This is always provided so that a jsonld-streaming-parser that does not (yet) support an
+      // injected context parser still uses the prefetched contexts and remote-lookup protection.
       documentLoader: new PrefetchedDocumentLoader({
         contexts: options.contexts ?? {},
         logger: options.logger,
@@ -55,6 +94,15 @@ export class RdfParser {
       // If JSON-LD context validation should be skipped
       skipContextValidation: options.skipContextValidation,
     };
+    if (options.contextParser) {
+      // Reuse one shared, cache-bearing context parser (which carries its own single prefetched
+      // document loader) across all files, so the shared @contexts are only loaded/normalized once
+      // instead of once per file. This is honoured by a jsonld-streaming-parser that supports the
+      // `contextParser` option; on older versions the option is ignored and the per-file
+      // `documentLoader` above is used, preserving the previous behaviour.
+      jsonLdParserOptions.contextParser = options.contextParser;
+    }
+    (<any> options)['@comunica/actor-rdf-parse-jsonld:parserOptions'] = jsonLdParserOptions;
 
     // Execute parsing
     const quadStream = rdfParser.parse(textStream, options);
@@ -129,4 +177,30 @@ export type RdfParserOptions = ParseOptions & {
    * If allowed, only a warning is emitted.
    */
   remoteContextLookups?: boolean;
+  /**
+   * An optional shared JSON-LD context parser to reuse across all files.
+   * When provided, this (cache-bearing) parser and its prefetched document loader are used for all
+   * context resolution instead of constructing a new document loader (and context parser) per file.
+   * Create one with {@link RdfParser#createSharedContextParser}.
+   */
+  contextParser?: ContextParser;
 };
+
+export interface ISharedContextParserOptions {
+  /**
+   * The cached JSON-LD contexts (id -> context document).
+   */
+  contexts?: Record<string, any>;
+  /**
+   * An optional logger, used to warn on remote context lookups.
+   */
+  logger?: Logger;
+  /**
+   * If remote context lookups are allowed.
+   */
+  remoteContextLookups?: boolean;
+  /**
+   * If JSON-LD context validation should be skipped.
+   */
+  skipContextValidation?: boolean;
+}
