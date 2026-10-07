@@ -47,6 +47,7 @@ jobs:
       - name: Run webpack
         run: yarn run test:webpack
       - name: Submit coverage results
+        if: matrix.os == 'ubuntu-latest'
         uses: coverallsapp/github-action@v2
         with:
           github-token: ${{ secrets.github_token }}
