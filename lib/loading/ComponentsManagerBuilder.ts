@@ -14,6 +14,7 @@ import { ConfigPreprocessorComponent } from '../preprocess/ConfigPreprocessorCom
 import { ConfigPreprocessorComponentMapped } from '../preprocess/ConfigPreprocessorComponentMapped';
 import { ConfigPreprocessorOverride } from '../preprocess/ConfigPreprocessorOverride';
 import { ParameterHandler } from '../preprocess/ParameterHandler';
+import { RdfParser } from '../rdf/RdfParser';
 import type { LogLevel } from '../util/LogLevel';
 import { ComponentRegistry } from './ComponentRegistry';
 import { ComponentRegistryFinalizer } from './ComponentRegistryFinalizer';
@@ -98,6 +99,16 @@ export class ComponentsManagerBuilder<TInstance = any> {
     // Initialize object loader with built-in context
     const objectLoader: RdfObjectLoader = ComponentsManagerBuilder.createObjectLoader();
 
+    // Create a single, cache-bearing JSON-LD context parser (with one shared prefetched document
+    // loader) that is reused across every component and config file. This avoids re-loading and
+    // re-normalizing the shared well-known @contexts once per file.
+    const contextParser = RdfParser.createSharedContextParser({
+      contexts: moduleState.contexts,
+      logger: this.logger,
+      remoteContextLookups: this.remoteContextLookups,
+      skipContextValidation: this.skipContextValidation,
+    });
+
     // Load modules
     this.logger.info(`Initiating component loading`);
     const componentResources: Record<string, Resource> = {};
@@ -108,6 +119,7 @@ export class ComponentsManagerBuilder<TInstance = any> {
       componentResources,
       skipContextValidation: this.skipContextValidation,
       remoteContextLookups: this.remoteContextLookups,
+      contextParser,
     });
     await this.componentLoader(componentRegistry);
     const componentFinalizer = new ComponentRegistryFinalizer({
@@ -125,6 +137,7 @@ export class ComponentsManagerBuilder<TInstance = any> {
       logger: this.logger,
       skipContextValidation: this.skipContextValidation,
       remoteContextLookups: this.remoteContextLookups,
+      contextParser,
     });
     await this.configLoader(configRegistry);
     this.logger.info(`Loaded configs`);
