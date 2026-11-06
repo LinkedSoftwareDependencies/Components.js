@@ -1,4 +1,6 @@
 import * as Path from 'node:path';
+import { PassThrough } from 'node:stream';
+import type * as RDF from '@rdfjs/types';
 import { DataFactory } from 'rdf-data-factory';
 import type { RdfParserOptions } from '../../../lib/rdf/RdfParser';
 import { RdfParser } from '../../../lib/rdf/RdfParser';
@@ -10,7 +12,21 @@ const quad = require('rdf-quad');
 const stringifyStream = require('stream-to-string');
 const streamifyString = require('streamify-string');
 
+// The body of http://example.org/myfilestreaming.ttl, which tests write to themselves
+let resolveStreamingBody: (body: PassThrough) => void;
+let streamingBody: Promise<PassThrough>;
+
 globalThis.fetch = <any>jest.fn(async(url: string) => {
+  if (url === 'http://example.org/myfilestreaming.ttl') {
+    const body = new PassThrough();
+    resolveStreamingBody(body);
+    return {
+      body,
+      ok: true,
+      headers: new Headers({ 'Content-Type': 'text/turtle' }),
+      statusText: 'OK',
+    };
+  }
   if (url === 'http://example.org/myfile1.ttl') {
     return {
       body: streamifyString(`<ex:s1> <ex:p1> <ex:o1>.`),
@@ -365,6 +381,45 @@ describe('RdfParser', () => {
           quad('ex:s1', 'ex:p1', 'ex:o1'),
           quad('ex:s2', 'ex:p2', 'ex:o2'),
         ]);
+    });
+
+    it('for a Turtle stream with an import should emit quads of the import while it is being parsed', async() => {
+      streamingBody = new Promise(resolve => resolveStreamingBody = resolve);
+      const options: RdfParserOptions = {
+        path: 'path/to/file.ttl',
+      };
+      const doc = `
+<ex:s> <http://www.w3.org/2000/01/rdf-schema#seeAlso> <http://example.org/myfilestreaming.ttl>.
+`;
+      const quads: RDF.Quad[] = [];
+      let resolveImportedQuad: () => void;
+      const importedQuad = new Promise<void>(resolve => resolveImportedQuad = resolve);
+      const stream = parser.parse(streamifyString(doc), options)
+        .on('data', (data: RDF.Quad) => {
+          quads.push(data);
+          if (data.subject.value === 'ex:s4') {
+            resolveImportedQuad();
+          }
+        });
+      const ended = new Promise(resolve => stream.on('end', resolve));
+
+      // The first quad of the import is emitted before the import has ended
+      const body = await streamingBody;
+      body.write(`<ex:s4> <ex:p4> <ex:o4>.\n`);
+      await importedQuad;
+      await new Promise(resolve => setImmediate(resolve));
+      expect(quads).toEqualRdfQuadArray([
+        quad('ex:s', 'http://www.w3.org/2000/01/rdf-schema#seeAlso', 'http://example.org/myfilestreaming.ttl'),
+        quad('ex:s4', 'ex:p4', 'ex:o4'),
+      ]);
+
+      body.end(`<ex:s5> <ex:p5> <ex:o5>.\n`);
+      await ended;
+      expect(quads).toEqualRdfQuadArray([
+        quad('ex:s', 'http://www.w3.org/2000/01/rdf-schema#seeAlso', 'http://example.org/myfilestreaming.ttl'),
+        quad('ex:s4', 'ex:p4', 'ex:o4'),
+        quad('ex:s5', 'ex:p5', 'ex:o5'),
+      ]);
     });
 
     it('for a Turtle stream with a slow import followed by an import to unknown file', async() => {

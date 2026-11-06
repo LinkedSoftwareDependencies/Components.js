@@ -123,10 +123,6 @@ export type RdfParserOptions = ParseOptions & {
   importedFromPath?: string;
   /**
    * The prefix of the labels of blank nodes that are created while parsing.
-   * Imported files derive their prefix from it and the position of their import,
-   * so that labels don't depend on the order in which files are loaded.
-   * If undefined, labels depend on the order in which files are parsed.
-   * This is ignored if a data factory is passed.
    */
   blankNodePrefix?: string;
   /**
