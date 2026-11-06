@@ -1,6 +1,7 @@
 import { createReadStream, promises as fs } from 'node:fs';
 import type { Readable } from 'node:stream';
 import type * as RDF from '@rdfjs/types';
+import { DataFactory } from 'rdf-data-factory';
 import type { ParseOptions } from 'rdf-parse';
 import { rdfParser } from 'rdf-parse';
 import type { Logger } from 'winston';
@@ -57,7 +58,12 @@ export class RdfParser {
     };
 
     // Execute parsing
-    const quadStream = rdfParser.parse(textStream, options);
+    const quadStream = rdfParser.parse(textStream, {
+      ...options,
+      dataFactory: options.dataFactory ?? (options.blankNodePrefix === undefined ?
+        undefined :
+        new DataFactory({ blankNodePrefix: options.blankNodePrefix })),
+    });
     const includedQuadStream = quadStream.pipe(new RdfStreamIncluder(options));
     quadStream.on('error', (error: Error) => includedQuadStream
       .emit('error', RdfParser.addPathToError(error, options.path)));
@@ -115,6 +121,14 @@ export type RdfParserOptions = ParseOptions & {
    * Undefined if this file is the root file.
    */
   importedFromPath?: string;
+  /**
+   * The prefix of the labels of blank nodes that are created while parsing.
+   * Imported files derive their prefix from it and the position of their import,
+   * so that labels don't depend on the order in which files are loaded.
+   * If undefined, labels depend on the order in which files are parsed.
+   * This is ignored if a data factory is passed.
+   */
+  blankNodePrefix?: string;
   /**
    * An optional logger.
    */

@@ -15,6 +15,7 @@ export class ConfigRegistry {
   private readonly logger: Logger;
   private readonly skipContextValidation: boolean;
   private readonly remoteContextLookups: boolean;
+  private registeredConfigs = 0;
 
   public constructor(options: IConfigLoaderRegistryOptions) {
     this.moduleState = options.moduleState;
@@ -29,9 +30,12 @@ export class ConfigRegistry {
    * @param urlOrPath An RDF document URL or local file path.
    */
   public async register(urlOrPath: string): Promise<void> {
+    // Determined before loading, so that blank node labels only depend on the order of the calls.
+    const blankNodePrefix = `config_${this.registeredConfigs++}_`;
     const data = await RdfParser.fetchFileOrUrl(urlOrPath);
     return await this.registerStream(new RdfParser().parse(data, {
       path: urlOrPath,
+      blankNodePrefix,
       contexts: this.moduleState.contexts,
       importPaths: this.moduleState.importPaths,
       ignoreImports: false,

@@ -5,6 +5,7 @@ import { stringToTerm } from 'rdf-string';
 import type { Logger } from 'winston';
 import { ConfigRegistry } from '../../../lib/loading/ConfigRegistry';
 import type { IModuleState } from '../../../lib/loading/ModuleStateBuilder';
+import { RdfParser } from '../../../lib/rdf/RdfParser';
 
 describe('ConfigRegistry', () => {
   let moduleState: IModuleState;
@@ -41,6 +42,19 @@ describe('ConfigRegistry', () => {
 
     it('should throw on an invalid module file', async() => {
       await expect(configRegistry.register(`not-exists.jsonld`)).rejects.toThrow(/ENOENT/u);
+    });
+
+    it('should assign blank node prefixes in the order of the calls', async() => {
+      const parse = jest.spyOn(RdfParser.prototype, 'parse');
+      await Promise.all([
+        configRegistry.register(Path.join(__dirname, '../../assets/config.jsonld')),
+        configRegistry.register(Path.join(__dirname, '../../assets/config-lazy.jsonld')),
+      ]);
+      expect(parse.mock.calls.map(args => [ args[1].path, args[1].blankNodePrefix ])).toEqual(expect.arrayContaining([
+        [ Path.join(__dirname, '../../assets/config.jsonld').replaceAll('\\', '/'), 'config_0_' ],
+        [ Path.join(__dirname, '../../assets/config-lazy.jsonld').replaceAll('\\', '/'), 'config_1_' ],
+      ]));
+      parse.mockRestore();
     });
   });
 

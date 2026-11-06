@@ -5,6 +5,7 @@ import { RdfObjectLoader } from 'rdf-object';
 import type { Logger } from 'winston';
 import { ComponentRegistry } from '../../../lib/loading/ComponentRegistry';
 import type { IModuleState } from '../../../lib/loading/ModuleStateBuilder';
+import { RdfParser } from '../../../lib/rdf/RdfParser';
 
 describe('ComponentRegistry', () => {
   let moduleState: IModuleState;
@@ -54,9 +55,33 @@ describe('ComponentRegistry', () => {
       expect(Object.keys(objectLoader.resources)
         .includes('http://example.org/HelloWorldModule#SayHelloComponentNested')).toBeTruthy();
     });
+
+    it('should register discovered modules in sorted order', async() => {
+      const registerModule = jest.spyOn(componentRegistry, 'registerModule').mockResolvedValue();
+      moduleState.componentModules = {
+        B: { 1: 'b1', 2: 'b2' },
+        A: { 1: 'a1' },
+        C: { 1: 'c1' },
+      };
+      await componentRegistry.registerAvailableModules();
+      expect(registerModule.mock.calls.map(args => args[0])).toEqual([ 'a1', 'b1', 'b2', 'c1' ]);
+    });
   });
 
   describe('registerModule', () => {
+    it('should assign blank node prefixes in the order of the calls', async() => {
+      const parse = jest.spyOn(RdfParser.prototype, 'parse');
+      await Promise.all([
+        componentRegistry.registerModule(Path.join(__dirname, '../../assets/module.jsonld')),
+        componentRegistry.registerModule(Path.join(__dirname, '../../assets/module-dynamicentries.jsonld')),
+      ]);
+      expect(parse.mock.calls.map(args => [ args[1].path, args[1].blankNodePrefix ])).toEqual(expect.arrayContaining([
+        [ Path.join(__dirname, '../../assets/module.jsonld').replaceAll('\\', '/'), 'module_0_' ],
+        [ Path.join(__dirname, '../../assets/module-dynamicentries.jsonld').replaceAll('\\', '/'), 'module_1_' ],
+      ]));
+      parse.mockRestore();
+    });
+
     it('should handle a valid module file', async() => {
       await componentRegistry.registerModule(Path.join(__dirname, '../../assets/module.jsonld'));
       expect(Object.keys(objectLoader.resources)

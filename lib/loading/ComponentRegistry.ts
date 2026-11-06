@@ -20,6 +20,7 @@ export class ComponentRegistry {
   private readonly componentResources: Record<string, Resource>;
   private readonly skipContextValidation: boolean;
   private readonly remoteContextLookups: boolean;
+  private registeredModules = 0;
 
   public constructor(options: IComponentLoaderRegistryOptions) {
     this.moduleState = options.moduleState;
@@ -36,8 +37,10 @@ export class ComponentRegistry {
    * Effectively, this will load in all components that are available in the main package and its dependencies.
    */
   public async registerAvailableModules(): Promise<void> {
+    // Sorted, as blank node labels depend on the registration order, and modules are discovered in any order.
     await Promise.all(Object.values(this.moduleState.componentModules)
       .flatMap(x => Object.values(x))
+      .sort((left, right) => left < right ? -1 : Number(left > right))
       .map((moduleResourceUrl: string) => this.registerModule(moduleResourceUrl)));
   }
 
@@ -46,9 +49,12 @@ export class ComponentRegistry {
    * @param urlOrPath An RDF document URL or local file path.
    */
   public async registerModule(urlOrPath: string): Promise<void> {
+    // Determined before loading, so that blank node labels only depend on the order of the calls.
+    const blankNodePrefix = `module_${this.registeredModules++}_`;
     const data = await RdfParser.fetchFileOrUrl(urlOrPath);
     await this.registerModuleStream(new RdfParser().parse(data, {
       path: urlOrPath,
+      blankNodePrefix,
       contexts: this.moduleState.contexts,
       importPaths: this.moduleState.importPaths,
       logger: this.logger,
