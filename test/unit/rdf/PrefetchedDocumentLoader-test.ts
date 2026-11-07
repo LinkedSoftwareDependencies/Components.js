@@ -20,6 +20,14 @@ describe('PrefetchedDocumentLoader', () => {
     });
   });
 
+  describe('deprecated static fields', () => {
+    it('equal their renamed fields', () => {
+      expect(PrefetchedDocumentLoader.CJS_MAJOR_VERSION).toBe(PrefetchedDocumentLoader.cjsMajorVersion);
+      expect(PrefetchedDocumentLoader.CONTEXT_URL).toBe(PrefetchedDocumentLoader.contextUrl);
+      expect(PrefetchedDocumentLoader.CONTEXT_PATTERN).toBe(PrefetchedDocumentLoader.contextPattern);
+    });
+  });
+
   describe('load', () => {
     it('for a prefetched context', async() => {
       await expect(loader.load('http://example.org/context')).resolves
