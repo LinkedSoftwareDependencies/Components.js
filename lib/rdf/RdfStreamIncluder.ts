@@ -36,9 +36,7 @@ export class RdfStreamIncluder extends Transform {
   }
 
   /**
-   * Emit the quads of all imports after the quads of this stream, one import after the other,
-   * in the order in which they were detected, so that the order does not depend on I/O timing.
-   * Imports are already being parsed in the meantime, until their stream buffer is full.
+   * Emit the quads of all imports in a deterministic order
    */
   protected async flushImports(): Promise<void> {
     for (const importStream of this.imports) {
