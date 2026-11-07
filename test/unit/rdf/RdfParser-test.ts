@@ -1,4 +1,7 @@
 import * as Path from 'node:path';
+import { PassThrough } from 'node:stream';
+import type * as RDF from '@rdfjs/types';
+import { DataFactory } from 'rdf-data-factory';
 import type { RdfParserOptions } from '../../../lib/rdf/RdfParser';
 import { RdfParser } from '../../../lib/rdf/RdfParser';
 import 'jest-rdf';
@@ -9,7 +12,21 @@ const quad = require('rdf-quad');
 const stringifyStream = require('stream-to-string');
 const streamifyString = require('streamify-string');
 
+// The body of http://example.org/myfilestreaming.ttl, which tests write to themselves
+let resolveStreamingBody: (body: PassThrough) => void;
+let streamingBody: Promise<PassThrough>;
+
 globalThis.fetch = <any>jest.fn(async(url: string) => {
+  if (url === 'http://example.org/myfilestreaming.ttl') {
+    const body = new PassThrough();
+    resolveStreamingBody(body);
+    return {
+      body,
+      ok: true,
+      headers: new Headers({ 'Content-Type': 'text/turtle' }),
+      statusText: 'OK',
+    };
+  }
   if (url === 'http://example.org/myfile1.ttl') {
     return {
       body: streamifyString(`<ex:s1> <ex:p1> <ex:o1>.`),
@@ -29,6 +46,41 @@ globalThis.fetch = <any>jest.fn(async(url: string) => {
   if (url === 'http://example.org/myfilenest.ttl') {
     return {
       body: streamifyString(`<ex:s2> <http://www.w3.org/2000/01/rdf-schema#seeAlso> <http://example.org/myfile1.ttl>.`),
+      ok: true,
+      headers: new Headers({ 'Content-Type': 'text/turtle' }),
+      statusText: 'OK',
+    };
+  }
+  if (url === 'http://example.org/myfileslow.ttl') {
+    await new Promise(resolve => setTimeout(resolve, 50));
+    return {
+      body: streamifyString(`<ex:s3> <ex:p3> <ex:o3>.`),
+      ok: true,
+      headers: new Headers({ 'Content-Type': 'text/turtle' }),
+      statusText: 'OK',
+    };
+  }
+  if (url === 'http://example.org/myfileslownest.ttl') {
+    await new Promise(resolve => setTimeout(resolve, 50));
+    return {
+      body: streamifyString(`<ex:s3> <http://www.w3.org/2000/01/rdf-schema#seeAlso> <http://example.org/myfile1.ttl>.`),
+      ok: true,
+      headers: new Headers({ 'Content-Type': 'text/turtle' }),
+      statusText: 'OK',
+    };
+  }
+  if (url === 'http://example.org/myfileblank.ttl') {
+    return {
+      body: streamifyString(`[] <ex:p1> <ex:o1>.
+<ex:s1> <http://www.w3.org/2000/01/rdf-schema#seeAlso> <http://example.org/myfileblanknest.ttl>.`),
+      ok: true,
+      headers: new Headers({ 'Content-Type': 'text/turtle' }),
+      statusText: 'OK',
+    };
+  }
+  if (url === 'http://example.org/myfileblanknest.ttl') {
+    return {
+      body: streamifyString(`[] <ex:p2> <ex:o2>.`),
       ok: true,
       headers: new Headers({ 'Content-Type': 'text/turtle' }),
       statusText: 'OK',
@@ -293,6 +345,130 @@ describe('RdfParser', () => {
           quad('ex:s', 'http://www.w3.org/2000/01/rdf-schema#seeAlso', 'http://example.org/myfilenest.ttl'),
           quad('ex:s2', 'http://www.w3.org/2000/01/rdf-schema#seeAlso', 'http://example.org/myfile1.ttl'),
           quad('ex:s1', 'ex:p1', 'ex:o1'),
+        ]);
+    });
+
+    it('for a Turtle stream with imports should emit imports in their order, regardless of loading time', async() => {
+      const options: RdfParserOptions = {
+        path: 'path/to/file.ttl',
+      };
+      const doc = `
+<ex:s> <ex:p> <ex:o>.
+<ex:s> <http://www.w3.org/2000/01/rdf-schema#seeAlso> <http://example.org/myfileslow.ttl>, <http://example.org/myfile2.ttl>.
+`;
+      await expect(arrayifyStream(parser.parse(streamifyString(doc), options))).resolves
+        .toEqualRdfQuadArray([
+          quad('ex:s', 'ex:p', 'ex:o'),
+          quad('ex:s', 'http://www.w3.org/2000/01/rdf-schema#seeAlso', 'http://example.org/myfileslow.ttl'),
+          quad('ex:s', 'http://www.w3.org/2000/01/rdf-schema#seeAlso', 'http://example.org/myfile2.ttl'),
+          quad('ex:s3', 'ex:p3', 'ex:o3'),
+          quad('ex:s2', 'ex:p2', 'ex:o2'),
+        ]);
+    });
+
+    it('for a Turtle stream with nested imports should emit each import before the next one', async() => {
+      const options: RdfParserOptions = {
+        path: 'path/to/file.ttl',
+      };
+      const doc = `
+<ex:s> <http://www.w3.org/2000/01/rdf-schema#seeAlso> <http://example.org/myfileslownest.ttl>, <http://example.org/myfile2.ttl>.
+`;
+      await expect(arrayifyStream(parser.parse(streamifyString(doc), options))).resolves
+        .toEqualRdfQuadArray([
+          quad('ex:s', 'http://www.w3.org/2000/01/rdf-schema#seeAlso', 'http://example.org/myfileslownest.ttl'),
+          quad('ex:s', 'http://www.w3.org/2000/01/rdf-schema#seeAlso', 'http://example.org/myfile2.ttl'),
+          quad('ex:s3', 'http://www.w3.org/2000/01/rdf-schema#seeAlso', 'http://example.org/myfile1.ttl'),
+          quad('ex:s1', 'ex:p1', 'ex:o1'),
+          quad('ex:s2', 'ex:p2', 'ex:o2'),
+        ]);
+    });
+
+    it('for a Turtle stream with an import should emit quads of the import while it is being parsed', async() => {
+      streamingBody = new Promise(resolve => resolveStreamingBody = resolve);
+      const options: RdfParserOptions = {
+        path: 'path/to/file.ttl',
+      };
+      const doc = `
+<ex:s> <http://www.w3.org/2000/01/rdf-schema#seeAlso> <http://example.org/myfilestreaming.ttl>.
+`;
+      const quads: RDF.Quad[] = [];
+      let resolveImportedQuad: () => void;
+      const importedQuad = new Promise<void>(resolve => resolveImportedQuad = resolve);
+      const stream = parser.parse(streamifyString(doc), options)
+        .on('data', (data: RDF.Quad) => {
+          quads.push(data);
+          if (data.subject.value === 'ex:s4') {
+            resolveImportedQuad();
+          }
+        });
+      const ended = new Promise(resolve => stream.on('end', resolve));
+
+      // The first quad of the import is emitted before the import has ended
+      const body = await streamingBody;
+      body.write(`<ex:s4> <ex:p4> <ex:o4>.\n`);
+      await importedQuad;
+      await new Promise(resolve => setImmediate(resolve));
+      expect(quads).toEqualRdfQuadArray([
+        quad('ex:s', 'http://www.w3.org/2000/01/rdf-schema#seeAlso', 'http://example.org/myfilestreaming.ttl'),
+        quad('ex:s4', 'ex:p4', 'ex:o4'),
+      ]);
+
+      body.end(`<ex:s5> <ex:p5> <ex:o5>.\n`);
+      await ended;
+      expect(quads).toEqualRdfQuadArray([
+        quad('ex:s', 'http://www.w3.org/2000/01/rdf-schema#seeAlso', 'http://example.org/myfilestreaming.ttl'),
+        quad('ex:s4', 'ex:p4', 'ex:o4'),
+        quad('ex:s5', 'ex:p5', 'ex:o5'),
+      ]);
+    });
+
+    it('for a Turtle stream with a slow import followed by an import to unknown file', async() => {
+      const options: RdfParserOptions = {
+        path: 'path/to/file.ttl',
+      };
+      const doc = `
+<ex:s> <http://www.w3.org/2000/01/rdf-schema#seeAlso> <http://example.org/myfileslow.ttl>, <http://example.org/myfileunknown.ttl>.
+`;
+      await expect(arrayifyStream(parser.parse(streamifyString(doc), options))).rejects
+        .toThrow(new Error(`Error while parsing file "path/to/file.ttl": URL not found: http://example.org/myfileunknown.ttl`));
+    });
+
+    it('for a Turtle stream with imports and a blank node prefix should derive prefixes for imports', async() => {
+      const options: RdfParserOptions = {
+        path: 'path/to/file.ttl',
+        blankNodePrefix: 'p_',
+      };
+      const doc = `
+[] <ex:p> <ex:o>.
+<ex:s> <http://www.w3.org/2000/01/rdf-schema#seeAlso> <http://example.org/myfile1.ttl>, <http://example.org/myfileblank.ttl>.
+`;
+      await expect(arrayifyStream(parser.parse(streamifyString(doc), options))).resolves
+        .toEqualRdfQuadArray([
+          quad('_:p_0', 'ex:p', 'ex:o'),
+          quad('ex:s', 'http://www.w3.org/2000/01/rdf-schema#seeAlso', 'http://example.org/myfile1.ttl'),
+          quad('ex:s', 'http://www.w3.org/2000/01/rdf-schema#seeAlso', 'http://example.org/myfileblank.ttl'),
+          quad('ex:s1', 'ex:p1', 'ex:o1'),
+          quad('_:p_1_0', 'ex:p1', 'ex:o1'),
+          quad('ex:s1', 'http://www.w3.org/2000/01/rdf-schema#seeAlso', 'http://example.org/myfileblanknest.ttl'),
+          quad('_:p_1_0_0', 'ex:p2', 'ex:o2'),
+        ]);
+    });
+
+    it('for a Turtle stream with a blank node prefix and a data factory should use the data factory', async() => {
+      const options: RdfParserOptions = {
+        path: 'path/to/file.ttl',
+        blankNodePrefix: 'p_',
+        dataFactory: new DataFactory({ blankNodePrefix: 'f_' }),
+      };
+      const doc = `
+[] <ex:p> <ex:o>.
+<ex:s> <http://www.w3.org/2000/01/rdf-schema#seeAlso> <http://example.org/myfileblanknest.ttl>.
+`;
+      await expect(arrayifyStream(parser.parse(streamifyString(doc), options))).resolves
+        .toEqualRdfQuadArray([
+          quad('_:f_0', 'ex:p', 'ex:o'),
+          quad('ex:s', 'http://www.w3.org/2000/01/rdf-schema#seeAlso', 'http://example.org/myfileblanknest.ttl'),
+          quad('_:f_1', 'ex:p2', 'ex:o2'),
         ]);
     });
 

@@ -11,9 +11,8 @@ import type { RdfParserOptions } from './RdfParser';
  * A RdfStreamIncluder takes a triple stream and detects owl:includes to automatically include other files.
  */
 export class RdfStreamIncluder extends Transform {
-  private runningImporters = 1;
   private readonly parserOptions: RdfParserOptions;
-  private flushCallback: TransformCallback | undefined;
+  private readonly imports: Promise<Readable>[] = [];
 
   public constructor(parserOptions: RdfParserOptions) {
     super({ objectMode: true });
@@ -31,10 +30,19 @@ export class RdfStreamIncluder extends Transform {
 
   // eslint-disable-next-line ts/naming-convention
   public _flush(callback: TransformCallback): void {
-    if (--this.runningImporters === 0) {
-      callback();
-    } else {
-      this.flushCallback = callback;
+    this.flushImports().then(() => callback(), () => {
+      // The error has already been emitted
+    });
+  }
+
+  /**
+   * Emit the quads of all imports in a deterministic order
+   */
+  protected async flushImports(): Promise<void> {
+    for (const importStream of this.imports) {
+      for await (const quad of await importStream) {
+        this.push(quad);
+      }
     }
   }
 
@@ -44,7 +52,6 @@ export class RdfStreamIncluder extends Transform {
    */
   public handleImports(quad: RDF.Quad): void {
     if (!this.parserOptions.ignoreImports && quad.predicate.value === IRIS_RDFS.seeAlso) {
-      this.runningImporters++;
       let relativeFilePath = decodeURI(quad.object.value);
 
       // Try overriding path using defined import paths
@@ -60,26 +67,36 @@ export class RdfStreamIncluder extends Transform {
         }
       }
 
-      // Recursively call the parser
-      RdfParser.fetchFileOrUrl(relativeFilePath)
-        .then((rawStream: Readable) => {
-          const data: Readable = new RdfParser().parse(rawStream, {
-            ...this.parserOptions,
-            baseIRI: undefined,
-            path: relativeFilePath,
-            importedFromPath: this.parserOptions.path,
-          });
-          data
-            .on('data', (subData: RDF.Quad) => this.push(subData))
-            .on('error', (error: Error): boolean => this.emit('error', error))
-            .on('end', () => {
-              if (this.flushCallback && --this.runningImporters === 0) {
-                this.flushCallback();
-              }
-            });
-        })
-        .catch((error: Error) => this.emit('error', RdfParser.addPathToError(error, this.parserOptions.path)));
+      // Recursively call the parser.
+      // Errors are emitted immediately, so they don't have to wait for preceding imports.
+      const importStream = this.parseImport(relativeFilePath, this.imports.length);
+      importStream.catch((error: Error) => this.emit('error', error));
+      this.imports.push(importStream);
     }
+  }
+
+  /**
+   * Start parsing the given imported file.
+   * @param relativeFilePath The path or URL of the imported file.
+   * @param index The position of the import among the imports of the current stream.
+   */
+  protected async parseImport(relativeFilePath: string, index: number): Promise<Readable> {
+    let rawStream: Readable;
+    try {
+      rawStream = await RdfParser.fetchFileOrUrl(relativeFilePath);
+    } catch (error: unknown) {
+      throw RdfParser.addPathToError(<Error> error, this.parserOptions.path);
+    }
+    return new RdfParser().parse(rawStream, {
+      ...this.parserOptions,
+      baseIRI: undefined,
+      path: relativeFilePath,
+      importedFromPath: this.parserOptions.path,
+      // Labels of the current stream are its prefix followed by digits, so these never clash.
+      blankNodePrefix: this.parserOptions.blankNodePrefix === undefined ?
+        undefined :
+        `${this.parserOptions.blankNodePrefix}${index}_`,
+    }).on('error', (error: Error) => this.emit('error', error));
   }
 
   /**
