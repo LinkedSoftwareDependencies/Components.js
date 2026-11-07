@@ -1,6 +1,17 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v6.5.0"></a>
+## [v6.5.0](https://github.com/LinkedSoftwareDependencies/Components.js/compare/v6.4.0...v6.5.0) - 2026-11-07
+
+### Changed
+* [Update dependency n3 to v2](https://github.com/LinkedSoftwareDependencies/Components.js/commit/da42db429a26a7eb1a9d73685642d29628654ee2)
+* [Update rdf-parse from ^4.0.0 to ^5.0.0 (#162)](https://github.com/LinkedSoftwareDependencies/Components.js/commit/464bb1acf319f7f607f6e61dfd8721b6c446ef2d)
+* [Make configs and modules load order deterministic (#178)](https://github.com/LinkedSoftwareDependencies/Components.js/commit/848716490c374af9082f37199a3f2282e268a4dd)
+
+### Fixed
+* [Fix context URL in package.json to version 6.0.0 (#165)](https://github.com/LinkedSoftwareDependencies/Components.js/commit/58f5ccb45d2804e6aa24fac4518b6b4be3b82768)
+
 <a name="v6.4.0"></a>
 ## [v6.4.0](https://github.com/LinkedSoftwareDependencies/Components.js/compare/v6.3.0...v6.4.0) - 2026-01-07
 
