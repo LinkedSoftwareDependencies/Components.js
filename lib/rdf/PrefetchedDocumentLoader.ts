@@ -17,6 +17,24 @@ export class PrefetchedDocumentLoader extends FetchDocumentLoader {
   public static readonly contextPattern: RegExp =
     /https:\/\/linkedsoftwaredependencies.org\/bundles\/npm\/componentsjs\/\^([0-9]+).0.0\/components\/context.jsonld/u;
 
+  /**
+   * @deprecated Use {@link PrefetchedDocumentLoader.cjsMajorVersion} instead.
+   */
+  // eslint-disable-next-line ts/naming-convention
+  public static readonly CJS_MAJOR_VERSION: number = PrefetchedDocumentLoader.cjsMajorVersion;
+
+  /**
+   * @deprecated Use {@link PrefetchedDocumentLoader.contextUrl} instead.
+   */
+  // eslint-disable-next-line ts/naming-convention
+  public static readonly CONTEXT_URL: string = PrefetchedDocumentLoader.contextUrl;
+
+  /**
+   * @deprecated Use {@link PrefetchedDocumentLoader.contextPattern} instead.
+   */
+  // eslint-disable-next-line ts/naming-convention
+  public static readonly CONTEXT_PATTERN: RegExp = PrefetchedDocumentLoader.contextPattern;
+
   private static readonly defaultContext: any = contextJson;
 
   private static readonly defaultContexts: Record<string, any> = {
