@@ -423,6 +423,17 @@ describe('RdfParser', () => {
     });
 
     it('for a Turtle stream with a slow import followed by an import to unknown file', async() => {
+      const parse = RdfParser.prototype.parse;
+      let resolveSlowImport: () => void;
+      const slowImportEnded = new Promise<void>(resolve => resolveSlowImport = resolve);
+      const parseSpy = jest.spyOn(RdfParser.prototype, 'parse')
+        .mockImplementation(function(this: RdfParser, textStream, parseOptions) {
+          const stream = parse.call(this, textStream, parseOptions);
+          if (parseOptions.path === 'http://example.org/myfileslow.ttl') {
+            stream.on('end', () => resolveSlowImport());
+          }
+          return stream;
+        });
       const options: RdfParserOptions = {
         path: 'path/to/file.ttl',
       };
@@ -431,6 +442,10 @@ describe('RdfParser', () => {
 `;
       await expect(arrayifyStream(parser.parse(streamifyString(doc), options))).rejects
         .toThrow(new Error(`Error while parsing file "path/to/file.ttl": URL not found: http://example.org/myfileunknown.ttl`));
+
+      // The slow import is still being parsed, so it must end before this test does
+      await slowImportEnded;
+      parseSpy.mockRestore();
     });
 
     it('for a Turtle stream with imports and a blank node prefix should derive prefixes for imports', async() => {
